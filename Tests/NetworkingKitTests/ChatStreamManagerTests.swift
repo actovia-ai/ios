@@ -20,6 +20,8 @@ private final class StreamingMockURLProtocol: URLProtocol, @unchecked Sendable {
     /// The `timeoutInterval` of the last request the mock saw — lets a test pin
     /// the request configuration `ChatStreamManager` builds.
     nonisolated(unsafe) static var lastTimeout: TimeInterval?
+    /// The JSON body of the last request the mock saw.
+    nonisolated(unsafe) static var lastBody: [String: JSONValue]?
     /// When set, the mock answers with a transport failure (`didFailWithError`) instead of a
     /// response — e.g. `.cannotConnectToHost` when the server is not running.
     nonisolated(unsafe) static var failure: URLError?
@@ -29,6 +31,7 @@ private final class StreamingMockURLProtocol: URLProtocol, @unchecked Sendable {
 
     override func startLoading() {
         Self.lastTimeout = request.timeoutInterval
+        Self.lastBody = Self.body(of: request)
         if let failure = Self.failure {
             client?.urlProtocol(self, didFailWithError: failure)
             return
@@ -52,6 +55,22 @@ private final class StreamingMockURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func stopLoading() {}
+
+    /// URLSession hands a protocol the body as a stream, not `httpBody`.
+    private static func body(of request: URLRequest) -> [String: JSONValue]? {
+        var data = request.httpBody ?? Data()
+        if data.isEmpty, let stream = request.httpBodyStream {
+            stream.open()
+            defer { stream.close() }
+            var buffer = [UInt8](repeating: 0, count: 4096)
+            while stream.hasBytesAvailable {
+                let read = stream.read(&buffer, maxLength: buffer.count)
+                if read <= 0 { break }
+                data.append(buffer, count: read)
+            }
+        }
+        return try? JSONDecoder().decode([String: JSONValue].self, from: data)
+    }
 
     /// Restores the defaults so one test's configuration can't leak into the next.
     static func reset() {
@@ -159,6 +178,45 @@ struct ChatStreamManagerTests {
         // The server sends no keep-alive frames, so the request must tolerate a
         // long silent stretch (see `makeRequest`).
         #expect(StreamingMockURLProtocol.lastTimeout == 3600)
+    }
+
+    /// The server owns the conversation (desktop spec 2026-10-01 §C1): a send carries only the new question — not the
+    /// whole transcript on the phone's uplink — and asks for protocol 2.
+    @Test("a send carries only the new question, and asks for protocol 2")
+    func sendsOnlyTheQuestion() async throws {
+        StreamingMockURLProtocol.reset()
+        StreamingMockURLProtocol.chunks = [Data((#"data: {"type":"done","messages":[],"attempts":{}}"# + "\n\n").utf8)]
+        let manager = ChatStreamManager(sseClient: SSEClient(session: StreamingMockURLProtocol.makeSession()))
+        let serverConfig = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
+        let earlier = ChatMessage.userMessage(id: "u0", text: "earlier", timestampMs: 0)
+        let question = ChatMessage.userMessage(id: "u1", text: "hi", timestampMs: 1)
+        for await _ in await manager.send(chatId: "c1", messages: [earlier, question], serverConfig: serverConfig) {}
+
+        let body = try #require(StreamingMockURLProtocol.lastBody)
+        #expect(body["messages"] == nil)
+        #expect(body["protocol"] == .number(2))
+        guard case .object(let message)? = body["message"] else {
+            Issue.record("no message")
+            return
+        }
+        #expect(message["id"] == .string("u1"))
+    }
+
+    /// Protocol 2: `done` brings the run and the regenerate states; the conversation already on the phone stays.
+    @Test("a protocol-2 done is merged into the conversation the phone holds")
+    func mergesProtocolTwoDone() async throws {
+        StreamingMockURLProtocol.reset()
+        let done = #"data: {"type":"done","messages":[{"id":"u1","runId":"u1","role":"user","content":"hi"},{"id":"a1","runId":"u1","role":"assistant","content":"Hello"}],"attempts":{}}"#
+        StreamingMockURLProtocol.chunks = [Data((done + "\n\n").utf8)]
+        let manager = ChatStreamManager(sseClient: SSEClient(session: StreamingMockURLProtocol.makeSession()))
+        let serverConfig = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
+        let earlier = ChatMessage.userMessage(id: "u0", text: "earlier", timestampMs: 0)
+        let question = ChatMessage.userMessage(id: "u1", text: "hi", timestampMs: 1)
+        var finalMessages: [ChatMessage] = []
+        for await update in await manager.send(chatId: "c1", messages: [earlier, question], serverConfig: serverConfig) {
+            if case .finished(let messages) = update { finalMessages = messages }
+        }
+        #expect(finalMessages.map(\.id) == ["u0", "u1", "a1"])
     }
 
     @Test("a non-2xx response (e.g. no provider configured yet) surfaces the server's message as .failed and ends the stream")

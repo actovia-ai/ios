@@ -130,10 +130,49 @@ struct PairingViewModelTests {
         let (viewModel, connection) = makeViewModel()
         await viewModel.pair(from: Self.link)
 
-        viewModel.unpair()
+        await viewModel.unpair()
 
         #expect(!viewModel.isPaired)
         #expect(viewModel.computerName == nil)
         #expect(connection.authorization == nil)
     }
+
+    /// Unpairing here used to leave the device listed on the computer: it now says so first, with its own token.
+    @Test("tells the computer before it forgets the pairing")
+    func unpairTellsTheComputer() async {
+        PairingMockURLProtocol.handler = { _ in (200, Data(#"{"deviceId":"d","token":"T"}"#.utf8)) }
+        let (viewModel, _) = makeViewModel()
+        await viewModel.pair(from: Self.link)
+
+        let seen = Recorded()
+        PairingMockURLProtocol.handler = { request in
+            seen.add("\(request.httpMethod ?? "") \(request.url?.absoluteString ?? "") \(request.value(forHTTPHeaderField: "Authorization") ?? "")")
+            return (200, Data(#"{"ok":true}"#.utf8))
+        }
+        await viewModel.unpair()
+
+        #expect(seen.values == ["DELETE https://10.0.0.2:63129/api/v1/pair Bearer T"])
+        #expect(!viewModel.isPaired)
+    }
+
+    /// Off the network the pairing is still forgotten here; the computer's Devices page can remove it.
+    @Test("unpairs even when the computer cannot be reached")
+    func unpairOffline() async {
+        PairingMockURLProtocol.handler = { _ in (200, Data(#"{"deviceId":"d","token":"T"}"#.utf8)) }
+        let (viewModel, connection) = makeViewModel()
+        await viewModel.pair(from: Self.link)
+
+        PairingMockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
+        await viewModel.unpair()
+
+        #expect(!viewModel.isPaired)
+        #expect(connection.authorization == nil)
+    }
+}
+
+private final class Recorded: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [String] = []
+    var values: [String] { lock.withLock { stored } }
+    func add(_ value: String) { lock.withLock { stored.append(value) } }
 }

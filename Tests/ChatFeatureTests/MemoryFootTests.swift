@@ -232,17 +232,6 @@ struct MemoryFootStoreTests {
         #expect(store.run("live").used == [work])
     }
 
-    @Test("a reload keeps the feet of the runs still in the transcript and drops the rest")
-    func pruneToTranscript() {
-        let store = FakeMemoryComputer().store()
-        store.applyUsed(runId: "r1", memories: [UsedMemory(id: "m1", key: "Music", section: "topic")])
-        _ = store.run("r2")
-        _ = store.run("gone")
-        store.prune(keeping: ["r1", "r2", "r3"])
-        #expect(store.keptRunIds == ["r1", "r2"])
-        #expect(store.run("r1").used.map(\.id) == ["m1"])
-    }
-
     @Test("the list is read once however many strips ask at the same time")
     func firstReadOnce() async {
         let computer = FakeMemoryComputer(entries: [entry(update)])

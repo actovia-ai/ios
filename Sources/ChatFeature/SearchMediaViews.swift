@@ -228,35 +228,22 @@ struct SearchThumbnail: View {
     }
 }
 
-/// The viewer's page for a search image: the full-size image once it is in, its thumbnail meanwhile (blurred), the
-/// thumbnail alone with a note when the full one will not load.
+/// The viewer's page for a search image: the copy the search fetched, as large as it comes, and zoomable — never the
+/// site's own file, which may refuse a hotlink, be gone, or not answer (owner, 2026-09-30).
 struct SearchViewerImage: View {
     let picture: SearchGallery.Picture
 
-    @State private var full: UIImage?
-    @State private var fullFailed = false
+    @State private var image: UIImage?
+    @State private var failed = false
     @Environment(\.searchMediaLoader) private var loader
 
-    private var preview: UIImage? { loader.cached(picture.preview, maxPixelSize: SearchMediaLoader.thumbnailPixelCap) }
+    private var label: String { picture.title.isEmpty ? SearchMediaText.untitledImage : picture.title }
 
     var body: some View {
         ZStack {
-            if let full {
-                ZoomableImage(image: full, label: picture.title.isEmpty ? SearchMediaText.untitledImage : picture.title)
-            } else if let preview {
-                Image(uiImage: preview)
-                    .resizable()
-                    .scaledToFit()
-                    .blur(radius: fullFailed ? 0 : 16)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .accessibilityLabel(Text(verbatim: picture.title.isEmpty ? SearchMediaText.untitledImage : picture.title))
-                if fullFailed {
-                    note(Text("webSearch:imageLightbox.previewOnly"))
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                } else {
-                    ProgressView()
-                }
-            } else if fullFailed {
+            if let image {
+                ZoomableImage(image: image, label: label)
+            } else if failed {
                 VStack(spacing: 8) {
                     Image(systemName: "photo")
                         .font(.largeTitle)
@@ -265,6 +252,13 @@ struct SearchViewerImage: View {
                 }
                 .foregroundStyle(.secondary)
                 .accessibilityElement(children: .combine)
+            } else if let cached = loader.cached(picture.preview, maxPixelSize: SearchMediaLoader.thumbnailPixelCap) {
+                // The grid's copy paints at once while the larger decode of the same file comes in.
+                Image(uiImage: cached)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityLabel(Text(verbatim: label))
             } else {
                 ProgressView()
             }
@@ -273,28 +267,13 @@ struct SearchViewerImage: View {
         .task { await load() }
     }
 
-    private func note(_ text: Text) -> some View {
-        text
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .background(.regularMaterial, in: .capsule)
-            .padding(.bottom, 8)
-    }
-
     private func load() async {
-        guard full == nil else { return }
-        // Opening the image is the tap that asks for it; plain http is never fetched.
-        guard let url = picture.url, SearchMediaPolicy.fetchableURL(url.absoluteString) != nil else {
-            fullFailed = true
-            return
-        }
+        guard image == nil else { return }
         do {
-            full = try await loader.load(url, maxPixelSize: SearchMediaLoader.fullPixelCap)
+            image = try await loader.load(picture.preview, maxPixelSize: SearchMediaLoader.fullPixelCap)
         } catch is CancellationError {
         } catch {
-            if !Task.isCancelled { fullFailed = true }
+            if !Task.isCancelled { failed = true }
         }
     }
 }

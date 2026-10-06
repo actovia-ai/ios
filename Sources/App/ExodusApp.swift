@@ -100,10 +100,12 @@ struct ExodusApp: App {
     }
 
     private var shell: some View {
-        UnlockGate(connection: connection) {
-            AppShell(
-                apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
-                widgetWriter: widgetWriter, pendingLink: pendingLink)
+        PairingGate(connection: connection) {
+            UnlockGate(connection: connection) {
+                AppShell(
+                    apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
+                    widgetWriter: widgetWriter, pendingLink: pendingLink)
+            }
         }
         .launchSplash()
     }

@@ -247,14 +247,6 @@ final class MemoryFootStore {
         return run
     }
 
-    /// Drops the feet of runs the transcript no longer has (deleted on the computer, seen on a reload), so the store
-    /// holds this chat's runs and no more.
-    func prune(keeping runIds: Set<String>) {
-        runs = runs.filter { runIds.contains($0.key) }
-    }
-
-    var keptRunIds: Set<String> { Set(runs.keys) }
-
     func applyUsed(runId: String, memories: [UsedMemory]) {
         let run = run(runId)
         if run.used != memories { run.used = memories }

@@ -43,10 +43,14 @@ private final class ChatPosts: Sendable {
     func record(_ body: Data) { bodies.withLock { $0.append(body) } }
     var count: Int { bodies.withLock { $0.count } }
 
-    func messages(ofPost index: Int) throws -> [[String: Any]] {
+    func body(ofPost index: Int) throws -> [String: Any] {
         let data = try #require(bodies.withLock { $0.indices.contains(index) ? $0[index] : nil })
-        let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
-        return try #require(object["messages"] as? [[String: Any]])
+        return try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    /// The question a send carries — only that: the server reads the rest (desktop spec 2026-10-01 §C1).
+    func question(ofPost index: Int) throws -> [String: Any] {
+        try #require(try body(ofPost: index)["message"] as? [String: Any])
     }
 }
 
@@ -136,7 +140,7 @@ private struct Rig {
     /// From now on, a chat POST gets this reply and the stream ends.
     let reply: (String) -> Void
 
-    /// Answers `GET /api/v1/chat/c1` with `history` and every `POST /api/v1/chat` with `reply`.
+    /// Answers `GET /api/v1/chat/c1/page` with `history` as one page and every `POST /api/v1/chat` with `reply`.
     init(history: String = "[]", reply: String = helloReply, holdsOpen: Bool = false, _ suite: String = #function) {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
@@ -151,7 +155,7 @@ private struct Rig {
                 posts.record(request.bodyData())
                 return (200, Data(reply.utf8))
             }
-            return (200, Data(history.utf8))
+            return (200, ChatPageFixture.wrap(Data(history.utf8), path: request.url?.path ?? ""))
         }
         let sleeper = self.sleeper
         self.holdReply = { reply in
@@ -168,7 +172,7 @@ private struct Rig {
                     posts.record(request.bodyData())
                     return (200, Data(reply.utf8))
                 }
-                return (200, Data(history.utf8))
+                return (200, ChatPageFixture.wrap(Data(history.utf8), path: request.url?.path ?? ""))
             }
         }
         vm = ChatDetailViewModel(
@@ -202,23 +206,21 @@ extension ChatDetailViewModelActionsTests {
 @MainActor
 @Suite("regenerate")
 struct RegenerateTests {
-    @Test("sends the transcript so far plus a new copy of the last question, and keeps the previous answer in it")
-    func resendsTheTranscriptAndACopyOfTheQuestion() async throws {
+    /// The server reads the conversation from its own rows (desktop spec 2026-10-01 §C1): a Regenerate sends the
+    /// question again under a new id, and nothing else.
+    @Test("sends a new copy of the last question, and only that")
+    func resendsACopyOfTheQuestion() async throws {
         let rig = Rig(history: history)
         await rig.vm.loadHistory()
         #expect(rig.vm.canRegenerate)
         await rig.vm.regenerate()
 
         #expect(rig.posts.count == 1)
-        let sent = try rig.posts.messages(ofPost: 0)
-        try #require(sent.count == 3)
-        #expect(sent.map { $0["role"] as? String } == ["user", "assistant", "user"])
-        // Nothing is dropped: the earlier question and its answer go up unchanged, as the desktop's `regenerate` does.
-        #expect(sent[0]["id"] as? String == "u1")
-        #expect(sent[1]["id"] as? String == "a1")
-        #expect((sent[1]["content"] as? [[String: Any]])?.first?["text"] as? String == "hello")
-        // The new one is the same question under a new id, opening its own run.
-        let copy = sent[2]
+        let body = try rig.posts.body(ofPost: 0)
+        #expect(body["messages"] == nil)
+        #expect(body["protocol"] as? Int == 2)
+        // The same question under a new id, opening its own run.
+        let copy = try rig.posts.question(ofPost: 0)
         let id = try #require(copy["id"] as? String)
         #expect(id != "u1" && id == id.lowercased() && UUID(uuidString: id) != nil)
         #expect(copy["runId"] as? String == id)
@@ -254,8 +256,7 @@ struct RegenerateTests {
         let rig = Rig(history: imageQuestion)
         await rig.vm.loadHistory()
         await rig.vm.regenerate()
-        let sent = try rig.posts.messages(ofPost: 0)
-        let copy = try #require(sent.last)
+        let copy = try rig.posts.question(ofPost: 0)
         #expect(copy["role"] as? String == "user")
         #expect(copy["content"] as? [[String: String]] == [
             ["type": "text", "text": "what is this?"],
@@ -270,10 +271,7 @@ struct RegenerateTests {
         await rig.vm.loadHistory()
         #expect(rig.vm.regenerableTurnId == "run:u2")
         await rig.vm.regenerate()
-        let sent = try rig.posts.messages(ofPost: 0)
-        try #require(sent.count == 5)
-        #expect(sent.last?["content"] as? String == "two")
-        #expect(sent.prefix(4).map { $0["id"] as? String } == ["u1", "a1", "u2", "a2"])
+        #expect(try rig.posts.question(ofPost: 0)["content"] as? String == "two")
     }
 
     @Test("not while a turn is in flight: the rule is false and calling it posts nothing more")
@@ -332,10 +330,10 @@ struct RegenerateTests {
         await rig.vm.regenerate()
         #expect(rig.posts.count == 2)
         #expect(rig.vm.sendCount == 2)
-        let sent = try rig.posts.messages(ofPost: 1)
-        #expect(sent.last?["content"] as? String == "again")
+        let sent = try rig.posts.question(ofPost: 1)
+        #expect(sent["content"] as? String == "again")
         // The second attempt failed the same way, so the live error is that run's, not the first one's.
-        #expect(rig.vm.liveRunError?.runId == (sent.last?["runId"] as? String))
+        #expect(rig.vm.liveRunError?.runId == (sent["runId"] as? String))
     }
 }
 
@@ -554,12 +552,11 @@ struct RunErrorViewModelTests {
         rig.reply(helloReply)
         await rig.vm.regenerate()
         #expect(rig.posts.count == 2)
-        let first = try rig.posts.messages(ofPost: 0)
-        let retry = try rig.posts.messages(ofPost: 1)
-        #expect(retry.count == first.count + 1)
-        #expect(retry.last?["content"] as? String == "again")
-        #expect(retry.last?["id"] as? String != first.last?["id"] as? String)
-        #expect(retry.last?["runId"] as? String == retry.last?["id"] as? String)
+        let first = try rig.posts.question(ofPost: 0)
+        let retry = try rig.posts.question(ofPost: 1)
+        #expect(retry["content"] as? String == "again")
+        #expect(retry["id"] as? String != first["id"] as? String)
+        #expect(retry["runId"] as? String == retry["id"] as? String)
         #expect(rig.vm.canRetryOrphanError == false)
     }
 }

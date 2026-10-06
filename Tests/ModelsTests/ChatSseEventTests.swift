@@ -25,12 +25,26 @@ struct ChatSseEventTests {
             {"type":"done","messages":[{"id":"a","role":"assistant","content":"hi"}]}
             """.data(using: .utf8)!
         let event = try JSONDecoder().decode(ChatSseEvent.self, from: json)
-        guard case .done(let messages) = event else {
+        guard case .done(let messages, let attempts) = event else {
             Issue.record("expected .done, got \(event)")
             return
         }
         #expect(messages.count == 1)
         #expect(messages[0].displayText == "hi")
+        #expect(attempts == nil)
+    }
+
+    /// Protocol 2 (desktop spec 2026-10-01 §C2): `done` also carries every regenerate group's state; a state this build
+    /// does not know is left out rather than failing the frame.
+    @Test("decodes a protocol-2 done with its attempt states")
+    func decodesDoneWithAttempts() throws {
+        let json = #"{"type":"done","messages":[],"attempts":{"u1":"folded","u2":"chosen","u3":"later"}}"#
+        let event = try JSONDecoder().decode(ChatSseEvent.self, from: Data(json.utf8))
+        guard case .done(_, let attempts) = event else {
+            Issue.record("expected .done, got \(event)")
+            return
+        }
+        #expect(attempts == ["u1": .folded, "u2": .chosen])
     }
 
     @Test("memories_used carries its run and the memories it read; an unreadable entry costs only itself")

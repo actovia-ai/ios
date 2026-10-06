@@ -399,6 +399,10 @@
         "label": "Actualizar memoria",
         "description": "Permite que el asistente corrija, agregue o elimine entradas de memoria cuando le diga que algo sobre usted es incorrecto."
       },
+      "recall": {
+        "label": "Recuperar",
+        "description": "Permite que el asistente vuelva a leer completo un resultado de búsqueda o la salida de una herramienta que los turnos anteriores ya solo llevan resumidos, a partir de lo guardado y sin volver a buscar."
+      },
       "mapItinerary": {
         "label": "Itinerario en mapa",
         "description": "Mostrar lugares, rutas y viajes de varios días en una sola tarjeta de mapa interactiva"
@@ -457,11 +461,11 @@
       },
       "maxResults": {
         "label": "Resultados máximos",
-        "description": "Número de resultados de búsqueda por consulta (1-50). Predeterminado: 10."
+        "description": "Fuentes que devuelve una búsqueda (1–20). Predeterminado: 10."
       },
       "deepRecall": {
         "label": "Recuperación profunda",
-        "description": "Ejecuta una segunda búsqueda web, más amplia, junto con la llamada de fundamentación (grounding) y combina los resultados adicionales: foros, noticias y páginas que el filtro de fundamentación descarta. Mayor cobertura, ~2× el uso de la API de Brave por búsqueda."
+        "description": "Busca con tres formulaciones de la pregunta y añade una pasada más amplia: foros, noticias, páginas que la primera búsqueda descarta. Más fuentes y más tokens por búsqueda, y unas seis solicitudes a Brave en lugar de una."
       },
       "recency": {
         "label": "Filtro de antigüedad",
@@ -658,6 +662,10 @@
       "pageOf": "Página {{page}} de {{totalPages}}",
       "prev": "Anterior",
       "next": "Siguiente"
+    },
+    "details": {
+      "stack": "Traza de pila",
+      "componentStack": "Pila de componentes"
     }
   },
   "mcpServers": {
@@ -952,6 +960,7 @@
     },
     "presets": {
       "title": "Consultas predefinidas",
+      "cacheByRun": "Caché de prompt por turno",
       "messagesPerDay": "Mensajes por día (30 días)",
       "costByModel": "Tokens y coste por modelo",
       "toolCalls": "Llamadas a herramientas",

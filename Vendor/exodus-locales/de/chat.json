@@ -38,6 +38,11 @@
     "attachmentAlt": "Anhang",
     "scrollToBottom": "Nach unten scrollen"
   },
+  "history": {
+    "olderFailed": "Frühere Nachrichten konnten nicht geladen werden",
+    "loadingOlder": "Frühere Nachrichten werden geladen",
+    "loading": "Unterhaltung wird geladen"
+  },
   "toolPreview": {
     "mapItineraryDayCount_one": "{{count}} Tag",
     "mapItineraryDayCount_other": "{{count}} Tage",
@@ -212,7 +217,9 @@
       "favoritesGroup": "Favoriten",
       "chats": "Chats",
       "more": "Mehr",
-      "rename": "Umbenennen"
+      "rename": "Umbenennen",
+      "copyId": "Unterhaltungs-ID kopieren",
+      "idCopied": "Unterhaltungs-ID kopiert"
     },
     "renameDialog": {
       "title": "Chat umbenennen",
@@ -283,5 +290,26 @@
     "decideFailed": "Ihre Antwort konnte nicht gesendet werden",
     "truncatedNote_one": "{{count}} weiteres Zeichen nicht angezeigt",
     "truncatedNote_other": "{{count}} weitere Zeichen nicht angezeigt"
+  },
+  "compare": {
+    "useThis": "Diese verwenden",
+    "useInstead": "Stattdessen diese verwenden",
+    "otherVersion_one": "{{count}} weitere Version",
+    "otherVersion_other": "{{count}} weitere Versionen",
+    "answerTab": "Antwort {{n}}",
+    "tabsLabel": "Antworten",
+    "otherVersionTitle": "Die andere Version",
+    "otherVersionDescription": "Die Antwort, die du nicht behalten hast.",
+    "locked": "Die Unterhaltung ist weitergegangen, daher kann diese Antwort nicht mehr verwendet werden.",
+    "chooseFailed": "Antwort konnte nicht gewechselt werden"
+  },
+  "citation": {
+    "previous": "Vorherige Quelle",
+    "next": "Nächste Quelle",
+    "position": "{{current}}/{{total}}"
+  },
+  "ask": {
+    "button": "Exodus fragen",
+    "remove": "Zitat entfernen"
   }
 }

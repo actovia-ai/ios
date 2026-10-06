@@ -7,9 +7,14 @@ struct ConnectionSettingsPage: View {
     let connection: ServerConnection?
     @Binding var pairingRevision: Int
 
-    /// Reads `pairingRevision` so that pairing or unpairing re-evaluates it.
+    /// Reads `pairingRevision` so that pairing or unpairing re-evaluates it. The Simulator's only: a device reaches
+    /// the computer by pairing — the QR code carries its addresses and port — and a typed address could only fail.
     private var showsManualAddress: Bool {
-        pairingRevision >= 0 && connection?.isPaired != true
+        #if targetEnvironment(simulator)
+            pairingRevision >= 0 && connection?.isPaired != true
+        #else
+            false
+        #endif
     }
 
     var body: some View {

@@ -399,6 +399,10 @@
         "label": "Gedächtnis aktualisieren",
         "description": "Erlaubt dem Assistenten, Gedächtniseinträge zu korrigieren, hinzuzufügen oder zu entfernen, wenn Sie ihm sagen, dass etwas über Sie nicht stimmt."
       },
+      "recall": {
+        "label": "Abrufen",
+        "description": "Lässt den Assistenten ein früheres Suchergebnis oder eine Werkzeugausgabe, die ältere Runden nur noch gekürzt enthalten, vollständig nachlesen – aus dem Gespeicherten, ohne erneut zu suchen."
+      },
       "mapItinerary": {
         "label": "Reiseroute",
         "description": "Orte, Routen und mehrtägige Reisen auf einer interaktiven Kartenkarte darstellen"
@@ -457,11 +461,11 @@
       },
       "maxResults": {
         "label": "Max. Ergebnisse",
-        "description": "Anzahl der Suchergebnisse pro Abfrage (1-50). Standard: 10."
+        "description": "Quellen, die eine Suche liefert (1–20). Standard: 10."
       },
       "deepRecall": {
         "label": "Tiefenabruf",
-        "description": "Führt parallel zum Grounding-Aufruf eine zweite, breiter angelegte Websuche durch und ergänzt die Ergebnisse um zusätzliche Treffer — Foren, News und Seiten, die der Grounding-Filter aussortiert. Höhere Trefferquote, ca. doppelter Brave-API-Verbrauch pro Suche."
+        "description": "Sucht mit drei Formulierungen der Frage und ergänzt einen breiteren Durchlauf – Foren, Nachrichten, Seiten, die die erste Suche auslässt. Mehr Quellen und mehr Tokens pro Suche, und etwa sechs Brave-Anfragen statt einer."
       },
       "recency": {
         "label": "Aktualitätsfilter",
@@ -658,6 +662,10 @@
       "pageOf": "Seite {{page}} von {{totalPages}}",
       "prev": "Zurück",
       "next": "Weiter"
+    },
+    "details": {
+      "stack": "Stacktrace",
+      "componentStack": "Komponenten-Stack"
     }
   },
   "mcpServers": {
@@ -952,6 +960,7 @@
     },
     "presets": {
       "title": "Vorlagen",
+      "cacheByRun": "Prompt-Cache pro Durchlauf",
       "messagesPerDay": "Nachrichten pro Tag (30 Tage)",
       "costByModel": "Tokens & Kosten pro Modell",
       "toolCalls": "Tool-Aufrufe",

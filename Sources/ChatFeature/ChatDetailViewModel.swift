@@ -8,10 +8,22 @@ import Observation
 public final class ChatDetailViewModel {
     public let chatId: String
     public private(set) var messages: [ChatMessage] = [] {
-        didSet { segments = RunGrouper.group(messages, cache: &segmentCache) }
+        didSet { regroup() }
     }
+    /// The sources of the runs not loaded yet (the chat opens on its newest page): citations in loaded runs resolve.
+    private var olderSources: [CitationSource] = [] {
+        didSet { if olderSources != oldValue { regroup() } }
+    }
+    /// Whether runs older than the first one shown exist, and where the next older page starts.
+    public private(set) var hasOlder = false
+    private var olderCursor: String?
+    public private(set) var isLoadingOlder = false
+    /// Bumped when a page of older runs went in above the transcript: the view keeps the reader's place.
+    public private(set) var olderPageCount = 0
     public private(set) var segments: [Segment] = []
     @ObservationIgnored private var segmentCache = RunGrouper.Cache()
+
+    private func regroup() { segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache) }
     public private(set) var status: ChatStatus = .idle
     public var composerText: String = ""
     /// The pictures the next message carries, in pick order: sent with the text, and cleared with it.
@@ -37,8 +49,9 @@ public final class ChatDetailViewModel {
     /// server's own: shown as it is, never translated.
     public private(set) var notice: StreamNotice?
     /// True once the transcript is known: history loaded, or re-attached to an in-flight turn.
-    /// Nothing is sent before that — the prior turns of a POST are the LLM context when the
-    /// server's LCM feature is off, and the desktop does not render a chat before its history.
+    /// Nothing is sent before that: a finished run is merged into the transcript the phone
+    /// holds (protocol 2), so the transcript has to be there first — as the desktop does not
+    /// render a chat before its history.
     public private(set) var hasLoadedHistory = false
     /// Whether this chat already had messages when it was first opened. A chat that was empty then
     /// is a new chat and keeps "New chat" in the title bar until the server sends a generated
@@ -240,13 +253,20 @@ public final class ChatDetailViewModel {
         }
     }
 
+    /// The newest page of the chat (desktop spec 2026-10-01 §C3): a long chat was megabytes in one read, seconds over
+    /// a slow link. Older runs load as the reader scrolls up (`loadOlder`). A pull-to-refresh starts over from the
+    /// newest page. The memory foot keeps every run's usage: it is read for the whole chat, loaded or not.
     public func loadHistory() async {
         guard !isTurnInFlight else { return }  // a reload would replace the reply that is being streamed
         do {
-            let rows: [ChatMessage] = try await apiClient.get("/api/v1/chat/\(chatId)")
+            let page: ChatHistoryPage = try await apiClient.get("/api/v1/chat/\(chatId)/page")
+            let rows = page.messages
+            olderSources = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
+            hasOlder = page.hasOlder
+            olderCursor = page.olderCursor
             messages = ChatHistoryRows.uiMessages(from: rows)
             if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
-            memoryFoot.prune(keeping: Set(messages.map { $0.runId ?? $0.id }))
+            fillTruncated(rows)
             clearRunError()
             // Only the first load says what this chat was; a later pull-to-refresh sees the turns
             // that have happened since and must not turn a new chat into an old one.
@@ -257,6 +277,47 @@ public final class ChatDetailViewModel {
             guard !isCancellation(error) else { return }
             errorMessage = error.localizedDescription
             failureCount += 1
+        }
+    }
+
+    /// The page before the first run shown, put in above it. Does nothing while one loads or when there is none; a
+    /// failure is shown like any other, and the next scroll to the top tries again.
+    public func loadOlder() async {
+        guard hasOlder, let cursor = olderCursor, !isLoadingOlder else { return }
+        isLoadingOlder = true
+        defer { isLoadingOlder = false }
+        do {
+            let page: ChatHistoryPage = try await apiClient.get(
+                "/api/v1/chat/\(chatId)/page", query: [URLQueryItem(name: "before", value: cursor)])
+            guard olderCursor == cursor else { return }  // a reload started over meanwhile
+            let shown = Set(messages.map(\.id))
+            let older = ChatHistoryRows.uiMessages(from: page.messages).filter { !shown.contains($0.id) }
+            let loaded = Set((older + messages).map { $0.runId ?? $0.id })
+            olderSources = page.olderSources(loadedRuns: loaded)
+            hasOlder = page.hasOlder
+            olderCursor = page.olderCursor
+            messages = older + messages
+            if page.messages.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
+            olderPageCount += 1
+            fillTruncated(page.messages)
+        } catch {
+            guard !isCancellation(error) else { return }
+            errorMessage = error.localizedDescription
+            failureCount += 1
+        }
+    }
+
+    /// A row too large for a page comes cut (`truncated`); the whole one, read on its own, replaces it.
+    private func fillTruncated(_ rows: [ChatMessage]) {
+        for row in rows where row.raw["truncated"] == .bool(true) {
+            let id = row.id
+            Task { [weak self, apiClient, chatId] in
+                guard let whole: ChatMessage = try? await apiClient.get("/api/v1/chat/\(chatId)/messages/\(id)"),
+                    let self
+                else { return }
+                let message = ChatHistoryRows.uiMessages(from: [whole])[0]
+                if let index = self.messages.firstIndex(where: { $0.id == id }) { self.messages[index] = message }
+            }
         }
     }
 

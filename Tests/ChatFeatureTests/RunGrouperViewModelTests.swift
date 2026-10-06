@@ -33,7 +33,7 @@ private let rows = #"""
 struct RunGrouperViewModelTests {
     @Test("segments follow messages: a loaded history is one user row and one turn")
     func segmentsFollowMessages() async {
-        RunGrouperMockURLProtocol.body = Data(rows.utf8)
+        RunGrouperMockURLProtocol.body = Data(ChatPageFixture.page(rows).utf8)
         let suite = "RunGrouperViewModelTests"
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
@@ -52,7 +52,8 @@ struct RunGrouperViewModelTests {
             Issue.record("no turn")
             return
         }
-        #expect(turn.body == "Checking.\n\nFound it.")
+        // "Checking." beside the search is the model at work: it is in the timeline, and the answer is what follows.
+        #expect(turn.body == "Found it.")
         #expect(turn.durationMs == 2000)
     }
 }

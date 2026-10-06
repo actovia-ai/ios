@@ -58,6 +58,7 @@ public struct MessageGalleryView: View {
     @State private var readAloud = GalleryReadAloud.model()
     @State private var memory = GalleryFoot.memory()
     @State private var approvals = GalleryFoot.approvals()
+    @State private var isAtEnd = true
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.toneAccent) private var toneAccent
     @Environment(\.toneInk) private var toneInk
@@ -103,6 +104,9 @@ public struct MessageGalleryView: View {
                     .padding(.top, 12)
                     .padding(.bottom, TranscriptRows.endRoom)
                     .id(TranscriptRows.endID)
+                }
+                .transcriptEnd(isAtEnd: $isAtEnd) {
+                    withAnimation { proxy.scrollTo(TranscriptRows.endID, anchor: .bottom) }
                 }
                 .task {
                     if MessageGalleryLaunch.opensSheet, let run = MessageGalleryLaunch.sheetRun.map({ runs[$0] }) ?? runs.last {

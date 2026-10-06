@@ -28,6 +28,11 @@ public struct ChatDetailView: View {
     @State private var otherVersion: OtherVersion?
     /// When a long press threw a recording away: the tap its release ends in must not start another.
     @State private var recordingDiscardedAt: Date?
+    /// The end of the transcript is in view (`TranscriptEnd`): a streaming reply is followed only then.
+    @State private var isAtEnd = true
+    /// The older pages whose arrival the transcript has already answered: a page put in above is not a new message,
+    /// and must not scroll the reader to the end.
+    @State private var handledOlderPages = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.colorTone) private var colorTone
@@ -69,6 +74,10 @@ public struct ChatDetailView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24) {
+                    if viewModel.hasOlder {
+                        OlderHistoryRow(isLoading: viewModel.isLoadingOlder)
+                            .onAppear { loadOlder(proxy) }
+                    }
                     TranscriptRows(
                         segments: viewModel.segments, streamingTurnId: viewModel.streamingTurnId,
                         showsTypingIndicator: viewModel.showsPendingRow, liveError: viewModel.liveRunError,
@@ -106,16 +115,27 @@ public struct ChatDetailView: View {
                 await viewModel.loadHistory()
                 await viewModel.loadMemoryUsage()
             }
-            .onChange(of: viewModel.segments.count) {
-                scrollToBottom(proxy, animated: true)
+            .transcriptEnd(isAtEnd: $isAtEnd) { scrollToBottom(proxy, animated: true) }
+            .onChange(of: viewModel.segments.count) { old, new in
+                if viewModel.olderPageCount != handledOlderPages {
+                    handledOlderPages = viewModel.olderPageCount
+                    return
+                }
+                scrollToBottom(proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
             }
-            // Follow a reply as it streams in: the segment count is constant while the last turn grows.
+            // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
+            // the reader has scrolled up — the button over the composer brings them back.
             .onChange(of: scrollKey) {
-                scrollToBottom(proxy, animated: false)
+                if isAtEnd { scrollToBottom(proxy, animated: false) }
             }
             // Sending adds the pending row; reaching it is the point of `isTurnInFlight` flipping.
             .onChange(of: viewModel.isTurnInFlight) {
                 scrollToBottom(proxy, animated: true)
+            }
+        }
+        .overlay(alignment: .top) {
+            if !viewModel.hasLoadedHistory && viewModel.errorMessage == nil {
+                TranscriptSkeleton().allowsHitTesting(false)
             }
         }
         .overlay {
@@ -424,8 +444,20 @@ public struct ChatDetailView: View {
             liveError: viewModel.liveRunError)
     }
 
-    /// To the end of the transcript, its room over the composer included: whatever the last row is — an answer,
-    /// the pending dots, an error line — the end is under it.
+    /// Loads the page before the first run shown and keeps the reader where they were: on the run that was first, or —
+    /// when the transcript was short enough to show its end — at the end.
+    private func loadOlder(_ proxy: ScrollViewProxy) {
+        let first = viewModel.segments.first?.id
+        Task {
+            await viewModel.loadOlder()
+            if isAtEnd {
+                scrollToBottom(proxy, animated: false)
+            } else if let first {
+                proxy.scrollTo(first, anchor: .top)
+            }
+        }
+    }
+
     private func scrollToBottom(_ proxy: ScrollViewProxy, animated: Bool) {
         guard !viewModel.segments.isEmpty || viewModel.showsPendingRow else { return }
         if animated {

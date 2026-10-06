@@ -22,10 +22,14 @@ public struct AssistantTurn: Equatable, Sendable, Identifiable {
     public struct ThinkingStep: Equatable, Sendable {
         public let text: String
         public let title: String?
+        /// Text the model wrote beside calls that only fetch something — working, not answering (the desktop's
+        /// `narration` step, `RunGrouper.narratingTools`).
+        public let isNarration: Bool
 
-        public init(text: String, title: String? = nil) {
+        public init(text: String, title: String? = nil, isNarration: Bool = false) {
             self.text = text
             self.title = title
+            self.isNarration = isNarration
         }
     }
 
@@ -183,7 +187,7 @@ public struct AssistantTurn: Equatable, Sendable, Identifiable {
     }
     public var hasBody: Bool { !body.isEmpty }
     public var hasThinking: Bool {
-        steps.contains { if case .thinking = $0 { true } else { false } }
+        steps.contains { if case .thinking(let step) = $0 { !step.isNarration } else { false } }
     }
 
     public func citation(forMarker marker: Int) -> CitationSource? {

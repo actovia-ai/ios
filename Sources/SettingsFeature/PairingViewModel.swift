@@ -80,8 +80,11 @@ public final class PairingViewModel {
         errorDetail = detail
     }
 
-    public func unpair() {
-        connection.unpair()
+    /// Tells the computer, then forgets it here (`ServerConnection.leave`).
+    public func unpair() async {
+        isWorking = true
+        defer { isWorking = false }
+        await connection.leave(session: session)
         refresh()
     }
 

@@ -93,6 +93,10 @@ enum BuiltinTools {
             title: LocalizedStringResource("settings:tools.registry.updateMemory.label"),
             summary: LocalizedStringResource("settings:tools.registry.updateMemory.description")),
         Tool(
+            name: "recall", group: .aiData,
+            title: LocalizedStringResource("settings:tools.registry.recall.label"),
+            summary: LocalizedStringResource("settings:tools.registry.recall.description")),
+        Tool(
             name: "map_itinerary", group: .maps,
             title: LocalizedStringResource("settings:tools.registry.mapItinerary.label"),
             summary: LocalizedStringResource("settings:tools.registry.mapItinerary.description"), configuredOnComputer: true),

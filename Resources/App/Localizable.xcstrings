@@ -2463,6 +2463,138 @@
         }
       }
     },
+    "chat:history.loading" : {
+      "comment" : "VoiceOver label of the placeholder shown while a conversation loads.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterhaltung wird geladen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading the conversation"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando la conversación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement de la conversation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricamento della conversazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話を読み込んでいます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화를 불러오는 중"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregando a conversa"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入對話"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入對話"
+          }
+        }
+      }
+    },
+    "chat:history.loadingOlder" : {
+      "comment" : "VoiceOver label of the spinner shown while older messages load.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere Nachrichten werden geladen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading earlier messages"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando mensajes anteriores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement des messages précédents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricamento dei messaggi precedenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以前のメッセージを読み込んでいます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 메시지를 불러오는 중"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregando mensagens anteriores"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入較早的訊息"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入較早的訊息"
+          }
+        }
+      }
+    },
     "chat:imageGeneration.generatedImageAlt" : {
       "comment" : "Image generation card (desktop key).",
       "extractionState" : "manual",
@@ -4105,6 +4237,71 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "來源"
+          }
+        }
+      }
+    },
+    "chat:messageList.scrollToBottom" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach unten scrollen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scroll to bottom"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desplazarse al final"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Défiler vers le bas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorri fino in fondo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最下部へスクロール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "맨 아래로 스크롤"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolar até o final"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捲動至底部"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捲動至底部"
           }
         }
       }
@@ -23906,6 +24103,72 @@
         }
       }
     },
+    "ios:chat.usedMemories.fixHint" : {
+      "comment" : "The used-memories sheet at a reply's foot (iOS wording of chat:usedMemories.fixHint, which says Click): under the entries, how a wrong one gets fixed. Names the per-entry button (chat:usedMemories.wrong).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimmt eine Erinnerung nicht? Tippen Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Exodus aktualisiert sie."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A memory wrong? Tap Wrong? and fix it in chat — Exodus updates it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Algún recuerdo es incorrecto? Toca «¿Incorrecto?» y corrígelo en el chat: Exodus lo actualizará."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un souvenir est erroné ? Touchez « Erroné ? » et corrigez-le dans le chat — Exodus le met à jour."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una memoria è sbagliata? Tocca «Sbagliata?» e correggila in chat: Exodus la aggiorna."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記憶が違っていたら、「違う？」をタップしてチャットで修正してください。Exodus が記憶を更新します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기억이 틀렸나요? '틀렸나요?'를 탭해 채팅에서 고치면 Exodus가 기억을 업데이트합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alguma memória errada? Toque em “Errado?” e corrija no chat — o Exodus a atualiza."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
+          }
+        }
+      }
+    },
     "ios:health.activity.today" : {
       "comment" : "Activity detail section title.",
       "extractionState" : "manual",
@@ -33466,6 +33729,270 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這個配對碼已失效。請在電腦上顯示新的配對碼。"
+          }
+        }
+      }
+    },
+    "ios:onboarding.getExodus" : {
+      "comment" : "Welcome screen of an unpaired iPhone: a link to the desktop app's website. Exodus is the app's name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus für den Computer holen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Exodus for your computer"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consigue Exodus para tu ordenador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtenir Exodus pour ordinateur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarica Exodus per il computer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンピュータ版 Exodus を入手"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴퓨터용 Exodus 받기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixe o Exodus para computador"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載電腦版 Exodus"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載電腦版 Exodus"
+          }
+        }
+      }
+    },
+    "ios:onboarding.message" : {
+      "comment" : "Under the title of the first screen of an unpaired iPhone; the pairing steps follow.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Exodus roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
+          }
+        }
+      }
+    },
+    "ios:onboarding.noExodusYet" : {
+      "comment" : "Under the website link on the welcome screen of an unpaired iPhone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus ist noch nicht auf Ihrem Computer? Installieren Sie es von exodus.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don’t have Exodus on your computer yet? Install it from exodus.yancey.app, then pair this iPhone from its Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Aún no tienes Exodus en tu ordenador? Instálalo desde exodus.yancey.app y vincula este iPhone desde sus ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus n’est pas encore sur votre ordinateur ? Installez-le depuis exodus.yancey.app, puis associez cet iPhone depuis ses réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non hai ancora Exodus sul computer? Installalo da exodus.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンピュータにまだ Exodus がありませんか？exodus.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴퓨터에 아직 Exodus가 없나요? exodus.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não tem o Exodus no computador? Instale em exodus.yancey.app e depois pareie este iPhone nas configurações dele."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電腦上還沒有 Exodus？到 exodus.yancey.app 安裝，再從它的設定配對這部 iPhone。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電腦上還沒有 Exodus？到 exodus.yancey.app 安裝，再從它的設定配對這支 iPhone。"
+          }
+        }
+      }
+    },
+    "ios:onboarding.title" : {
+      "comment" : "Title of the first screen of an unpaired iPhone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Ihrem Computer verbinden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect to your computer"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecta tu ordenador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connectez votre ordinateur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collega il tuo computer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンピュータに接続"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴퓨터에 연결"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte seu computador"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連接你的電腦"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連接你的電腦"
           }
         }
       }
@@ -50009,6 +50536,138 @@
         }
       }
     },
+    "settings:tools.registry.recall.description" : {
+      "comment" : "Description of the Recall built-in tool in Settings → Built-in Tools.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lässt den Assistenten ein früheres Suchergebnis oder eine Werkzeugausgabe, die ältere Runden nur noch gekürzt enthalten, vollständig nachlesen – aus dem Gespeicherten, ohne erneut zu suchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lets the assistant read back, in full, an earlier search result or tool output that older turns now carry only in short — from what is stored, without searching again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que el asistente vuelva a leer completo un resultado de búsqueda o la salida de una herramienta que los turnos anteriores ya solo llevan resumidos, a partir de lo guardado y sin volver a buscar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permet à l'assistant de relire en entier un résultat de recherche ou la sortie d'un outil que les tours précédents ne contiennent plus qu'en bref — depuis ce qui est enregistré, sans relancer de recherche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consente all'assistente di rileggere per intero un risultato di ricerca o l'output di uno strumento che i turni precedenti riportano ormai solo in breve, da quanto salvato e senza cercare di nuovo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以前のターンでは要約だけになった検索結果やツールの出力を、保存済みの内容から全文で読み直せるようにします。再検索はしません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 턴에는 요약만 남은 검색 결과나 도구 출력을 저장된 내용에서 전체로 다시 읽을 수 있게 합니다. 다시 검색하지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que o assistente releia por completo um resultado de busca ou a saída de uma ferramenta que as rodadas anteriores agora trazem apenas resumidos — a partir do que foi salvo, sem buscar de novo."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讓助理從已儲存的內容完整讀回較早回合中只剩摘要的搜尋結果或工具輸出，無須重新搜尋。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讓助理從已儲存的內容完整讀回較早回合中只剩摘要的搜尋結果或工具輸出，無須重新搜尋。"
+          }
+        }
+      }
+    },
+    "settings:tools.registry.recall.label" : {
+      "comment" : "Name of the built-in tool that reads back, in full, an earlier search result or tool output the conversation now carries only as a digest; also a tool name in a reply's steps.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrufen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recall"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rappel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richiama"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "呼び戻し"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 불러오기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperar"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回溯"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回溯"
+          }
+        }
+      }
+    },
     "settings:tools.registry.searchKnowledgeBase.description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -50987,72 +51646,6 @@
         }
       }
     },
-    "webSearch:imageLightbox.previewOnly" : {
-      "comment" : "Search media under an answer (web search images and videos).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vorschau wird angezeigt — vollständiges Bild nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Showing preview — full image unavailable"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrando vista previa: la imagen completa no está disponible"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aperçu affiché — image complète indisponible"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anteprima mostrata — immagine completa non disponibile"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プレビューを表示しています — 完全な画像は利用できません"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "미리보기만 표시 — 원본 이미지를 사용할 수 없습니다"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrando pré-visualização — imagem completa indisponível"
-          }
-        },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只顯示預覽——完整圖片無法使用"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "僅顯示預覽——完整圖片無法使用"
-          }
-        }
-      }
-    },
     "webSearch:videoCard.views" : {
       "comment" : "Search media under an answer (web search images and videos).",
       "extractionState" : "manual",
@@ -51115,72 +51708,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 次觀看"
-          }
-        }
-      }
-    },
-    "ios:chat.usedMemories.fixHint" : {
-      "comment" : "The used-memories sheet at a reply's foot (iOS wording of chat:usedMemories.fixHint, which says Click): under the entries, how a wrong one gets fixed. Names the per-entry button (chat:usedMemories.wrong).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stimmt eine Erinnerung nicht? Tippen Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Exodus aktualisiert sie."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A memory wrong? Tap Wrong? and fix it in chat — Exodus updates it."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Algún recuerdo es incorrecto? Toca «¿Incorrecto?» y corrígelo en el chat: Exodus lo actualizará."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un souvenir est erroné ? Touchez « Erroné ? » et corrigez-le dans le chat — Exodus le met à jour."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una memoria è sbagliata? Tocca «Sbagliata?» e correggila in chat: Exodus la aggiorna."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "記憶が違っていたら、「違う？」をタップしてチャットで修正してください。Exodus が記憶を更新します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기억이 틀렸나요? '틀렸나요?'를 탭해 채팅에서 고치면 Exodus가 기억을 업데이트합니다."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alguma memória errada? Toque em “Errado?” e corrija no chat — o Exodus a atualiza."
-          }
-        },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
           }
         }
       }

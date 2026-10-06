@@ -16,6 +16,7 @@
     "list_mcp_tools",
     "map_itinerary",
     "read_file",
+    "recall",
     "search_knowledge_base",
     "terminal",
     "update_memory",
@@ -128,6 +129,12 @@
       "name": "update_memory",
       "labelKey": "settings:tools.registry.updateMemory.label",
       "descriptionKey": "settings:tools.registry.updateMemory.description",
+      "group": "AI & Data"
+    },
+    {
+      "name": "recall",
+      "labelKey": "settings:tools.registry.recall.label",
+      "descriptionKey": "settings:tools.registry.recall.description",
       "group": "AI & Data"
     },
     {

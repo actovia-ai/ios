@@ -115,7 +115,9 @@ private func serve(
         let path = request.url?.path ?? ""
         let body = method == "POST" ? try request.httpBodyStreamData() : Data()
         recorder.record(RecordedRequest(line: "\(method) \(path)", body: body))
-        if method == "GET", path.hasPrefix("/api/v1/chat/") { return (historyStatus, Data(history.utf8)) }
+        if method == "GET", path.hasPrefix("/api/v1/chat/") {
+            return (historyStatus, ChatPageFixture.wrap(Data(history.utf8), path: path))
+        }
         if method == "POST", path == "/api/v1/chat" { return (replyStatus, Data(reply.utf8)) }
         return (404, Data(envelope404.utf8))
     }
@@ -182,7 +184,7 @@ struct ChatDetailViewModelTests {
         serve(history: historyRowsJSON, recorder: recorder)
         let vm = Harness().makeViewModel()
         await vm.loadHistory()
-        #expect(recorder.lines == ["GET /api/v1/chat/c1"])
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
         #expect(vm.messages.map(\.displayText) == ["hi", "hello"])
         #expect(vm.messages.allSatisfy { $0.raw.keys.contains("chatId") == false && $0.timestampMs != nil })
         #expect(vm.hasLoadedHistory)
@@ -211,7 +213,7 @@ struct ChatDetailViewModelTests {
         vm.composerText = "hello"
         #expect(vm.canSend == false)
         await vm.sendMessage()
-        #expect(recorder.lines == ["GET /api/v1/chat/c1"])
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
         #expect(vm.composerText == "hello")
         #expect(vm.messages.isEmpty)
     }
@@ -225,8 +227,10 @@ struct ChatDetailViewModelTests {
         #expect(vm.hasLoadedHistory == false)
     }
 
-    @Test("sendMessage posts the full transcript — converted prior turns plus the new user message — and nothing else")
-    func sendMessageSendsTheFullTranscript() async throws {
+    /// The server reads the conversation from its own rows (desktop spec 2026-10-01 §C1): a send carries the new
+    /// question and asks for protocol 2 — not the whole transcript, on the phone's uplink, every time.
+    @Test("sendMessage posts the new question only, and asks for protocol 2")
+    func sendMessageSendsTheQuestion() async throws {
         let recorder = RequestRecorder()
         serve(history: historyRowsJSON, reply: helloReply, recorder: recorder)
         let vm = Harness().makeViewModel()
@@ -235,22 +239,17 @@ struct ChatDetailViewModelTests {
         await vm.sendMessage()
 
         let body = try recorder.onlyJSONBody(forPOST: "/api/v1/chat")
-        #expect(Set(body.keys) == ["id", "messages", "advancedTools"])
+        #expect(Set(body.keys) == ["id", "message", "advancedTools", "protocol"])
         #expect(body["id"] as? String == "c1")
+        #expect(body["protocol"] as? Int == 2)
         #expect((body["advancedTools"] as? [Any])?.isEmpty == true)
-        let messages = try #require(body["messages"] as? [[String: Any]])
-        try #require(messages.count == 3)  // `#require`, not `#expect`: the indexing below must not crash the run
-        #expect(messages.map { $0["role"] as? String } == ["user", "assistant", "user"])
-        // Prior turns are the desktop-shaped conversion, not the raw rows.
-        #expect(messages[0].keys.contains("chatId") == false)
-        #expect(messages[0]["timestamp"] is NSNumber)
-        #expect(messages[1]["stopReason"] as? String == "stop")
-        // The new message is the last one, with a lowercase UUID id and a numeric timestamp.
-        let last = messages[2]
-        #expect(last["content"] as? String == "hey")
-        let id = try #require(last["id"] as? String)
+        // The new message, with a lowercase UUID id and a numeric timestamp.
+        let question = try #require(body["message"] as? [String: Any])
+        #expect(question["role"] as? String == "user")
+        #expect(question["content"] as? String == "hey")
+        let id = try #require(question["id"] as? String)
         #expect(id == id.lowercased() && UUID(uuidString: id) != nil)
-        #expect(last["timestamp"] is NSNumber)
+        #expect(question["timestamp"] is NSNumber)
     }
 
     @Test("a quote goes with the next message, once, and a quote alone is not sent")
@@ -270,8 +269,8 @@ struct ChatDetailViewModelTests {
         vm.composerText = "why?"
         await vm.sendMessage()
         let body = try recorder.onlyJSONBody(forPOST: "/api/v1/chat")
-        let messages = try #require(body["messages"] as? [[String: Any]])
-        #expect(messages.last?["content"] as? String == "> the one that counts\n\nwhy?")
+        let question = try #require(body["message"] as? [String: Any])
+        #expect(question["content"] as? String == "> the one that counts\n\nwhy?")
         #expect(vm.quote == nil)
     }
 
@@ -300,9 +299,8 @@ struct ChatDetailViewModelTests {
         await vm.sendMessage()
 
         let body = try recorder.onlyJSONBody(forPOST: "/api/v1/chat")
-        let messages = try #require(body["messages"] as? [[String: Any]])
-        try #require(messages.count == 1)  // an empty history, so the new message is the whole transcript
-        #expect(messages[0]["content"] as? String == "hi there")  // inner space kept, both ends trimmed
+        let question = try #require(body["message"] as? [String: Any])
+        #expect(question["content"] as? String == "hi there")  // inner space kept, both ends trimmed
         #expect(vm.composerText.isEmpty)
     }
 
@@ -331,7 +329,7 @@ struct ChatDetailViewModelTests {
             #expect(vm.canSend == false)
             await vm.sendMessage()
         }
-        #expect(recorder.lines == ["GET /api/v1/chat/c1"])
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
         #expect(vm.messages.isEmpty)
     }
 
@@ -389,7 +387,7 @@ struct ChatDetailViewModelTests {
 
         await vm.loadHistory()  // what a pull-to-refresh does while the turn is still streaming
 
-        #expect(recorder.lines.filter { $0 == "GET /api/v1/chat/c1" }.count == 1)  // only the setup load, no second fetch
+        #expect(recorder.lines.filter { $0 == "GET /api/v1/chat/c1/page" }.count == 1)  // only the setup load, no second fetch
         #expect(vm.messages == messagesBefore)
         #expect(vm.messages.last?.displayText == "Hel")
         #expect(vm.status == statusBefore)
@@ -420,7 +418,7 @@ struct ChatDetailViewModelTests {
         }
         #expect(second.hasLoadedHistory)
         #expect(second.status == .streaming)
-        #expect(recorder.lines.filter { $0 == "GET /api/v1/chat/c1" }.count == 1)  // only the first view model's load
+        #expect(recorder.lines.filter { $0 == "GET /api/v1/chat/c1/page" }.count == 1)  // only the first view model's load
 
         harness.session.invalidateAndCancel()
         await firstSend.value
@@ -568,7 +566,7 @@ struct ChatDetailViewModelTests {
         #expect(vm.status == .idle)
         #expect(vm.messages == before)
         #expect(vm.errorMessage == nil)
-        #expect(recorder.lines == ["GET /api/v1/chat/c1"])
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
         #expect(vm.stopCount == 0)  // nothing was in flight, so no stop haptic either
     }
 
@@ -1040,7 +1038,7 @@ struct ChatDetailMemoryFootTests {
         ChatDetailMockURLProtocol.holdsChatPostOpen = false
         ChatDetailMockURLProtocol.handler = { request in
             switch (request.httpMethod ?? "GET", request.url?.path ?? "") {
-            case ("GET", "/api/v1/chat/c1"): (200, Data(historyRowsJSON.utf8))
+            case ("GET", "/api/v1/chat/c1/page"): (200, Data(ChatPageFixture.page(historyRowsJSON).utf8))
             case ("GET", "/api/v1/memory/usage"): (200, Data(Self.usage.utf8))
             case ("GET", "/api/v1/memory"): (200, Data("[]".utf8))
             case ("POST", "/api/v1/chat"): (200, Data(Self.reply.utf8))
@@ -1080,11 +1078,105 @@ struct ChatDetailMemoryFootTests {
         let vm = Harness().makeViewModel()
         await vm.loadHistory()
         await vm.loadMemoryUsage()
-        #expect(recorder.lines == ["GET /api/v1/chat/c1"])
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
         vm.composerText = "draft"
         vm.memoryFoot.onWrong("The memory about 'Music' is wrong: ")
         #expect(vm.composerText == "The memory about 'Music' is wrong: ")
         #expect(vm.composerFocusRequest == 1)
         ChatDetailMockURLProtocol.handler = nil
+    }
+}
+
+/// A chat's history a page at a time (desktop spec 2026-10-01 §C3–C4): the phone opens on the newest page, puts older
+/// ones in above it, and resolves a citation of a source found in a run it has not loaded.
+@MainActor
+@Suite("ChatDetailViewModel: older pages", .serialized)
+struct ChatDetailOlderPagesTests {
+    nonisolated private static let newest = #"""
+        [{"id":"u2","runId":"u2","role":"user","content":"second","createdAt":"2026-09-18T12:01:00.000Z"},
+         {"id":"a2","runId":"u2","role":"assistant","content":[{"type":"text","text":"As 【1-source】 says."}],"stopReason":"stop","createdAt":"2026-09-18T12:01:01.000Z"}]
+        """#
+    nonisolated private static let older = #"""
+        [{"id":"u1","runId":"u1","role":"user","content":"first","createdAt":"2026-09-18T12:00:00.000Z"},
+         {"id":"a0","runId":"u1","role":"assistant","content":[{"type":"toolCall","id":"k1","name":"web_search","arguments":{"query":"q"}}],"stopReason":"toolUse","createdAt":"2026-09-18T12:00:00.500Z"},
+         {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"web_search","content":[],"details":[{"rank":1,"link":"https://a.example/","title":"A","snippet":""}],"isError":false,"createdAt":"2026-09-18T12:00:00.700Z"},
+         {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"One."}],"stopReason":"stop","createdAt":"2026-09-18T12:00:01.000Z"}]
+        """#
+    nonisolated private static let sources = #"[{"rank":1,"link":"https://a.example/","title":"A","runId":"u1"}]"#
+
+    private func serve(recorder: RequestRecorder, newestPage: String? = nil, row: String? = nil) {
+        ChatDetailMockURLProtocol.holdsChatPostOpen = false
+        let newest = newestPage ?? ChatPageFixture.page(Self.newest, hasOlder: true, olderCursor: "u2", sources: Self.sources)
+        ChatDetailMockURLProtocol.handler = { request in
+            let path = request.url?.path ?? ""
+            let query = request.url?.query ?? ""
+            recorder.record(RecordedRequest(line: "GET \(path)\(query.isEmpty ? "" : "?\(query)")", body: Data()))
+            if path == "/api/v1/chat/c1/page", query == "before=u2" {
+                return (200, Data(ChatPageFixture.page(Self.older, sources: Self.sources).utf8))
+            }
+            if path == "/api/v1/chat/c1/page" { return (200, Data(newest.utf8)) }
+            if path.hasPrefix("/api/v1/chat/c1/messages/"), let row { return (200, Data(row.utf8)) }
+            return (404, Data(envelope404.utf8))
+        }
+    }
+
+    @Test("opens on the newest page and knows there is more")
+    func opensOnNewestPage() async {
+        let recorder = RequestRecorder()
+        serve(recorder: recorder)
+        let vm = Harness().makeViewModel()
+        await vm.loadHistory()
+        #expect(vm.messages.map(\.id) == ["u2", "a2"])
+        #expect(vm.hasOlder)
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page"])
+    }
+
+    @Test("a citation of a source found in a run not loaded still resolves")
+    func citesUnloadedSources() async {
+        serve(recorder: RequestRecorder())
+        let vm = Harness().makeViewModel()
+        await vm.loadHistory()
+        guard case .assistantTurn(let turn) = vm.segments.last else {
+            Issue.record("no turn")
+            return
+        }
+        #expect(turn.citations.map(\.link) == ["https://a.example/"])
+    }
+
+    @Test("an older page goes in above, once, and the end of the history is known")
+    func loadsOlderAbove() async {
+        let recorder = RequestRecorder()
+        serve(recorder: recorder)
+        let vm = Harness().makeViewModel()
+        await vm.loadHistory()
+        await vm.loadOlder()
+        #expect(vm.messages.map(\.id) == ["u1", "a0", "t1", "a1", "u2", "a2"])
+        #expect(!vm.hasOlder)
+        #expect(vm.olderPageCount == 1)
+        await vm.loadOlder()
+        #expect(recorder.lines == ["GET /api/v1/chat/c1/page", "GET /api/v1/chat/c1/page?before=u2"])
+        // The source is in a loaded run now, and still cited once.
+        guard case .assistantTurn(let turn) = vm.segments.last else {
+            Issue.record("no turn")
+            return
+        }
+        #expect(turn.citations.map(\.link) == ["https://a.example/"])
+    }
+
+    @Test("a row cut to fit the page is replaced by the whole row")
+    func fillsTruncatedRow() async throws {
+        let cut = #"""
+            [{"id":"u2","runId":"u2","role":"user","content":"q","createdAt":"2026-09-18T12:01:00.000Z"},
+             {"id":"a2","runId":"u2","role":"assistant","content":[{"type":"text","text":"cut…"}],"stopReason":"stop","truncated":true,"createdAt":"2026-09-18T12:01:01.000Z"}]
+            """#
+        let whole =
+            #"{"id":"a2","runId":"u2","role":"assistant","content":[{"type":"text","text":"the whole answer"}],"stopReason":"stop","createdAt":"2026-09-18T12:01:01.000Z"}"#
+        serve(recorder: RequestRecorder(), newestPage: ChatPageFixture.page(cut), row: whole)
+        let vm = Harness().makeViewModel()
+        await vm.loadHistory()
+        try await waitUntil("the whole row") {
+            guard case .assistantTurn(let turn) = vm.segments.last else { return false }
+            return turn.body == "the whole answer"
+        }
     }
 }

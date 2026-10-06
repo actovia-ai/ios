@@ -399,6 +399,10 @@
         "label": "更新記憶",
         "description": "當你告訴助理你的某些資訊有誤時，助理可以修正、新增或刪除記憶。"
       },
+      "recall": {
+        "label": "回溯",
+        "description": "讓助理從已儲存的內容完整讀回較早回合中只剩摘要的搜尋結果或工具輸出，無須重新搜尋。"
+      },
       "mapItinerary": {
         "label": "地圖行程",
         "description": "在單一互動式地圖卡片上顯示地點、路線與多日行程"
@@ -457,11 +461,11 @@
       },
       "maxResults": {
         "label": "最多結果數",
-        "description": "每次查詢的搜尋結果數量（1-50），預設為 10。"
+        "description": "每次搜尋帶回的來源數量（1–20）。預設：10。"
       },
       "deepRecall": {
         "label": "深度檢索",
-        "description": "在基礎搜尋之外，額外執行一次範圍更廣的網絡搜尋，並合併其結果——包括論壇、新聞，以及被基礎搜尋篩走的網頁。可提高搜尋涵蓋率，但 Brave API 用量約為原本的兩倍。"
+        "description": "以三種問法搜尋，並加上一輪更廣的搜尋 — 論壇、新聞，以及首次搜尋略過的頁面。每次搜尋的來源和 token 更多，Brave 請求約六次而非一次。"
       },
       "recency": {
         "label": "時間範圍篩選",
@@ -655,6 +659,10 @@
       "pageOf": "第 {{page}} 頁，共 {{totalPages}} 頁",
       "prev": "上一頁",
       "next": "下一頁"
+    },
+    "details": {
+      "stack": "堆疊追蹤",
+      "componentStack": "元件堆疊"
     }
   },
   "mcpServers": {
@@ -946,6 +954,7 @@
     },
     "presets": {
       "title": "預設查詢",
+      "cacheByRun": "每輪的提示快取",
       "messagesPerDay": "每日訊息數 (30 天)",
       "costByModel": "各模型的 Token 與費用",
       "toolCalls": "工具呼叫",

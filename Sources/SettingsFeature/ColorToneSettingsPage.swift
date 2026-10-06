@@ -22,6 +22,13 @@ struct ColorToneSettingsPage: View {
             .disabled(!viewModel.hasLoaded)
             SettingsErrorSection(message: viewModel.errorMessage)
         }
+        // Which tone is set is the computer's answer; until it arrives the list stands without a checkmark, and the
+        // bar says it is on its way — without moving the list when it lands (desktop spec 2026-10-01 §D).
+        .toolbar {
+            if !viewModel.hasLoaded && viewModel.errorMessage == nil {
+                ToolbarItem(placement: .topBarTrailing) { ProgressView() }
+            }
+        }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
     }

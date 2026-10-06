@@ -184,8 +184,9 @@ public actor ChatStreamManager {
             }
             stream.status = .streaming
             stream.continuation?.yield(.messages(stream.messages))
-        case .done(let messages):
-            stream.messages = messages
+        case .done(let messages, let attempts):
+            // Protocol 2: the run as stored, merged into the conversation already held; otherwise the whole of it.
+            stream.messages = attempts.map { RunMerge.merge(stream.messages, run: messages, attempts: $0) } ?? messages
             stream.continuation?.yield(.messages(stream.messages))
         case .title(let title):
             stream.continuation?.yield(.title(title))
@@ -283,15 +284,19 @@ public actor ChatStreamManager {
         // reasoning model thinking before its first token, a slow tool call) that
         // the desktop's `fetch` simply waits out. Allow up to an hour of silence.
         request.timeoutInterval = 3600
+        // Only the new question: the server reads the conversation from its own rows and answers `done` with the run
+        // to merge (protocol 2, desktop spec 2026-10-01 §C1–C2) — a send no longer uploads the whole chat.
         struct Body: Encodable {
             let id: String
-            let messages: [ChatMessage]
+            let message: ChatMessage?
             let advancedTools: [String]
             /// Left out when off: a nil optional is not encoded.
             let reasoningEffort: String?
+            let `protocol`: Int
         }
-        request.httpBody = try? JSONEncoder().encode(Body(id: chatId, messages: messages, advancedTools: options.advancedTools,
-                reasoningEffort: options.wireReasoningEffort))
+        request.httpBody = try? JSONEncoder().encode(
+            Body(id: chatId, message: messages.last, advancedTools: options.advancedTools,
+                reasoningEffort: options.wireReasoningEffort, protocol: 2))
         return request
     }
 }

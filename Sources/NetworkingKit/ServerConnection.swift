@@ -100,6 +100,27 @@ public final class ServerConnection: @unchecked Sendable {
         return (200..<300).contains(http.statusCode)
     }
 
+    /// Unpairing from this device: tell the computer first (`DELETE /api/v1/pair`, with this device's own token), so
+    /// it leaves the computer's Devices list too — then forget it here. The computer may be off or out of reach:
+    /// each address gets a few seconds, and whatever happens the pairing is forgotten; the computer's Devices page
+    /// can still remove it.
+    public func leave(session: URLSession? = nil) async {
+        if isUnlocked, let authorization {
+            for base in baseURLCandidates {
+                guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
+                var request = URLRequest(url: url, timeoutInterval: 5)
+                request.httpMethod = "DELETE"
+                request.setValue(authorization, forHTTPHeaderField: "Authorization")
+                if let (_, response) = try? await (session ?? self.session).data(for: request),
+                    response is HTTPURLResponse
+                {
+                    break  // It answered: told, or already gone (a 401) — either way done.
+                }
+            }
+        }
+        unpair()
+    }
+
     /// Forget the computer: revoked there (a 401), or unpaired here.
     public func unpair() {
         try? store.clear()

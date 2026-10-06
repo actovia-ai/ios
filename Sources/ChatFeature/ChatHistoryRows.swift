@@ -60,3 +60,23 @@ enum ChatHistoryRows {
         return value
     }
 }
+
+/// `GET /api/v1/chat/:id/page` (desktop spec 2026-10-01 §C3): the newest runs of a chat, or the ones before a cursor,
+/// in the row shape `ChatHistoryRows` converts, and with them the chat's numbered sources — a citation in a loaded run
+/// can name a source found in a run that is not loaded. The desktop's outline also reads `questions`; the phone has no
+/// outline, so it does not decode them.
+struct ChatHistoryPage: Decodable, Sendable {
+    let messages: [ChatMessage]
+    let sources: [JSONValue]
+    let hasOlder: Bool
+    let olderCursor: String?
+
+    /// The sources of the runs not loaded, oldest first, as the citation code reads them.
+    func olderSources(loadedRuns: Set<String>) -> [CitationSource] {
+        sources.compactMap { source -> CitationSource? in
+            guard case .object(let object) = source, let run = object["runId"]?.stringValue, !loadedRuns.contains(run)
+            else { return nil }
+            return CitationSource(source)
+        }
+    }
+}

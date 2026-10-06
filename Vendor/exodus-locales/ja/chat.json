@@ -38,6 +38,11 @@
     "attachmentAlt": "添付ファイル",
     "scrollToBottom": "最下部へスクロール"
   },
+  "history": {
+    "olderFailed": "以前のメッセージを読み込めませんでした",
+    "loadingOlder": "以前のメッセージを読み込んでいます",
+    "loading": "会話を読み込んでいます"
+  },
   "toolPreview": {
     "mapItineraryDayCount_other": "{{count}}日間",
     "mapItineraryStopCount_other": "{{count}}件の立ち寄り先",
@@ -204,7 +209,9 @@
       "favoritesGroup": "お気に入り",
       "chats": "チャット",
       "more": "もっと見る",
-      "rename": "名前を変更"
+      "rename": "名前を変更",
+      "copyId": "会話 ID をコピー",
+      "idCopied": "会話 ID をコピーしました"
     },
     "renameDialog": {
       "title": "チャット名を変更",
@@ -273,5 +280,25 @@
     "expired": "待機は終了しています",
     "decideFailed": "回答を送信できませんでした",
     "truncatedNote_other": "さらに{{count}}文字が表示されていません"
+  },
+  "compare": {
+    "useThis": "これを使う",
+    "useInstead": "代わりにこれを使う",
+    "otherVersion_other": "他のバージョン {{count}} 件",
+    "answerTab": "回答 {{n}}",
+    "tabsLabel": "回答",
+    "otherVersionTitle": "もう一方のバージョン",
+    "otherVersionDescription": "採用しなかった回答です。",
+    "locked": "会話が先に進んだため、この回答はもう使用できません。",
+    "chooseFailed": "回答を切り替えられませんでした"
+  },
+  "citation": {
+    "previous": "前のソース",
+    "next": "次のソース",
+    "position": "{{current}}/{{total}}"
+  },
+  "ask": {
+    "button": "Exodus に質問",
+    "remove": "引用を削除"
   }
 }

@@ -30,21 +30,23 @@ private let answerThenPendingTool = #"""
     [{"id":"u1","runId":"u1","role":"user","content":"hi"},
      {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"terminal","arguments":{"command":"ls"}}]}]
     """#
+// A terminal keeps the text beside it in the answer; beside a search or a grep the text would be narration, in the
+// timeline (TurnBlocksTests), and no answer would have started.
 private let answerThenToolResult = #"""
     [{"id":"u1","runId":"u1","role":"user","content":"hi"},
-     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"grep","arguments":{}}]},
-     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"grep","content":[{"type":"text","text":"ok"}],"isError":false}]
+     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"terminal","arguments":{"command":"ls"}}]},
+     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"terminal","content":[{"type":"text","text":"ok"}],"isError":false}]
     """#
 private let answerThenThinkingAfterTool = #"""
     [{"id":"u1","runId":"u1","role":"user","content":"hi"},
-     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"grep","arguments":{}}]},
-     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"grep","content":[{"type":"text","text":"ok"}],"isError":false},
+     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"terminal","arguments":{"command":"ls"}}]},
+     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"terminal","content":[{"type":"text","text":"ok"}],"isError":false},
      {"id":"a2","runId":"u1","role":"assistant","content":[{"type":"thinking","thinking":"Reading the matches"}]}]
     """#
 private let answerThenTextAfterTool = #"""
     [{"id":"u1","runId":"u1","role":"user","content":"hi"},
-     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"grep","arguments":{}}]},
-     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"grep","content":[{"type":"text","text":"ok"}],"isError":false},
+     {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"Let me check."},{"type":"toolCall","id":"k1","name":"terminal","arguments":{"command":"ls"}}]},
+     {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"terminal","content":[{"type":"text","text":"ok"}],"isError":false},
      {"id":"a2","runId":"u1","role":"assistant","content":[{"type":"text","text":"Found it"}]}]
     """#
 private let erroredRun = #"""
@@ -117,6 +119,16 @@ struct TimelineVisibilityTests {
 
 @Suite("TranscriptRules: scroll key")
 struct ScrollKeyTests {
+    /// Opening a chat lands on its end at once: sliding through a long history to get there is slow to watch (owner,
+    /// 2026-10-01). A message added while the chat is open still glides in.
+    @Test("opening a chat jumps to the end; a segment added after that scrolls smoothly")
+    func jumpOnOpen() {
+        #expect(!TranscriptRules.animatesScroll(fromSegmentCount: 0, to: 240))
+        #expect(!TranscriptRules.animatesScroll(fromSegmentCount: 0, to: 1))
+        #expect(TranscriptRules.animatesScroll(fromSegmentCount: 240, to: 241))
+        #expect(TranscriptRules.animatesScroll(fromSegmentCount: 2, to: 3))
+    }
+
     @Test("the key changes as the last turn's body, steps, cards or dots change, and not otherwise")
     func followsGrowth() {
         let base = TranscriptRules.scrollKey(segments: segments(answered), showsTypingIndicator: false, liveError: nil)
