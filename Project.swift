@@ -68,7 +68,7 @@ let project = Project(
                     "NSLocalNetworkUsageDescription":
                         "Exodus needs local network access to connect to the Exodus service running on your computer.",
                     "NSMicrophoneUsageDescription":
-                        "Exodus records your voice only while you hold the microphone button, to turn it into text for the chat.",
+                        "Exodus records your voice only while you are dictating a message, to turn it into text for the chat.",
                     "NSCameraUsageDescription":
                         "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
                     "NSFaceIDUsageDescription":

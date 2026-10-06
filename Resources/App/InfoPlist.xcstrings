@@ -412,10 +412,64 @@
       "comment" : "Privacy - Microphone Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus nimmt Ihre Stimme nur auf, während Sie eine Nachricht diktieren, um sie in Text für den Chat umzuwandeln."
+          }
+        },
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Exodus records your voice only while you hold the microphone button, to turn it into text for the chat."
+            "state" : "translated",
+            "value" : "Exodus records your voice only while you are dictating a message, to turn it into text for the chat."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus graba tu voz solo mientras dictas un mensaje, para convertirla en texto para el chat."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus n'enregistre votre voix que pendant que vous dictez un message, pour la transformer en texte pour la conversation."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus registra la tua voce solo mentre detti un messaggio, per trasformarla in testo per la chat."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus は、メッセージを音声入力している間だけ音声を録音し、チャット用のテキストに変換します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus는 메시지를 음성으로 입력하는 동안에만 음성을 녹음하여 채팅용 텍스트로 변환합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Exodus grava sua voz apenas enquanto você dita uma mensagem, para transformá-la em texto para a conversa."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為聊天的文字。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為對話的文字。"
           }
         }
       }
