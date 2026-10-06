@@ -7,9 +7,10 @@ import UIKit
 /// `-MessageGallery -MessageGalleryComposer <state>`: the composer's `+` pieces over the message gallery, for
 /// screenshots — `empty`, `pictures` (three), `preparing` (three, two more on their way), `full` (ten, Reasoning on),
 /// `reasoning`, `research`, `mcp` (the sheet); voice input's `mic` (the empty composer's button), `recording` (the
-/// meter, 0:12 in) and `transcribing`.
+/// meter, 0:12 in) and `transcribing`; `typed` (a line of text, the pill) and `multiline` (text that wrapped: the
+/// field over the buttons' row).
 enum ComposerGalleryState: String {
-    case empty, pictures, preparing, full, reasoning, research, mcp, mic, recording, transcribing
+    case empty, pictures, preparing, full, reasoning, research, mcp, mic, recording, transcribing, typed, multiline
 
     static var launch: ComposerGalleryState? {
         let arguments = ProcessInfo.processInfo.arguments
@@ -27,6 +28,7 @@ struct ComposerGalleryBar: View {
     @State private var tools = ComposerTools()
     @State private var attachments = ComposerAttachments()
     @State private var showsMcpTools = false
+    @ScaledMetric(relativeTo: .body) private var lineHeight: CGFloat = 22
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.toneAccent) private var toneAccent
     @Environment(\.toneInk) private var toneInk
@@ -42,18 +44,25 @@ struct ComposerGalleryBar: View {
             if tools.isActive {
                 ComposerToolPills(tools: tools)
             }
-            HStack(alignment: .bottom, spacing: 8) {
+            ComposerRowLayout(oneLineHeight: lineHeight) {
                 ComposerToolsButton(tools: tools, attachments: attachments) { _ in }
                     .padding(.leading, -10)
+                    .composerRole(.leading)
                 Group {
-                    if state == .recording {
+                    switch state {
+                    case .recording:
                         RecordingMeter(since: recordingSince) { 0.55 }
-                    } else {
+                    case .typed:
+                        Text(verbatim: "Show me a counter in SwiftUI")
+                    case .multiline:
+                        Text(verbatim: Self.wrappedText)
+                    default:
                         Text("ios:chat.composer.placeholder")
                             .foregroundStyle(.secondary)
                     }
                 }
-                .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .composerRole(.field)
                 Button {} label: {
                     TurnButtonLabel(
                         state: turnState,
@@ -62,6 +71,7 @@ struct ComposerGalleryBar: View {
                 .buttonStyle(.glassProminent)
                 .buttonBorderShape(.circle)
                 .tint(TurnButtonLabel.fill(turnState, scheme: colorScheme, toneFill: toneAccent, toneInk: toneInk))
+                .composerRole(.trailing)
             }
         }
         .padding(.leading, 16)
@@ -88,6 +98,10 @@ struct ComposerGalleryBar: View {
 
     private let recordingSince = Date.now.addingTimeInterval(-12)
 
+    /// Long enough to wrap beside the buttons on every phone, and to a second line on the wide row.
+    private static let wrappedText =
+        "Write me a SwiftUI counter whose button grows a little when tapped and settles back with a spring"
+
     private func prepare() {
         tools.adopt(reasoningLevels: ["off", "low", "medium", "high", "xhigh"])
         if let mcp = Self.mcpTools { tools.adopt(mcpTools: mcp) }
@@ -96,7 +110,7 @@ struct ComposerGalleryBar: View {
             .systemBlue, .systemPurple, .systemBrown,
         ]
         switch state {
-        case .empty, .mic, .recording, .transcribing:
+        case .empty, .mic, .recording, .transcribing, .typed, .multiline:
             break
         case .pictures, .preparing:
             attachments.append(Self.pictures(Array(colors.prefix(3))))

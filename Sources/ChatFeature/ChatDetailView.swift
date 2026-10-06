@@ -11,14 +11,9 @@ public struct ChatDetailView: View {
     private let makeObjects: @MainActor () -> ChatScreenObjects
     private var objects: ChatScreenObjects { objectsBox.value(makeObjects) }
     private var viewModel: ChatDetailViewModel { objects.viewModel }
-    /// The measured height of the send/stop button. The button is taller than one line of text, so
-    /// the field is given it as a minimum height and centres its text in it: with the row bottom-
-    /// aligned the two boxes then have the same height at rest and their centres coincide, while a
-    /// field grown to several lines still leaves the button sitting on the composer's bottom edge.
-    @State private var turnButtonHeight: CGFloat = 0
-    /// Stands in for the measurement during the first layout pass, so the composer is not drawn one
-    /// line high for a frame and then grown.
-    @ScaledMetric(relativeTo: .body) private var estimatedTurnButtonHeight: CGFloat = 32
+    /// One line of the composer's text at the reader's size: past one and a half of it the field has wrapped and
+    /// takes the row's top (`ComposerRowLayout`).
+    @ScaledMetric(relativeTo: .body) private var composerLineHeight: CGFloat = 22
     /// Return inserts a newline in the multi-line composer, so the keyboard needs somewhere else to
     /// go: the composer's hide-keyboard button and a tap on the transcript both clear this.
     @FocusState private var isComposerFocused: Bool
@@ -297,20 +292,25 @@ public struct ChatDetailView: View {
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.attachments)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.preparingPictures)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: composerTools?.turnOptions)
+        // The field growing a line, and the row's change of shape when it wraps (`ComposerRowLayout`).
+        .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.composerText)
     }
 
+    /// As ChatGPT's: one line and the field sits between `+` and the round button, a pill; more and the field takes
+    /// the top on its own with the buttons in a row under it. One layout with the same children either way, so the
+    /// field keeps the keyboard across the change.
     private var composerRow: some View {
         @Bindable var viewModel = viewModel
-        return HStack(alignment: .bottom, spacing: 8) {
+        return ComposerRowLayout(oneLineHeight: composerLineHeight) {
             ComposerToolsButton(tools: composerTools, attachments: viewModel.attachments) { items in
                 Task { await viewModel.addPictures(items) }
             }
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.
             .padding(.leading, -10)
+            .composerRole(.leading)
             TextField("ios:chat.composer.placeholder", text: $viewModel.composerText, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($isComposerFocused)
-                .frame(minHeight: turnButtonHeight > 0 ? turnButtonHeight : estimatedTurnButtonHeight)
                 .accessibilityIdentifier("composerField")
                 // While recording, and until its text is in, nothing is typed; the meter takes the field's place.
                 .disabled(viewModel.recording != .idle)
@@ -322,6 +322,7 @@ public struct ChatDetailView: View {
                             .transition(.opacity)
                     }
                 }
+                .composerRole(.field)
             if isComposerFocused {
                 // Return inserts a newline in this multi-line field, so without a button the only
                 // ways out of the keyboard are gestures, which is what the owner could not find.
@@ -343,9 +344,10 @@ public struct ChatDetailView: View {
                 // and leaving the way it would if it grew from nothing turns that into a slide
                 // (apple-design: preventing a jarring change, not a showy one).
                 .transition(.scale(scale: 0.8).combined(with: .opacity))
+                .composerRole(.trailing)
             }
             turnButton
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { turnButtonHeight = $0 }
+                .composerRole(.trailing)
         }
     }
 
