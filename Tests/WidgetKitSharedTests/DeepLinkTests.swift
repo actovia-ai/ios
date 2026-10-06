@@ -9,7 +9,8 @@ struct DeepLinkTests {
         DeepLink.newChat(prompt: nil), .newChat(prompt: "Plan my day"), .chat(id: "3f2a-9c"), .health(ask: nil),
         .health(ask: "Why do I feel tired today?"),
         .newChat(prompt: "a & b #c ?d = e / 100% 今天睡得怎么样？ 😴 \n second line"), .newChat(prompt: "1+1=2 %26"),
-        .health(ask: "1+1=2 %26"), .chat(id: "new_chat-2"),
+        .health(ask: "1+1=2 %26"), .chat(id: "new_chat-2"), .newChat(prompt: nil, opening: .camera),
+        .newChat(prompt: "What is this?", opening: .voice),
     ])
     func roundTrip(link: DeepLink) throws {
         #expect(DeepLink(url: link.url) == link)
@@ -20,6 +21,17 @@ struct DeepLinkTests {
         #expect(DeepLink.newChat(prompt: nil).url.absoluteString == "exodus://chat/new")
         #expect(DeepLink.chat(id: "abc").url.absoluteString == "exodus://chat/abc")
         #expect(DeepLink.health(ask: nil).url.absoluteString == "exodus://health")
+        #expect(DeepLink.newChat(prompt: nil, opening: .camera).url.absoluteString == "exodus://chat/new?open=camera")
+        #expect(DeepLink.newChat(prompt: nil, opening: .voice).url.absoluteString == "exodus://chat/new?open=voice")
+    }
+
+    @Test("an opening the app does not know is not a link; an empty one is none")
+    func openings() throws {
+        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?open=dance"))) == nil)
+        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?open="))) == .newChat(prompt: nil))
+        #expect(
+            DeepLink(url: try #require(URL(string: "exodus://chat/new?prompt=hi&open=camera")))
+                == .newChat(prompt: "hi", opening: .camera))
     }
 
     @Test("anything else is not a link", arguments: [

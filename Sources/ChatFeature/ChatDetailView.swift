@@ -3,6 +3,12 @@ import Models
 import NetworkingKit
 import SwiftUI
 
+/// What a new chat opens on when a widget's round button started it: the camera, or recording (`ChatDetailView`'s
+/// `initialOpening`). The widget's own link type lives in WidgetKitShared, which this module does not see.
+public enum ComposerOpening: Sendable {
+    case camera, voice
+}
+
 public struct ChatDetailView: View {
     /// This screen's view model, stores and loaders, built on first use and kept for the view's lifetime.
     /// `State(initialValue:)` is not lazy: building them in `init` built (and threw away) a full set on every re-render
@@ -48,14 +54,20 @@ public struct ChatDetailView: View {
     /// A prompt handed over from a widget: put in the composer, never sent by itself.
     private let initialDraft: String?
     private let onInitialDraftUsed: (() -> Void)?
+    /// What a widget's round button opens this new chat on: the camera, or recording.
+    private let initialOpening: ComposerOpening?
+    private let onInitialOpeningUsed: (() -> Void)?
 
     public init(
         chatId: String, title: String? = nil, apiClient: APIClient, streamManager: ChatStreamManager,
         serverConfig: ServerConfigStore, initialMessage: String? = nil, onInitialMessageSent: (() -> Void)? = nil,
-        initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil
+        initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil,
+        initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil
     ) {
         self.title = title
         self.initialDraft = initialDraft
+        self.initialOpening = initialOpening
+        self.onInitialOpeningUsed = onInitialOpeningUsed
         self.onInitialDraftUsed = onInitialDraftUsed
         self.initialMessage = initialMessage
         self.onInitialMessageSent = onInitialMessageSent
@@ -183,6 +195,13 @@ public struct ChatDetailView: View {
                 viewModel.applyDraft(initialDraft)
                 onInitialDraftUsed?()
             }
+            if let initialOpening {
+                onInitialOpeningUsed?()
+                switch initialOpening {
+                case .camera: viewModel.requestCamera()
+                case .voice: await viewModel.startRecording()
+                }
+            }
         }
         // Apart from `onAppear`, which waits out a turn it re-attaches to.
         .task(id: viewModel.hasLoadedHistory) { await viewModel.loadMemoryUsage() }
@@ -302,7 +321,9 @@ public struct ChatDetailView: View {
     private var composerRow: some View {
         @Bindable var viewModel = viewModel
         return ComposerRowLayout(oneLineHeight: composerLineHeight) {
-            ComposerToolsButton(tools: composerTools, attachments: viewModel.attachments) { items in
+            ComposerToolsButton(
+                tools: composerTools, attachments: viewModel.attachments, cameraRequest: viewModel.cameraRequest
+            ) { items in
                 Task { await viewModel.addPictures(items) }
             }
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.

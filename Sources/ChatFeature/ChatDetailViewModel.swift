@@ -39,6 +39,8 @@ public final class ChatDetailViewModel {
     public private(set) var quote: String?
     /// Bumped to ask the composer to take focus ("This is wrong" under a used memory).
     public private(set) var composerFocusRequest = 0
+    /// Bumped to open the camera from outside the `+` menu (a widget's round button); the menu's button answers it.
+    public private(set) var cameraRequest = 0
     public private(set) var chatTitle: String?
     public var errorMessage: String?
     /// The stream failure of the run this client watched fail; a reload hands the error back to the rows.
@@ -164,6 +166,9 @@ public final class ChatDetailViewModel {
     }
 
     public func removeQuote() { quote = nil }
+
+    /// Opens the camera as the `+` menu's entry would, with its permission flow.
+    public func requestCamera() { cameraRequest += 1 }
 
     /// Puts `text` in the composer, replacing what was there (as the desktop does), and asks for focus.
     func prefillComposer(_ text: String) {

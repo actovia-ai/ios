@@ -12,6 +12,8 @@ struct ComposerToolsButton: View {
     /// nil in a preview: the menu offers pictures only.
     let tools: ComposerTools?
     let attachments: ComposerAttachments
+    /// A change opens the camera as the menu's entry does (`ChatDetailViewModel.requestCamera`).
+    var cameraRequest = 0
     let onPictures: ([ComposerPicture.Loader]) -> Void
 
     @State private var showsPhotos = false
@@ -89,6 +91,7 @@ struct ComposerToolsButton: View {
             photoSelection = []
             onPictures(items.map { item in { try? await item.loadTransferable(type: Data.self) } })
         }
+        .onChange(of: cameraRequest) { Task { await openCamera() } }
         .fullScreenCover(isPresented: $showsCamera) {
             CameraPicker { data in
                 showsCamera = false
