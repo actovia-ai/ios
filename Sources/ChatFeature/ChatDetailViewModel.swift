@@ -80,6 +80,16 @@ public final class ChatDetailViewModel {
     public private(set) var supportsAttempts = false
     /// Bumped each time an answer of a comparison is kept, for the haptic and the VoiceOver announcement.
     public private(set) var choiceCount = 0
+    /// Voice input (`VoiceInput.swift`): recording, then the computer's transcription, then back to idle.
+    public private(set) var recording: VoiceRecordingState = .idle
+    /// The microphone is off for this app: the screen explains, and offers Settings.
+    public var explainsMicrophone = false
+    /// Bumped once per recording started and per transcription that added text, for the haptics.
+    public private(set) var recordingStartCount = 0
+    public private(set) var transcriptionCount = 0
+    @ObservationIgnored let voiceRecorder = VoiceRecorder()
+    /// Stops a recording that reached `VoiceRecorder.maximumDuration`, and has it transcribed.
+    @ObservationIgnored private var recordingCapTask: Task<Void, Never>?
 
     private let apiClient: APIClient
     /// The frames of computer_use sessions streamed here, kept for the finished card's filmstrip.
@@ -290,6 +300,73 @@ public final class ChatDetailViewModel {
     }
 
     public func removePicture(_ id: ComposerPicture.ID) { attachments.remove(id) }
+
+    /// Starts recording, asking for the microphone the first time; denied, the screen explains instead. Does nothing
+    /// while a turn is in flight or a recording is already under way.
+    public func startRecording() async {
+        guard recording == .idle, !isTurnInFlight else { return }
+        guard await VoiceRecorder.requestPermission() else {
+            explainsMicrophone = true
+            return
+        }
+        guard recording == .idle, !isTurnInFlight else { return }  // the permission prompt took a while
+        do {
+            try voiceRecorder.start()
+        } catch {
+            show(StreamNotice(level: .warning, message: error.localizedDescription))
+            return
+        }
+        recording = .recording(since: .now)
+        recordingStartCount += 1
+        recordingCapTask = Task { [weak self] in
+            try? await Task.sleep(for: VoiceRecorder.maximumDuration)
+            guard !Task.isCancelled else { return }
+            await self?.stopRecordingAndTranscribe()
+        }
+    }
+
+    /// Ends the recording and has the computer transcribe it; the text is added to the composer's. A failure is a
+    /// notice over the composer, in the computer's own words when it gave some.
+    public func stopRecordingAndTranscribe() async {
+        guard case .recording = recording else { return }
+        recordingCapTask?.cancel()
+        recordingCapTask = nil
+        guard let audio = voiceRecorder.stop() else {
+            recording = .idle
+            return
+        }
+        recording = .transcribing
+        defer { recording = .idle }
+        do {
+            appendTranscription(try await Transcriber.transcribe(audio: audio, serverConfig: serverConfig))
+        } catch {
+            show(StreamNotice(level: .warning, message: Transcriber.message(for: error)))
+        }
+    }
+
+    /// Throws the recording away, unsent: a long press on its Stop, or leaving the chat.
+    public func cancelRecording() {
+        guard case .recording = recording else { return }
+        recordingCapTask?.cancel()
+        recordingCapTask = nil
+        voiceRecorder.cancel()
+        recording = .idle
+    }
+
+    /// Adds a transcription after what is typed, one space between; an empty one changes nothing. The keyboard is
+    /// left as it was.
+    func appendTranscription(_ text: String) {
+        let addition = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !addition.isEmpty else { return }
+        if composerText.isEmpty {
+            composerText = addition
+        } else if composerText.last?.isWhitespace == true {
+            composerText += addition
+        } else {
+            composerText += " " + addition
+        }
+        transcriptionCount += 1
+    }
 
     @ObservationIgnored private var appliedDraft = false
 

@@ -6,9 +6,10 @@ import UIKit
 
 /// `-MessageGallery -MessageGalleryComposer <state>`: the composer's `+` pieces over the message gallery, for
 /// screenshots — `empty`, `pictures` (three), `preparing` (three, two more on their way), `full` (ten, Reasoning on),
-/// `reasoning`, `research`, `mcp` (the sheet).
+/// `reasoning`, `research`, `mcp` (the sheet); voice input's `mic` (the empty composer's button), `recording` (the
+/// meter, 0:12 in) and `transcribing`.
 enum ComposerGalleryState: String {
-    case empty, pictures, preparing, full, reasoning, research, mcp
+    case empty, pictures, preparing, full, reasoning, research, mcp, mic, recording, transcribing
 
     static var launch: ComposerGalleryState? {
         let arguments = ProcessInfo.processInfo.arguments
@@ -44,17 +45,23 @@ struct ComposerGalleryBar: View {
             HStack(alignment: .bottom, spacing: 8) {
                 ComposerToolsButton(tools: tools, attachments: attachments) { _ in }
                     .padding(.leading, -10)
-                Text("ios:chat.composer.placeholder")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                Group {
+                    if state == .recording {
+                        RecordingMeter(since: recordingSince) { 0.55 }
+                    } else {
+                        Text("ios:chat.composer.placeholder")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                 Button {} label: {
-                    Label("chat:composer.send", systemImage: "arrow.up")
-                        .labelStyle(.iconOnly)
-                        .foregroundStyle(colorScheme == .dark ? accentGlyph : .white)
+                    TurnButtonLabel(
+                        state: turnState,
+                        glyph: TurnButtonLabel.glyph(turnState, scheme: colorScheme, accentGlyph: accentGlyph))
                 }
                 .buttonStyle(.glassProminent)
                 .buttonBorderShape(.circle)
-                .tint(colorScheme == .dark ? toneAccent : toneInk)
+                .tint(TurnButtonLabel.fill(turnState, scheme: colorScheme, toneFill: toneAccent, toneInk: toneInk))
             }
         }
         .padding(.leading, 16)
@@ -69,6 +76,18 @@ struct ComposerGalleryBar: View {
         .sheet(isPresented: $showsMcpTools) { McpToolsSheet(groups: tools.mcpGroups) }
     }
 
+    /// The button as the chat screen would draw it: the other states have pictures or a choice, so they send.
+    private var turnState: TurnButtonState {
+        switch state {
+        case .mic, .empty: .mic
+        case .recording: .recording
+        case .transcribing: .transcribing
+        default: .send
+        }
+    }
+
+    private let recordingSince = Date.now.addingTimeInterval(-12)
+
     private func prepare() {
         tools.adopt(reasoningLevels: ["off", "low", "medium", "high", "xhigh"])
         if let mcp = Self.mcpTools { tools.adopt(mcpTools: mcp) }
@@ -77,7 +96,7 @@ struct ComposerGalleryBar: View {
             .systemBlue, .systemPurple, .systemBrown,
         ]
         switch state {
-        case .empty:
+        case .empty, .mic, .recording, .transcribing:
             break
         case .pictures, .preparing:
             attachments.append(Self.pictures(Array(colors.prefix(3))))

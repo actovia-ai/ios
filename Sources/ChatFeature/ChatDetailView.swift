@@ -26,6 +26,8 @@ public struct ChatDetailView: View {
     @State private var sourcesSheet: SourcesSheetModel?
     /// A folded answer opened from its "other version" link.
     @State private var otherVersion: OtherVersion?
+    /// When a long press threw a recording away: the tap its release ends in must not start another.
+    @State private var recordingDiscardedAt: Date?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.colorTone) private var colorTone
@@ -176,10 +178,17 @@ public struct ChatDetailView: View {
                 Task { await viewModel.memoryFoot.refreshEntries() }
             }
             // Nothing is read aloud from behind another app.
-            if scenePhase == .background { viewModel.readAloud.stop() }
+            if scenePhase == .background {
+                viewModel.readAloud.stop()
+                // The microphone stops in the background: what was recorded so far is thrown away, unsent.
+                viewModel.cancelRecording()
+            }
         }
         // Nor from a chat that was left.
-        .onDisappear { viewModel.readAloud.stop() }
+        .onDisappear {
+            viewModel.readAloud.stop()
+            viewModel.cancelRecording()
+        }
         // A rename from the sidebar while this chat is the one open: `title` changing is that
         // signal, since renaming never changes `chatId` and so never recreates this view.
         .onChange(of: title) { _, newTitle in
@@ -205,6 +214,20 @@ public struct ChatDetailView: View {
         .sensoryFeedback(.selection, trigger: viewModel.choiceCount)
         // Once per failure, even when a second failure has the same text.
         .sensoryFeedback(.error, trigger: viewModel.failureCount)
+        .sensoryFeedback(.start, trigger: viewModel.recordingStartCount)
+        .sensoryFeedback(.success, trigger: viewModel.transcriptionCount)
+        .alert("ios:chat.composer.micDeniedMessage", isPresented: Binding(
+                get: { viewModel.explainsMicrophone },
+                set: { viewModel.explainsMicrophone = $0 }
+            )
+        ) {
+            Button("ios:settings.pairing.openSystemSettings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("common:action.cancel", role: .cancel) {}
+        }
         // The colour tone is the chat's own: the transcript, the composer and the sheets opened from them.
         // What tints is the tone's ink, since a tint colours text; a surface in the tone asks for its fill
         // (`toneFill`). Neutral is black and white, as the desktop's default: nothing here is system blue, and
@@ -269,6 +292,16 @@ public struct ChatDetailView: View {
                 .focused($isComposerFocused)
                 .frame(minHeight: turnButtonHeight > 0 ? turnButtonHeight : estimatedTurnButtonHeight)
                 .accessibilityIdentifier("composerField")
+                // While recording, and until its text is in, nothing is typed; the meter takes the field's place.
+                .disabled(viewModel.recording != .idle)
+                .opacity(isRecording ? 0 : 1)
+                .accessibilityHidden(isRecording)
+                .overlay(alignment: .leading) {
+                    if case .recording(let since) = viewModel.recording {
+                        RecordingMeter(since: since, level: viewModel.voiceRecorder.level)
+                            .transition(.opacity)
+                    }
+                }
             if isComposerFocused {
                 // Return inserts a newline in this multi-line field, so without a button the only
                 // ways out of the keyboard are gestures, which is what the owner could not find.
@@ -300,53 +333,69 @@ public struct ChatDetailView: View {
     /// an `if`: only a stable identity lets the icon morph (`.contentTransition`) instead of being
     /// destroyed and recreated with a hard cut. Stop is the way out of a turn that will not finish
     /// (a half-open connection can otherwise keep the composer locked for up to an hour).
+    /// With nothing typed and nothing picked it records (`TurnButtonState`): tapped, a red stop while recording, then
+    /// a spinner while the computer transcribes, and send once the text is in. A long press on the red stop throws
+    /// the recording away.
     private var turnButton: some View {
-        Button {
-            if viewModel.isTurnInFlight {
+        let state = turnState
+        return Button {
+            // Read at the tap, not when the button was drawn: the long press that discarded a recording ends in a tap.
+            switch turnState {
+            case .stop:
                 Task { await viewModel.stop() }
-            } else {
+            case .send:
                 // The question is on its way: the keyboard goes, so the reply has the screen.
                 isComposerFocused = false
                 Task { await viewModel.sendMessage() }
+            case .mic:
+                if let discarded = recordingDiscardedAt, Date.now.timeIntervalSince(discarded) < 5 {
+                    recordingDiscardedAt = nil
+                    return
+                }
+                isComposerFocused = false
+                Task { await viewModel.startRecording() }
+            case .recording:
+                Task { await viewModel.stopRecordingAndTranscribe() }
+            case .transcribing:
+                break
             }
         } label: {
-            Label {
-                // One literal per branch, never a ternary of the two (scripts/l10n.py audit bans
-                // it: it can quietly resolve to the non-localizing `String` overload).
-                if viewModel.isTurnInFlight {
-                    Text("chat:composer.stop")
-                } else {
-                    Text("chat:composer.send")
-                }
-            } icon: {
-                Image(systemName: viewModel.isTurnInFlight ? "stop.fill" : "arrow.up") // l10n:ignore: SF Symbol names
-            }
-            .labelStyle(.iconOnly)
             // Stop is neutral whatever the tone, as ChatGPT's: a dark square on a soft tone fill read as a stray
-            // blot, and a stop that differs from send says a reply is running.
-            .foregroundStyle(sendGlyph)
-            // The single most-tapped control in the app (apple-design §13: state indication, tens
-            // of times a day, so the motion stays fast and subtle, never a showy morph).
-            .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
+            // blot, and a stop that differs from send says a reply is running. A recording's stop is red.
+            TurnButtonLabel(
+                state: state, glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
-        // Set on the button itself (an outer `.tint` loses to an inner one): the tone's fill to send, neutral to stop.
-        .tint(sendFill)
-        .disabled(!viewModel.isTurnInFlight && !viewModel.canSend)
-        .accessibilityIdentifier(viewModel.isTurnInFlight ? "stopButton" : "sendButton") // l10n:ignore: a testing identifier, never shown to the user
+        // Set on the button itself (an outer `.tint` loses to an inner one): in light the tone's ink with a white
+        // arrow (a white arrow on the soft fill is 1.6:1 in yellow, and a dark one read as a blot), in dark the fill
+        // and its glyph.
+        .tint(TurnButtonLabel.fill(state, scheme: colorScheme, toneFill: toneFillColor, toneInk: toneInk))
+        .disabled(state == .transcribing || (state == .send && !viewModel.canSend))
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.6).onEnded { _ in
+                guard case .recording = viewModel.recording else { return }
+                recordingDiscardedAt = .now
+                viewModel.cancelRecording()
+            })
+        .accessibilityActions {
+            if state == .recording {
+                Button("common:action.cancel") { viewModel.cancelRecording() }
+            }
+        }
+        .accessibilityIdentifier(state.identifier)
     }
 
-    /// Send, by appearance: in light the tone's ink with a white arrow (a white arrow on the soft fill is 1.6:1 in
-    /// yellow, and a dark one read as a blot), in dark the fill and its glyph. Stop is neutral in both.
-    private var sendFill: Color {
-        if viewModel.isTurnInFlight { return Color(.label) }
-        return colorScheme == .dark ? toneFillColor : toneInk
+    private var turnState: TurnButtonState {
+        TurnButtonState.for(
+            text: viewModel.composerText,
+            hasPictures: !viewModel.attachments.isEmpty || viewModel.isPreparingPictures,
+            inFlight: viewModel.isTurnInFlight, recording: viewModel.recording)
     }
 
-    private var sendGlyph: Color {
-        if viewModel.isTurnInFlight { return Color(.systemBackground) }
-        return colorScheme == .dark ? accentGlyph : .white
+    private var isRecording: Bool {
+        if case .recording = viewModel.recording { return true }
+        return false
     }
 
     private var transcriptActions: TranscriptActions {
