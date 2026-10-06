@@ -31,6 +31,8 @@ extension MessageGalleryFixtures {
             case "ask": 0
             case "confirm": 1
             case "answered": 2
+            // The code run sits just before the interactive ones (MessageGallery.swift keeps that order).
+            case "code": -codeRuns.count
             default: nil
             }
         return offset.map { runs.count - interactiveRuns.count + $0 }

@@ -6,8 +6,19 @@ import Observation
 @MainActor
 @Observable
 public final class ChatListViewModel {
+    /// The rows loaded so far, newest first — the pages the server handed out, joined.
     public private(set) var chats: [ChatSummary] = []
+    /// Every starred chat, from the first page's `favorites`: its own section, whatever the paging.
+    public private(set) var favorites: [ChatSummary] = []
     public private(set) var isLoading = false
+    /// True while the next page is on its way (`loadMore()`).
+    public private(set) var isLoadingMore = false
+    /// Where the next page starts; nil once the server said there is nothing older.
+    private var olderCursor: String?
+    /// Whether an older page can still be asked for.
+    public var hasMore: Bool { olderCursor != nil }
+    /// How many rows a page carries — a drawer's worth, so a remote phone is not made to wait for years of chats.
+    public static let pageSize = 30
     /// True when the last load failed — lets the view tell "couldn't load" from "no chats yet".
     public private(set) var loadFailed = false
     public var errorMessage: String?
@@ -35,8 +46,8 @@ public final class ChatListViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            let loaded: [ChatSummary] = try await apiClient.get("/api/v1/history")
-            chats = loaded.filter { !deletedIDs.contains($0.id) }
+            let page = try await fetchPage(before: nil)
+            apply(firstPage: page)
             loadFailed = false
             hasLoaded = true
         } catch {
@@ -56,9 +67,69 @@ public final class ChatListViewModel {
             await load()
             return
         }
-        guard let loaded: [ChatSummary] = try? await apiClient.get("/api/v1/history") else { return }
-        chats = loaded.filter { !deletedIDs.contains($0.id) }
+        guard let page = try? await fetchPage(before: nil) else { return }
+        apply(firstPage: page)
         loadFailed = false
+    }
+
+    /// Appends the next page when the list's end comes into view. Nothing happens while a load is
+    /// in flight or when the server already said there is nothing older; a failure is dropped
+    /// silently (the rows on screen are still good, and the end row offers to try again).
+    public func loadMore() async {
+        guard let cursor = olderCursor, !isLoadingMore, !isLoading else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+        guard let page = try? await fetchPage(before: cursor) else { return }
+        let known = Set(chats.map(\.id))
+        chats += page.chats.filter { !known.contains($0.id) && !deletedIDs.contains($0.id) }
+        olderCursor = page.olderCursor
+    }
+
+    /// The rows for the Recents section: what was loaded, minus the favourites, which have their own.
+    public var recents: [ChatSummary] { chats.filter { $0.favorite != true } }
+
+    /// Stars or unstars a chat: the row moves between the sections at once, and comes back if the
+    /// server refused. True only when the server confirmed it.
+    @discardableResult
+    public func toggleFavorite(_ chat: ChatSummary) async -> Bool {
+        let starred = chat.favorite != true
+        setFavorite(chat.id, starred)
+        do {
+            try await apiClient.put("/api/v1/chat", body: FavoriteChatPayload(id: chat.id, favorite: starred))
+            return true
+        } catch {
+            setFavorite(chat.id, !starred)
+            guard !isCancellation(error) else { return false }
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    private func fetchPage(before cursor: String?) async throws -> ChatListPage {
+        var query = [URLQueryItem(name: "limit", value: String(Self.pageSize))]
+        if let cursor { query.append(URLQueryItem(name: "before", value: cursor)) }
+        let data = try await apiClient.data("/api/v1/history", query: query)
+        return try ChatListPage.decode(data)
+    }
+
+    private func apply(firstPage page: ChatListPage) {
+        chats = page.chats.filter { !deletedIDs.contains($0.id) }
+        favorites = (page.favorites ?? []).filter { !deletedIDs.contains($0.id) }
+        olderCursor = page.olderCursor
+    }
+
+    private func setFavorite(_ id: String, _ starred: Bool) {
+        if let index = chats.firstIndex(where: { $0.id == id }) { chats[index].favorite = starred }
+        if starred {
+            if !favorites.contains(where: { $0.id == id }), var row = chats.first(where: { $0.id == id }) {
+                row.favorite = true
+                // Newest first, as the server orders them.
+                let at = favorites.firstIndex { $0.createdAt < row.createdAt } ?? favorites.endIndex
+                favorites.insert(row, at: at)
+            }
+        } else {
+            favorites.removeAll { $0.id == id }
+        }
     }
 
     /// True only when the server confirmed the delete.
@@ -68,6 +139,7 @@ public final class ChatListViewModel {
             try await apiClient.delete("/api/v1/chat/\(chat.id)")
             deletedIDs.insert(chat.id)
             chats.removeAll { $0.id == chat.id }
+            favorites.removeAll { $0.id == chat.id }
             return true
         } catch {
             guard !isCancellation(error) else { return false }
@@ -88,6 +160,9 @@ public final class ChatListViewModel {
             if let index = chats.firstIndex(where: { $0.id == chat.id }) {
                 chats[index].title = trimmed
             }
+            if let index = favorites.firstIndex(where: { $0.id == chat.id }) {
+                favorites[index].title = trimmed
+            }
             return true
         } catch {
             guard !isCancellation(error) else { return false }
@@ -102,4 +177,10 @@ public final class ChatListViewModel {
 private struct RenameChatPayload: Encodable {
     let id: String
     let title: String
+}
+
+/// Likewise `id` and `favorite` alone star or unstar a chat (the desktop's own sidebar sends the same).
+private struct FavoriteChatPayload: Encodable {
+    let id: String
+    let favorite: Bool
 }
