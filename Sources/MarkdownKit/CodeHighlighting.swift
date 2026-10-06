@@ -29,10 +29,14 @@ enum CodeHighlightPalette {
         css(scheme == .dark ? dark : light)
     }
 
-    /// No background and no base colour: the block's fill and the chat's text colour are the view's.
+    /// The colour runs no class touches come back in: a sentinel, cleared afterwards (`CodeHighlighter.inherit`)
+    /// so plain code inherits the chat's text colour instead of the HTML import's black.
+    static let sentinel = "#010203"
+
+    /// No background and no base colour of its own: the block's fill and the chat's text colour are the view's.
     static func css(_ c: Colours) -> String {
         """
-        .hljs{background:transparent}
+        .hljs{background:transparent;color:\(sentinel)}
         .hljs-keyword,.hljs-literal,.hljs-tag,.hljs-name,.hljs-selector-tag,.hljs-bullet{color:\(c.keyword)}
         .hljs-string,.hljs-regexp,.hljs-char{color:\(c.string)}
         .hljs-code{color:\(c.markupCode)}
@@ -95,6 +99,7 @@ actor CodeHighlighter {
         // A plain-text echo (unknown language, nothing to colour) is not worth keeping or drawing.
         guard result.runs.count > 1 else { return nil }
         Self.stripFonts(&result)
+        Self.inherit(&result)
         remember(key, result)
         return result
     }
@@ -108,6 +113,26 @@ actor CodeHighlighter {
             text.uiKit.backgroundColor = nil
         #endif
     }
+
+    /// Runs the CSS left in the sentinel colour — plain code — lose their colour and so take the view's.
+    static func inherit(_ text: inout AttributedString) {
+        #if canImport(UIKit)
+            for run in text.runs {
+                guard let colour = run.uiKit.foregroundColor, isSentinel(colour) else { continue }
+                text[run.range].uiKit.foregroundColor = nil
+                text[run.range].foregroundColor = nil
+            }
+        #endif
+    }
+
+    #if canImport(UIKit)
+        static func isSentinel(_ colour: UIColor) -> Bool {
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            guard colour.getRed(&r, green: &g, blue: &b, alpha: &a) else { return false }
+            let close = { (x: CGFloat, v: CGFloat) in abs(x * 255 - v) < 1.5 }
+            return close(r, 1) && close(g, 2) && close(b, 3)
+        }
+    #endif
 
     private func remember(_ key: Key, _ value: AttributedString) {
         if cache[key] == nil {

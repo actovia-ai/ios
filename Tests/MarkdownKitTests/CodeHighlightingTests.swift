@@ -39,7 +39,7 @@ struct CodeHighlightingTests {
         let dark = CodeHighlightPalette.css(for: .dark)
         #expect(light.contains("#9B2393"))
         #expect(dark.contains("#FC5FA3"))
-        #expect(light.contains(".hljs{background:transparent}"))
+        #expect(light.contains(".hljs{background:transparent;color:\(CodeHighlightPalette.sentinel)}"))
         #expect(!light.contains(".hljs{color"))
         // Every class both apps map is present.
         for cls in [".hljs-keyword", ".hljs-string", ".hljs-number", ".hljs-comment", ".hljs-title.class_", ".hljs-built_in", ".hljs-meta", ".hljs-attr"] {
@@ -59,6 +59,12 @@ struct CodeHighlightingTests {
             #expect(run.font == nil)
             #expect(run.uiKit.font == nil)
         }
+        // Plain code (the ` = ` between name and value) has no colour of its own, so the chat's text
+        // colour shows through; `let` is a keyword and keeps Xcode's; nothing keeps the sentinel.
+        #expect(result.runs.contains { $0.uiKit.foregroundColor == nil })
+        let keyword = result.runs.first { String(result[$0.range].characters) == "let" }
+        #expect(keyword?.uiKit.foregroundColor != nil)
+        #expect(!result.runs.contains { run in run.uiKit.foregroundColor.map(CodeHighlighter.isSentinel) ?? false })
     }
 
     @Test("the same block is served from the cache, and an over-long one is left plain")
