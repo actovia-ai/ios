@@ -67,6 +67,8 @@ let project = Project(
                     ],
                     "NSLocalNetworkUsageDescription":
                         "Exodus needs local network access to connect to the Exodus service running on your computer.",
+                    "NSMicrophoneUsageDescription":
+                        "Exodus records your voice only while you hold the microphone button, to turn it into text for the chat.",
                     "NSCameraUsageDescription":
                         "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
                     "NSFaceIDUsageDescription":
@@ -160,7 +162,10 @@ let project = Project(
             buildableFolders: ["Tests/NetworkingKitTests"],
             dependencies: [.target(name: "NetworkingKit"), .target(name: "Models")]
         ),
-        moduleTarget(name: "MarkdownKit", dependencies: [.external(name: "Markdown")]),
+        moduleTarget(
+            name: "MarkdownKit",
+            dependencies: [.external(name: "Markdown"), .external(name: "HighlightSwift")]
+        ),
         .target(
             name: "MarkdownKitTests",
             destinations: .iOS,
