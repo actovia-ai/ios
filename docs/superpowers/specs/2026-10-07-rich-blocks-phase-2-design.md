@@ -1,6 +1,6 @@
 # Rich blocks — phase 2: illustrated steps, entity panels, stock charts
 
-Date: 2026-10-07 · Status: draft for the owner's review (written overnight; nothing implemented)
+Date: 2026-10-07 · Status: decided — the owner answered the four questions in §6 on 2026-10-07; nothing implemented yet
 Repos: `exodus` (desktop: prompt, routes, renderer) and `exodus-ios` (renderer)
 Builds on: `2026-10-06-interactive-blocks-design.md` (phase 1 — the fenced-block mechanism, the answer fence, the renderers' hooks)
 
@@ -10,7 +10,7 @@ ChatGPT and Gemini answer some questions with more than prose: a how-to as numbe
 
 | Block | Fence | What the reader sees |
 |---|---|---|
-| Illustrated steps | `exodus-steps` | Numbered steps, each with a line or two and, where the model found one, a picture from the run's own web search |
+| Illustrated steps | `exodus-steps` | Numbered steps, each with a line or two and, where the model found one, a picture — the thumbnail Brave's image search handed the run, never the original |
 | Entity panel | inline link `[Marie Curie](entity:Marie_Curie)` | The name in the text, underlined like a link; tapped, a panel with Wikipedia's summary, picture and a link out |
 | Stock chart | `exodus-stock` | A TradingView mini chart for the symbol, with the model's one-line reading under it |
 
@@ -34,7 +34,7 @@ Decided by the owner (2026-10-06): TradingView for the charts ("用 TradingView"
   ]
 }
 ```
-- `title` ≤ 200 (optional); `steps` 2–12; `text` ≤ 300, one line; `image` optional, an `https:` URL **that appears among the run's web-search results** (a result's `image`, `thumbnail` or an image result's `url`). Any other URL is dropped by the client, not drawn — the same rule the chat's Markdown images already follow (`remote-image.tsx`'s allow-list from the run's search; `MarkdownImagePolicy` on the phone). The block is still valid without its pictures.
+- `title` ≤ 200 (optional); `steps` 2–12; `text` ≤ 300, one line; `image` optional, an `https:` URL **that is a thumbnail among the run's web-search results** — Brave's `thumbnail.src` (served from Brave's own image proxy), never a result's original `url`/`image`: an original is hot-linked from a site that may refuse or swap it, which this app has already been bitten by (owner, 2026-10-07: "原图可能触发原站盗链"). Any other URL is dropped by the client, not drawn — the allow-list the chat's Markdown images already use (`remote-image.tsx` on the desktop; `MarkdownImagePolicy` on the phone) is narrowed the same way for this block. The block is still valid without its pictures.
 - UTF-16 counting, the same scanner rules as phase 1 (first top-level closed fence is the block; one block per message; the one-line and length refines).
 
 ### 2.2 `entity:` links
@@ -44,9 +44,9 @@ Inline, inside ordinary Markdown: `[Marie Curie](entity:Marie_Curie)`, `[Kyoto](
 
 ### 2.3 `exodus-stock`
 ```json
-{ "symbol": "NASDAQ:AAPL", "range": "1M", "note": "Up 12% since the earnings call; the gap at Oct 2 is the split." }
+{ "symbol": "NASDAQ:AAPL", "range": "1D", "note": "Up 12% since the earnings call; the gap at Oct 2 is the split." }
 ```
-- `symbol`: TradingView's `EXCHANGE:TICKER` (≤ 40, `^[A-Z0-9_.]+:[A-Z0-9_.\-]+$`); `range` one of `1D 5D 1M 3M 6M 1Y 5Y ALL` (default `1M`); `note` ≤ 300 optional, shown under the chart in the chat's text.
+- `symbol`: TradingView's `EXCHANGE:TICKER` (≤ 40, `^[A-Z0-9_.]+:[A-Z0-9_.\-]+$`); `range` one of `1D 5D 1M 3M 6M 1Y 5Y ALL`, **default `1D`** — the finest the widget offers (owner: "默认展示最小的粒度"); the model names a wider one only when the question does ("this year" → `1Y`); `note` ≤ 300 optional, shown under the chart in the chat's text. One `exodus-stock` per reply, as every `exodus-*` fence.
 - **Desktop:** TradingView's Mini Symbol Overview widget inside a sandboxed `<iframe>` (`sandbox="allow-scripts allow-same-origin"`, `referrerpolicy="no-referrer"`, fixed height 220, `loading="lazy"`), whose `srcdoc` is built by us and loads only `https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js`; the CSP gets a `frame-src https://www.tradingview-widget.com https://s3.tradingview.com` entry and the widget's `script-src` stays confined to the iframe document. Theme from the app's scheme; the tone's accent as `trendLineColor`. A chart that fails to load (offline, blocked) shows the symbol and the note as a card with a "Open on TradingView" link.
 - **Phone:** `WKWebView` with the same `srcdoc`, `WKContentRuleList` allowing only TradingView's hosts, non-persistent data store, JavaScript on, no navigation off the widget (a tap on the chart opens `https://www.tradingview.com/symbols/{symbol}` in the system browser via `decidePolicyFor`). Height 220, Reduce Motion unaffected (TradingView animates its own line; nothing of ours).
 - Privacy note for the owner: the widget is a third-party embed — TradingView sees the symbol and the viewer's IP, as any embedded chart would. No cookies are kept (iframe sandbox without `allow-storage`; non-persistent store on the phone). The Settings › Privacy text gets one sentence.
@@ -62,13 +62,13 @@ The `interactive blocks` section grows a second half, ~25 lines: steps for "how 
 - Both: a block's text is also what Copy / read-aloud get (steps as a numbered list; a stock block as `symbol — note`), through the phase-1 plain-text paths.
 
 ## 5. Testing
-- Shared vectors (vitest + Swift Testing, byte-identical): steps limits (1 step, 13 steps, 301-char text, an `http:` image, an image not in the run's results → dropped); stock symbol pattern and range enum; entity target pattern.
+- Shared vectors (vitest + Swift Testing, byte-identical): steps limits (1 step, 13 steps, 301-char text, an `http:` image, an image not in the run's results → dropped, a result's *original* image URL → dropped, its thumbnail → kept); stock symbol pattern, range enum and the `1D` default; entity target pattern.
 - Desktop: the entity route (mocked fetch; 404; cache; lang fallback); `entity:` link renders a popover trigger and never an `<a href="entity:…">`; stock iframe `srcdoc` loads only the allowed script and sets `sandbox`; steps images outside the allow-list render the placeholder.
 - Phone: `WKContentRuleList` compiles and blocks a non-TradingView URL; `EntitySheet` states; gallery runs `steps`, `entity`, `stock` with light/dark/AX screenshots.
 - Prompt budget test.
 
 ## 6. Open questions for the owner
 1. ~~Entity panels: Wikipedia only, or also the model's own one-line gloss when Wikipedia has nothing?~~ **Decided 2026-10-07: Wikipedia only, a pure lookup; "nothing found" otherwise. An AI gloss is a possible later addition, not part of phase 2.**
-2. Stock range default `1M` — or follow what the user asked ("this week" → `5D`)? (Draft: the model picks; default `1M`.)
-3. Steps pictures: thumbnails (fast) or the result's full image (sharper)? (Draft: thumbnail when the result has one, else the image.)
-4. Should `exodus-stock` be limited to one per reply, like the phase-1 blocks? (Draft: yes — one block per message stays the rule for every `exodus-*` fence.)
+2. ~~Stock range default `1M` — or follow what the user asked?~~ **Decided: default `1D`, the finest granularity; the model widens it only when the question names a span.**
+3. ~~Steps pictures: thumbnails or the result's full image?~~ **Decided: Brave's thumbnail only, never the original — originals are hot-links the source site may block (a lesson already learned in this app).**
+4. ~~Should `exodus-stock` be limited to one per reply?~~ **Decided: yes.**
