@@ -25,27 +25,6 @@
     "web_search",
     "write_file"
   ],
-  "legacyNames": {
-    "computerUse": "computer_use",
-    "deepResearch": "deep_research",
-    "createArtifact": "create_artifact",
-    "imageGeneration": "image_generation",
-    "findFiles": "find_files",
-    "editFile": "edit_file",
-    "lcmGrep": "lcm_grep",
-    "grep": "grep",
-    "lcmDescribe": "lcm_describe",
-    "searchKnowledgeBase": "search_knowledge_base",
-    "mapItinerary": "map_itinerary",
-    "webSearch": "web_search",
-    "lcmExpand": "lcm_expand",
-    "weather": "weather",
-    "listDirectory": "list_directory",
-    "terminal": "terminal",
-    "readFile": "read_file",
-    "webFetch": "web_fetch",
-    "writeFile": "write_file"
-  },
   "groups": [
     "Web",
     "File System",

@@ -34,13 +34,6 @@ struct ProtoWeatherSection: View {
             ProtoInReply(state: "Long place name, at night") {
                 Self.card(details: ProtoFixtures.weatherLongName)
             }
-            ProtoInReply(state: "Legacy wttr.in row (WWO codes, 8 slots, “06:52 AM”)") {
-                Self.card(details: ProtoFixtures.weatherLegacy)
-            }
-            ProtoInReply(state: "Legacy row, opened") {
-                Self.card(details: ProtoFixtures.weatherLegacy)
-                    .environment(\.weatherCardStartsOpen, true)
-            }
             ProtoInReply(state: "Error") {
                 Self.card(error: "No place found for \"Atlantis\"")
             }

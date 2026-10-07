@@ -56,7 +56,7 @@ public struct MarkdownImageLoader: Sendable {
         return try Self.downsample(data, maxPixelWidth: maxPixelWidth)
     }
 
-    /// The same limits for any remote image the chat shows (a legacy generated-image link too).
+    /// The same limits for any remote image the chat shows (a search result's thumbnail too).
     public func download(_ url: URL) async throws -> Data {
         var request = URLRequest(url: url)
         request.timeoutInterval = Self.timeout

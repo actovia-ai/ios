@@ -96,7 +96,6 @@ struct GeneratedImageFrame: View {
 
     @State private var image: UIImage?
     @State private var load = GeneratedImageLoadState.idle
-    @State private var requested = false
     @State private var attempt = 0
     @Environment(\.toolCardsAreLive) private var isLive
     @Environment(\.generatedImageLoader) private var loader
@@ -105,14 +104,12 @@ struct GeneratedImageFrame: View {
     private struct LoadKey: Equatable {
         let source: GeneratedImageSource?
         let complete: Bool
-        let requested: Bool
         let attempt: Int
     }
 
     private var status: ImageFrameStatus {
         ImageGenerationRules.frameStatus(
-            card: model.status, isLive: isLive, source: frame.source, load: shown == nil ? load : .loaded,
-            requested: requested)
+            card: model.status, isLive: isLive, source: frame.source, load: shown == nil ? load : .loaded)
     }
 
     /// The loaded image, or one another view already put in the cache (no flash of the field on a re-appearance).
@@ -128,7 +125,7 @@ struct GeneratedImageFrame: View {
             canvas(current)
             statusLine(current)
         }
-        .task(id: LoadKey(source: frame.source, complete: model.status == .complete, requested: requested, attempt: attempt)) {
+        .task(id: LoadKey(source: frame.source, complete: model.status == .complete, attempt: attempt)) {
             await fetch()
         }
     }
@@ -185,15 +182,6 @@ struct GeneratedImageFrame: View {
     @ViewBuilder
     private func overlay(_ status: ImageFrameStatus) -> some View {
         switch status {
-        case .askToLoad(let host):
-            VStack(spacing: 8) {
-                Image(systemName: "photo").font(.title2).foregroundStyle(.secondary).accessibilityHidden(true)
-                Text(verbatim: host).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                Button("ios:chat.markdown.loadImage") { requested = true }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-            }
-            .padding()
         case .loadFailed:
             VStack(spacing: 8) {
                 Image(systemName: "photo.badge.exclamationmark").font(.title2).foregroundStyle(.secondary)
@@ -247,7 +235,7 @@ struct GeneratedImageFrame: View {
             Image(systemName: "checkmark").foregroundStyle(.tint)
         case .error:
             Image(systemName: "exclamationmark.circle")
-        case .unavailable, .loadFailed, .askToLoad:
+        case .unavailable, .loadFailed:
             Image(systemName: "photo").foregroundStyle(.secondary)
         }
     }
@@ -263,7 +251,6 @@ struct GeneratedImageFrame: View {
 
     private func fetch() async {
         guard model.status == .complete, let source = frame.source, shown == nil else { return }
-        if case .remote(_, _, true) = source, !requested { return }
         guard let loader else {
             load = .failed(.failed)
             return
@@ -288,7 +275,7 @@ enum ImageGenerationText {
             String(localized: "chat:imageGeneration.status.generating", defaultValue: "Generating image", comment: "Image card status.")
         case .refining:
             String(localized: "chat:imageGeneration.status.refining", defaultValue: "Refining details", comment: "Image card status.")
-        case .complete, .askToLoad:
+        case .complete:
             String(localized: "chat:imageGeneration.status.complete", defaultValue: "Image ready", comment: "Image card status.")
         case .error:
             String(localized: "chat:imageGeneration.status.error", defaultValue: "Generation failed", comment: "Image card status.")

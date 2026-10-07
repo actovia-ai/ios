@@ -47,7 +47,7 @@ struct JSONFields {
 
     func nonEmpty(_ key: String) -> String? { string(key).flatMap { $0.isEmpty ? nil : $0 } }
 
-    /// Text, or a number written out (the weather tool sends numbers as strings; an older row may not).
+    /// Text, or a number written out (the weather tool sends its numbers as strings; a bare number reads the same).
     func text(_ key: String) -> String? {
         switch raw[key] {
         case .string(let text)?: text

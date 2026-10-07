@@ -9,7 +9,6 @@ import UIKit
 struct ProtoImageGenerationSection: View {
     @State private var loader: GeneratedImageLoader?
     @State private var viewer: ImageViewerPage.Content?
-    @State private var inline = ""
 
     private static let opensViewer = ProcessInfo.processInfo.arguments.contains("-CardPrototypesImageViewer")
 
@@ -42,14 +41,6 @@ struct ProtoImageGenerationSection: View {
             Self.cards([
                 Self.call("k4"),
                 Self.result("k4", ProtoFixtures.imageDetails(["b.png", "c.png"], size: "1024x1024", width: 1024, height: 1024)),
-            ])
-        }
-        ProtoInReply(state: "Legacy row: a data: URL") {
-            Self.cards([Self.call("k5"), Self.result("k5", #"{"images":[{"url":"\#(inline)"}]}"#)])
-        }
-        ProtoInReply(state: "Legacy row: a DALL·E link (tap to load; it has expired)") {
-            Self.cards([
-                Self.call("k6"), Self.result("k6", #"{"images":[{"url":"https://oaidalleapiprodscus.invalid/img-1.png?sig=x"}]}"#),
             ])
         }
         ProtoInReply(state: "Gone on the computer (404) → unavailable") {
@@ -104,7 +95,6 @@ struct ProtoImageGenerationSection: View {
         let portrait = Self.render(seed: 0, size: CGSize(width: 512, height: 768))
         let square = Self.render(seed: 1, size: CGSize(width: 512, height: 512))
         let warm = Self.render(seed: 2, size: CGSize(width: 384, height: 384))
-        inline = "data:image/png;base64,\(warm.base64EncodedString())"
         loader = GeneratedImageLoader(
             fetchMedia: { path in
                 if path.hasSuffix("gone.png") { throw HTTPError(statusCode: 404, code: "NOT_FOUND", message: "") }
@@ -112,8 +102,7 @@ struct ProtoImageGenerationSection: View {
                 if path.hasSuffix("slow.png") { try await Task.sleep(for: .seconds(3600)) }
                 if path.hasSuffix("b.png") { return square }
                 return path.hasSuffix("c.png") ? warm : portrait
-            },
-            fetchRemote: { _ in throw URLError(.fileDoesNotExist) }, cache: GeneratedImageCache())
+            }, cache: GeneratedImageCache())
         if Self.opensViewer, let image = UIImage(data: portrait) {
             viewer = ImageViewerPage.Content(id: 0, image: image, caption: ProtoFixtures.imageRevised)
         }

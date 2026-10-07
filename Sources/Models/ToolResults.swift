@@ -227,20 +227,12 @@ public struct ImageGenerationArguments: JSONValueDecodable {
     }
 }
 
-/// One generated image. New rows name a file the desktop serves (`mediaId`, `chatId`, `mimeType`); older ones carry a
-/// `data:` or https `url` (or `dataUrl`), and some carry none.
+/// One generated image: a file the desktop saved and serves by `chatId` and `mediaId`. A Philharmonic Group's image
+/// has no `chatId` and is never served.
 public struct GeneratedImage: JSONValueDecodable {
-    public enum Source: Equatable, Sendable {
-        case media(id: String, chatId: String?, mimeType: String?)
-        case dataURL(String)
-        case remote(URL)
-    }
-
     public let mediaId: String?
     public let chatId: String?
     public let mimeType: String?
-    public let url: String?
-    public let dataUrl: String?
     public let revisedPrompt: String?
     /// The file's own size in pixels, when the desktop could read it from the header.
     public let width: Int?
@@ -251,28 +243,9 @@ public struct GeneratedImage: JSONValueDecodable {
         mediaId = fields.nonEmpty("mediaId")
         chatId = fields.nonEmpty("chatId")
         mimeType = fields.nonEmpty("mimeType")
-        url = fields.nonEmpty("url")
-        dataUrl = fields.nonEmpty("dataUrl")
         revisedPrompt = fields.nonEmpty("revisedPrompt")
         width = fields.int("width").flatMap { $0 > 0 ? $0 : nil }
         height = fields.int("height").flatMap { $0 > 0 ? $0 : nil }
-    }
-
-    /// Where the pixels are, in order of preference; nil when the row carries none.
-    public var source: Source? {
-        if let mediaId { return .media(id: mediaId, chatId: chatId, mimeType: mimeType) }
-        if let dataUrl, Self.isInlineImage(dataUrl) { return .dataURL(dataUrl) }
-        if let url, Self.isInlineImage(url) { return .dataURL(url) }
-        if let url, let parsed = URL(string: url), parsed.scheme == "https" || parsed.scheme == "http" {
-            return .remote(parsed)
-        }
-        return nil
-    }
-
-    // Raster types only, like the desktop's markdown allowlist: a `data:text/html` or an SVG (which can name remote
-    // resources) never reaches a decoder.
-    private static func isInlineImage(_ text: String) -> Bool {
-        text.prefix(24).lowercased().firstMatch(of: /^data:image\/(png|jpe?g|gif|webp|avif)[;,]/) != nil
     }
 }
 

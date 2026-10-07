@@ -74,8 +74,6 @@ struct SecretNoticeItem: Identifiable, Equatable {
             String(localized: "settings:secrets.fields.s3AccessKeyId", defaultValue: "Amazon S3 access key ID", comment: "A key to enter again.")
         case .s3SecretAccessKey:
             String(localized: "settings:secrets.fields.s3SecretAccessKey", defaultValue: "Amazon S3 secret access key", comment: "A key to enter again.")
-        case .legacyMcpServers:
-            String(localized: "settings:secrets.fields.legacyMcpServers", defaultValue: "Legacy MCP configuration", comment: "A key to enter again.")
         }
     }
 }

@@ -19,18 +19,21 @@ private func model(_ json: String) throws -> WeatherCardModel {
     WeatherCardModel(try #require(WeatherResult(json: value(json))))
 }
 
-/// A row from the wttr.in years: WWO codes, 8 slots a day as "0" … "2100", sunrise as "06:52 AM", no `isDay`, and
-/// numbers that were sometimes numbers.
-private let wttrRow = #"""
-    {"location":"Edinburgh, United Kingdom","current":{"condition":"Light rain shower","weatherCode":"353","tempC":11,"feelsLikeC":"8","humidity":"87","windKmph":"22","windDirDegree":"250","windDir":"WSW","precipMM":0.4,"uvIndex":"1","visibility":"10","pressure":"1006","observedAt":"02:15 PM"},
+/// An Open-Meteo row for Edinburgh: WMO codes, a day of 24 ISO local times, and numbers that arrive as numbers.
+private let edinburghRow = #"""
+    {"location":"Edinburgh, United Kingdom","current":{"condition":"Slight rain showers","weatherCode":"80","tempC":11,"feelsLikeC":"8","humidity":"87","windKmph":"22","windDirDegree":"250","windDir":"WSW","precipMM":0.4,"uvIndex":"1","visibility":"10","pressure":"1006","observedAt":"2025-11-02T14:15","isDay":true},
      "forecast":[
-      {"date":"2025-11-02","condition":"Light rain shower","weatherCode":"353","maxTempC":"14","minTempC":"9","sunrise":"06:52 AM","sunset":"04:58 PM","hourly":[
-        {"time":"0","tempC":"9","weatherCode":"353","condition":"x","rainChance":"0"},{"time":"300","tempC":"9","weatherCode":"353","condition":"x","rainChance":"3"},
-        {"time":"600","tempC":"10","weatherCode":"353","condition":"x","rainChance":"6"},{"time":"900","tempC":"12","weatherCode":"353","condition":"x","rainChance":"9"},
-        {"time":"1200","tempC":"13","weatherCode":"353","condition":"x","rainChance":"12"},{"time":"1500","tempC":"14","weatherCode":"353","condition":"x","rainChance":"15"},
-        {"time":"1800","tempC":"12","weatherCode":"353","condition":"x","rainChance":"18"},{"time":"2100","tempC":"10","weatherCode":"353","condition":"x","rainChance":"21"}]},
-      {"date":"2025-11-03","condition":"Overcast","weatherCode":"122","maxTempC":"12","minTempC":"8","sunrise":"06:54 AM","sunset":"04:56 PM","hourly":[]},
-      {"date":"2025-11-04","condition":"Sunny","weatherCode":"113","maxTempC":"15","minTempC":"7","sunrise":"06:56 AM","sunset":"04:54 PM","hourly":[]}]}
+      {"date":"2025-11-02","condition":"Slight rain showers","weatherCode":"80","maxTempC":"14","minTempC":"9","sunrise":"2025-11-02T06:52","sunset":"2025-11-02T16:58","hourly":[
+        {"time":"2025-11-02T00:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"0"},{"time":"2025-11-02T01:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"1"},{"time":"2025-11-02T02:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"2"},
+        {"time":"2025-11-02T03:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"3"},{"time":"2025-11-02T04:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"4"},{"time":"2025-11-02T05:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"5"},
+        {"time":"2025-11-02T06:00","tempC":"9","weatherCode":"80","condition":"x","rainChance":"6"},{"time":"2025-11-02T07:00","tempC":"10","weatherCode":"80","condition":"x","rainChance":"7"},{"time":"2025-11-02T08:00","tempC":"10","weatherCode":"80","condition":"x","rainChance":"8"},
+        {"time":"2025-11-02T09:00","tempC":"11","weatherCode":"80","condition":"x","rainChance":"9"},{"time":"2025-11-02T10:00","tempC":"12","weatherCode":"80","condition":"x","rainChance":"10"},{"time":"2025-11-02T11:00","tempC":"12","weatherCode":"80","condition":"x","rainChance":"11"},
+        {"time":"2025-11-02T12:00","tempC":"13","weatherCode":"80","condition":"x","rainChance":"12"},{"time":"2025-11-02T13:00","tempC":"13","weatherCode":"80","condition":"x","rainChance":"13"},{"time":"2025-11-02T14:00","tempC":"14","weatherCode":"80","condition":"x","rainChance":"14"},
+        {"time":"2025-11-02T15:00","tempC":"14","weatherCode":"80","condition":"x","rainChance":"15"},{"time":"2025-11-02T16:00","tempC":"13","weatherCode":"80","condition":"x","rainChance":"16"},{"time":"2025-11-02T17:00","tempC":"12","weatherCode":"80","condition":"x","rainChance":"17"},
+        {"time":"2025-11-02T18:00","tempC":"12","weatherCode":"80","condition":"x","rainChance":"18"},{"time":"2025-11-02T19:00","tempC":"11","weatherCode":"80","condition":"x","rainChance":"19"},{"time":"2025-11-02T20:00","tempC":"11","weatherCode":"80","condition":"x","rainChance":"20"},
+        {"time":"2025-11-02T21:00","tempC":"10","weatherCode":"80","condition":"x","rainChance":"21"},{"time":"2025-11-02T22:00","tempC":"10","weatherCode":"80","condition":"x","rainChance":"22"},{"time":"2025-11-02T23:00","tempC":"10","weatherCode":"80","condition":"x","rainChance":"23"}]},
+      {"date":"2025-11-03","condition":"Overcast","weatherCode":"3","maxTempC":"12","minTempC":"8","sunrise":"2025-11-03T06:54","sunset":"2025-11-03T16:56","hourly":[]},
+      {"date":"2025-11-04","condition":"Clear sky","weatherCode":"0","maxTempC":"15","minTempC":"7","sunrise":"2025-11-04T06:56","sunset":"2025-11-04T16:54","hourly":[]}]}
     """#
 
 @Suite("Weather: codes to conditions and symbols")
@@ -46,35 +49,25 @@ struct WeatherConditionTests {
         #expect(WeatherCondition.wmo.count == 28)
     }
 
-    @Test("legacy WWO codes name the same conditions, and the two ranges never collide")
-    func wwo() {
-        let expected: [String: WeatherConditionName] = [
-            "113": .sunny, "116": .partlyCloudy, "119": .cloudy, "122": .veryCloudy, "143": .fog, "179": .lightSleetShowers,
-            "200": .thunderyShowers, "302": .heavyRain, "353": .lightShowers, "392": .thunderySnowShowers,
-            "395": .heavySnowShowers,
-        ]
-        for (code, name) in expected { #expect(WeatherCondition.name(of: code) == name, "WWO \(code)") }
-        #expect(WeatherCondition.wwo.count == 48)
-        #expect(Set(WeatherCondition.wmo.keys).isDisjoint(with: WeatherCondition.wwo.keys))
-    }
-
     @Test("an unknown, empty or padded code: cloudy, or read through its padding")
     func unknown() {
         #expect(WeatherCondition.name(of: "7") == .cloudy)
         #expect(WeatherCondition.name(of: "") == .cloudy)
         #expect(WeatherCondition.name(of: "sunny") == .cloudy)
-        #expect(WeatherCondition.name(of: " 113 ") == .sunny)
+        #expect(WeatherCondition.name(of: "113") == .cloudy)
+        #expect(WeatherCondition.name(of: " 63 ") == .lightRain)
     }
 
     @Test("a clear or partly cloudy night is a moon; rain is rain by day and night")
     func dayAndNight() {
         #expect(WeatherCondition.symbol(code: "0") == "sun.max.fill")
         #expect(WeatherCondition.symbol(code: "0", isDay: false) == "moon.stars.fill")
-        #expect(WeatherCondition.symbol(code: "116", isDay: false) == "cloud.moon.fill")
+        #expect(WeatherCondition.symbol(code: "2", isDay: false) == "cloud.moon.fill")
         #expect(WeatherCondition.symbol(code: "2") == "cloud.sun.fill")
         #expect(WeatherCondition.symbol(code: "63", isDay: false) == WeatherCondition.symbol(code: "63"))
         #expect(WeatherCondition.symbol(code: "95") == "cloud.bolt.rain.fill")
-        #expect(WeatherCondition.symbol(code: "392") == "cloud.bolt.fill")
+        #expect(WeatherCondition.symbol(code: "99") == "cloud.bolt.rain.fill")
+        #expect(WeatherCondition.symbol(.thunderySnowShowers) == "cloud.bolt.fill")
     }
 
     @Test("a cloud is muted and what it carries keeps a colour; a bare sun or moon draws in its own")
@@ -99,7 +92,7 @@ struct WeatherConditionTests {
     }
 }
 
-@Suite("Weather: clock times in all three forms")
+@Suite("Weather: clock times")
 struct WeatherClockTests {
     @Test("ISO local times, anywhere in the string")
     func iso() {
@@ -108,30 +101,14 @@ struct WeatherClockTests {
         #expect(WeatherClock.hours("2026-09-23T13:30:00") == 13.5)
     }
 
-    @Test("wttr.in's 12-hour clocks: 12 AM is midnight, 12 PM noon, case and padding do not matter")
-    func twelveHour() {
-        #expect(WeatherClock.hours("06:52 AM") == 6 + 52.0 / 60)
-        #expect(WeatherClock.hours("04:58 PM") == 16 + 58.0 / 60)
-        #expect(WeatherClock.hours("12:30 AM") == 0.5)
-        #expect(WeatherClock.hours("12:05 PM") == 12 + 5.0 / 60)
-        #expect(WeatherClock.hours("7:00pm") == 19)
-        #expect(WeatherClock.hours("  06:52 AM\n") == 6 + 52.0 / 60)
-    }
-
-    @Test("wttr.in's hourly slots, 0 … 2100")
-    func slots() {
-        #expect(WeatherClock.hours("0") == 0)
-        #expect(WeatherClock.hours("300") == 3)
-        #expect(WeatherClock.hours("1530") == 15.5)
-        #expect(WeatherClock.hours("2100") == 21)
-    }
-
-    @Test("anything else does not read, and is shown as it came")
+    @Test("anything else does not read, and is shown as it came: a 12-hour clock or an hourly slot too")
     func unreadable() {
         #expect(WeatherClock.hours("") == nil)
         #expect(WeatherClock.hours("noon") == nil)
         #expect(WeatherClock.hours("12345") == nil)
         #expect(WeatherClock.hours("06:52") == nil)
+        #expect(WeatherClock.hours("06:52 AM") == nil)
+        #expect(WeatherClock.hours("300") == nil)
         #expect(WeatherClock.format("noon") == "noon")
     }
 }
@@ -180,15 +157,15 @@ struct WeatherScaleTests {
 
 @Suite("Weather: the card's model")
 struct WeatherCardModelTests {
-    @Test("a legacy wttr.in row reads: WWO symbols, slots on the clock, sunrise in 12-hour form, number fields")
-    func legacyRow() throws {
-        let weather = try model(wttrRow)
+    @Test("a row reads: WMO symbols, 24 hours on the clock, ISO sunrise, number fields")
+    func row() throws {
+        let weather = try model(edinburghRow)
         #expect(weather.now.temp == "11")
         #expect(weather.now.symbol == "cloud.drizzle.fill")
         #expect(weather.days.map(\.symbol) == ["cloud.drizzle.fill", "cloud.fill", "sun.max.fill"])
         let today = try #require(weather.days.first)
-        #expect(today.hours.map(\.x) == [0, 3, 6, 9, 12, 15, 18, 21])
-        #expect(today.lastHour == 21)
+        #expect(today.hours.map(\.x) == (0..<24).map(Double.init))
+        #expect(today.lastHour == 23)
         #expect(today.hasCurve)
         #expect(today.curveDomain == 8.5...14.5)
         #expect(WeatherClock.hours(today.sunrise) == 6 + 52.0 / 60)
@@ -218,7 +195,7 @@ struct WeatherCardModelTests {
 
     @Test("a weather card is built with the turn; a failed call keeps its place and message")
     func built() throws {
-        let card = ToolCard(id: "t", toolName: "weather", kind: .weather, payload: value(wttrRow))
+        let card = ToolCard(id: "t", toolName: "weather", kind: .weather, payload: value(edinburghRow))
         #expect(card.content.weather?.forecast?.location == "Edinburgh, United Kingdom")
         #expect(ToolCardRegistry.canDraw(card))
         let failed = ToolCard(
@@ -246,9 +223,9 @@ struct WeatherCardModelTests {
 struct WeatherCardTextTests {
     @Test("now, a day's range and the curve read as sentences")
     func text() throws {
-        let weather = try model(wttrRow)
-        #expect(WeatherCardText.summary(weather) == "Edinburgh, United Kingdom: 11°, Light rain shower, feels like 8°")
-        #expect(WeatherCardText.dayRange(weather.days[0]) == "Today, Light rain shower: high 14°, low 9°")
+        let weather = try model(edinburghRow)
+        #expect(WeatherCardText.summary(weather) == "Edinburgh, United Kingdom: 11°, Slight rain showers, feels like 8°")
+        #expect(WeatherCardText.dayRange(weather.days[0]) == "Today, Slight rain showers: high 14°, low 9°")
         #expect(WeatherCardText.weekday(weather.days[1]) == "Tmr")
         #expect(WeatherCardText.chartValue(weather.days[0])?.hasPrefix("Lowest 9° at ") == true)
         #expect(WeatherCardText.chartValue(weather.days[1]) == nil)
@@ -259,12 +236,12 @@ struct WeatherCardTextTests {
 @MainActor
 @Suite("Weather: the card draws every state without falling back")
 struct WeatherCardRenderTests {
-    @Test("today's, a legacy, a stub and a failed card draw their own card and report nothing")
+    @Test("a forecast, a stub and a failed card draw their own card and report nothing")
     func drawsWithoutReports() async {
         let reports = WeatherReportLog()
         let diagnostics = RenderDiagnostics { _, message, _ in reports.append(message) }
         let cards = [
-            ToolCard(id: "t1", toolName: "weather", kind: .weather, payload: value(wttrRow)),
+            ToolCard(id: "t1", toolName: "weather", kind: .weather, payload: value(edinburghRow)),
             ToolCard(
                 id: "t2", toolName: "weather", kind: .weather,
                 payload: value(#"{"location":"S","current":{"tempC":"22","weatherCode":"2"},"forecast":[]}"#)),

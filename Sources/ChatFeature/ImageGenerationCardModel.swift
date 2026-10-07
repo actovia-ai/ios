@@ -8,10 +8,6 @@ import UIKit
 enum GeneratedImageSource: Equatable, Hashable, Sendable {
     /// A file the desktop saved and serves at `/api/v1/media/<chatId>/<mediaId>`, fetched with the device's token.
     case media(path: String)
-    /// A `data:image/…` URL (rows written before images were saved to disk).
-    case inline(String)
-    /// A legacy DALL·E link on someone else's host; `needsTap` follows `MarkdownImagePolicy`.
-    case remote(URL, host: String, needsTap: Bool)
 
     /// The route's path, or nil when an id is not the plain shape the desktop writes (so nothing odd reaches the
     /// path). A Philharmonic image has no `chatId` and is not served.
@@ -22,29 +18,16 @@ enum GeneratedImageSource: Equatable, Hashable, Sendable {
         return "/api/v1/media/\(chatId)/\(mediaId)"
     }
 
-    init?(_ source: GeneratedImage.Source?, policy: MarkdownImagePolicy = .current) {
-        switch source {
-        case .media(let id, let chatId, _):
-            guard let path = Self.mediaPath(chatId: chatId, mediaId: id) else { return nil }
-            self = .media(path: path)
-        case .dataURL(let url):
-            self = .inline(url)
-        case .remote(let url):
-            switch policy.decision(for: url.absoluteString) {
-            case .load(let loadable): self = .remote(loadable, host: loadable.host() ?? "", needsTap: false)
-            case .askToLoad(let remote, let host): self = .remote(remote, host: host, needsTap: true)
-            case .unavailable: return nil
-            }
-        case nil:
+    init?(_ image: GeneratedImage) {
+        guard let mediaId = image.mediaId, let path = Self.mediaPath(chatId: image.chatId, mediaId: mediaId) else {
             return nil
         }
+        self = .media(path: path)
     }
 
     var cacheKey: String {
         switch self {
         case .media(let path): "media:\(path)"
-        case .inline(let url): url
-        case .remote(let url, _, _): "remote:\(url.absoluteString)"
         }
     }
 }
@@ -60,7 +43,7 @@ struct ImageGenerationCardModel: Equatable, Sendable {
 
     struct Frame: Equatable, Sendable, Identifiable {
         let id: Int
-        /// Nil: the row names nothing this phone can show (an expired or missing link, a Group image).
+        /// Nil: the row names no file this phone can fetch (a Group image, an id of the wrong shape).
         let source: GeneratedImageSource?
         let revisedPrompt: String?
         /// Width over height.
@@ -85,7 +68,7 @@ struct ImageGenerationCardModel: Equatable, Sendable {
             frames: [Frame(id: 0, source: nil, revisedPrompt: nil, aspectRatio: 1)], resolution: nil)
     }
 
-    init(_ call: DecodedCall<ImageGenerationArguments, ImageGenerationResult>, policy: MarkdownImagePolicy = .current) {
+    init(_ call: DecodedCall<ImageGenerationArguments, ImageGenerationResult>) {
         let size = Self.parseSize(call.result.size)
         prompt = call.arguments?.prompt ?? ""
         status = .complete
@@ -94,7 +77,7 @@ struct ImageGenerationCardModel: Equatable, Sendable {
         let frames = call.result.images.enumerated().map { index, image in
             let own = image.width.flatMap { width in image.height.map { Double(width) / Double($0) } }
             return Frame(
-                id: index, source: GeneratedImageSource(image.source, policy: policy), revisedPrompt: image.revisedPrompt,
+                id: index, source: GeneratedImageSource(image), revisedPrompt: image.revisedPrompt,
                 aspectRatio: own ?? fallback)
         }
         self.frames = frames.isEmpty ? [Frame(id: 0, source: nil, revisedPrompt: nil, aspectRatio: fallback)] : frames
@@ -120,8 +103,8 @@ struct ImageGenerationCardModel: Equatable, Sendable {
     }
 }
 
-/// How far one frame has got, as the card shows it: the desktop's statuses plus the phone's own (a remote link waiting
-/// for a tap, a load that can be retried).
+/// How far one frame has got, as the card shows it: the desktop's statuses plus the phone's own (a load that can be
+/// retried).
 enum ImageFrameStatus: Equatable, Sendable {
     case generating
     /// Finished on the computer; its bytes are on their way.
@@ -129,7 +112,6 @@ enum ImageFrameStatus: Equatable, Sendable {
     case complete
     case error
     case unavailable
-    case askToLoad(host: String)
     case loadFailed
 
     var isActive: Bool { self == .generating || self == .refining }
@@ -147,21 +129,19 @@ enum ImageGenerationRules {
     /// A call still pending in a turn that is no longer streaming was stopped: it will never produce an image.
     static func frameStatus(
         card: ImageGenerationCardModel.Status, isLive: Bool, source: GeneratedImageSource?,
-        load: GeneratedImageLoadState, requested: Bool
+        load: GeneratedImageLoadState
     ) -> ImageFrameStatus {
         switch card {
         case .generating: return isLive ? .generating : .unavailable
         case .failed: return .error
         case .complete: break
         }
-        guard let source else { return .unavailable }
+        guard source != nil else { return .unavailable }
         switch load {
         case .loaded: return .complete
         case .failed(.failed): return .loadFailed
         case .failed: return .unavailable
-        case .idle, .loading:
-            if case .remote(_, let host, true) = source, !requested { return .askToLoad(host: host) }
-            return .refining
+        case .idle, .loading: return .refining
         }
     }
 }
@@ -186,11 +166,10 @@ final class GeneratedImageCache: @unchecked Sendable {
     }
 }
 
-/// Fetches a generated image: the desktop's media route through the paired session (token, pinned TLS), a `data:`
-/// URL decoded in place, or a legacy link through the markdown's capped downloader.
+/// Fetches a generated image from the desktop's media route through the paired session (token, pinned TLS).
 final class GeneratedImageLoader: Sendable {
     enum Failure: Error, Equatable, Sendable {
-        /// Gone for good: 404/400 (the chat was deleted, a reset), bytes that are no image, an expired link.
+        /// Gone for good: 404/400 (the chat was deleted, a reset), bytes that are no image.
         case unavailable
         /// The computer refused this device's token (it was revoked; the app returns to pairing).
         case unauthorized
@@ -199,22 +178,17 @@ final class GeneratedImageLoader: Sendable {
     }
 
     typealias Fetch = @Sendable (String) async throws -> Data
-    typealias FetchRemote = @Sendable (URL) async throws -> Data
 
     private let fetchMedia: Fetch
-    private let fetchRemote: FetchRemote
     let cache: GeneratedImageCache
 
-    init(fetchMedia: @escaping Fetch, fetchRemote: @escaping FetchRemote, cache: GeneratedImageCache = .shared) {
+    init(fetchMedia: @escaping Fetch, cache: GeneratedImageCache = .shared) {
         self.fetchMedia = fetchMedia
-        self.fetchRemote = fetchRemote
         self.cache = cache
     }
 
     convenience init(apiClient: APIClient, cache: GeneratedImageCache = .shared) {
-        self.init(
-            fetchMedia: { try await apiClient.data($0) },
-            fetchRemote: { try await MarkdownImageLoader.shared.download($0) }, cache: cache)
+        self.init(fetchMedia: { try await apiClient.data($0) }, cache: cache)
     }
 
     func cached(_ source: GeneratedImageSource) -> UIImage? { cache.image(for: source) }
@@ -226,11 +200,9 @@ final class GeneratedImageLoader: Sendable {
         do {
             switch source {
             case .media(let path): data = try await fetchMedia(path)
-            case .inline(let url): data = try Self.decodeDataURL(url)
-            case .remote(let url, _, _): data = try await fetchRemote(url)
             }
         } catch {
-            throw try Self.failure(for: error, source: source)
+            throw try Self.failure(for: error)
         }
         try Task.checkCancellation()
         let image = try await Self.decode(data)
@@ -240,7 +212,7 @@ final class GeneratedImageLoader: Sendable {
     }
 
     /// The longest side an image is decoded at: above what the desktop generates (1536), so its images keep every
-    /// pixel, while a tampered legacy link or data URL (a 20k × 20k PNG) is never decoded at full size.
+    /// pixel, while a tampered file (a 20k × 20k PNG) is never decoded at full size.
     static let maxPixelSize = 2048
 
     /// Downsampled through the markdown's decoder, off the main actor; bytes that are no image are unavailable.
@@ -253,11 +225,9 @@ final class GeneratedImageLoader: Sendable {
     }
 
     /// What a failed fetch means for the card. Rethrows cancellation.
-    static func failure(for error: any Error, source: GeneratedImageSource) throws -> Failure {
+    static func failure(for error: any Error) throws -> Failure {
         if error is CancellationError || (error as? URLError)?.code == .cancelled { throw CancellationError() }
         if let failure = error as? Failure { return failure }
-        // A legacy link that fails is an expired one: the desktop says "unavailable" too.
-        if case .remote = source { return .unavailable }
         if let http = error as? HTTPError {
             switch http.statusCode {
             case 401: return .unauthorized
@@ -266,12 +236,5 @@ final class GeneratedImageLoader: Sendable {
             }
         }
         return .failed
-    }
-
-    static func decodeDataURL(_ url: String) throws -> Data {
-        guard let comma = url.firstIndex(of: ","), url[..<comma].lowercased().hasSuffix(";base64"),
-            let data = Data(base64Encoded: String(url[url.index(after: comma)...]), options: .ignoreUnknownCharacters)
-        else { throw Failure.unavailable }
-        return data
     }
 }

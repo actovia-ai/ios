@@ -173,7 +173,6 @@ public enum SecretReentryName: Equatable, Sendable {
         case knowledgeBaseApiKey = "knowledgeBase.apiKey"
         case s3AccessKeyId = "s3.accessKeyId"
         case s3SecretAccessKey = "s3.secretAccessKey"
-        case legacyMcpServers = "mcpServers"
 
         /// The provider whose key this is, when it is one.
         public var provider: AiProviders? {
