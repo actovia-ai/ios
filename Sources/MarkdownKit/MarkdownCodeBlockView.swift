@@ -65,7 +65,8 @@ struct MarkdownCodeBlockView: View {
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
                 Text(verbatim: MarkdownLanguageName.display(language ?? "text"))
-                    .font(.subheadline.weight(.medium))
+                    // A size under the glyph: the subheadline read too big beside the code (owner, 2026-10-08).
+                    .font(.footnote.weight(.medium))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Spacer(minLength: 8)
