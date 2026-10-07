@@ -33,6 +33,12 @@ struct MarkdownCodeBlockView: View {
             traits.userInterfaceStyle == .dark ? UIColor(white: 0.13, alpha: 1) : UIColor(white: 0.96, alpha: 1)
         })
 
+    /// The symbol, not a word: a symbol name is never localized.
+    private var copySymbol: String {
+        if copied { return "checkmark" }
+        return "doc.on.doc"
+    }
+
     private var codeFont: Font {
         // A step under the inline code's size (footnote, 13 pt at the default size): monospaced at subheadline read
         // large in a block (owner, 2026-10-08); it still scales with the reader's text size.
@@ -51,25 +57,34 @@ struct MarkdownCodeBlockView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
                 if let language {
-                    // The desktop's strip: a code glyph and the language as its makers spell it.
+                    // The desktop's strip: a code glyph and the language as its makers spell it, at the
+                    // subheadline size — caption read too small over code (owner, 2026-10-08).
                     Image(systemName: "chevron.left.forwardslash.chevron.right")
-                        .font(.caption2.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .accessibilityHidden(true)
                     Text(verbatim: MarkdownLanguageName.display(language))
-                        .font(.caption.weight(.medium))
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 8)
+                // The icon alone, in a box of one size: a label that read "Copy" and then "Copied" changed width and
+                // shook the strip; the word is still there for VoiceOver, and the symbol morphs in place.
                 Button(action: copy) {
-                    if copied {
-                        Label("ios:chat.markdown.codeCopied", systemImage: "checkmark")
-                    } else {
-                        Label("ios:chat.markdown.copyCode", systemImage: "doc.on.doc")
+                    Label {
+                        if copied {
+                            Text("ios:chat.markdown.codeCopied")
+                        } else {
+                            Text("ios:chat.markdown.copyCode")
+                        }
+                    } icon: {
+                        Image(systemName: copySymbol)
                     }
+                    .labelStyle(.iconOnly)
+                    .frame(width: 24, height: 24)
                 }
-                .font(.caption)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .buttonStyle(.borderless)
                 .contentTransition(.symbolEffect(.replace))
