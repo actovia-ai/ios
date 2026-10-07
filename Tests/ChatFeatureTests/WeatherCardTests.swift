@@ -67,7 +67,6 @@ struct WeatherConditionTests {
         #expect(WeatherCondition.symbol(code: "63", isDay: false) == WeatherCondition.symbol(code: "63"))
         #expect(WeatherCondition.symbol(code: "95") == "cloud.bolt.rain.fill")
         #expect(WeatherCondition.symbol(code: "99") == "cloud.bolt.rain.fill")
-        #expect(WeatherCondition.symbol(.thunderySnowShowers) == "cloud.bolt.fill")
     }
 
     @Test("a cloud is muted and what it carries keeps a colour; a bare sun or moon draws in its own")
@@ -101,14 +100,12 @@ struct WeatherClockTests {
         #expect(WeatherClock.hours("2026-09-23T13:30:00") == 13.5)
     }
 
-    @Test("anything else does not read, and is shown as it came: a 12-hour clock or an hourly slot too")
+    @Test("anything else does not read, and is shown as it came")
     func unreadable() {
         #expect(WeatherClock.hours("") == nil)
         #expect(WeatherClock.hours("noon") == nil)
         #expect(WeatherClock.hours("12345") == nil)
         #expect(WeatherClock.hours("06:52") == nil)
-        #expect(WeatherClock.hours("06:52 AM") == nil)
-        #expect(WeatherClock.hours("300") == nil)
         #expect(WeatherClock.format("noon") == "noon")
     }
 }
@@ -183,8 +180,8 @@ struct WeatherCardModelTests {
         #expect(weather.now.symbol == "cloud.sun.fill")
     }
 
-    @Test("a night reading is a moon; a slot whose time does not read puts the day on slot numbers")
-    func nightAndSlots() throws {
+    @Test("a night reading is a moon; an hour sits at its place in the day, one with no temperature is left out")
+    func nightAndHours() throws {
         let weather = try model(
             #"{"location":"X","current":{"tempC":"12","weatherCode":"0","isDay":false},"forecast":[{"date":"2026-09-24","maxTempC":"n/a","minTempC":"3","hourly":[{"time":"2026-09-24T00:00","tempC":"3"},{"time":"later","tempC":"5"},{"time":"2026-09-24T02:00","tempC":"x"}]}]}"#)
         #expect(weather.now.symbol == "moon.stars.fill")

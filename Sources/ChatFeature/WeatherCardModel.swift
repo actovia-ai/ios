@@ -6,11 +6,11 @@ import SwiftUI
 
 /// The desktop's condition vocabulary (`WeatherConditionName`, packages/shared/src/types/weather.ts): one icon per name.
 enum WeatherConditionName: String, CaseIterable, Sendable {
-    case sunny, partlyCloudy, cloudy, veryCloudy, fog
-    case lightShowers, lightSleetShowers, lightSleet
+    case sunny, partlyCloudy, cloudy, fog
+    case lightShowers, lightSleet
     case lightSnow, lightSnowShowers, heavySnow, heavySnowShowers
     case lightRain, heavyShowers, heavyRain
-    case thunderyShowers, thunderyHeavyRain, thunderySnowShowers
+    case thunderyShowers, thunderyHeavyRain
 }
 
 enum WeatherCondition {
@@ -34,15 +34,14 @@ enum WeatherCondition {
         switch name {
         case .sunny: isDay ? "sun.max.fill" : "moon.stars.fill"  // l10n:ignore: SF Symbol names
         case .partlyCloudy: isDay ? "cloud.sun.fill" : "cloud.moon.fill"  // l10n:ignore: SF Symbol names
-        case .cloudy, .veryCloudy: "cloud.fill"
+        case .cloudy: "cloud.fill"
         case .fog: "cloud.fog.fill"
         case .lightShowers: "cloud.drizzle.fill"
-        case .lightSleetShowers, .lightSleet: "cloud.sleet.fill"
+        case .lightSleet: "cloud.sleet.fill"
         case .lightSnow, .lightSnowShowers, .heavySnow, .heavySnowShowers: "cloud.snow.fill"
         case .lightRain: "cloud.rain.fill"
         case .heavyShowers, .heavyRain: "cloud.heavyrain.fill"
         case .thunderyShowers, .thunderyHeavyRain: "cloud.bolt.rain.fill"
-        case .thunderySnowShowers: "cloud.bolt.fill"
         }
     }
 
@@ -149,7 +148,7 @@ struct WeatherCardModel: Equatable, Sendable {
 
     struct Hour: Equatable, Sendable, Identifiable {
         let id: Int
-        /// Where it sits on the day's axis: its clock hour, or its slot number when a time does not read.
+        /// Where it sits on the day's axis: its hour (Open-Meteo gives 24 a day, from 0:00), as the desktop places it.
         let x: Double
         let temp: Double
         let tempText: String
@@ -227,16 +226,13 @@ struct WeatherCardModel: Equatable, Sendable {
         Double(text.trimmingCharacters(in: .whitespaces)).flatMap { $0.isFinite ? $0 : nil }
     }
 
-    /// Every slot with a readable temperature. On the clock when every time reads (Open-Meteo's 24 a day), else by slot
-    /// number.
+    /// Every slot with a readable temperature, at its hour of the day.
     private static func hours(_ hourly: [WeatherResult.Hourly]) -> [Hour] {
-        let clocks = hourly.map { WeatherClock.hours($0.time) }
-        let onClock = !clocks.contains(nil)
-        return hourly.enumerated().compactMap { index, hour in
+        hourly.enumerated().compactMap { index, hour in
             guard let temp = number(hour.tempC) else { return nil }
             return Hour(
-                id: index, x: onClock ? clocks[index] ?? Double(index) : Double(index), temp: temp, tempText: hour.tempC,
-                time: hour.time, rainChance: hour.rainChance)
+                id: index, x: Double(index), temp: temp, tempText: hour.tempC, time: hour.time,
+                rainChance: hour.rainChance)
         }
     }
 
