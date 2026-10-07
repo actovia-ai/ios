@@ -33,6 +33,9 @@ extension EnvironmentValues {
     @Entry public var markdownUnderlinesLinks = false
     /// "Ask about this": offered first in the edit menu of a selection, handed the selected words. Nil: not offered.
     @Entry public var markdownAskAbout: MarkdownAskAction?
+    /// A tap on an `entity:` link, handed the article's title, for the host to open its panel. Nil: the tap does
+    /// nothing (a gallery, a sheet).
+    @Entry public var markdownEntityTap: MarkdownEntityAction?
 }
 
 /// Marks the runs of one chip, so the renderer can put one capsule behind them.
@@ -331,6 +334,11 @@ extension MarkdownChipIcon {
 
 /// What "Ask about this" does with a selection; `Equatable` by identity so a view holding one is not redrawn for it.
 public struct MarkdownAskAction: Sendable {
+    public let perform: @MainActor @Sendable (String) -> Void
+    public init(_ perform: @escaping @MainActor @Sendable (String) -> Void) { self.perform = perform }
+}
+
+public struct MarkdownEntityAction: Sendable {
     public let perform: @MainActor @Sendable (String) -> Void
     public init(_ perform: @escaping @MainActor @Sendable (String) -> Void) { self.perform = perform }
 }

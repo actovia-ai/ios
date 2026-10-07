@@ -183,8 +183,15 @@ enum MarkdownAttributedText {
         {
             attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
         }
-        // Only what a tap may open is a link: anything else in model-written text is text.
-        if let link = run.link, case .open(let url) = MarkdownLinkPolicy.action(for: link) { attributes[.link] = url }
+        // Only what a tap may open is a link: anything else in model-written text is text. An entity link keeps
+        // its own URL — the tap path reads the title back from it (MarkdownLinkRouter).
+        if let link = run.link {
+            switch MarkdownLinkPolicy.action(for: link) {
+            case .open(let url): attributes[.link] = url
+            case .entity: attributes[.link] = link
+            case .citation, .discard: break
+            }
+        }
         if let spaced = run[MarkdownChipGapAttribute.self] { attributes[.markdownChipGap] = spaced }
         return attributes
     }
