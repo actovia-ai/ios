@@ -171,6 +171,16 @@ struct InteractiveRenderingTests {
         #expect(drawnCount(["Here.\n\n```exodus-confirm\n\(confirmSource)"]) == 0)
     }
 
+    @Test("steps and a chart are drawn as their blocks, once, and a second fence stays code")
+    func stepsAndStock() {
+        let steps = #"{"steps":[{"text":"A"},{"text":"B"}]}"#
+        let stock = #"{"symbol":"NASDAQ:AAPL"}"#
+        #expect(drawnCount(["How to:\n\n```exodus-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```exodus-stock\n\(stock)\n```"]) == 1)
+        #expect(drawnCount(["```exodus-stock\n\(stock)\n```\n\n```exodus-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```exodus-stock\n{\"symbol\":\"aapl\"}\n```"]) == 0)
+    }
+
     @Test("CRLF line ends are read as the desktop reads them")
     func crlf() throws {
         let text = "Here is the plan.\r\n\r\n```exodus-confirm\r\n\(confirmSource)\r\n```\r\n"
