@@ -65,6 +65,22 @@ enum StockChart {
         return host == "tradingview.com" || host.hasSuffix(".tradingview.com")
     }
 
+    /// Whether a navigation the web view cancels opens outside the app: only TradingView's own site, and only when
+    /// the chart's top frame or a new window asked for it (a tap) — a subframe or a script elsewhere on the page
+    /// that navigates is just cancelled.
+    static func opensExternally(_ url: URL?, isMainFrameOrWindow: Bool) -> Bool {
+        isMainFrameOrWindow && isTradingViewSite(url)
+    }
+
+    /// A navigation that was called off rather than failed: `URLError.cancelled`, or WebKit's "frame load
+    /// interrupted by policy change" (`WebKitErrorDomain` 102) — what a tap the policy cancels and opens in Safari
+    /// reports. Neither means the chart is gone.
+    static func isCancelledNavigation(_ error: Error) -> Bool {
+        let error = error as NSError
+        return (error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled)
+            || (error.domain == "WebKitErrorDomain" && error.code == 102)
+    }
+
     /// Every load but TradingView's own hosts is blocked. The widget's quotes arrive over a WebSocket to the same hosts,
     /// so `wss:` is admitted to them as `https:` is. One rule per host: the rule-list compiler refuses `|`.
     static let contentRules = #"""

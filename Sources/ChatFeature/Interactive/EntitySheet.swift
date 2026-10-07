@@ -74,7 +74,7 @@ struct EntitySheet: View {
                     Text(verbatim: Self.shortened(extract))
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                if let page = summary.url.flatMap(URL.init(string:)) {
+                if let page = Self.readMoreURL(summary.url) {
                     Button {
                         openURL(page)
                     } label: {
@@ -84,6 +84,12 @@ struct EntitySheet: View {
                 }
             }
         }
+    }
+
+    /// The article's page, opened only over `https` — any other scheme the answer carried gets no button.
+    nonisolated static func readMoreURL(_ string: String?) -> URL? {
+        guard let string, let url = URL(string: string), url.scheme?.lowercased() == "https" else { return nil }
+        return url
     }
 
     /// The first 600 characters, an ellipsis after a cut.

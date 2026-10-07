@@ -149,17 +149,28 @@ struct StockChartWebView: UIViewRepresentable {
         ) async -> WKNavigationActionPolicy {
             let url = navigationAction.request.url
             if StockChart.allowsNavigation(to: url) { return .allow }
-            if let url, StockChart.isTradingViewSite(url) { openExternally(url) }
+            // A nil target frame is a new window; a subframe's navigation elsewhere is only cancelled.
+            let isMainFrameOrWindow = navigationAction.targetFrame?.isMainFrame != false
+            if let url, StockChart.opensExternally(url, isMainFrameOrWindow: isMainFrameOrWindow) {
+                openExternally(url)
+            }
             return .cancel
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { set(.loaded) }
 
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            set(.failed)
+            fail(error)
         }
 
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { set(.failed) }
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { fail(error) }
+
+        /// A drawn chart stays drawn: a later navigation's failure (a tap the policy cancelled and sent to Safari)
+        /// is not the chart's, and a cancelled navigation is never a failure.
+        private func fail(_ error: Error) {
+            guard phase != .loaded, !StockChart.isCancelledNavigation(error) else { return }
+            set(.failed)
+        }
 
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { set(.failed) }
 

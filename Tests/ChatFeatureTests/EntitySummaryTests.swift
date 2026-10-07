@@ -61,4 +61,14 @@ struct EntitySummaryTests {
         await #expect(throws: URLError.self) { try await loader.summary(for: "Kyoto", lang: "en") }
         #expect(recorder.calls == 2)
     }
+
+    @Test("Read more opens the article only over https")
+    func readMore() {
+        #expect(
+            EntitySheet.readMoreURL("https://en.wikipedia.org/wiki/Kyoto")
+                == URL(string: "https://en.wikipedia.org/wiki/Kyoto"))
+        #expect(EntitySheet.readMoreURL("http://en.wikipedia.org/wiki/Kyoto") == nil)
+        #expect(EntitySheet.readMoreURL("javascript:alert(1)") == nil)
+        #expect(EntitySheet.readMoreURL(nil) == nil)
+    }
 }

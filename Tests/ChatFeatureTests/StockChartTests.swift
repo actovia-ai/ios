@@ -57,6 +57,21 @@ struct StockChartTests {
         #expect(!StockChart.isTradingViewSite(nil))
     }
 
+    @Test("only the top frame or a new window may send TradingView's site to the browser")
+    func opensExternally() {
+        let site = URL(string: "https://www.tradingview.com/symbols/NASDAQ-AAPL/")
+        #expect(StockChart.opensExternally(site, isMainFrameOrWindow: true))
+        #expect(!StockChart.opensExternally(site, isMainFrameOrWindow: false))
+        #expect(!StockChart.opensExternally(URL(string: "https://example.com/"), isMainFrameOrWindow: true))
+    }
+
+    @Test("a cancelled navigation is not a failure")
+    func cancelled() {
+        #expect(StockChart.isCancelledNavigation(URLError(.cancelled)))
+        #expect(StockChart.isCancelledNavigation(NSError(domain: "WebKitErrorDomain", code: 102)))
+        #expect(!StockChart.isCancelledNavigation(URLError(.notConnectedToInternet)))
+    }
+
     @Test("the content rules compile") @MainActor
     func rules() async throws {
         let rules = try await WKContentRuleListStore.default().compileContentRuleList(
