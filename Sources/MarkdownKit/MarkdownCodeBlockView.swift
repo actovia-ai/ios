@@ -33,17 +33,18 @@ struct MarkdownCodeBlockView: View {
             traits.userInterfaceStyle == .dark ? UIColor(white: 0.13, alpha: 1) : UIColor(white: 0.96, alpha: 1)
         })
 
+    /// 13 pt at the default text size — the system's footnote, not shrunk by the app's 16/17 — following the
+    /// reader's text size. ChatGPT's block, measured on its screenshot (owner, 2026-10-08): 13 pt of monospaced
+    /// beside 17 pt prose; the app's own footnote (12.2 pt) read a half-step too small, the subheadline (14.1) too big.
+    private static var codeSize: CGFloat { MarkdownFontSpec.pointSize(.footnote, in: .current, scaled: false) }
+
     /// The symbol, not a word: a symbol name is never localized.
     private var copySymbol: String {
         if copied { return "checkmark" }
         return "doc.on.doc"
     }
 
-    private var codeFont: Font {
-        // A step under the inline code's size (footnote, 13 pt at the default size): monospaced at subheadline read
-        // large in a block (owner, 2026-10-08); it still scales with the reader's text size.
-        .system(size: MarkdownFontSpec(style: .footnote).pointSize, design: .monospaced)
-    }
+    private var codeFont: Font { .system(size: Self.codeSize, design: .monospaced) }
 
     /// What the block draws: the highlight when it is for this very text, the plain code otherwise.
     private var displayedText: AttributedString {
@@ -96,6 +97,9 @@ struct MarkdownCodeBlockView: View {
             ScrollView(.horizontal) {
                 Text(displayedText)
                     .font(codeFont)
+                    // A point more between the lines than the font's own: ChatGPT's lines sit at the font's own
+                    // pitch (15.5 pt); the owner asked for a touch more air.
+                    .lineSpacing(1)
                     .fixedSize(horizontal: true, vertical: true)
                     .textSelection(.enabled)
                     .padding(.horizontal, MarkdownBlockShape.inset)
