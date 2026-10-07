@@ -25,6 +25,8 @@ public struct ChatDetailView: View {
     @FocusState private var isComposerFocused: Bool
     /// The Sources sheet, from an answer's Sources button or a tapped citation chip.
     @State private var sourcesSheet: SourcesSheetModel?
+    /// The entity link tapped in an answer, whose Wikipedia summary a sheet shows.
+    @State private var entity: EntityRequest?
     /// A folded answer opened from its "other version" link.
     @State private var otherVersion: OtherVersion?
     /// When a long press threw a recording away: the tap its release ends in must not start another.
@@ -107,6 +109,7 @@ public struct ChatDetailView: View {
                 .environment(\.artifactSandbox, objects.artifactSandbox)
                 .environment(\.readAloud, viewModel.readAloud)
                 .environment(\.markdownAskAbout, MarkdownAskAction { [viewModel] text in viewModel.askAbout(text) })
+                .environment(\.markdownEntityTap, MarkdownEntityAction { title in entity = EntityRequest(title: title) })
             }
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
@@ -158,6 +161,7 @@ public struct ChatDetailView: View {
             NoticeStack(notice: viewModel.notice, onDismiss: viewModel.dismissNotice) { composer }
         }
         .sheet(item: $sourcesSheet) { SourcesSheet(model: $0) }
+        .sheet(item: $entity) { EntitySheet(title: $0.title, loader: objects.entities) }
         .sheet(item: $otherVersion) { version in
             OtherVersionSheet(version: version) { [viewModel] in
                 Task { await viewModel.choose(runId: version.id) }
@@ -491,6 +495,12 @@ public struct ChatDetailView: View {
     }
 }
 
+/// An entity link's article title, as the sheet that shows its summary is presented.
+struct EntityRequest: Identifiable {
+    let title: String
+    var id: String { title }
+}
+
 /// What one chat screen owns: its view model, and the stores and loaders its cards read, all over the paired session.
 @MainActor
 final class ChatScreenObjects {
@@ -507,6 +517,8 @@ final class ChatScreenObjects {
     let artifactSandbox: ArtifactSandboxSource
     /// This chat's workspace files (a file card's View), through the same paired session.
     let workspaceFiles: WorkspaceFileLoader
+    /// Wikipedia's summaries for entity links, through the same paired session.
+    let entities: EntityLoader
 
     init(
         chatId: String, title: String?, apiClient: APIClient, streamManager: ChatStreamManager,
@@ -520,6 +532,7 @@ final class ChatScreenObjects {
         placePhotos = PlacePhotoLoader(apiClient: apiClient)
         artifactSandbox = ArtifactSandboxSource(apiClient: apiClient)
         workspaceFiles = WorkspaceFileLoader(apiClient: apiClient, chatId: chatId)
+        entities = EntityLoader(apiClient: apiClient)
     }
 }
 
