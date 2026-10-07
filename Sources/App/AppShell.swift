@@ -132,18 +132,6 @@ struct AppShell: View {
                 refreshComposerTools()
             }
         }
-        // While the app is up front, the tone is read again every two minutes. The call doubles as the phone's
-        // heartbeat: the computer marks a device seen on any call it makes, and its header's phone dot is green
-        // for a phone seen in the last five minutes — a phone open and idle must not read as gone (owner,
-        // 2026-10-08). Backgrounded, the task is cancelled with the phase: a phone put away is away.
-        .task(id: scenePhase) {
-            guard scenePhase == .active else { return }
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(120))
-                guard !Task.isCancelled else { return }
-                await toneModel?.refresh(apiClient: apiClient)
-            }
-        }
         // A chat opening reads the current model's levels and the MCP tools (the desktop may have changed either).
         .onChange(of: activeChat.id, initial: true) { refreshComposerTools() }
         // Initial too: a link that arrived behind the unlock or pairing gate is opened once the shell appears.
