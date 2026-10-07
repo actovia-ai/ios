@@ -114,6 +114,9 @@ public struct ChatDetailView: View {
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
             .scrollDismissesKeyboard(.interactively)
+            // What scrolls under the composer fades out, as under the title bar. Set, not left to the default: the
+            // default left the bottom edge bare, and a reply showed sharp below the bar and doubled in its glass.
+            .scrollEdgeEffectStyle(.soft, for: .bottom)
             // Tapping the transcript puts the keyboard away. Rows are not inert — an answer's
             // Markdown holds tappable links, a timeline expands, a card opens — so this is
             // attached *simultaneously*: it recognises alongside whatever the content does instead

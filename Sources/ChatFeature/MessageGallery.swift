@@ -105,6 +105,7 @@ public struct MessageGalleryView: View {
                     .padding(.bottom, TranscriptRows.endRoom)
                     .id(TranscriptRows.endID)
                 }
+                .scrollEdgeEffectStyle(.soft, for: .bottom)
                 .transcriptEnd(isAtEnd: $isAtEnd) {
                     withAnimation { proxy.scrollTo(TranscriptRows.endID, anchor: .bottom) }
                 }
