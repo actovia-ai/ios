@@ -63,6 +63,67 @@ private let confirmCases: [(String, String, Bool)] = [
     ("a 121-character note", confirm(["note": repeated("n", 121)]), false),
 ]
 
+private let stepsSource =
+    #"{"title":"Replacing the strings","steps":[{"text":"Loosen the old string from the tuning peg.","image":"https://imgs.search.brave.com/peg.jpg"},{"text":"Thread the new one through the bridge."},{"text":"Tune up slowly, stretching the string as you go.","image":"https://imgs.search.brave.com/tune.jpg"}]}"#
+private let stockSource =
+    #"{"symbol":"NASDAQ:AAPL","range":"1D","note":"Up 12% since the earnings call; the gap at Oct 2 is the split."}"#
+
+private func step(_ i: Int, _ extra: [String: Any] = [:]) -> [String: Any] {
+    ["text": "Step \(i)"].merging(extra) { $1 }
+}
+private func steps(_ extra: [String: Any] = [:]) -> String { json(["steps": [step(1), step(2)]].merging(extra) { $1 }) }
+private func stock(_ extra: [String: Any] = [:]) -> String { json(["symbol": "NASDAQ:AAPL"].merging(extra) { $1 }) }
+
+private let stepsCases: [(String, String, Bool)] = [
+    ("the spec's example", stepsSource, true),
+    ("two steps, no title", steps(), true),
+    ("one step", steps(["steps": [step(1)]]), false),
+    ("twelve steps", steps(["steps": (0..<12).map { step($0) }]), true),
+    ("thirteen steps", steps(["steps": (0..<13).map { step($0) }]), false),
+    ("a 300-character step", steps(["steps": [step(1, ["text": repeated("x", 300)]), step(2)]]), true),
+    ("a 301-character step", steps(["steps": [step(1, ["text": repeated("x", 301)]), step(2)]]), false),
+    ("150 emoji (300 UTF-16 units)", steps(["steps": [step(1, ["text": repeated("😀", 150)]), step(2)]]), true),
+    ("151 emoji (302 UTF-16 units)", steps(["steps": [step(1, ["text": repeated("😀", 151)]), step(2)]]), false),
+    ("a step on two lines", steps(["steps": [step(1, ["text": "a\nb"]), step(2)]]), false),
+    ("an empty step", steps(["steps": [step(1, ["text": ""]), step(2)]]), false),
+    ("an https picture", steps(["steps": [step(1, ["image": "https://imgs.search.brave.com/x.jpg"]), step(2)]]), true),
+    ("an http picture", steps(["steps": [step(1, ["image": "http://example.com/x.jpg"]), step(2)]]), false),
+    ("a data: picture", steps(["steps": [step(1, ["image": "data:image/png;base64,AAAA"]), step(2)]]), false),
+    ("a picture URL with a space", steps(["steps": [step(1, ["image": "https://example.com/a b.jpg"]), step(2)]]), false),
+    ("a 2048-character picture URL", steps(["steps": [step(1, ["image": "https://e.co/" + repeated("a", 2035)]), step(2)]]), true),
+    ("a 2049-character picture URL", steps(["steps": [step(1, ["image": "https://e.co/" + repeated("a", 2036)]), step(2)]]), false),
+    ("a 200-character title", steps(["title": repeated("t", 200)]), true),
+    ("a 201-character title", steps(["title": repeated("t", 201)]), false),
+    ("a title on two lines", steps(["title": "a\nb"]), false),
+    ("an empty title (none)", steps(["title": ""]), true),
+    ("nulls for what is optional", steps(["title": NSNull(), "steps": [step(1, ["image": NSNull()]), step(2)]]), true),
+    ("keys it does not know", steps(["colour": "red"]), true),
+    ("not JSON", #"{"steps":"#, false),
+    ("an array", "[]", false),
+]
+
+private let stockCases: [(String, String, Bool)] =
+    [
+        ("the spec's example", stockSource, true),
+        ("a symbol alone", stock(), true),
+    ] + ["1D", "1M", "3M", "12M", "60M", "ALL"].map { ("the range \($0)", stock(["range": $0]), true) } + [
+        ("a range it does not know (5D)", stock(["range": "5D"]), false),
+        ("a lowercase range", stock(["range": "1d"]), false),
+        ("a lowercase symbol", stock(["symbol": "nasdaq:aapl"]), false),
+        ("a symbol without an exchange", stock(["symbol": "AAPL"]), false),
+        ("a symbol with a space", stock(["symbol": "NASDAQ: AAPL"]), false),
+        ("a symbol with a slash", stock(["symbol": "NASDAQ:AAPL/../X"]), false),
+        ("a symbol with a dot and a dash", stock(["symbol": "TSE:7203.T-A"]), true),
+        ("a 40-character symbol", stock(["symbol": "X:" + repeated("A", 38)]), true),
+        ("a 41-character symbol", stock(["symbol": "X:" + repeated("A", 39)]), false),
+        ("a 300-character note", stock(["note": repeated("n", 300)]), true),
+        ("a 301-character note", stock(["note": repeated("n", 301)]), false),
+        ("a note on two lines", stock(["note": "a\nb"]), true),
+        ("nulls for what is optional", stock(["range": NSNull(), "note": NSNull()]), true),
+        ("no symbol", json(["note": "x"]), false),
+        ("an array", "[]", false),
+    ]
+
 private let findCases: [(String, String, InteractiveBlock.Kind?)] = [
     ("a questionnaire after a paragraph", "Intro\n\n```exodus-ask\n\(askSource)\n```\n\nAfter", .ask),
     ("a fence still open (a reply streaming)", "Intro\n\n```exodus-ask\n\(askSource)", nil),
@@ -79,6 +140,10 @@ private let findCases: [(String, String, InteractiveBlock.Kind?)] = [
     ("a tab after the name and after the closing fence", "```exodus-confirm\t\n\(confirmSource)\n```\t", .confirm),
     ("CRLF line ends", "Intro\r\n\r\n```exodus-confirm \r\n\(confirmSource)\r\n```\r\n", .confirm),
     ("another name", "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}\n```", nil),
+    ("a steps block", "Here:\n\n```exodus-steps\n\(stepsSource)\n```", .steps),
+    ("a stock block", "```exodus-stock\n\(stockSource)\n```", .stock),
+    ("a stock block after a questionnaire: the questionnaire", "```exodus-ask\n\(askSource)\n```\n\n```exodus-stock\n\(stockSource)\n```", .ask),
+    ("a stock block that does not validate, then steps: none", "```exodus-stock\n{\"symbol\":\"aapl\"}\n```\n\n```exodus-steps\n\(stepsSource)\n```", nil),
 ]
 
 @Suite("InteractiveBlock: the blocks' limits, as the desktop's zod schemas")
@@ -86,6 +151,30 @@ struct InteractiveBlockTests {
     @Test("exodus-ask", arguments: askCases)
     func askLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.ask, source: source) != nil) == valid, "\(name)")
+    }
+
+    @Test("exodus-steps", arguments: stepsCases)
+    func stepsLimits(_ name: String, _ source: String, _ valid: Bool) {
+        #expect((InteractiveBlock.parse(.steps, source: source) != nil) == valid, "\(name)")
+    }
+
+    @Test("exodus-stock", arguments: stockCases)
+    func stockLimits(_ name: String, _ source: String, _ valid: Bool) {
+        #expect((InteractiveBlock.parse(.stock, source: source) != nil) == valid, "\(name)")
+    }
+
+    @Test("the parsed blocks keep their fields; a missing range is the default, 1D")
+    func parsed() throws {
+        guard case .steps(let steps)? = InteractiveBlock.parse(.steps, source: stepsSource) else { return #expect(Bool(false)) }
+        #expect(steps.steps.count == 3)
+        #expect(steps.steps[1].image == nil)
+        guard case .stock(let full)? = InteractiveBlock.parse(.stock, source: stockSource) else { return #expect(Bool(false)) }
+        #expect(full.range == .oneDay)
+        guard case .stock(let bare)? = InteractiveBlock.parse(.stock, source: stock()) else { return #expect(Bool(false)) }
+        #expect(bare.range == nil)
+        #expect((bare.range ?? .default) == .oneDay)
+        #expect(InteractiveBlock.Kind.steps.isAnswerable == false)
+        #expect(InteractiveBlock.Kind.ask.isAnswerable)
     }
 
     @Test("exodus-confirm", arguments: confirmCases)

@@ -32,7 +32,8 @@ struct InteractiveAnswerCard: View {
 
     nonisolated static func symbol(for head: InteractiveAnswer.Head) -> String {
         switch (head.block, head.decision) {
-        case (.ask, _): "checklist"
+        // A head is only ever an answerable kind (`Head.init(from:)`); the others share the questionnaire's symbol.
+        case (.ask, _), (.steps, _), (.stock, _): "checklist"
         case (.confirm, .reject?): "xmark.circle"
         case (.confirm, _): "checkmark.circle"
         }

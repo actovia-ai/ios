@@ -120,6 +120,9 @@ struct InteractiveBlockView: View {
             case .confirm(let block):
                 ConfirmationBlockView(
                     block: block, runId: runId, answered: answered, mode: mode, drafts: store, sendAnswer: sendAnswer)
+            case .steps, .stock:
+                // Drawn by the rich-blocks views (plan 2026-10-07, Task 8).
+                EmptyView()
             }
         }
         // A frozen block's draft is done with.

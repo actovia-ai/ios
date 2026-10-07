@@ -1,15 +1,17 @@
 import Foundation
 
-/// The questionnaire and the confirmation a reply can ask with (spec 2026-10-06): a fenced block whose info string
-/// names it (`exodus-ask`, `exodus-confirm`) and whose body is one JSON object. One that validates is drawn as a
-/// control; anything else stays the code block it is. The desktop has the same rules
+/// The blocks a reply can carry (specs 2026-10-06 and 2026-10-07): a fenced block whose info string names it
+/// (`exodus-ask`, `exodus-confirm`, `exodus-steps`, `exodus-stock`) and whose body is one JSON object. One that
+/// validates is drawn natively; anything else stays the code block it is. The desktop has the same rules
 /// (`packages/shared/src/types/interactive.ts`), held to the same vectors; lengths are UTF-16 units, as zod counts.
 enum InteractiveBlock: Equatable, Sendable {
     case ask(Ask)
     case confirm(Confirm)
+    case steps(Steps)
+    case stock(Stock)
 
     enum Kind: String, Codable, Sendable {
-        case ask, confirm
+        case ask, confirm, steps, stock
 
         /// The fence's info string.
         var language: String { "exodus-" + rawValue }
@@ -18,6 +20,9 @@ enum InteractiveBlock: Equatable, Sendable {
             guard language.hasPrefix("exodus-") else { return nil }
             self.init(rawValue: String(language.dropFirst("exodus-".count)))
         }
+
+        /// The two blocks that ask: only they wait for an answer and freeze; the others only show.
+        var isAnswerable: Bool { self == .ask || self == .confirm }
     }
 
     struct Ask: Decodable, Equatable, Sendable {
@@ -60,10 +65,46 @@ enum InteractiveBlock: Equatable, Sendable {
         let note: String?
     }
 
+    /// Illustrated steps: a numbered list, each step a line and, where the run's search returned one, a thumbnail.
+    struct Steps: Decodable, Equatable, Sendable {
+        struct Step: Decodable, Equatable, Sendable {
+            let text: String
+            /// A thumbnail among the run's web-search results; the phone drops any other URL (`StepsPictures`).
+            let image: String?
+        }
+
+        /// Optional; empty is none.
+        let title: String?
+        let steps: [Step]
+    }
+
+    /// A TradingView chart of a symbol, with the model's one-line reading.
+    struct Stock: Decodable, Equatable, Sendable {
+        /// The Mini Chart widget's own `dateRange` set, as it spells it.
+        enum Range: String, Decodable, Sendable, CaseIterable {
+            case oneDay = "1D"
+            case oneMonth = "1M"
+            case threeMonths = "3M"
+            case twelveMonths = "12M"
+            case sixtyMonths = "60M"
+            case all = "ALL"
+
+            /// The finest the widget offers (owner, 2026-10-07).
+            static let `default` = Range.oneDay
+        }
+
+        /// TradingView's `EXCHANGE:TICKER`.
+        let symbol: String
+        let range: Range?
+        let note: String?
+    }
+
     var kind: Kind {
         switch self {
         case .ask: .ask
         case .confirm: .confirm
+        case .steps: .steps
+        case .stock: .stock
         }
     }
 
@@ -77,6 +118,8 @@ enum InteractiveBlock: Equatable, Sendable {
             switch kind {
             case .ask: (try? decoder.decode(Ask.self, from: data)).map(InteractiveBlock.ask)
             case .confirm: (try? decoder.decode(Confirm.self, from: data)).map(InteractiveBlock.confirm)
+            case .steps: (try? decoder.decode(Steps.self, from: data)).map(InteractiveBlock.steps)
+            case .stock: (try? decoder.decode(Stock.self, from: data)).map(InteractiveBlock.stock)
             }
         guard let block, block.isValid else { return nil }
         return block
@@ -98,6 +141,11 @@ enum InteractiveBlock: Equatable, Sendable {
         case .confirm(let confirm):
             Self.oneLine(confirm.title, 200) && Self.within(confirm.details, 1000)
                 && Self.within(confirm.approve, 40) && Self.within(confirm.reject, 40) && Self.within(confirm.note, 120)
+        case .steps(let steps):
+            Self.optionalOneLine(steps.title, 200) && (2...12).contains(steps.steps.count)
+                && steps.steps.allSatisfy { Self.oneLine($0.text, 300) && Self.isHTTPSURL($0.image) }
+        case .stock(let stock):
+            Self.isSymbol(stock.symbol) && Self.within(stock.note, 300)
         }
     }
 
@@ -110,6 +158,32 @@ enum InteractiveBlock: Equatable, Sendable {
     private static let idUnits = Set("abcdefghijklmnopqrstuvwxyz0123456789_-".utf16)
     private static func isID(_ id: String) -> Bool {
         (1...32).contains(id.utf16.count) && id.utf16.allSatisfy(idUnits.contains)
+    }
+    /// An optional one-line text: absent or empty is none; otherwise within `max`.
+    private static func optionalOneLine(_ text: String?, _ max: Int) -> Bool {
+        guard let text, !text.isEmpty else { return true }
+        return oneLine(text, max)
+    }
+    /// The desktop's `/^https:\/\/\S+$/` within 2048 units, or absent.
+    private static func isHTTPSURL(_ text: String?) -> Bool {
+        guard let text else { return true }
+        let units = Array(text.utf16)
+        let prefix = Array("https://".utf16)
+        return units.count <= 2048 && units.count > prefix.count && units.starts(with: prefix)
+            && !units[prefix.count...].contains(where: JSText.isWhitespace)
+    }
+    private static let exchangeUnits = Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.".utf16)
+    private static let tickerUnits = exchangeUnits.union(Set("-".utf16))
+    /// The desktop's `/^[A-Z0-9_.]+:[A-Z0-9_.-]+$/` within 40 units.
+    private static func isSymbol(_ symbol: String) -> Bool {
+        let units = Array(symbol.utf16)
+        guard (1...40).contains(units.count), let colon = units.firstIndex(of: UInt16(UInt8(ascii: ":"))) else {
+            return false
+        }
+        let exchange = units[..<colon]
+        let ticker = units[(colon + 1)...]
+        return !exchange.isEmpty && !ticker.isEmpty && exchange.allSatisfy(exchangeUnits.contains)
+            && ticker.allSatisfy(tickerUnits.contains)
     }
 }
 
