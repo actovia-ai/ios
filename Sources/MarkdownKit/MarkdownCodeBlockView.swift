@@ -57,18 +57,17 @@ struct MarkdownCodeBlockView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                if let language {
-                    // The desktop's strip: a code glyph and the language as its makers spell it, at the
-                    // subheadline size — caption read too small over code (owner, 2026-10-08).
-                    Image(systemName: "chevron.left.forwardslash.chevron.right")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .accessibilityHidden(true)
-                    Text(verbatim: MarkdownLanguageName.display(language))
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                // The desktop's strip: a code glyph and the language as its makers spell it, at the subheadline
+                // size — caption read too small over code (owner, 2026-10-08). A fence with no language (an ASCII
+                // diagram, plain output) is Text, so every block has the same strip.
+                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                Text(verbatim: MarkdownLanguageName.display(language ?? "text"))
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
                 Spacer(minLength: 8)
                 // The icon alone, in a box of one size: a label that read "Copy" and then "Copied" changed width and
                 // shook the strip; the word is still there for VoiceOver, and the symbol morphs in place.
