@@ -14,7 +14,7 @@ ChatGPT and Gemini answer some questions with more than prose: a how-to as numbe
 | Entity panel | inline link `[Marie Curie](entity:Marie_Curie)` | The name in the text, underlined like a link; tapped, a panel with Wikipedia's summary, picture and a link out |
 | Stock chart | `exodus-stock` | A TradingView mini chart for the symbol, with the model's one-line reading under it |
 
-Decided by the owner (2026-10-06): TradingView for the charts ("用 TradingView"); plain-text answers stay the rule for anything interactive (nothing here sends anything back).
+Decided by the owner (2026-10-06): TradingView for the charts ("用 TradingView"); plain-text answers stay the rule for anything interactive (nothing here sends anything back). Decided 2026-10-07: the entity panel is a plain lookup — Wikipedia's summary and nothing of the model's ("先做成一个纯搜索的效果"); a model-written gloss may be added later if wanted.
 
 ### Non-goals
 - No new tool calls: a block never fetches on the model's behalf. Pictures come from search results the run already holds; the entity summary is fetched by the client through a desktop route when the panel opens; the chart is TradingView's own widget.
@@ -68,7 +68,7 @@ The `interactive blocks` section grows a second half, ~25 lines: steps for "how 
 - Prompt budget test.
 
 ## 6. Open questions for the owner
-1. Entity panels: Wikipedia only, or also the model's own one-line gloss when Wikipedia has nothing? (Draft: Wikipedia only; "nothing found" otherwise.)
+1. ~~Entity panels: Wikipedia only, or also the model's own one-line gloss when Wikipedia has nothing?~~ **Decided 2026-10-07: Wikipedia only, a pure lookup; "nothing found" otherwise. An AI gloss is a possible later addition, not part of phase 2.**
 2. Stock range default `1M` — or follow what the user asked ("this week" → `5D`)? (Draft: the model picks; default `1M`.)
 3. Steps pictures: thumbnails (fast) or the result's full image (sharper)? (Draft: thumbnail when the result has one, else the image.)
 4. Should `exodus-stock` be limited to one per reply, like the phase-1 blocks? (Draft: yes — one block per message stays the rule for every `exodus-*` fence.)
