@@ -25,9 +25,18 @@ struct MarkdownCodeBlockView: View {
         let text: AttributedString
     }
 
+    /// The panel's fill: a grey with no colour in it, the desktop's `--code` (0.97 / 0.269 in oklch). The system's
+    /// `secondarySystemBackground` has a blue cast (#F2F2F7) that read as the colour tone's beside a toned bubble
+    /// (owner, 2026-10-08); a code block keeps out of the tone in every scheme.
+    static let panel = Color(
+        uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(white: 0.13, alpha: 1) : UIColor(white: 0.96, alpha: 1)
+        })
+
     private var codeFont: Font {
-        // 0.875 em, as code sits beside body text on GitHub and the web: monospaced at body size reads large.
-        .system(size: MarkdownFontSpec(style: .subheadline).pointSize, design: .monospaced)
+        // A step under the inline code's size (footnote, 13 pt at the default size): monospaced at subheadline read
+        // large in a block (owner, 2026-10-08); it still scales with the reader's text size.
+        .system(size: MarkdownFontSpec(style: .footnote).pointSize, design: .monospaced)
     }
 
     /// What the block draws: the highlight when it is for this very text, the plain code otherwise.
@@ -81,7 +90,7 @@ struct MarkdownCodeBlockView: View {
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
             .markdownTrailingFade()
         }
-        .background(Color(uiColor: .secondarySystemBackground), in: MarkdownBlockShape.shape)
+        .background(Self.panel, in: MarkdownBlockShape.shape)
         // Colour the code off the main actor (highlight.js in JavaScriptCore), again when the text or the scheme
         // changes — a streaming block re-renders every token, so the highlighter caches by (code, language, scheme).
         .task(id: HighlightRequest(code: code, language: language, dark: colorScheme == .dark)) {
