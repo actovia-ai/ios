@@ -68,16 +68,20 @@ struct ComposerToolsButton: View {
         } label: {
             Label("common:action.add", systemImage: "plus")
                 .labelStyle(.iconOnly)
+                .font(.body.weight(.medium))
                 // Tinted while a choice is on, as the desktop's blue `+` — here the chat's tone, like the rest of it.
                 .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+                // The glass circle it sat in is gone (owner, 2026-10-08): the symbol alone, as the desktop's `+`, in
+                // the same 44 pt round so it keeps its place and its tap target.
+                .frame(width: 44, height: 44)
+                .contentShape(.circle)
         }
         // In the order written, as on the desktop: pictures, then how the answer is made, then the tools.
         .menuOrder(.fixed)
         .menuStyle(.button)
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
-        // The ink alone does not show in the Neutral tone, whose ink is the label colour: a wash of it over the glass
-        // does (under it, the glass hides it).
+        .buttonStyle(.plain)
+        // The ink alone does not show in the Neutral tone, whose ink is the label colour: a wash of it, only while
+        // a choice is on, does.
         .overlay {
             if isActive { Circle().fill(.tint.opacity(0.12)).allowsHitTesting(false) }
         }
