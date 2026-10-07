@@ -308,7 +308,9 @@ public struct ChatDetailView: View {
         .padding(.leading, 16)
         .padding(.trailing, 6)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
+        .composerVoiceGlow(
+            active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,

@@ -25,6 +25,15 @@ let project = Project(
         defaultKnownRegions: ["en", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it"],
         developmentRegion: "en"
     ),
+    // The composer's glow while recording (Sources/ChatFeature/ComposerVoiceGlow.swift): Jakub Antalik's voice-glow,
+    // MIT. Through Xcode's own package integration, not Tuist/Package.swift: Tuist (4.208) puts the package's `.metal`
+    // in both the Sources and Resources phases of its bundle and Xcode refuses the duplicate tasks. The monorepo's
+    // tags predate its root manifest, so a revision of main is pinned.
+    packages: [
+        .remote(
+            url: "https://github.com/Jakubantalik/Libraries.dev",
+            requirement: .revision("b7f44b8744f4e09ff088d824719636a513110e2a"))
+    ],
     // The version (marketing + build number) comes from one xcconfig, shared by
     // the app and the widget extension — see Configs/Version.xcconfig.
     settings: .settings(
@@ -178,7 +187,8 @@ let project = Project(
         moduleTarget(
             name: "ChatFeature",
             dependencies: [
-                .target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "MarkdownKit")
+                .target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "MarkdownKit"),
+                .package(product: "VoiceGlowKit")
             ]
         ),
         .target(
