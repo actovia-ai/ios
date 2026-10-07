@@ -49,7 +49,7 @@
 ## Review Focus
 
 - A step whose `image` is a search result's *original* URL, or any URL the run's search did not return as a thumbnail: the step is drawn without a picture and nothing is fetched. Tests: `rich-blocks.test.ts › steps › a picture that is not one of the run's thumbnails is not drawn` (Task 4); `StepsPicturesTests.originalsAreNotPictures` (Task 8).
-- An `entity:` link with a hostile or odd target — `entity:../x`, `entity:javascript:alert(1)`, a 201-unit title, `entity:%2F`, `entity:..`, an empty one: plain text, no popover or sheet, no request. Tests: `entity-link.test.ts` vectors (Task 1), `MarkdownLinkPolicyTests.entity` (Task 7).
+- An `entity:` link with a hostile or odd target — `entity:../x`, a 201-unit title, `entity:%2F`, `entity:..`, a space, an empty one: plain text, no popover or sheet, no request (a title that merely looks like a scheme, `javascript:alert(1)`, is a harmless path segment and stays a title). Tests: `entity-link.test.ts` vectors (Task 1), `MarkdownLinkPolicyTests.entity` (Task 7).
 - A stock symbol the widget would not take — lowercase, a space, a slash, no exchange, 41 units, a range of `5D`: the fence stays a code block, never an iframe. Tests: `STOCK_CASES` (Task 1), `stockCases` (Task 6).
 - The chart loads only its embed URL; a tap inside opens nothing inside the app; offline the card falls back to the symbol, the note and the link. Tests: `rich-blocks.test.ts › stock › the iframe's src is the embed URL and it is sandboxed` and `› falls back when the frame fails` (Task 4); `StockChartTests.allowsNavigation` and `.contentRulesCompile` (Task 8).
 - Copy or read aloud of a reply that holds a steps or stock block gives words, not JSON; a reply with no such block is untouched. Tests: `interactive-plain-text.test.ts` (Task 1), `InteractivePlainTextTests` (Task 6), `rich-blocks.test.ts › copy and read aloud take the block's words` (Task 5).
@@ -362,7 +362,8 @@ const ENTITY_CASES: Array<[string, string, string | null]> = [
   ['a query', 'entity:Marie_Curie?x=1', null],
   ['a hash', 'entity:Marie_Curie#History', null],
   ['a space', 'entity:Marie Curie', null],
-  ['another scheme inside', 'entity:javascript:alert(1)', null],
+  // `entity:javascript:alert(1)` IS a title by the alphabet (as `Category:Physicists` is) and harmless: a title
+  // is only ever a percent-encoded path segment of the Wikipedia URL, never navigated — so it is not a vector.
   ['not an entity link', 'https://en.wikipedia.org/wiki/Marie_Curie', null],
   ['the scheme in capitals', 'ENTITY:Marie_Curie', null],
   ['nothing', '', null]
@@ -811,7 +812,7 @@ cd /Users/yanceyleo/Code/exodus/exodus
 bun run typecheck:shared && bun run typecheck:web
 bunx oxfmt packages/shared/src/types packages/shared/src/utils tests/unit/shared && bunx oxlint packages/shared/src/types/interactive.ts packages/shared/src/utils/entity-link.ts packages/shared/src/utils/stock-chart.ts packages/shared/src/utils/interactive-plain-text.ts packages/shared/src/types/entity.ts
 bunx vitest run tests/unit/shared
-git add packages/shared/src/types/interactive.ts packages/shared/src/types/entity.ts packages/shared/src/utils/entity-link.ts packages/shared/src/utils/stock-chart.ts packages/shared/src/utils/interactive-plain-text.ts tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/entity-link.test.ts tests/unit/shared/utils/stock-chart.test.ts tests/unit/shared/utils/interactive-plain-text.test.ts
+git add packages/shared/package.json packages/shared/src/types/interactive.ts packages/shared/src/types/entity.ts packages/shared/src/utils/entity-link.ts packages/shared/src/utils/stock-chart.ts packages/shared/src/utils/interactive-plain-text.ts tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/entity-link.test.ts tests/unit/shared/utils/stock-chart.test.ts tests/unit/shared/utils/interactive-plain-text.test.ts
 git commit -F - <<'EOF'
 feat(blocks): two more kinds a reply can carry — illustrated steps (exodus-steps: 2–12 one-line steps, a thumbnail each) and a stock chart (exodus-stock: TradingView's EXCHANGE:TICKER, its own range set, default 1D) — with the entity-link title rule, the chart's embed and symbol-page URLs, and the words Copy and read-aloud get in place of a block's JSON; vectors the phone is held to
 
@@ -819,7 +820,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 EOF
 git show --stat HEAD
 ```
-Expected: the commit lists exactly the nine files.
+Expected: the commit lists exactly the ten files (`packages/shared/package.json` gains the four `exports` entries the new modules need).
 
 ### Task 2: Desktop main — `GET /api/v1/entity/:title`, Wikipedia's summary through the safe fetch
 
@@ -2105,7 +2106,7 @@ describe('an entity link in a reply', () => {
     expect(host.querySelector('a[href^="entity:"]')).toBeNull()
   })
 
-  it.each(['entity:../x', 'entity:javascript:alert(1)', `entity:${'a'.repeat(201)}`, 'entity:Marie%2FCurie', 'entity:'])(
+  it.each(['entity:../x', 'entity:Marie%20Curie', `entity:${'a'.repeat(201)}`, 'entity:Marie%2FCurie', 'entity:'])(
     'a target that is not a title (%s) is plain text',
     async (href) => {
       await show(createElement(Turn, { body: `See [this](${href}) now.` }))
@@ -2975,7 +2976,6 @@ In `Tests/MarkdownKitTests/MarkdownSafetyTests.swift`, inside `MarkdownLinkPolic
         ("entity:Marie_Curie?x=1", nil),
         ("entity:Marie_Curie#History", nil),
         ("entity:Marie Curie", nil),
-        ("entity:javascript:alert(1)", nil),
         ("https://en.wikipedia.org/wiki/Marie_Curie", nil),
         ("ENTITY:Marie_Curie", nil),
     ] as [(String, String?)])
