@@ -65,12 +65,15 @@ enum StockChart {
         return host == "tradingview.com" || host.hasSuffix(".tradingview.com")
     }
 
-    /// Every load but TradingView's own hosts is blocked. One rule per host: the rule-list compiler refuses `|`.
+    /// Every load but TradingView's own hosts is blocked. The widget's quotes arrive over a WebSocket to the same hosts,
+    /// so `wss:` is admitted to them as `https:` is. One rule per host: the rule-list compiler refuses `|`.
     static let contentRules = #"""
         [
           {"trigger": {"url-filter": ".*"}, "action": {"type": "block"}},
           {"trigger": {"url-filter": "^https://([a-z0-9-]+\\.)*tradingview-widget\\.com/"}, "action": {"type": "ignore-previous-rules"}},
           {"trigger": {"url-filter": "^https://([a-z0-9-]+\\.)*tradingview\\.com/"}, "action": {"type": "ignore-previous-rules"}},
+          {"trigger": {"url-filter": "^wss://([a-z0-9-]+\\.)*tradingview-widget\\.com/"}, "action": {"type": "ignore-previous-rules"}},
+          {"trigger": {"url-filter": "^wss://([a-z0-9-]+\\.)*tradingview\\.com/"}, "action": {"type": "ignore-previous-rules"}},
           {"trigger": {"url-filter": "^about:"}, "action": {"type": "ignore-previous-rules"}}
         ]
         """#
