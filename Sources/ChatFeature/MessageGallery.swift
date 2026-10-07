@@ -141,6 +141,7 @@ public struct MessageGalleryView: View {
             SourcesSheet(model: $0)
                 .environment(\.searchMediaLoader, GalleryIcons.loader)
         }
+        .screenVoiceGlow(active: ComposerGalleryState.launch == .recording) { ComposerGalleryBar.speech(at: .now) }
         .environment(\.timelineStartsExpanded, MessageGalleryLaunch.expanded)
         .environment(\.searchMediaLoader, GalleryIcons.loader)
         .environment(\.readAloud, readAloud)

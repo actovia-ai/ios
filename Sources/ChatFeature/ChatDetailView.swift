@@ -275,6 +275,8 @@ public struct ChatDetailView: View {
         // a link, which the tint alone would no longer set apart from the text around it, is underlined.
         .tint(toneInk)
         .environment(\.markdownUnderlinesLinks, colorTone == .neutral)
+        // While recording the voice rises from the bottom of the screen, as voice-glow's phone demo, over the composer.
+        .screenVoiceGlow(active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
     }
 
     private var emptyState: some View {
@@ -306,11 +308,9 @@ public struct ChatDetailView: View {
             composerRow
         }
         .padding(.leading, 16)
-        .padding(.trailing, 6)
-        .padding(.vertical, 10)
+        .padding(.trailing, ComposerRowLayout.inset)
+        .padding(.vertical, ComposerRowLayout.inset)
         .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
-        .composerVoiceGlow(
-            active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,
@@ -336,7 +336,7 @@ public struct ChatDetailView: View {
                 Task { await viewModel.addPictures(items) }
             }
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.
-            .padding(.leading, -10)
+            .padding(.leading, ComposerRowLayout.inset - 16)
             .composerRole(.leading)
             TextField("ios:chat.composer.placeholder", text: $viewModel.composerText, axis: .vertical)
                 .lineLimit(1...5)
@@ -348,7 +348,7 @@ public struct ChatDetailView: View {
                 .accessibilityHidden(isRecording)
                 .overlay(alignment: .leading) {
                     if case .recording(let since) = viewModel.recording {
-                        RecordingMeter(since: since, level: viewModel.voiceRecorder.level)
+                        RecordingMeter(since: since)
                             .transition(.opacity)
                     }
                 }

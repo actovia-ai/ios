@@ -29,11 +29,15 @@ struct TurnButtonLabel: View {
                 }
         }
         .labelStyle(.iconOnly)
+        // The glyph's box, which the glass circle pads out to the pill's button size (`ComposerRowLayout.buttonSide`).
+        .frame(width: Self.glyphSide, height: Self.glyphSide)
         .foregroundStyle(glyph)
         // The single most-tapped control in the app (apple-design §13: state indication, tens of times a day, so the
         // motion stays fast and subtle, never a showy morph).
         .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
     }
+
+    static let glyphSide: CGFloat = 22
 
     /// Send and record in the tone (in light its ink, in dark its fill); stop neutral; a recording's stop red.
     static func fill(_ state: TurnButtonState, scheme: ColorScheme, toneFill: Color, toneInk: Color) -> Color {
@@ -53,44 +57,22 @@ struct TurnButtonLabel: View {
     }
 }
 
-/// In the message field's place while recording: a red dot, the live input level and the length so far, `m:ss`.
+/// In the message field's place while recording: a red dot and the length so far, `m:ss`. The voice's level is the
+/// screen's glow (`screenVoiceGlow`); the bar that also drew it read as a timeline and is gone (owner, 2026-10-08).
 struct RecordingMeter: View {
     let since: Date
-    /// Read about ten times a second.
-    let level: () -> Double
-    @ScaledMetric(relativeTo: .body) private var trackWidth: CGFloat = 72
 
     var body: some View {
-        TimelineView(.periodic(from: since, by: 0.1)) { context in
+        TimelineView(.periodic(from: since, by: 1)) { context in
             HStack(spacing: 10) {
                 Circle()
                     .fill(.red)
                     .frame(width: 8, height: 8)
-                LevelBar(level: level())
-                    .frame(width: trackWidth, height: 6)
                 Text(VoiceRecorder.elapsed(from: since, to: context.date))
                     .font(.body.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .combine)
-    }
-}
-
-private struct LevelBar: View {
-    let level: Double
-
-    var body: some View {
-        Capsule()
-            .fill(.quaternary)
-            .overlay(alignment: .leading) {
-                GeometryReader { proxy in
-                    Capsule()
-                        .fill(.red)
-                        .frame(width: max(6, proxy.size.width * level))
-                }
-            }
-            .clipShape(Capsule())
-            .animation(.linear(duration: 0.1), value: level)
     }
 }

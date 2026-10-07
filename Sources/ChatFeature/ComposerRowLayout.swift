@@ -90,9 +90,14 @@ struct ComposerRowPlan: Equatable {
 /// The composer's row laid out by `ComposerRowPlan`: one `Layout` with the same children in both shapes, so the
 /// field keeps its identity (its focus, the keyboard) across the change and the move animates.
 struct ComposerRowLayout: Layout {
-    /// The pill's corners: half its one-line height (a 44 pt row and 10 pt above and below), so one line reads as a
+    /// The round buttons at either end, `+` and the turn button, one size.
+    static let buttonSide: CGFloat = 36
+    /// The pill's padding around them, the same on every side: the buttons sit concentric in the pill's ends, never
+    /// closer to the side than to the top (owner, 2026-10-08: a 64 pt bar read tall, its buttons crowding the sides).
+    static let inset: CGFloat = 8
+    /// The pill's corners: half its one-line height (a button and the inset above and below), so one line reads as a
     /// capsule, as the desktop's; more lines, a quote or pictures and it is a rounded box.
-    static let cornerRadius: CGFloat = 32
+    static let cornerRadius: CGFloat = (buttonSide + 2 * inset) / 2
 
     /// The height of one line of the field's text, at the reader's text size.
     var oneLineHeight: CGFloat

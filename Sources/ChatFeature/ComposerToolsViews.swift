@@ -72,8 +72,8 @@ struct ComposerToolsButton: View {
                 // Tinted while a choice is on, as the desktop's blue `+` — here the chat's tone, like the rest of it.
                 .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
                 // The glass circle it sat in is gone (owner, 2026-10-08): the symbol alone, as the desktop's `+`, in
-                // the same 44 pt round so it keeps its place and its tap target.
-                .frame(width: 44, height: 44)
+                // a round the size of the turn button's, so the two ends of the pill match.
+                .frame(width: ComposerRowLayout.buttonSide, height: ComposerRowLayout.buttonSide)
                 .contentShape(.circle)
         }
         // In the order written, as on the desktop: pictures, then how the answer is made, then the tools.

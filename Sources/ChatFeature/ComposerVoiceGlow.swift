@@ -1,7 +1,7 @@
 import SwiftUI
 import VoiceGlowKit
 
-/// The composer's glow while it records: voice-glow (libraries.dev, Jakub Antalik) rising from the pill's bottom edge
+/// The glow while the composer records: voice-glow (libraries.dev, Jakub Antalik) rising from the bottom of the screen
 /// with the voice. It reads the level from our own `AVAudioRecorder` (`VoiceRecorder.level()`), never the library's
 /// `VoiceMeter`: that one runs its own `AVAudioEngine` and turns the audio session off under the recording.
 enum ComposerVoiceGlow {
@@ -26,28 +26,38 @@ enum ComposerVoiceGlow {
 }
 
 extension View {
-    /// The glow over a composer pill (`ComposerRowLayout.cornerRadius`); it fades in and out with `active` and draws nothing, nor
-    /// ticks, while off, so the pill's size and layout are untouched.
-    func composerVoiceGlow(active: Bool, level: @escaping () -> Double) -> some View {
-        modifier(ComposerVoiceGlowModifier(active: active, level: level))
+    /// The glow over the whole screen while recording, rising from its bottom edge as voice-glow's phone demo (the
+    /// `mobile` type). An overlay that takes no taps: the composer and the transcript under it work as before. It fades in
+    /// and out with `active` and draws nothing, nor ticks, while off.
+    func screenVoiceGlow(active: Bool, level: @escaping () -> Double) -> some View {
+        modifier(ScreenVoiceGlowModifier(active: active, level: level))
     }
 }
 
-private struct ComposerVoiceGlowModifier: ViewModifier {
+private struct ScreenVoiceGlowModifier: ViewModifier {
     let active: Bool
     let level: () -> Double
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The screen's own corners, which the glow's bottom follows. iOS does not say what they are; this is the
+    /// library's own phone figure, close to every current iPhone's.
+    static let displayCornerRadius = 55.0
 
     func body(content: Content) -> some View {
         var options = VoiceGlowOptions()
         // Without a spectrum the library wobbles the lobes on a clock; with Reduce Motion they stay put.
         options.bands = !reduceMotion
-        return content.voiceGlow(
-            type: .standard,
-            levelProvider: { [reduceMotion, level] in ComposerVoiceGlow.level(level(), reduceMotion: reduceMotion) },
-            active: active,
-            cornerRadius: ComposerRowLayout.cornerRadius,
-            options: options
-        )
+        return content.overlay {
+            Color.clear
+                .voiceGlow(
+                    type: .mobile,
+                    levelProvider: { [reduceMotion, level] in ComposerVoiceGlow.level(level(), reduceMotion: reduceMotion) },
+                    active: active,
+                    cornerRadius: Self.displayCornerRadius,
+                    options: options
+                )
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+        }
     }
 }

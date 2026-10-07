@@ -46,12 +46,12 @@ struct ComposerGalleryBar: View {
             }
             ComposerRowLayout(oneLineHeight: lineHeight) {
                 ComposerToolsButton(tools: tools, attachments: attachments) { _ in }
-                    .padding(.leading, -10)
+                    .padding(.leading, ComposerRowLayout.inset - 16)
                     .composerRole(.leading)
                 Group {
                     switch state {
                     case .recording:
-                        RecordingMeter(since: recordingSince) { Self.speech(at: .now) }
+                        RecordingMeter(since: recordingSince)
                     case .typed:
                         Text(verbatim: "Show me a counter in SwiftUI")
                     case .multiline:
@@ -75,10 +75,9 @@ struct ComposerGalleryBar: View {
             }
         }
         .padding(.leading, 16)
-        .padding(.trailing, 6)
-        .padding(.vertical, 10)
+        .padding(.trailing, ComposerRowLayout.inset)
+        .padding(.vertical, ComposerRowLayout.inset)
         .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
-        .composerVoiceGlow(active: state == .recording) { Self.speech(at: .now) }
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         // As the chat screen: what tints is the tone's ink.
@@ -101,7 +100,7 @@ struct ComposerGalleryBar: View {
 
     /// A stand-in for the recorder's level while recording: syllables of about 0.2 s in phrases of a few seconds,
     /// between a quiet room (0.15) and a raised voice (0.8), as `VoiceRecorder.level()` reads them.
-    private static func speech(at date: Date) -> Double {
+    static func speech(at date: Date) -> Double {
         let t = date.timeIntervalSinceReferenceDate
         let phrase = max(0, sin(t * 2 * .pi / 3.2))
         let syllables = 0.5 + 0.5 * sin(t * 2 * .pi * 4.7) * sin(t * 2 * .pi * 1.3)
