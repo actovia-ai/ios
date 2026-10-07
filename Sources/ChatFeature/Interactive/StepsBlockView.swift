@@ -96,8 +96,10 @@ private struct StepPicture: View {
                 }
                 do {
                     image = try await loader.load(url, maxPixelSize: SearchMediaLoader.thumbnailPixelCap)
+                } catch is CancellationError {
+                    // Scrolled away mid-load: the next appearance loads again.
                 } catch {
-                    failed = true
+                    if !Task.isCancelled { failed = true }
                 }
             }
         }
