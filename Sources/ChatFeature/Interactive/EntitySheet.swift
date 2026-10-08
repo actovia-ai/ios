@@ -79,8 +79,14 @@ struct EntitySheet: View {
                         openURL(page)
                     } label: {
                         Label("ios:chat.block.readMore", systemImage: "arrow.up.right")
+                            // The arrow after the words, as a way out reads.
+                            .labelStyle(.trailingIcon)
                     }
                     .font(.subheadline.weight(.medium))
+                    // A bordered capsule, not tinted text: in the neutral tone the tint is the text's own colour, and
+                    // plain words did not read as a way out to Wikipedia (owner, 2026-10-08).
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
                 }
             }
         }
@@ -139,4 +145,18 @@ private struct EntityPicture: View {
             }
         }
     }
+}
+
+/// A label with its icon after the title: "Read more on Wikipedia ↗".
+private struct TrailingIconLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            configuration.title
+            configuration.icon
+        }
+    }
+}
+
+extension LabelStyle where Self == TrailingIconLabelStyle {
+    fileprivate static var trailingIcon: TrailingIconLabelStyle { TrailingIconLabelStyle() }
 }
