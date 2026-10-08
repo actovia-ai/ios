@@ -87,8 +87,12 @@ public enum MarkdownPreprocessor {
             while end < chars.count, chars[end] == "*", !mask[end] { end += 1 }
             let previous: Character? = index > 0 ? chars[index - 1] : nil
             let next: Character? = end < chars.count ? chars[end] : nil
-            let closes = MarkdownScan.isPunctuation(previous) && MarkdownScan.isCJKLetter(next)
-            let opens = MarkdownScan.isCJKLetter(previous) && MarkdownScan.isPunctuation(next)
+            // A CJK character beside the punctuation is the boundary, and so is full-width CJK punctuation
+            // itself: `再平衡。**2018` closes, `2018**「引号」` opens, as on the desktop.
+            let closes = MarkdownScan.isPunctuation(previous)
+                && (MarkdownScan.isCJKLetter(next) || (MarkdownScan.isCJK(previous) && Self.isWordCharacter(next)))
+            let opens = MarkdownScan.isPunctuation(next)
+                && (MarkdownScan.isCJKLetter(previous) || (MarkdownScan.isCJK(next) && Self.isWordCharacter(previous)))
             if closes { output.append(cjkBoundary) }
             output += String(chars[index..<end])
             if opens { output.append(cjkBoundary) }
@@ -96,6 +100,12 @@ public enum MarkdownPreprocessor {
             index = end
         }
         return changed ? output : nil
+    }
+
+    /// Neither whitespace nor punctuation (nor an edge): where a `*` run would not flank on its own.
+    private static func isWordCharacter(_ character: Character?) -> Bool {
+        guard let character else { return false }
+        return !character.isWhitespace && !MarkdownScan.isPunctuation(character)
     }
 
     static func removingCJKBoundary(_ text: String) -> String {

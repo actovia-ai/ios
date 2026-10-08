@@ -39,6 +39,16 @@ struct MarkdownCJKEmphasisTests {
         #expect(plain("前面**粗体。**后面") == "前面粗体。后面")
     }
 
+    @Test("bold closes after CJK punctuation though a digit or a Latin letter follows, and opens before it")
+    func fullWidthPunctuation() {
+        #expect(strong("**三、地理与性别的再平衡。**2018 年以来男女严格交替") == ["三、地理与性别的再平衡。"])
+        #expect(plain("**三、地理与性别的再平衡。**2018 年") == "三、地理与性别的再平衡。2018 年")
+        #expect(strong("**结论：**Carson 获奖") == ["结论："])
+        #expect(strong("2018**「女性年」**之后") == ["「女性年」"])
+        // Half-width punctuation keeps CommonMark's rule.
+        #expect(strong("**bold.**2018").isEmpty)
+    }
+
     @Test("bold and italics inside a CJK sentence")
     func inSentence() {
         #expect(strong("中文**粗体**中文") == ["粗体"])
