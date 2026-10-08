@@ -156,6 +156,9 @@ struct InteractiveOptionRow: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            // The question's size, not the body's: a choice set larger than the question it answers read out of
+            // scale (owner, 2026-10-08).
+            .font(.subheadline)
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(minHeight: 44)
@@ -193,6 +196,7 @@ struct InteractiveNoteField: View {
                 .font(.subheadline.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
             TextField(text: $text, prompt: Text("ios:chat.block.notePlaceholder"), axis: .vertical) { title }
+                .font(.subheadline)
                 .lineLimit(1...4)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 11)
