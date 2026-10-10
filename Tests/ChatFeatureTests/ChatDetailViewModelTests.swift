@@ -717,6 +717,19 @@ struct ChatDetailViewModelTests {
         #expect(vm.completedTurnCount == 0)
     }
 
+    @Test("a chat made on the phone is ready to send at once: no history is asked for")
+    func aNewChatSkipsTheHistoryRead() async throws {
+        let recorder = RequestRecorder()
+        serve(history: historyRowsJSON, recorder: recorder)
+        let vm = Harness().makeViewModel()
+        await vm.onAppear(isNew: true)
+        #expect(vm.hasLoadedHistory)
+        #expect(vm.messages.isEmpty)
+        #expect(!recorder.lines.contains { $0.contains("/page") })
+        vm.composerText = "hey"
+        #expect(vm.canSend)
+    }
+
     @Test("sendMessage bumps sendCount once per accepted send; a send canSend rejects does not")
     func sendCountBumpsOnlyOnAcceptedSends() async throws {
         serve(history: historyRowsJSON, reply: helloReply, recorder: RequestRecorder())

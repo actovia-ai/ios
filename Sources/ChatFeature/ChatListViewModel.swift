@@ -132,16 +132,28 @@ public final class ChatListViewModel {
         }
     }
 
-    /// True only when the server confirmed the delete.
+    /// True only when the server confirmed the delete. The row goes at once, as a star does, and comes back where it
+    /// was when the computer refuses: waiting for it left the row on screen with nothing said.
     @discardableResult
     public func delete(_ chat: ChatSummary) async -> Bool {
+        let chatIndex = chats.firstIndex { $0.id == chat.id }
+        let favoriteIndex = favorites.firstIndex { $0.id == chat.id }
+        let removedChat = chatIndex.map { chats[$0] }
+        let removedFavorite = favoriteIndex.map { favorites[$0] }
+        deletedIDs.insert(chat.id)
+        chats.removeAll { $0.id == chat.id }
+        favorites.removeAll { $0.id == chat.id }
         do {
             try await apiClient.delete("/api/v1/chat/\(chat.id)")
-            deletedIDs.insert(chat.id)
-            chats.removeAll { $0.id == chat.id }
-            favorites.removeAll { $0.id == chat.id }
             return true
         } catch {
+            deletedIDs.remove(chat.id)
+            if let chatIndex, let removedChat, !chats.contains(where: { $0.id == chat.id }) {
+                chats.insert(removedChat, at: min(chatIndex, chats.endIndex))
+            }
+            if let favoriteIndex, let removedFavorite, !favorites.contains(where: { $0.id == chat.id }) {
+                favorites.insert(removedFavorite, at: min(favoriteIndex, favorites.endIndex))
+            }
             guard !isCancellation(error) else { return false }
             errorMessage = error.localizedDescription
             return false
@@ -149,26 +161,28 @@ public final class ChatListViewModel {
     }
 
     /// True only when the server confirmed the rename (a blank title never reaches it: it would
-    /// leave the row with nothing to show). Updates the local copy on success so the row reflects
-    /// the new title without a reload.
+    /// leave the row with nothing to show). The row takes the new title at once and gets its old
+    /// one back if the computer refuses.
     @discardableResult
     public func rename(_ chat: ChatSummary, to title: String) async -> Bool {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
+        let previous = chats.first { $0.id == chat.id }?.title ?? favorites.first { $0.id == chat.id }?.title ?? chat.title
+        setTitle(chat.id, trimmed)
         do {
             try await apiClient.put("/api/v1/chat", body: RenameChatPayload(id: chat.id, title: trimmed))
-            if let index = chats.firstIndex(where: { $0.id == chat.id }) {
-                chats[index].title = trimmed
-            }
-            if let index = favorites.firstIndex(where: { $0.id == chat.id }) {
-                favorites[index].title = trimmed
-            }
             return true
         } catch {
+            setTitle(chat.id, previous)
             guard !isCancellation(error) else { return false }
             errorMessage = error.localizedDescription
             return false
         }
+    }
+
+    private func setTitle(_ id: String, _ title: String) {
+        if let index = chats.firstIndex(where: { $0.id == id }) { chats[index].title = title }
+        if let index = favorites.firstIndex(where: { $0.id == id }) { favorites[index].title = title }
     }
 }
 

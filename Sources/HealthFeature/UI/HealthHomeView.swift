@@ -102,6 +102,7 @@ struct HealthHomeView: View {
                 if let suggestion = model.suggestion ?? leaving, flight == nil {
                     MemorySuggestionCard(
                         suggestion: suggestion,
+                        isSaving: leaving != nil,
                         onRemember: { remember() },
                         onDismiss: { withAnimation(.smooth) { model.dismissSuggestion() } }
                     )
@@ -124,9 +125,14 @@ struct HealthHomeView: View {
         } action: { _, v in viewport = v }
         .refreshable {
             now = Date()
-            await model.load(force: true)
-            // Done means a note: a refresh that ended offline or failed gets no success tap.
-            if case .ready = model.report { refreshes += 1 }
+            // The spinner waits for Apple Health only. The note is written in its card's own writing state — holding
+            // the pull for the computer's answer kept it up for as long as the note took (up to two minutes).
+            let note = await model.refresh()
+            Task {
+                await note.value
+                // Done means a note: a refresh that ended offline or failed gets no success tap.
+                if case .ready = model.report { refreshes += 1 }
+            }
         }
         // Spec §5 haptics: crossing the pull threshold, a refresh done, the goal celebrated. Remember's is the
         // bindle's own, when it bounces.

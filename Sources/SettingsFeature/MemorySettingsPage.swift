@@ -438,9 +438,11 @@ struct MemoryEditorSheet: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common:action.save") { save() }
-                        .disabled(draft.key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                            || viewModel.isWriting)
+                    Button { save() } label: {
+                        if viewModel.isWriting { ProgressView() } else { Text("common:action.save") }
+                    }
+                    .disabled(draft.key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || viewModel.isWriting)
                 }
             }
             .alert(
@@ -480,14 +482,18 @@ struct MemoryEditorSheet: View {
 
     private func save() {
         Task {
-            let saved = if let entry { await viewModel.save(draft, for: entry) } else { await viewModel.create(draft) }
-            if saved { dismiss() }
+            // Closed once the computer has the change, not after the list has been read again.
+            if let entry {
+                await viewModel.save(draft, for: entry) { dismiss() }
+            } else {
+                await viewModel.create(draft) { dismiss() }
+            }
         }
     }
 
     private func setActive(_ entry: MemoryEntry, _ active: Bool) {
         Task {
-            if await viewModel.setActive(entry, active) { dismiss() }
+            await viewModel.setActive(entry, active) { dismiss() }
         }
     }
 }

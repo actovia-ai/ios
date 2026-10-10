@@ -204,7 +204,7 @@ public final class MemorySettingsViewModel {
 
     /// Adds an entry as the desktop does (`source: "explicit"`). The title is required.
     @discardableResult
-    public func create(_ draft: MemoryDraft) async -> Bool {
+    public func create(_ draft: MemoryDraft, onWritten: (() -> Void)? = nil) async -> Bool {
         let key = draft.trimmedKey
         guard !key.isEmpty else {
             failure = .titleRequired
@@ -212,27 +212,48 @@ public final class MemorySettingsViewModel {
         }
         let body = MemoryCreateBody(
             section: draft.section.rawValue, key: key, summary: draft.trimmedSummary, details: draft.details)
-        return await perform(Failure.create) { try await self.apiClient.post(Self.path, body: body) }
+        return await perform(Failure.create, onWritten: onWritten) {
+            try await self.apiClient.post(Self.path, body: body)
+        }
     }
 
     /// Sends only the fields that differ from `entry`, as the desktop saves one field on blur. Nothing is sent
     /// when nothing changed.
     @discardableResult
-    public func save(_ draft: MemoryDraft, for entry: MemoryEntry) async -> Bool {
+    public func save(_ draft: MemoryDraft, for entry: MemoryEntry, onWritten: (() -> Void)? = nil) async -> Bool {
         guard !draft.trimmedKey.isEmpty else {
             failure = .titleRequired
             return false
         }
         let patch = draft.patch(from: entry)
-        if patch.isEmpty { return true }
-        return await perform(Failure.save) { try await self.apiClient.patch(Self.entryPath(entry), body: patch) }
+        if patch.isEmpty {
+            onWritten?()
+            return true
+        }
+        return await perform(
+            Failure.save,
+            optimistic: {
+                self.updateEntry(entry.id) {
+                    $0.section = draft.section.rawValue
+                    $0.key = draft.trimmedKey
+                    $0.summary = draft.trimmedSummary
+                    $0.details = draft.details
+                }
+            },
+            onWritten: onWritten
+        ) { try await self.apiClient.patch(Self.entryPath(entry), body: patch) }
     }
 
     /// Disable keeps the entry but stops it being used in chats; restore brings it back.
     @discardableResult
-    public func setActive(_ entry: MemoryEntry, _ active: Bool) async -> Bool {
-        guard entry.isActive != active else { return true }
-        return await perform(Failure.save) {
+    public func setActive(_ entry: MemoryEntry, _ active: Bool, onWritten: (() -> Void)? = nil) async -> Bool {
+        guard entry.isActive != active else {
+            onWritten?()
+            return true
+        }
+        return await perform(
+            Failure.save, optimistic: { self.updateEntry(entry.id) { $0.isActive = active } }, onWritten: onWritten
+        ) {
             try await self.apiClient.patch(Self.entryPath(entry), body: MemoryPatchBody(isActive: active))
         }
     }
@@ -248,20 +269,27 @@ public final class MemorySettingsViewModel {
         guard let entry = pendingDeletion else { return nil }
         pendingDeletion = nil
         return Task {
-            await perform(Failure.delete) {
+            await perform(Failure.delete, optimistic: { self.entries.removeAll { $0.id == entry.id } }) {
                 try await self.apiClient.delete(
                     Self.entryPath(entry), query: [URLQueryItem(name: "hard", value: "true")])
             }
         }
     }
 
-    private func perform(_ failed: (String) -> Failure, _ request: () async throws -> Void) async -> Bool {
+    /// `optimistic` shows the change before the computer has answered; the list read after the write puts it right
+    /// either way. `onWritten` runs as soon as the write is accepted — a sheet closes then, not after the re-read.
+    private func perform(
+        _ failed: (String) -> Failure, optimistic: (() -> Void)? = nil, onWritten: (() -> Void)? = nil,
+        _ request: () async throws -> Void
+    ) async -> Bool {
         isWriting = true
         failure = nil
         defer { isWriting = false }
+        optimistic?()
         var succeeded = true
         do {
             try await request()
+            onWritten?()
         } catch {
             failure = failed(error.localizedDescription)
             succeeded = false
@@ -270,6 +298,11 @@ public final class MemorySettingsViewModel {
         await loadList()
         if !succeeded { failure = failedWrite }
         return succeeded
+    }
+
+    private func updateEntry(_ id: String, _ change: (inout MemoryEntry) -> Void) {
+        guard let index = entries.firstIndex(where: { $0.id == id }) else { return }
+        change(&entries[index])
     }
 
     private static func entryPath(_ entry: MemoryEntry) -> String { "\(path)/\(entry.id)" }

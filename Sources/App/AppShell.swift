@@ -12,8 +12,10 @@ import WidgetKitShared
 struct ActiveChat: Equatable {
     var id: String
     var title: String?
+    /// Made here and never shown before: there is no history to read, so the screen does not ask the server for one.
+    var isNew = false
 
-    static func new() -> ActiveChat { ActiveChat(id: UUID().uuidString.lowercased(), title: nil) }
+    static func new() -> ActiveChat { ActiveChat(id: UUID().uuidString.lowercased(), title: nil, isNew: true) }
 }
 
 /// The app's root: a drawer whose sidebar lists chats and whose card shows the active chat.
@@ -134,6 +136,8 @@ struct AppShell: View {
         }
         // A chat opening reads the current model's levels and the MCP tools (the desktop may have changed either).
         .onChange(of: activeChat.id, initial: true) { refreshComposerTools() }
+        // Back from another workspace the chat screen is made again, and what was sent meanwhile is history now.
+        .onChange(of: workspace) { if workspace != .chat { activeChat.isNew = false } }
         // Initial too: a link that arrived behind the unlock or pairing gate is opened once the shell appears.
         .onChange(of: pendingLink.link, initial: true) {
             guard let link = pendingLink.take() else { return }
@@ -146,7 +150,7 @@ struct AppShell: View {
         switch workspace {
         case .chat:
             ChatDetailView(
-                chatId: activeChat.id, title: activeChat.title, apiClient: apiClient,
+                chatId: activeChat.id, title: activeChat.title, isNew: activeChat.isNew, apiClient: apiClient,
                 streamManager: streamManager, serverConfig: serverConfig,
                 initialMessage: pendingAsk?.chatId == activeChat.id ? pendingAsk?.text : nil,
                 onInitialMessageSent: { pendingAsk = nil },

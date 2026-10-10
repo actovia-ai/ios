@@ -51,6 +51,7 @@ public struct ChatDetailView: View {
     /// value once, so a new `title:` argument alone would otherwise be silently ignored).
     private let title: String?
     /// A question handed over from Health, sent once the (new) chat's history is known.
+    private let isNew: Bool
     private let initialMessage: String?
     private let onInitialMessageSent: (() -> Void)?
     /// A prompt handed over from a widget: put in the composer, never sent by itself.
@@ -61,12 +62,14 @@ public struct ChatDetailView: View {
     private let onInitialOpeningUsed: (() -> Void)?
 
     public init(
-        chatId: String, title: String? = nil, apiClient: APIClient, streamManager: ChatStreamManager,
-        serverConfig: ServerConfigStore, initialMessage: String? = nil, onInitialMessageSent: (() -> Void)? = nil,
+        chatId: String, title: String? = nil, isNew: Bool = false, apiClient: APIClient,
+        streamManager: ChatStreamManager, serverConfig: ServerConfigStore, initialMessage: String? = nil,
+        onInitialMessageSent: (() -> Void)? = nil,
         initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil,
         initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil
     ) {
         self.title = title
+        self.isNew = isNew
         self.initialDraft = initialDraft
         self.initialOpening = initialOpening
         self.onInitialOpeningUsed = onInitialOpeningUsed
@@ -191,7 +194,7 @@ public struct ChatDetailView: View {
         .task {
             // First: a turn reads the session's choices when it starts, and one may start right below.
             viewModel.composerTools = composerTools
-            await viewModel.onAppear()
+            await viewModel.onAppear(isNew: isNew)
             if let initialMessage {
                 // Handed over now, not when the reply ends: the question is this chat's from here on.
                 onInitialMessageSent?()

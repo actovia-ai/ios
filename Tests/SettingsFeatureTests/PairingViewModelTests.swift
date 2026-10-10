@@ -130,15 +130,16 @@ struct PairingViewModelTests {
         let (viewModel, connection) = makeViewModel()
         await viewModel.pair(from: Self.link)
 
-        await viewModel.unpair()
+        await viewModel.unpair()?.value
 
         #expect(!viewModel.isPaired)
         #expect(viewModel.computerName == nil)
         #expect(connection.authorization == nil)
     }
 
-    /// Unpairing here used to leave the device listed on the computer: it now says so first, with its own token.
-    @Test("tells the computer before it forgets the pairing")
+    /// Unpairing here used to leave the device listed on the computer: it says so, with its own token taken before
+    /// the pairing was forgotten — which is at once, not after the computer answers.
+    @Test("tells the computer, with the token it held, after forgetting the pairing at once")
     func unpairTellsTheComputer() async {
         PairingMockURLProtocol.handler = { _ in (200, Data(#"{"deviceId":"d","token":"T"}"#.utf8)) }
         let (viewModel, _) = makeViewModel()
@@ -149,7 +150,7 @@ struct PairingViewModelTests {
             seen.add("\(request.httpMethod ?? "") \(request.url?.absoluteString ?? "") \(request.value(forHTTPHeaderField: "Authorization") ?? "")")
             return (200, Data(#"{"ok":true}"#.utf8))
         }
-        await viewModel.unpair()
+        await viewModel.unpair()?.value
 
         #expect(seen.values == ["DELETE https://10.0.0.2:63129/api/v1/pair Bearer T"])
         #expect(!viewModel.isPaired)
@@ -163,7 +164,7 @@ struct PairingViewModelTests {
         await viewModel.pair(from: Self.link)
 
         PairingMockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
-        await viewModel.unpair()
+        await viewModel.unpair()?.value
 
         #expect(!viewModel.isPaired)
         #expect(connection.authorization == nil)

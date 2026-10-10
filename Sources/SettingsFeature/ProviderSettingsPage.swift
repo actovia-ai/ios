@@ -108,7 +108,10 @@ struct ProviderSettingsPage: View {
                         await secrets?.load()
                     }
                 } label: {
-                    if viewModel.hasLoadedSettings {
+                    // Disabled alone looked like a tap that did nothing while the computer answered.
+                    if viewModel.isSaving || viewModel.isLoading {
+                        ProgressView()
+                    } else if viewModel.hasLoadedSettings {
                         Text("common:action.save")
                     } else {
                         Text("ios:settings.toolbar.connect")

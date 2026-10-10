@@ -248,11 +248,16 @@ public final class ChatDetailViewModel {
         chatTitle = normalised
     }
 
-    public func onAppear() async {
+    /// `isNew`: a chat made on the phone a moment ago, which has no history yet — the composer is ready at once
+    /// instead of after a round trip to the computer (up to 15 s per address when it does not answer).
+    public func onAppear(isNew: Bool = false) async {
         if await streamManager.isStreaming(chatId), let updates = await streamManager.attach(chatId) {
             hasLoadedHistory = true
             status = .streaming
             await consume(updates)
+        } else if isNew, !hasLoadedHistory {
+            openedWithMessages = false
+            hasLoadedHistory = true
         } else {
             await loadHistory()
         }

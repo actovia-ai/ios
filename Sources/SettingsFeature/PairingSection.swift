@@ -64,10 +64,8 @@ struct PairingSection: View {
         }
         .alert("ios:settings.pairing.unpairConfirmTitle", isPresented: $confirmUnpair) {
             Button("ios:settings.pairing.unpair", role: .destructive) {
-                Task {
-                    await viewModel.unpair()
-                    onChange()
-                }
+                viewModel.unpair()
+                onChange()
             }
             Button("common:action.cancel", role: .cancel) {}
         } message: {
