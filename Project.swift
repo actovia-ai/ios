@@ -1,8 +1,8 @@
 import ProjectDescription
 
-private let bundleIdRoot = "app.yancey.exodus.exodus-ios"
+private let bundleIdRoot = "app.yancey.exodus.ios"
 private let developmentTeam = "YLF27G9ZMT"
-private let deploymentTargets = DeploymentTargets.iOS("27.0")
+private let deploymentTargets = DeploymentTargets.iOS("26.0")
 
 private func moduleTarget(
     name: String,

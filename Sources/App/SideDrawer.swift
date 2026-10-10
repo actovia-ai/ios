@@ -54,7 +54,9 @@ struct SideDrawer<Sidebar: View, Content: View>: View {
             // physical corners of the screen, where they cannot be seen. A square-cornered
             // display reports 0 and only then does the fallback apply — a small radius that was
             // genuinely reported is the display's, and raising it would miss those corners.
-            let displayRadius = geo.concentricCornerRadii?.bottomLeading ?? 0
+            // iOS 26 has no way to ask for the display's radii: it takes the fallback.
+            let displayRadius: CGFloat =
+                if #available(iOS 27.0, *) { geo.concentricCornerRadii?.bottomLeading ?? 0 } else { 0 }
             let cardRadius = displayRadius > 0 ? displayRadius : minCornerRadius
             // How far the sidebar has arrived, 0 … 1. It runs ahead of the card so the sidebar has
             // settled by the time the card lands, and it reaches exactly 1, never a dimmed open state.

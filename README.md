@@ -13,7 +13,7 @@ localization work in its
 
 ## Requirements
 
-- Xcode 27 with the iOS 27 SDK (every target deploys to iOS 27.0).
+- Xcode 27 with the iOS 27 SDK (every target deploys to iOS 26.0; iOS 27-only APIs go behind `#available`).
 - Tuist 4.208.0: `brew install --cask tuist`. The Xcode project is generated and gitignored.
 - The Metal Toolchain component: the image-generation card's dither shader (`Sources/ChatFeature/ImageForming.metal`)
   is compiled by it, and a fresh Xcode install may not have it (the build then fails on that file with "cannot
