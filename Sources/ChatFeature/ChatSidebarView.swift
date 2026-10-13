@@ -351,11 +351,20 @@ public struct ChatSidebarView<Workspaces: View>: View {
         if case .results(let results) = search.phase {
             ForEach(results) { result in
                 VStack(alignment: .leading, spacing: 2) {
-                    // The view model collapsed the title's whitespace when it grouped the hits.
-                    Text(result.title)
-                        .lineLimit(1)
-                    if let snippet = result.snippet {
-                        Text(snippet)
+                    HStack(spacing: 8) {
+                        Text(SearchHighlight.attributed(result.title.collapsedWhitespace, query: search.query))
+                            .lineLimit(1)
+                        Spacer(minLength: 8)
+                        if let timestamp = RecentTimestamp.format(result.matchedAt) {
+                            Text(timestamp)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .layoutPriority(1)
+                        }
+                    }
+                    if let snippet = result.snippets.first {
+                        Text(SearchHighlight.attributed(snippet.text, query: search.query))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
@@ -363,7 +372,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
                 // Title and snippet are one element to VoiceOver, as the button's label used to be.
                 .accessibilityElement(children: .combine)
-                .modifier(SidebarRow(isSelected: false) { onSelectChat(result.id, result.title) })
+                .modifier(SidebarRow(isSelected: false) { onSelectChat(result.id, result.title.collapsedWhitespace) })
             }
         }
     }

@@ -11,11 +11,11 @@ import Testing
 /// Answers immediately from a script (then with no hits), recording every query it saw.
 private actor RecordingService: ChatSearchService {
     private(set) var queries: [String] = []
-    private var script: [Result<[ChatSearchHit], Error>]
+    private var script: [Result<[ChatSearchResult], Error>]
 
-    init(script: [Result<[ChatSearchHit], Error>] = []) { self.script = script }
+    init(script: [Result<[ChatSearchResult], Error>] = []) { self.script = script }
 
-    func search(query: String) async throws -> [ChatSearchHit] {
+    func search(query: String) async throws -> [ChatSearchResult] {
         queries.append(query)
         if script.isEmpty { return [] }
         return try script.removeFirst().get()
@@ -25,22 +25,24 @@ private actor RecordingService: ChatSearchService {
 /// Holds every request open until the test completes it, so responses can arrive out of order.
 private actor ControlledService: ChatSearchService {
     private(set) var queries: [String] = []
-    private var pending: [String: CheckedContinuation<[ChatSearchHit], Error>] = [:]
+    private var pending: [String: CheckedContinuation<[ChatSearchResult], Error>] = [:]
 
-    func search(query: String) async throws -> [ChatSearchHit] {
+    func search(query: String) async throws -> [ChatSearchResult] {
         queries.append(query)
         return try await withCheckedThrowingContinuation { pending[query] = $0 }
     }
 
-    func complete(_ query: String, with hits: [ChatSearchHit]) {
-        pending.removeValue(forKey: query)?.resume(returning: hits)
+    func complete(_ query: String, with results: [ChatSearchResult]) {
+        pending.removeValue(forKey: query)?.resume(returning: results)
     }
 }
 
-private func hit(_ chatId: String, title: String = "T", text: String? = "some text", id: String = UUID().uuidString)
-    -> ChatSearchHit
-{
-    ChatSearchHit(id: id, chatId: chatId, role: "assistant", searchText: text, title: title, createdAt: nil)
+private func result(_ chatId: String, title: String = "T", snippet: String? = "some text") -> ChatSearchResult {
+    ChatSearchResult(
+        chatId: chatId, title: title, matchedAt: "2026-10-14T08:00:00.000Z",
+        snippets: snippet.map {
+            [ChatSearchSnippet(messageId: "m-\(chatId)", role: "assistant", text: $0, createdAt: "2026-10-14T08:00:00.000Z")]
+        } ?? [])
 }
 
 /// Polls (bounded) until `condition` holds, so a broken build fails instead of hanging.
@@ -117,46 +119,21 @@ struct ChatSearchViewModelTests {
         #expect(vm.isSearching == false)
     }
 
-    @Test("hits are grouped by chat in first-seen order, one result per chat, with a snippet and a one-line title")
-    func groupsHitsByChat() async throws {
-        let service = RecordingService(script: [
-            .success([
-                hit("c1", title: "One", text: "alpha needle omega", id: "m1"),
-                hit("c1", title: "One", text: "second hit in the same chat", id: "m2"),
-                hit("c2", title: "Two\n\nlines", text: nil, id: "m3"),
-            ])
-        ])
+    @Test("the server's results are shown as they came, in order")
+    func showsTheServersResults() async throws {
+        let results = [result("c1", title: "One"), result("c2", title: "Two", snippet: nil)]
+        let service = RecordingService(script: [.success(results)])
         let vm = ChatSearchViewModel(service: service, debounce: .milliseconds(1))
         vm.updateQuery("needle")
         try await waitUntil("results") { vm.phase != .idle }
-        #expect(
-            vm.phase == .results([
-                ChatSearchResult(id: "c1", title: "One", snippet: "alpha needle omega"),
-                ChatSearchResult(id: "c2", title: "Two lines", snippet: nil),
-            ]))
-    }
-
-    @Test("at most 50 chats are listed")
-    func capsTheResults() async throws {
-        let hits = (0..<60).map { hit("chat\($0)", id: "m\($0)") }
-        let service = RecordingService(script: [.success(hits)])
-        let vm = ChatSearchViewModel(service: service, debounce: .milliseconds(1))
-        vm.updateQuery("some")
-        try await waitUntil("results") { vm.phase != .idle }
-        guard case .results(let results) = vm.phase else {
-            Issue.record("expected results")
-            return
-        }
-        #expect(results.count == ChatSearchViewModel.maxResults)
-        #expect(results.first?.id == "chat0")
-        #expect(results.last?.id == "chat49")
+        #expect(vm.phase == .results(results))
     }
 
     @Test("a failure is shown as failed(message) and retry() runs the same query again")
     func failureThenRetry() async throws {
         let service = RecordingService(script: [
             .failure(HTTPError(statusCode: 500, code: "X", message: "boom")),
-            .success([hit("c1", title: "One", text: "some text")]),
+            .success([result("c1", title: "One")]),
         ])
         let vm = ChatSearchViewModel(service: service, debounce: .milliseconds(1))
         vm.updateQuery("q")
@@ -166,7 +143,7 @@ struct ChatSearchViewModelTests {
 
         vm.retry()
         try await waitUntil("the retry") { vm.phase != .failed("boom") }
-        #expect(vm.phase == .results([ChatSearchResult(id: "c1", title: "One", snippet: "some text")]))
+        #expect(vm.phase == .results([result("c1", title: "One")]))
         #expect(await service.queries == ["q", "q"])
     }
 
@@ -179,12 +156,12 @@ struct ChatSearchViewModelTests {
         vm.updateQuery("second")
         try await waitUntil("the second request") { await service.queries == ["first", "second"] }
 
-        await service.complete("second", with: [hit("c2", title: "Second")])
+        await service.complete("second", with: [result("c2", title: "Second")])
         try await waitUntil("the second results") { vm.phase != .idle }
-        await service.complete("first", with: [hit("c1", title: "First")])
+        await service.complete("first", with: [result("c1", title: "First")])
         try await Task.sleep(for: .milliseconds(50))
 
-        #expect(vm.phase == .results([ChatSearchResult(id: "c2", title: "Second", snippet: "some text")]))
+        #expect(vm.phase == .results([result("c2", title: "Second")]))
         #expect(vm.isSearching == false)
     }
 
@@ -201,7 +178,7 @@ struct ChatSearchViewModelTests {
         #expect(vm.phase == .idle)
         #expect(vm.isSearching == false)
 
-        await service.complete("q", with: [hit("c1")])
+        await service.complete("q", with: [result("c1")])
         try await Task.sleep(for: .milliseconds(50))
         #expect(vm.phase == .idle)
     }
@@ -227,10 +204,13 @@ struct ChatSearchViewModelTests {
         vm.reset()
     }
 
-    @Test("APIChatSearchService calls GET /api/v1/chat/search with the query encoded and decodes the rows")
+    @Test("APIChatSearchService calls GET /api/v1/chat/search with the query encoded and decodes the chats")
     func apiServiceUsesTheRightEndpoint() async throws {
         let seen = Mutex<URL?>(nil)
-        let rows = #"[{"id":"m1","chatId":"c1","role":"user","searchText":"hi","title":"Greeting"}]"#
+        let rows = #"""
+            [{"chatId":"c1","title":"Greeting","matchedAt":"2026-10-14T08:00:00.000Z",
+              "snippets":[{"messageId":"m1","role":"user","text":"hi there","createdAt":"2026-10-14T08:00:00.000Z"}]}]
+            """#
         SearchMockURLProtocol.handler = { request in
             seen.withLock { $0 = request.url }
             return (200, Data(rows.utf8))
@@ -241,13 +221,14 @@ struct ChatSearchViewModelTests {
         let client = APIClient(
             session: SearchMockURLProtocol.makeSession(), serverConfig: ServerConfigStore(userDefaults: defaults))
 
-        let hits = try await APIChatSearchService(apiClient: client).search(query: "c++ tips")
+        let results = try await APIChatSearchService(apiClient: client).search(query: "c++ tips")
 
         let url = try #require(seen.withLock { $0 })
         #expect(url.path == "/api/v1/chat/search")
         #expect(
             URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
                 == [URLQueryItem(name: "query", value: "c++ tips")])
-        #expect(hits.map(\.chatId) == ["c1"])
+        #expect(results.map(\.chatId) == ["c1"])
+        #expect(results.first?.snippets.first?.text == "hi there")
     }
 }

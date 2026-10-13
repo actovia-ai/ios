@@ -3,22 +3,9 @@ import Models
 import NetworkingKit
 import Observation
 
-/// One chat in the search results: its title and the context of its first matching message.
-public struct ChatSearchResult: Identifiable, Equatable, Sendable {
-    public let id: String  // the chat id
-    public let title: String
-    public let snippet: String?
-
-    public init(id: String, title: String, snippet: String?) {
-        self.id = id
-        self.title = title
-        self.snippet = snippet
-    }
-}
-
 /// The seam between the view model and the network, so tests can answer out of order.
 public protocol ChatSearchService: Sendable {
-    func search(query: String) async throws -> [ChatSearchHit]
+    func search(query: String) async throws -> [ChatSearchResult]
 }
 
 public struct APIChatSearchService: ChatSearchService {
@@ -26,7 +13,7 @@ public struct APIChatSearchService: ChatSearchService {
 
     public init(apiClient: APIClient) { self.apiClient = apiClient }
 
-    public func search(query: String) async throws -> [ChatSearchHit] {
+    public func search(query: String) async throws -> [ChatSearchResult] {
         try await apiClient.get("/api/v1/chat/search", query: [URLQueryItem(name: "query", value: query)])
     }
 }
@@ -40,8 +27,6 @@ public final class ChatSearchViewModel {
         case empty
         case failed(String)
     }
-
-    public static let maxResults = 50
 
     public private(set) var query = ""
     public private(set) var phase: Phase = .idle
@@ -110,9 +95,8 @@ public final class ChatSearchViewModel {
 
     private func perform(_ trimmed: String, generation: Int) async {
         do {
-            let hits = try await service.search(query: trimmed)
+            let results = try await service.search(query: trimmed)
             guard generation == self.generation else { return }
-            let results = Self.group(hits, query: trimmed)
             phase = results.isEmpty ? .empty : .results(results)
             isSearching = false
         } catch {
@@ -121,20 +105,5 @@ public final class ChatSearchViewModel {
             if isCancellation(error) { return }
             phase = .failed(error.localizedDescription)
         }
-    }
-
-    /// One result per chat, in the order the server returned them, at most `maxResults`. The first
-    /// hit of a chat supplies the snippet.
-    static func group(_ hits: [ChatSearchHit], query: String) -> [ChatSearchResult] {
-        var seen = Set<String>()
-        var results: [ChatSearchResult] = []
-        for hit in hits where seen.insert(hit.chatId).inserted {
-            results.append(
-                ChatSearchResult(
-                    id: hit.chatId, title: hit.title.collapsedWhitespace,
-                    snippet: ChatSearchSnippet.make(from: hit.searchText, query: query)))
-            if results.count == maxResults { break }
-        }
-        return results
     }
 }
