@@ -58,6 +58,7 @@ public struct MessageGalleryView: View {
     @State private var readAloud = GalleryReadAloud.model()
     @State private var memory = GalleryFoot.memory()
     @State private var approvals = GalleryFoot.approvals()
+    @State private var isAtEnd = true
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.toneAccent) private var toneAccent
     @Environment(\.toneInk) private var toneInk
@@ -104,6 +105,10 @@ public struct MessageGalleryView: View {
                     .padding(.bottom, TranscriptRows.endRoom)
                     .id(TranscriptRows.endID)
                 }
+                .scrollEdgeEffectStyle(.soft, for: .bottom)
+                .transcriptEnd(isAtEnd: $isAtEnd) {
+                    withAnimation { proxy.scrollTo(TranscriptRows.endID, anchor: .bottom) }
+                }
                 .task {
                     if MessageGalleryLaunch.opensSheet, let run = MessageGalleryLaunch.sheetRun.map({ runs[$0] }) ?? runs.last {
                         sheet = sourcesSheet(in: run, turnId: nil, marker: MessageGalleryLaunch.sheetMarker)
@@ -136,6 +141,7 @@ public struct MessageGalleryView: View {
             SourcesSheet(model: $0)
                 .environment(\.searchMediaLoader, GalleryIcons.loader)
         }
+        .screenVoiceGlow(active: ComposerGalleryState.launch == .recording) { ComposerGalleryBar.speech(at: .now) }
         .environment(\.timelineStartsExpanded, MessageGalleryLaunch.expanded)
         .environment(\.searchMediaLoader, GalleryIcons.loader)
         .environment(\.readAloud, readAloud)
@@ -186,7 +192,7 @@ public struct MessageGalleryView: View {
         .padding(.leading, 16)
         .padding(.trailing, 6)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
     }
@@ -423,7 +429,7 @@ enum MessageGalleryFixtures {
              {"id":"u21","runId":"u21","role":"user","content":[{"type":"text","text":"Which of these is warmest?"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemOrange, width: 300, height: 400))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemIndigo, width: 400, height: 400))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemPink, width: 300, height: 300))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemGreen, width: 500, height: 200))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemYellow, width: 200, height: 500))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemRed, width: 300, height: 300))"}],"timestamp":1300},
              {"id":"a21","runId":"u21","role":"assistant","content":[{"type":"text","text":"The orange one."}],"stopReason":"stop","timestamp":1500}]
             """#),
-    ] + bubbleRuns + interactiveRuns
+    ] + bubbleRuns + codeRuns + interactiveRuns
 
     /// A flat picture as the desktop stores one: a PNG data URL.
     static func picture(_ color: UIColor, width: CGFloat, height: CGFloat) -> String {

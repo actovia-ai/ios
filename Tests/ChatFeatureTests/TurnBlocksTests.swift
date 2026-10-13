@@ -63,15 +63,38 @@ struct TurnBlocksTests {
         #expect(built.blocks.map(\.id) == ["text:0", "call:k1", "text:1"])
     }
 
-    @Test("text with no card between stays one block: a tool that draws no card does not split the answer")
-    func noCardNoSplit() throws {
-        let built = try turn([
-            assistant("a1", say("Searching.") + "," + call("k1", "grep"), stopReason: "toolUse"),
-            result("t1", "k1", "grep", details: "null"),
-            assistant("a2", say("Found it.")),
-        ])
-        #expect(shape(built.blocks) == ["T(Searching.\n\nFound it.)"])
-        #expect(built.toolCards.isEmpty)
+    /// "I'll pull the photos." beside a search is the model at work, not the answer: it goes into the timeline, which
+    /// folds when the run ends — the desktop's `keepsTextInAnswer()` (owner, 2026-09-30).
+    @Test("text beside a tool that only fetches something goes into the timeline, not the answer")
+    func narrationFolds() throws {
+        for tool in ["grep", "web_search", "web_fetch", "read_file"] {
+            let built = try turn([
+                assistant("a1", say("Looking.") + "," + call("k1", tool), stopReason: "toolUse"),
+                result("t1", "k1", tool, details: "null"),
+                assistant("a2", say("Found it.")),
+            ])
+            // (A read_file draws a card of its own here; only the text is in question.)
+            #expect(shape(built.blocks).filter { $0.hasPrefix("T(") } == ["T(Found it.)"], "\(tool)")
+            #expect(built.body == "Found it.")
+            let narration = built.steps.compactMap { step -> String? in
+                if case .thinking(let thinking) = step, thinking.isNarration { thinking.text } else { nil }
+            }
+            #expect(narration == ["Looking."], "\(tool)")
+            #expect(!built.hasThinking)
+        }
+    }
+
+    /// Beside a tool that draws something, or changes the memory, the text is often the answer itself.
+    @Test("text beside a card, an image or a memory update stays in the answer")
+    func textBesideCardsStays() throws {
+        for tool in ["map_itinerary", "update_memory", "terminal"] {
+            let built = try turn([
+                assistant("a1", say("The answer.") + "," + call("k1", tool), stopReason: "toolUse"),
+                result("t1", "k1", tool, details: "null"),
+                assistant("a2", say("Noted.")),
+            ])
+            #expect(built.body == "The answer.\n\nNoted.", "\(tool)")
+        }
     }
 
     @Test("a card takes the place of its call, not of its result: results that land out of order do not reorder it")

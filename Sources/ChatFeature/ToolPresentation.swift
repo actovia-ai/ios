@@ -48,6 +48,8 @@ enum ToolPresentation {
             String(localized: "ios:chat.message.tool.writeFile", defaultValue: "Write File", comment: "Tool name in a reply's steps.")
         case "update_memory":
             String(localized: "settings:tools.registry.updateMemory.label", defaultValue: "Update Memory", comment: "Tool name in a reply's steps.")
+        case "recall":
+            String(localized: "settings:tools.registry.recall.label", defaultValue: "Recall", comment: "Tool name in a reply's steps.")
         case "list_mcp_tools":
             String(localized: "ios:chat.message.tool.listMcpTools", defaultValue: "List MCP Tools", comment: "Tool name in a reply's steps. MCP is the Model Context Protocol.")
         case "call_mcp_tool":

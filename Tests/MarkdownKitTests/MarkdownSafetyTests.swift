@@ -36,6 +36,59 @@ struct MarkdownLinkPolicyTests {
         #expect(action("exodus-cite://4") == .citation(4))
         #expect(action("exodus-cite://x") == .discard)
     }
+
+    // The same vectors as the desktop's tests/unit/shared/utils/entity-link.test.ts — keep them in step. (Its
+    // "nothing" case is no URL at all here.)
+    @Test("an entity link names its article; anything that is not a title is discarded", arguments: [
+        ("entity:Marie_Curie", "Marie_Curie"),
+        ("entity:Dvořák's_Symphony_No._9_(From_the_New_World)", "Dvořák's_Symphony_No._9_(From_the_New_World)"),
+        ("entity:東京", "東京"),
+        ("entity:%E6%9D%B1%E4%BA%AC", "東京"),
+        ("entity:Category:Physicists", "Category:Physicists"),
+        ("entity:" + String(repeating: "a", count: 200), String(repeating: "a", count: 200)),
+        ("entity:" + String(repeating: "a", count: 201), nil),
+        ("entity:" + String(repeating: "😀", count: 100), nil),
+        ("entity:", nil),
+        ("entity:Marie/Curie", nil),
+        ("entity:..", nil),
+        ("entity:.", nil),
+        ("entity:_()'", nil),
+        ("entity:Marie%2FCurie", nil),
+        ("entity:%E6%9D", nil),
+        ("entity:Marie_Curie?x=1", nil),
+        ("entity:Marie_Curie#History", nil),
+        ("entity:Marie Curie", nil),
+        ("https://en.wikipedia.org/wiki/Marie_Curie", nil),
+        ("ENTITY:Marie_Curie", nil),
+    ] as [(String, String?)])
+    func entity(_ string: String, _ title: String?) throws {
+        let url = try #require(URL(string: string))
+        let expected: MarkdownLinkAction = title.map { .entity($0) } ?? (string.hasPrefix("https:") ? .open(url) : .discard)
+        #expect(MarkdownLinkPolicy.action(for: url) == expected, "\(string)")
+    }
+
+    @Test("the router hands an entity tap its title and calls it handled")
+    @MainActor
+    func entityRouting() throws {
+        // `OpenURLAction.Result` is a struct that is not `Equatable` (no `switch` either): compare descriptions.
+        func isHandled(_ result: OpenURLAction.Result) -> Bool {
+            String(describing: result) == String(describing: OpenURLAction.Result.handled)
+        }
+        let router = MarkdownLinkRouter()
+        var tapped: [String] = []
+        var opened: [URL] = []
+        router.onEntityTap = { tapped.append($0) }
+        router.openURL = { opened.append($0) }
+        #expect(isHandled(router.handle(try #require(URL(string: "entity:Marie_Curie")))))
+        #expect(tapped == ["Marie_Curie"])
+        #expect(opened.isEmpty)
+        // Without a host handler the tap is still handled — never opened, never discarded into the system.
+        router.onEntityTap = nil
+        #expect(isHandled(router.handle(try #require(URL(string: "entity:Kyoto")))))
+        #expect(opened.isEmpty)
+        // The comparison above can tell the two apart.
+        #expect(!isHandled(router.handle(try #require(URL(string: "tel:123")))))
+    }
 }
 
 @Suite("MarkdownLinkRouter")

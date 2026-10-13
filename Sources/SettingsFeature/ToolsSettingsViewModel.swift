@@ -9,7 +9,7 @@ import Observation
 @MainActor
 @Observable
 public final class ToolsSettingsViewModel {
-    /// Wire names switched off, as the phone shows them (legacy names read as their wire name).
+    /// Wire names switched off.
     public private(set) var disabled: Set<String> = []
     /// Names switched off on the computer that this app's table does not know: a newer desktop.
     public private(set) var unknownDisabledNames: [String] = []
@@ -78,15 +78,15 @@ public final class ToolsSettingsViewModel {
         }
     }
 
-    /// Switches `name` on or off in a stored `disabledTools`: every spelling of it (its wire name and the
-    /// pre-rename one) is removed, and the wire name is appended when it goes off. Other entries keep their order.
+    /// Switches `name` on or off in a stored `disabledTools`: it is removed, and appended when it goes off. Other
+    /// entries keep their order.
     static func set(_ name: String, enabled: Bool, in disabledTools: inout [String]) {
-        disabledTools.removeAll { BuiltinTools.wireName($0) == name }
+        disabledTools.removeAll { $0 == name }
         if !enabled { disabledTools.append(name) }
     }
 
     private func apply(_ tools: ToolsSettings) {
-        disabled = Set(tools.disabledTools.map(BuiltinTools.wireName))
+        disabled = Set(tools.disabledTools)
         unknownDisabledNames = BuiltinTools.unknownNames(in: tools.disabledTools)
         if !unknownDisabledNames.isEmpty {
             store.reporter.report(

@@ -66,16 +66,16 @@
             "value" : "O Exodus usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入聊天的照片。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。"
           }
         }
       }
@@ -132,16 +132,16 @@
             "value" : "O Exodus usa o Face ID para desbloquear a conexão com o seu computador."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 使用 Face ID 解鎖與電腦的連接。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 使用 Face ID 解鎖與電腦的連線。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 使用 Face ID 解鎖與電腦的連接。"
           }
         }
       }
@@ -197,16 +197,16 @@
             "value" : "O Exodus lê seus dados de sono, atividade, coração e corpo para escrever seu relatório de saúde diário."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 會讀取你的睡眠、活動、心臟與身體資料，用嚟撰寫你嘅每日健康報告。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 會讀取你的睡眠、活動、心臟與身體資料，用來撰寫你的每日健康報告。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 會讀取你的睡眠、活動、心臟與身體資料，用嚟撰寫你嘅每日健康報告。"
           }
         }
       }
@@ -262,16 +262,16 @@
             "value" : "O Exodus salva no Saúde a água que você registra."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 會將你記錄嘅飲水量儲存到「健康」App。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 會將你記錄的飲水量儲存到「健康」App。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 會將你記錄嘅飲水量儲存到「健康」App。"
           }
         }
       }
@@ -328,16 +328,16 @@
             "value" : "O Exodus precisa de acesso à rede local para se conectar ao serviço do Exodus em execução no seu computador."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 需要本地網絡存取權，才能連線到在你電腦上執行的 Exodus 服務。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 需要區域網路存取權，才能連線到在你電腦上執行的 Exodus 服務。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 需要本地網絡存取權，才能連線到在你電腦上執行的 Exodus 服務。"
           }
         }
       }
@@ -394,16 +394,81 @@
             "value" : "O Exodus usa sua localização para mostrar sua posição no mapa do roteiro e centralizar o mapa quando você toca no botão de localização."
           }
         },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 會使用你的位置，在行程地圖上顯示你的位置，並在你點選定位按鈕時將地圖移至該處。"
+          }
+        },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 會使用你的位置，在行程地圖上顯示你的位置，並在你點按定位按鈕時將地圖移至該處。"
           }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus nimmt Ihre Stimme nur auf, während Sie eine Nachricht diktieren, um sie in Text für den Chat umzuwandeln."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus records your voice only while you are dictating a message, to turn it into text for the chat."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus graba tu voz solo mientras dictas un mensaje, para convertirla en texto para el chat."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus n'enregistre votre voix que pendant que vous dictez un message, pour la transformer en texte pour la conversation."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus registra la tua voce solo mentre detti un messaggio, per trasformarla in testo per la chat."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus は、メッセージを音声入力している間だけ音声を録音し、チャット用のテキストに変換します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus는 메시지를 음성으로 입력하는 동안에만 음성을 녹음하여 채팅용 텍스트로 변환합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Exodus grava sua voz apenas enquanto você dita uma mensagem, para transformá-la em texto para a conversa."
+          }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會使用你的位置，在行程地圖上顯示你的位置，並在你點選定位按鈕時將地圖移至該處。"
+            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為聊天的文字。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為對話的文字。"
           }
         }
       }
@@ -460,16 +525,16 @@
             "value" : "O Exodus salva as imagens que você escolher na sua fototeca."
           }
         },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exodus 會把你選擇的圖片儲存到你的相片圖庫。"
-          }
-        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exodus 會把你選擇的圖片儲存到你的照片圖庫。"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exodus 會把你選擇的圖片儲存到你的相片圖庫。"
           }
         }
       }

@@ -16,13 +16,15 @@ public enum RunGrouper {
         public init() {}
     }
 
-    public static func group(_ messages: [ChatMessage], cache: inout Cache) -> [Segment] {
+    /// `base`: the sources of the runs before the first one loaded (the chat opened on its newest page): every turn can
+    /// cite them, before its own.
+    public static func group(_ messages: [ChatMessage], base: [CitationSource] = [], cache: inout Cache) -> [Segment] {
         var segments: [Segment] = []
         var seen: [String: Cache.Entry] = [:]
         var buffer: [ChatMessage] = []
         var bufferRun = ""
         var currentRun: String?
-        var citations: [CitationSource] = []
+        var citations: [CitationSource] = base
         var occurrences: [String: Int] = [:]
         let layout = AttemptLayout(messages)
 
@@ -111,6 +113,7 @@ public enum RunGrouper {
             case "assistant":
                 timestamp = message.timestampMs
                 let ran = message.stopReason != "aborted" && message.stopReason != "error"
+                let narrates = Self.narrates(message.contentBlocks)
                 for block in message.contentBlocks {
                     switch block {
                     case .thinking(let text) where !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty:
@@ -122,7 +125,11 @@ public enum RunGrouper {
                         callArguments[id] = .object(arguments)
                         if name == "update_memory", ran { memoryUpdates.append(MemoryUpdate(id: id, status: .pending)) }
                     case .text(let text) where !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty:
-                        layout.text(text)
+                        if narrates {
+                            steps.append(.thinking(.init(text: text, title: thinkingTitle(text), isNarration: true)))
+                        } else {
+                            layout.text(text)
+                        }
                     default:
                         break
                     }
@@ -254,6 +261,19 @@ public enum RunGrouper {
         var foot = RunFoot(memoryUpdates: memoryUpdates, searchMedia: media)
         if !media.isEmpty { foot.gallery = SearchGallery(media: media) }
         return foot
+    }
+
+    /// Built-ins that only fetch or read something: the text the model writes beside calls to these alone is it at
+    /// work — "I'll pull the photos." — and goes into the timeline. The same tools as the desktop's (those
+    /// `keepsTextInAnswer()` is false for: no card there, not an image, not the memory); an MCP tool keeps its text.
+    static let narratingTools: Set<String> = [
+        "web_search", "web_fetch", "read_file", "write_file", "edit_file", "list_directory", "find_files", "grep",
+        "lcm_grep", "lcm_describe", "lcm_expand", "search_knowledge_base", "recall",
+    ]
+
+    static func narrates(_ blocks: [ContentBlock]) -> Bool {
+        let calls = blocks.compactMap { if case .toolCall(_, let name, _) = $0 { name } else { nil } }
+        return !calls.isEmpty && calls.allSatisfy(narratingTools.contains)
     }
 
     static func thinkingTitle(_ text: String) -> String? {

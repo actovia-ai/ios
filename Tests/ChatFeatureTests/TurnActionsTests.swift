@@ -115,10 +115,11 @@ struct ActionBarRulesTests {
 
     @Test("copy takes the whole markdown body, joined across the run's text blocks; a marker no source answers to is dropped")
     func copyText() {
+        // A terminal keeps the text beside it in the answer (beside a grep it would be narration, in the timeline).
         let twoBlocks = #"""
             [{"id":"u1","runId":"u1","role":"user","content":"hi"},
-             {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"First."},{"type":"toolCall","id":"k1","name":"grep","arguments":{}}],"stopReason":"toolUse"},
-             {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"grep","content":[],"isError":false},
+             {"id":"a1","runId":"u1","role":"assistant","content":[{"type":"text","text":"First."},{"type":"toolCall","id":"k1","name":"terminal","arguments":{"command":"ls"}}],"stopReason":"toolUse"},
+             {"id":"t1","runId":"u1","role":"toolResult","toolCallId":"k1","toolName":"terminal","content":[],"isError":false},
              {"id":"a2","runId":"u1","role":"assistant","content":[{"type":"text","text":"Second 【1-source】."}],"stopReason":"stop"}]
             """#
         let bar = TurnActions.bar(for: turn(twoBlocks), isStreaming: false, canRegenerate: false)

@@ -123,7 +123,7 @@ struct SecretsTests {
         #expect(SecretReentryName("mcp:x:url") == .mcp(server: "x", field: "url"))
         #expect(SecretReentryName("mcp:x:command") == .unknown("mcp:x:command"))
         #expect(SecretReentryName("somethingNew") == .unknown("somethingNew"))
-        #expect(SecretReentryName.SettingSecret.allCases.count == 12)
+        #expect(SecretReentryName.SettingSecret.allCases.count == 11)
     }
 
     @Test("SECRET_REENTRY_REQUIRED carries params.field; numbers in params read as text")

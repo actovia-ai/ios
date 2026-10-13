@@ -98,6 +98,8 @@ struct InteractiveAnswerTests {
             "hello",
             "```exodus-answer\n{oops}\n```\n\nhi",
             "```exodus-answer\n{\"block\":\"poll\",\"ref\":\"r\"}\n```\n\nhi",
+            // A block that only shows has no answer, as the desktop's `answerHead` says.
+            "```exodus-answer\n{\"block\":\"stock\",\"ref\":\"r\"}\n```\n\nhi",
             "```exodus-answer\n{\"block\":\"ask\"}\n```\n\nhi",
             "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}",
         ])

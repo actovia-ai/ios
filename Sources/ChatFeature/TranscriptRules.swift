@@ -15,6 +15,12 @@ public struct LiveRunError: Equatable, Sendable {
 
 /// What the transcript shows, decided from segments and the turn's state; the views only read these.
 enum TranscriptRules {
+    /// Whether going to the end glides there. Opening a chat (its rows arriving into an empty transcript) jumps: a
+    /// long history would otherwise slide past for seconds (owner, 2026-10-01). A row added to an open chat glides.
+    static func animatesScroll(fromSegmentCount old: Int, to new: Int) -> Bool {
+        old > 0 && new > old
+    }
+
     /// The desktop's `isLoading && isLastSegment`: only the last turn streams, and only while a turn is in flight.
     static func streamingTurnId(segments: [Segment], isTurnInFlight: Bool) -> String? {
         guard isTurnInFlight, case .assistantTurn(let turn)? = segments.last else { return nil }

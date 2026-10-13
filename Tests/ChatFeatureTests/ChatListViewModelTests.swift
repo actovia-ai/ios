@@ -440,3 +440,119 @@ struct ChatListViewModelTests {
         #expect(vm.errorMessage == "Failed to update chat")
     }
 }
+
+// MARK: - Pages and favourites
+
+private let pageOneJSON = #"""
+    {"chats":[{"id":"c1","title":"One","createdAt":"2026-10-06T10:00:00.000Z","favorite":true},
+              {"id":"c2","title":"Two","createdAt":"2026-10-06T09:00:00.000Z","favorite":false}],
+     "olderCursor":"2026-10-06T09:00:00.000Z|c2",
+     "favorites":[{"id":"c1","title":"One","createdAt":"2026-10-06T10:00:00.000Z","favorite":true},
+                  {"id":"c9","title":"Nine, older than the page","createdAt":"2026-09-01T00:00:00.000Z","favorite":true}]}
+    """#
+private let pageTwoJSON = #"""
+    {"chats":[{"id":"c2","title":"Two again","createdAt":"2026-10-06T09:00:00.000Z","favorite":false},
+              {"id":"c3","title":"Three","createdAt":"2026-10-06T08:00:00.000Z","favorite":null}],
+     "olderCursor":null}
+    """#
+
+/// Answers the paged history: page one without `before`, page two with it; `PUT /api/v1/chat` records its body.
+private func servePages(recorder: RequestRecorder, putStatus: Int = 200) {
+    ChatListMockURLProtocol.handler = { request in
+        let method = request.httpMethod ?? "GET"
+        let url = request.url!
+        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let before = items.first { $0.name == "before" }?.value
+        let limit = items.first { $0.name == "limit" }?.value ?? "-"
+        var line = "\(method) \(url.path) limit=\(limit) before=\(before ?? "-")"
+        if method == "PUT", let body = request.httpBody ?? request.httpBodyStream.map({ stream -> Data in
+            stream.open(); defer { stream.close() }
+            var data = Data(); var buffer = [UInt8](repeating: 0, count: 1024)
+            while stream.hasBytesAvailable { let n = stream.read(&buffer, maxLength: buffer.count); if n <= 0 { break }; data.append(buffer, count: n) }
+            return data
+        }) {
+            line += " body=" + String(decoding: body, as: UTF8.self)
+        }
+        recorder.record(line)
+        if method == "GET", url.path == "/api/v1/history" {
+            return (200, Data((before == nil ? pageOneJSON : pageTwoJSON).utf8))
+        }
+        if method == "PUT", url.path == "/api/v1/chat" {
+            return (putStatus, Data((putStatus == 200 ? #"{"success":true}"# : serverErrorJSON).utf8))
+        }
+        return (404, Data(#"{"type":"error","error":{"code":"NOT_FOUND","message":"no route"}}"#.utf8))
+    }
+}
+
+@MainActor
+@Suite("ChatListViewModel — pages and favourites", .serialized)
+struct ChatListPagingTests {
+    private func makeViewModel(_ suite: String = #function) -> ChatListViewModel {
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        let config = ServerConfigStore(userDefaults: defaults)
+        let client = APIClient(session: ChatListMockURLProtocol.makeSession(), serverConfig: config)
+        return ChatListViewModel(apiClient: client)
+    }
+
+    @Test("load() asks for one page with a limit and keeps the favourites apart from the recents")
+    func firstPage() async {
+        let recorder = RequestRecorder()
+        servePages(recorder: recorder)
+        let vm = makeViewModel()
+        await vm.load()
+        #expect(recorder.requests == ["GET /api/v1/history limit=\(ChatListViewModel.pageSize) before=-"])
+        #expect(vm.chats.map(\.id) == ["c1", "c2"])
+        #expect(vm.favorites.map(\.id) == ["c1", "c9"])
+        #expect(vm.recents.map(\.id) == ["c2"])
+        #expect(vm.hasMore)
+    }
+
+    @Test("loadMore() walks the cursor, appends without repeating a row, and stops when the server has nothing older")
+    func nextPage() async {
+        let recorder = RequestRecorder()
+        servePages(recorder: recorder)
+        let vm = makeViewModel()
+        await vm.load()
+        await vm.loadMore()
+        #expect(recorder.requests.last == "GET /api/v1/history limit=\(ChatListViewModel.pageSize) before=2026-10-06T09:00:00.000Z|c2")
+        #expect(vm.chats.map(\.id) == ["c1", "c2", "c3"])
+        #expect(!vm.hasMore)
+        await vm.loadMore()
+        #expect(recorder.requests.count == 2, "nothing older: no request")
+    }
+
+    @Test("an older desktop that still sends the whole list is one page, its starred rows the favourites")
+    func legacyArray() async {
+        let recorder = RequestRecorder()
+        serve(history: twoChatsJSON.replacingOccurrences(of: #""favorite":false"#, with: #""favorite":true"#), recorder: recorder)
+        let vm = makeViewModel()
+        await vm.load()
+        #expect(vm.chats.map(\.id) == ["c1", "c2"])
+        #expect(vm.favorites.map(\.id) == ["c1"])
+        #expect(vm.recents.map(\.id) == ["c2"])
+        #expect(!vm.hasMore)
+    }
+
+    @Test("starring moves the row into Favorites at once and tells the server; the server's no puts it back")
+    func toggleFavorite() async {
+        let recorder = RequestRecorder()
+        servePages(recorder: recorder)
+        let vm = makeViewModel()
+        await vm.load()
+        let two = vm.chats.first { $0.id == "c2" }!
+        let ok = await vm.toggleFavorite(two)
+        #expect(ok)
+        #expect(vm.favorites.map(\.id) == ["c1", "c2", "c9"], "newest first among the favourites")
+        #expect(vm.recents.isEmpty)
+        #expect(recorder.requests.last?.contains(#"PUT /api/v1/chat"#) == true)
+        #expect(recorder.requests.last?.contains(#""favorite":true"#) == true)
+
+        servePages(recorder: recorder, putStatus: 500)
+        let starredTwo = vm.favorites.first { $0.id == "c2" }!
+        let undone = await vm.toggleFavorite(starredTwo)
+        #expect(!undone)
+        #expect(vm.favorites.map(\.id) == ["c1", "c2", "c9"], "refused: the row stays where it was")
+        #expect(vm.errorMessage != nil)
+    }
+}

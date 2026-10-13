@@ -8,10 +8,22 @@ import Observation
 public final class ChatDetailViewModel {
     public let chatId: String
     public private(set) var messages: [ChatMessage] = [] {
-        didSet { segments = RunGrouper.group(messages, cache: &segmentCache) }
+        didSet { regroup() }
     }
+    /// The sources of the runs not loaded yet (the chat opens on its newest page): citations in loaded runs resolve.
+    private var olderSources: [CitationSource] = [] {
+        didSet { if olderSources != oldValue { regroup() } }
+    }
+    /// Whether runs older than the first one shown exist, and where the next older page starts.
+    public private(set) var hasOlder = false
+    private var olderCursor: String?
+    public private(set) var isLoadingOlder = false
+    /// Bumped when a page of older runs went in above the transcript: the view keeps the reader's place.
+    public private(set) var olderPageCount = 0
     public private(set) var segments: [Segment] = []
     @ObservationIgnored private var segmentCache = RunGrouper.Cache()
+
+    private func regroup() { segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache) }
     public private(set) var status: ChatStatus = .idle
     public var composerText: String = ""
     /// The pictures the next message carries, in pick order: sent with the text, and cleared with it.
@@ -27,6 +39,8 @@ public final class ChatDetailViewModel {
     public private(set) var quote: String?
     /// Bumped to ask the composer to take focus ("This is wrong" under a used memory).
     public private(set) var composerFocusRequest = 0
+    /// Bumped to open the camera from outside the `+` menu (a widget's round button); the menu's button answers it.
+    public private(set) var cameraRequest = 0
     public private(set) var chatTitle: String?
     public var errorMessage: String?
     /// The stream failure of the run this client watched fail; a reload hands the error back to the rows.
@@ -37,8 +51,9 @@ public final class ChatDetailViewModel {
     /// server's own: shown as it is, never translated.
     public private(set) var notice: StreamNotice?
     /// True once the transcript is known: history loaded, or re-attached to an in-flight turn.
-    /// Nothing is sent before that — the prior turns of a POST are the LLM context when the
-    /// server's LCM feature is off, and the desktop does not render a chat before its history.
+    /// Nothing is sent before that: a finished run is merged into the transcript the phone
+    /// holds (protocol 2), so the transcript has to be there first — as the desktop does not
+    /// render a chat before its history.
     public private(set) var hasLoadedHistory = false
     /// Whether this chat already had messages when it was first opened. A chat that was empty then
     /// is a new chat and keeps "New chat" in the title bar until the server sends a generated
@@ -80,6 +95,16 @@ public final class ChatDetailViewModel {
     public private(set) var supportsAttempts = false
     /// Bumped each time an answer of a comparison is kept, for the haptic and the VoiceOver announcement.
     public private(set) var choiceCount = 0
+    /// Voice input (`VoiceInput.swift`): recording, then the computer's transcription, then back to idle.
+    public private(set) var recording: VoiceRecordingState = .idle
+    /// The microphone is off for this app: the screen explains, and offers Settings.
+    public var explainsMicrophone = false
+    /// Bumped once per recording started and per transcription that added text, for the haptics.
+    public private(set) var recordingStartCount = 0
+    public private(set) var transcriptionCount = 0
+    @ObservationIgnored let voiceRecorder = VoiceRecorder()
+    /// Stops a recording that reached `VoiceRecorder.maximumDuration`, and has it transcribed.
+    @ObservationIgnored private var recordingCapTask: Task<Void, Never>?
 
     private let apiClient: APIClient
     /// The frames of computer_use sessions streamed here, kept for the finished card's filmstrip.
@@ -141,6 +166,9 @@ public final class ChatDetailViewModel {
     }
 
     public func removeQuote() { quote = nil }
+
+    /// Opens the camera as the `+` menu's entry would, with its permission flow.
+    public func requestCamera() { cameraRequest += 1 }
 
     /// Puts `text` in the composer, replacing what was there (as the desktop does), and asks for focus.
     func prefillComposer(_ text: String) {
@@ -220,23 +248,35 @@ public final class ChatDetailViewModel {
         chatTitle = normalised
     }
 
-    public func onAppear() async {
+    /// `isNew`: a chat made on the phone a moment ago, which has no history yet — the composer is ready at once
+    /// instead of after a round trip to the computer (up to 15 s per address when it does not answer).
+    public func onAppear(isNew: Bool = false) async {
         if await streamManager.isStreaming(chatId), let updates = await streamManager.attach(chatId) {
             hasLoadedHistory = true
             status = .streaming
             await consume(updates)
+        } else if isNew, !hasLoadedHistory {
+            openedWithMessages = false
+            hasLoadedHistory = true
         } else {
             await loadHistory()
         }
     }
 
+    /// The newest page of the chat (desktop spec 2026-10-01 §C3): a long chat was megabytes in one read, seconds over
+    /// a slow link. Older runs load as the reader scrolls up (`loadOlder`). A pull-to-refresh starts over from the
+    /// newest page. The memory foot keeps every run's usage: it is read for the whole chat, loaded or not.
     public func loadHistory() async {
         guard !isTurnInFlight else { return }  // a reload would replace the reply that is being streamed
         do {
-            let rows: [ChatMessage] = try await apiClient.get("/api/v1/chat/\(chatId)")
+            let page: ChatHistoryPage = try await apiClient.get("/api/v1/chat/\(chatId)/page")
+            let rows = page.messages
+            olderSources = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
+            hasOlder = page.hasOlder
+            olderCursor = page.olderCursor
             messages = ChatHistoryRows.uiMessages(from: rows)
             if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
-            memoryFoot.prune(keeping: Set(messages.map { $0.runId ?? $0.id }))
+            fillTruncated(rows)
             clearRunError()
             // Only the first load says what this chat was; a later pull-to-refresh sees the turns
             // that have happened since and must not turn a new chat into an old one.
@@ -247,6 +287,47 @@ public final class ChatDetailViewModel {
             guard !isCancellation(error) else { return }
             errorMessage = error.localizedDescription
             failureCount += 1
+        }
+    }
+
+    /// The page before the first run shown, put in above it. Does nothing while one loads or when there is none; a
+    /// failure is shown like any other, and the next scroll to the top tries again.
+    public func loadOlder() async {
+        guard hasOlder, let cursor = olderCursor, !isLoadingOlder else { return }
+        isLoadingOlder = true
+        defer { isLoadingOlder = false }
+        do {
+            let page: ChatHistoryPage = try await apiClient.get(
+                "/api/v1/chat/\(chatId)/page", query: [URLQueryItem(name: "before", value: cursor)])
+            guard olderCursor == cursor else { return }  // a reload started over meanwhile
+            let shown = Set(messages.map(\.id))
+            let older = ChatHistoryRows.uiMessages(from: page.messages).filter { !shown.contains($0.id) }
+            let loaded = Set((older + messages).map { $0.runId ?? $0.id })
+            olderSources = page.olderSources(loadedRuns: loaded)
+            hasOlder = page.hasOlder
+            olderCursor = page.olderCursor
+            messages = older + messages
+            if page.messages.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
+            olderPageCount += 1
+            fillTruncated(page.messages)
+        } catch {
+            guard !isCancellation(error) else { return }
+            errorMessage = error.localizedDescription
+            failureCount += 1
+        }
+    }
+
+    /// A row too large for a page comes cut (`truncated`); the whole one, read on its own, replaces it.
+    private func fillTruncated(_ rows: [ChatMessage]) {
+        for row in rows where row.raw["truncated"] == .bool(true) {
+            let id = row.id
+            Task { [weak self, apiClient, chatId] in
+                guard let whole: ChatMessage = try? await apiClient.get("/api/v1/chat/\(chatId)/messages/\(id)"),
+                    let self
+                else { return }
+                let message = ChatHistoryRows.uiMessages(from: [whole])[0]
+                if let index = self.messages.firstIndex(where: { $0.id == id }) { self.messages[index] = message }
+            }
         }
     }
 
@@ -290,6 +371,73 @@ public final class ChatDetailViewModel {
     }
 
     public func removePicture(_ id: ComposerPicture.ID) { attachments.remove(id) }
+
+    /// Starts recording, asking for the microphone the first time; denied, the screen explains instead. Does nothing
+    /// while a turn is in flight or a recording is already under way.
+    public func startRecording() async {
+        guard recording == .idle, !isTurnInFlight else { return }
+        guard await VoiceRecorder.requestPermission() else {
+            explainsMicrophone = true
+            return
+        }
+        guard recording == .idle, !isTurnInFlight else { return }  // the permission prompt took a while
+        do {
+            try voiceRecorder.start()
+        } catch {
+            show(StreamNotice(level: .warning, message: error.localizedDescription))
+            return
+        }
+        recording = .recording(since: .now)
+        recordingStartCount += 1
+        recordingCapTask = Task { [weak self] in
+            try? await Task.sleep(for: VoiceRecorder.maximumDuration)
+            guard !Task.isCancelled else { return }
+            await self?.stopRecordingAndTranscribe()
+        }
+    }
+
+    /// Ends the recording and has the computer transcribe it; the text is added to the composer's. A failure is a
+    /// notice over the composer, in the computer's own words when it gave some.
+    public func stopRecordingAndTranscribe() async {
+        guard case .recording = recording else { return }
+        recordingCapTask?.cancel()
+        recordingCapTask = nil
+        guard let audio = voiceRecorder.stop() else {
+            recording = .idle
+            return
+        }
+        recording = .transcribing
+        defer { recording = .idle }
+        do {
+            appendTranscription(try await Transcriber.transcribe(audio: audio, serverConfig: serverConfig))
+        } catch {
+            show(StreamNotice(level: .warning, message: Transcriber.message(for: error)))
+        }
+    }
+
+    /// Throws the recording away, unsent: a long press on its Stop, or leaving the chat.
+    public func cancelRecording() {
+        guard case .recording = recording else { return }
+        recordingCapTask?.cancel()
+        recordingCapTask = nil
+        voiceRecorder.cancel()
+        recording = .idle
+    }
+
+    /// Adds a transcription after what is typed, one space between; an empty one changes nothing. The keyboard is
+    /// left as it was.
+    func appendTranscription(_ text: String) {
+        let addition = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !addition.isEmpty else { return }
+        if composerText.isEmpty {
+            composerText = addition
+        } else if composerText.last?.isWhitespace == true {
+            composerText += addition
+        } else {
+            composerText += " " + addition
+        }
+        transcriptionCount += 1
+    }
 
     @ObservationIgnored private var appliedDraft = false
 

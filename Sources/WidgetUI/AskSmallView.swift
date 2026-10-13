@@ -3,7 +3,8 @@ import SwiftUI
 import WidgetKit
 import WidgetKitShared
 
-/// Home Screen, small: today's numbers, a greeting beside Ody, and the Ask capsule; a tap anywhere starts a chat.
+/// Home Screen, small: a greeting beside Ody, and the Ask capsule; a tap anywhere starts a chat. Ody's mood is the
+/// day's (sleepy after a short night), but no number is drawn: the small widget is an invitation, not a report.
 public struct AskSmallView: View {
     let snapshot: WidgetSnapshot
     let date: Date
@@ -19,11 +20,6 @@ public struct AskSmallView: View {
         let health = WidgetPresentation.health(of: snapshot, at: date, calendar: calendar)
         let ink = WidgetInk.color(at: date, calendar: calendar)
         VStack(alignment: .leading, spacing: 6) {
-            if let health, let line = WidgetStrings.healthLine(health) {
-                Text(verbatim: line).font(.caption2.weight(.semibold)).foregroundStyle(ink.opacity(0.8))
-                    .lineLimit(1).minimumScaleFactor(0.8)
-                    .privacySensitive()
-            }
             // Side by side, so Ody never sits on the words; each line shrinks rather than wrap, so the greeting
             // reads as two lines.
             HStack(alignment: .top, spacing: 4) {
@@ -55,14 +51,14 @@ struct AskCapsule: View {
 
     var body: some View {
         HStack {
-            Text("ios:widget.ask.placeholder", bundle: .main).font(.footnote).foregroundStyle(ink.opacity(0.75))
+            Text("ios:widget.ask.placeholder", bundle: .main).font(.subheadline).foregroundStyle(ink.opacity(0.75))
                 .lineLimit(1).minimumScaleFactor(0.8)
             Spacer(minLength: 4)
             Image(systemName: "arrow.up").font(.caption.weight(.bold)).foregroundStyle(.black.opacity(0.8))
-                .frame(width: 22, height: 22).background(OdyPalette.marigold, in: .circle)
+                .frame(width: 26, height: 26).background(OdyPalette.marigold, in: .circle)
                 .accessibilityHidden(true)
         }
-        .padding(.leading, 10).padding(.trailing, 4).frame(height: 30)
+        .padding(.leading, 12).padding(.trailing, 5).frame(height: 36)
         .background(ink.opacity(0.16), in: .capsule)
     }
 }

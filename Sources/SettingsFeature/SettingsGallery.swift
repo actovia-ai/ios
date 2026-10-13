@@ -84,7 +84,7 @@ private final class GalleryURLProtocol: URLProtocol, @unchecked Sendable {
            "azureOpenAiApiVersion":"2024-12-01-preview"},
          "personality":{"nickname":"Yancey","occupation":"Software engineer","baseStyle":"candid","warm":"more",
            "emoji":"less","customInstructions":"Answer in short paragraphs. Show code before prose."},
-         "tools":{"disabledTools":["terminal","webSearch","future_tool"]},
+         "tools":{"disabledTools":["terminal","web_search","future_tool"]},
          "memory":{"autoCapture":true,"useInChat":false,"lcmEnabled":true,"contextWindowPercent":80,"freshTailSize":32},
          "modelCatalog":\#(catalogJSON),"colorTone":"\#(SettingsGalleryLaunch.tone)",
          "lastBackupAt":null}

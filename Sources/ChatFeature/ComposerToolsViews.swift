@@ -12,6 +12,8 @@ struct ComposerToolsButton: View {
     /// nil in a preview: the menu offers pictures only.
     let tools: ComposerTools?
     let attachments: ComposerAttachments
+    /// A change opens the camera as the menu's entry does (`ChatDetailViewModel.requestCamera`).
+    var cameraRequest = 0
     let onPictures: ([ComposerPicture.Loader]) -> Void
 
     @State private var showsPhotos = false
@@ -66,16 +68,20 @@ struct ComposerToolsButton: View {
         } label: {
             Label("common:action.add", systemImage: "plus")
                 .labelStyle(.iconOnly)
+                .font(.body.weight(.medium))
                 // Tinted while a choice is on, as the desktop's blue `+` — here the chat's tone, like the rest of it.
                 .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+                // The glass circle it sat in is gone (owner, 2026-10-08): the symbol alone, as the desktop's `+`, in
+                // a round the size of the turn button's, so the two ends of the pill match.
+                .frame(width: ComposerRowLayout.buttonSide, height: ComposerRowLayout.buttonSide)
+                .contentShape(.circle)
         }
         // In the order written, as on the desktop: pictures, then how the answer is made, then the tools.
         .menuOrder(.fixed)
         .menuStyle(.button)
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
-        // The ink alone does not show in the Neutral tone, whose ink is the label colour: a wash of it over the glass
-        // does (under it, the glass hides it).
+        .buttonStyle(.plain)
+        // The ink alone does not show in the Neutral tone, whose ink is the label colour: a wash of it, only while
+        // a choice is on, does.
         .overlay {
             if isActive { Circle().fill(.tint.opacity(0.12)).allowsHitTesting(false) }
         }
@@ -89,6 +95,7 @@ struct ComposerToolsButton: View {
             photoSelection = []
             onPictures(items.map { item in { try? await item.loadTransferable(type: Data.self) } })
         }
+        .onChange(of: cameraRequest) { Task { await openCamera() } }
         .fullScreenCover(isPresented: $showsCamera) {
             CameraPicker { data in
                 showsCamera = false

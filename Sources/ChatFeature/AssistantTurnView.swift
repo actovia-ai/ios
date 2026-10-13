@@ -122,8 +122,10 @@ struct AssistantTurnView: View, Equatable {
     }
 
     /// The turn holds a block still waiting for its answer, so whether one may be sent changes how it looks. Read only
-    /// when `canAnswer` changed (a turn starting or ending), never per streamed frame.
-    nonisolated var asks: Bool { answered == nil && turn.body.contains("```exodus-") }  // l10n:ignore: markdown syntax
+    /// when `canAnswer` changed (a turn starting or ending), never per streamed frame. Steps and a chart never wait.
+    nonisolated var asks: Bool {
+        answered == nil && (turn.body.contains("```exodus-ask") || turn.body.contains("```exodus-confirm"))  // l10n:ignore: markdown syntax
+    }
 
     /// `canChoose` counts only for a compared answer, so an ordinary turn does not redraw when a turn starts or ends.
     nonisolated var choiceEnabled: Bool {
@@ -271,9 +273,12 @@ extension AssistantTurnView {
         let texts = blocks.compactMap { if case .text(let text) = $0 { text } else { nil } }
         let placed = InteractiveRendering.placed(in: texts.map(\.text))
         let placedId = placed.map { texts[$0.index].id }
+        // The steps' pictures: only the run's own search thumbnails (StepsPictures); built only for a steps block.
+        let pictures = placed?.fence.kind == .steps
+            ? StepsPictures(sources: turn.sources, media: turn.foot.searchMedia) : StepsPictures()
         let fenced = InteractiveRendering.fencedBlocks(
             fence: placed?.fence, runId: turn.runId, answered: answered, canAnswer: canAnswer && !isStreaming,
-            isAnswerable: answerable && InteractiveRendering.isAnswerable(turn), drafts: drafts,
+            isAnswerable: answerable && InteractiveRendering.isAnswerable(turn), drafts: drafts, pictures: pictures,
             sendAnswer: sendAnswer)
         ForEach(blocks) { block in
             switch block {

@@ -12,8 +12,10 @@ import WidgetKitShared
 struct ActiveChat: Equatable {
     var id: String
     var title: String?
+    /// Made here and never shown before: there is no history to read, so the screen does not ask the server for one.
+    var isNew = false
 
-    static func new() -> ActiveChat { ActiveChat(id: UUID().uuidString.lowercased(), title: nil) }
+    static func new() -> ActiveChat { ActiveChat(id: UUID().uuidString.lowercased(), title: nil, isNew: true) }
 }
 
 /// The app's root: a drawer whose sidebar lists chats and whose card shows the active chat.
@@ -37,6 +39,8 @@ struct AppShell: View {
     @State private var pendingAsk: (chatId: String, text: String)?
     /// A widget's prompt for its new chat's composer, never sent by itself.
     @State private var draft: (chatId: String, text: String)?
+    /// What a widget's new chat opens on: the camera, or already recording.
+    @State private var opening: (chatId: String, opening: ComposerOpening)?
     /// A widget's question for Health's ask box.
     @State private var healthAsk: String?
     /// The composer's `+` choices (reasoning effort, Deep Research) for the whole app session, as the desktop keeps them,
@@ -132,6 +136,8 @@ struct AppShell: View {
         }
         // A chat opening reads the current model's levels and the MCP tools (the desktop may have changed either).
         .onChange(of: activeChat.id, initial: true) { refreshComposerTools() }
+        // Back from another workspace the chat screen is made again, and what was sent meanwhile is history now.
+        .onChange(of: workspace) { if workspace != .chat { activeChat.isNew = false } }
         // Initial too: a link that arrived behind the unlock or pairing gate is opened once the shell appears.
         .onChange(of: pendingLink.link, initial: true) {
             guard let link = pendingLink.take() else { return }
@@ -144,12 +150,14 @@ struct AppShell: View {
         switch workspace {
         case .chat:
             ChatDetailView(
-                chatId: activeChat.id, title: activeChat.title, apiClient: apiClient,
+                chatId: activeChat.id, title: activeChat.title, isNew: activeChat.isNew, apiClient: apiClient,
                 streamManager: streamManager, serverConfig: serverConfig,
                 initialMessage: pendingAsk?.chatId == activeChat.id ? pendingAsk?.text : nil,
                 onInitialMessageSent: { pendingAsk = nil },
                 initialDraft: draft?.chatId == activeChat.id ? draft?.text : nil,
-                onInitialDraftUsed: { draft = nil }
+                onInitialDraftUsed: { draft = nil },
+                initialOpening: opening?.chatId == activeChat.id ? opening?.opening : nil,
+                onInitialOpeningUsed: { opening = nil }
             )
             // A different chat is a different view model.
             .id(activeChat.id)
@@ -207,10 +215,16 @@ struct AppShell: View {
     private func open(_ link: DeepLink) {
         settings = nil
         switch link {
-        case .newChat(let prompt):
+        case .newChat(let prompt, let opens):
             startNewChat()
-            // An empty draft still focuses the composer: the link is "ask something".
-            draft = (activeChat.id, prompt ?? "")
+            // An empty draft still focuses the composer: the link is "ask something" — unless the camera or the
+            // microphone is what opens, when the keyboard would only be in the way.
+            if let prompt {
+                draft = (activeChat.id, prompt)
+            } else if opens == nil {
+                draft = (activeChat.id, "")
+            }
+            opening = opens.map { (activeChat.id, ComposerOpening($0)) }
         case .chat(let id):
             // The title comes with the history (the chat already on screen keeps its own); an unknown id shows the
             // server's error in the chat, and the drawer still lists the rest.
@@ -229,6 +243,16 @@ struct AppShell: View {
 
     private func setSidebar(open: Bool) {
         withAnimation(drawerAnimation(reduceMotion: reduceMotion)) { isSidebarOpen = open }
+    }
+}
+
+extension ComposerOpening {
+    /// The widget link's word for it.
+    init(_ opening: DeepLink.Opening) {
+        switch opening {
+        case .camera: self = .camera
+        case .voice: self = .voice
+        }
     }
 }
 

@@ -1,12 +1,10 @@
 import Foundation
 
 /// A chat message as sent by the server. Decodes into a raw `[String: JSONValue]`
-/// dictionary rather than a narrow struct — the server's own schema comment
-/// (`messageSchema` in `schemas/chat.ts`) explains why: prior turns carry
-/// provider-specific fields (`details`, `toolCallId`, `toolName`, `isError`, `usage`,
-/// `cost`, …) that must round-trip unmodified when this message is echoed back
-/// inside the next `POST /api/v1/chat` request body, or the server loses tool-call
-/// pairing information it needs to talk to the LLM provider.
+/// dictionary rather than a narrow struct: messages carry provider- and tool-specific
+/// fields (`details`, `toolCallId`, `toolName`, `isError`, `usage`, …) that the cards
+/// read and that must survive a merge unmodified. (They no longer go back to the
+/// server: a send carries only the new question — desktop spec 2026-10-01 §C1.)
 public struct ChatMessage: Codable, Equatable, Sendable, Identifiable {
     public var id: String
     public var role: String

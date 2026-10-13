@@ -2,7 +2,7 @@ import Foundation
 import Models
 
 // The card prototypes' fixtures (Sources/ChatFeature/Prototypes/PrototypeFixtures.swift) as raw JSON, with the
-// desktop's field names, plus the newer image_generation row shapes.
+// desktop's field names.
 enum ToolResultFixtures {
     static func json(_ text: String) -> JSONValue {
         try! JSONDecoder().decode(JSONValue.self, from: Data(text.utf8))
@@ -89,11 +89,11 @@ enum ToolResultFixtures {
     }
 
     static let imageOne = #"""
-        {"images":[{"url":"https://example.invalid/img-1.png","revisedPrompt":"A flat vector poster of a white lighthouse on a green cliff at sunset, warm orange and pink sky, a sun low on the horizon, simple geometric shapes."}]}
+        {"images":[{"mediaId":"img-1.png","chatId":"c1","mimeType":"image/png","revisedPrompt":"A flat vector poster of a white lighthouse on a green cliff at sunset, warm orange and pink sky, a sun low on the horizon, simple geometric shapes."}]}
         """#
 
     static let imageTwo = #"""
-        {"images":[{"url":"https://example.invalid/img-1.png","revisedPrompt":"Variant one."},{"url":"https://example.invalid/img-2.png","revisedPrompt":"Variant two."}]}
+        {"images":[{"mediaId":"img-1.png","chatId":"c1","mimeType":"image/png","revisedPrompt":"Variant one."},{"mediaId":"img-2.png","chatId":"c1","mimeType":"image/png","revisedPrompt":"Variant two."}]}
         """#
 
     static let kyoto = #"""

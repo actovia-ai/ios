@@ -147,6 +147,8 @@ private struct TimelineStepRow: View {
     @ViewBuilder
     private var icon: some View {
         switch step {
+        case .thinking(let thinking) where thinking.isNarration:
+            Image(systemName: "text.bubble")  // l10n:ignore: SF Symbol name
         case .thinking:
             Image(systemName: "brain")
         case .toolCall(let call) where call.isPending:

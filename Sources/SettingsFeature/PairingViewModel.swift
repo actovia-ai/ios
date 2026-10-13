@@ -80,9 +80,13 @@ public final class PairingViewModel {
         errorDetail = detail
     }
 
-    public func unpair() {
-        connection.unpair()
+    /// Tells the computer, then forgets it here (`ServerConnection.leave`).
+    /// Forgotten at once; the returned task tells the computer (see `ServerConnection.leave`).
+    @discardableResult
+    public func unpair() -> Task<Void, Never>? {
+        let telling = connection.leave(session: session)
         refresh()
+        return telling
     }
 
     private func refresh() {

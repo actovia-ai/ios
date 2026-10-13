@@ -24,7 +24,7 @@ enum CopiedAnswer {
 
     /// The answer of a turn, with the sources of that turn: a marker means the last source of its rank.
     static func text(of turn: AssistantTurn, heading: String = CopiedAnswer.heading) -> String {
-        text(markdown: turn.body, heading: heading) { turn.citation(forMarker: $0) }
+        text(markdown: InteractivePlainText.replacingBlock(in: turn.body), heading: heading) { turn.citation(forMarker: $0) }
     }
 
     /// - A marker's numbers that a source answers to become `[n]`, n being the source's place in order of first

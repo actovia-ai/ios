@@ -124,15 +124,15 @@ struct WeatherResultTests {
         #expect(weather.forecast[0].sunrise == "2026-09-24T06:02")
     }
 
-    @Test("numbers sent as numbers read as the strings the desktop sends; an old row has no isDay")
+    @Test("numbers sent as numbers read as the strings the desktop sends; a missing isDay reads as day")
     func lenientNumbers() throws {
         let weather = try #require(
-            WeatherResult(json: json(#"{"location":"X","current":{"tempC":22,"precipMM":0.5,"weatherCode":113},"forecast":[{"date":"2026-09-24","hourly":[{"time":300}]}]}"#)))
+            WeatherResult(json: json(#"{"location":"X","current":{"tempC":22,"precipMM":0.5,"weatherCode":63},"forecast":[{"date":"2026-09-24","hourly":[{"time":"2026-09-24T03:00","tempC":9}]}]}"#)))
         #expect(weather.current.tempC == "22")
         #expect(weather.current.precipMM == "0.5")
-        #expect(weather.current.weatherCode == "113")
-        #expect(weather.current.isDay == nil)
-        #expect(weather.forecast.first?.hourly.first?.time == "300")
+        #expect(weather.current.weatherCode == "63")
+        #expect(weather.current.isDay == true)
+        #expect(weather.forecast.first?.hourly.first?.tempC == "9")
     }
 
     @Test("without a current reading it is not a weather result")
@@ -144,72 +144,40 @@ struct WeatherResultTests {
 
 @Suite("Tool results: image_generation")
 struct ImageGenerationResultTests {
-    @Test("the prototype rows (https url + revised prompt) read as remote images")
-    func legacyURL() throws {
+    @Test("the prototype rows read their media file and revised prompt")
+    func prototypeRows() throws {
         let one = try #require(ImageGenerationResult(json: json(F.imageOne)))
         #expect(one.images.count == 1)
-        #expect(one.images[0].source == .remote(URL(string: "https://example.invalid/img-1.png")!))
+        #expect(one.images[0].mediaId == "img-1.png")
+        #expect(one.images[0].chatId == "c1")
+        #expect(one.images[0].mimeType == "image/png")
         #expect(one.images[0].revisedPrompt?.hasPrefix("A flat vector poster") == true)
         #expect(ImageGenerationResult(json: json(F.imageTwo))?.images.map(\.revisedPrompt) == ["Variant one.", "Variant two."])
     }
 
-    @Test("a media id wins over a url; data URLs in url or dataUrl; a row with neither has no source")
-    func sources() throws {
+    @Test("the size is kept; a row without a mediaId or chatId reads with them nil; no images array is no result")
+    func rows() throws {
         let result = try #require(
             ImageGenerationResult(
-                json: json(
-                    #"{"size":"1024x1536","images":[{"mediaId":"md_1","chatId":"c1","mimeType":"image/png","url":"https://x.invalid/a.png"},{"url":"data:image/png;base64,AAAA"},{"dataUrl":"data:image/webp;base64,BBBB"},{"revisedPrompt":"lost"},{"url":"file:///etc/passwd"}]}"#
-                )))
+                json: json(#"{"size":"1024x1536","images":[{"mediaId":"md_1","chatId":"c1","mimeType":"image/png"},{"mediaId":"b.png"},{"revisedPrompt":"lost"}]}"#)))
         #expect(result.size == "1024x1536")
-        #expect(result.images.map(\.source) == [
-            .media(id: "md_1", chatId: "c1", mimeType: "image/png"),
-            .dataURL("data:image/png;base64,AAAA"),
-            .dataURL("data:image/webp;base64,BBBB"),
-            nil,
-            nil,
-        ])
+        #expect(result.images.map(\.mediaId) == ["md_1", "b.png", nil])
+        #expect(result.images.map(\.chatId) == ["c1", nil, nil])
         #expect(ImageGenerationResult(json: json(#"{"size":"auto"}"#)) == nil)
         #expect(ImageGenerationArguments(json: json(#"{"prompt":"A lighthouse"}"#))?.prompt == "A lighthouse")
     }
 
-    @Test("priority is mediaId > data URL > https, also when one row carries a media id and a data URL")
-    func sourcePriority() throws {
+    @Test("width and height are read when positive")
+    func size() throws {
         let result = try #require(
             ImageGenerationResult(
                 json: json(
-                    #"{"images":[{"mediaId":"a.png","chatId":"c1","dataUrl":"data:image/png;base64,AAAA","url":"https://x.invalid/a.png"},{"mediaId":"b.png","url":"data:image/png;base64,BBBB"},{"dataUrl":"data:image/png;base64,CCCC","url":"https://x.invalid/c.png"},{"url":"data:image/jpeg;base64,DDDD"}]}"#
-                )))
-        #expect(result.images.map(\.source) == [
-            .media(id: "a.png", chatId: "c1", mimeType: nil),
-            .media(id: "b.png", chatId: nil, mimeType: nil),
-            .dataURL("data:image/png;base64,CCCC"),
-            .dataURL("data:image/jpeg;base64,DDDD"),
-        ])
-    }
-
-    @Test("width and height are read when positive; a data URL that is not an image is no source")
-    func sizeAndNonImageData() throws {
-        let result = try #require(
-            ImageGenerationResult(
-                json: json(
-                    #"{"images":[{"mediaId":"a.png","chatId":"c1","mimeType":"image/png","width":1024,"height":1536},{"mediaId":"b.png","width":0,"height":"x"},{"url":"data:text/html;base64,PGgxPg=="},{"url":"DATA:IMAGE/PNG;base64,EEEE"}]}"#
+                    #"{"images":[{"mediaId":"a.png","chatId":"c1","mimeType":"image/png","width":1024,"height":1536},{"mediaId":"b.png","width":0,"height":"x"}]}"#
                 )))
         #expect(result.images[0].width == 1024)
         #expect(result.images[0].height == 1536)
         #expect(result.images[1].width == nil)
         #expect(result.images[1].height == nil)
-        #expect(result.images[2].source == nil)
-        #expect(result.images[3].source == .dataURL("DATA:IMAGE/PNG;base64,EEEE"))
-    }
-
-    @Test("only raster data URLs are sources: an SVG or an unknown image type is none")
-    func rasterDataOnly() throws {
-        let kinds = ["png", "jpeg", "jpg", "gif", "webp", "avif", "svg+xml", "x-icon", "bmp", "pngx"]
-        let rows = kinds.map { #"{"url":"data:image/\#($0);base64,AAAA"}"# }.joined(separator: ",")
-        let result = try #require(ImageGenerationResult(json: json(#"{"images":[\#(rows)]}"#)))
-        #expect(result.images.map { $0.source != nil } == [true, true, true, true, true, true, false, false, false, false])
-        let svg = try #require(ImageGenerationResult(json: json(#"{"images":[{"dataUrl":"data:image/svg+xml,<svg/>"}]}"#)))
-        #expect(svg.images[0].source == nil)
     }
 }
 

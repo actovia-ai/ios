@@ -33,13 +33,11 @@ private let user = decode(#"{"id":"u1","runId":"u1","role":"user","content":"dra
 private let chatId = "3f0c2a4e-1b7d-4c1e-9a55-0d2b8f6c7e11"
 private let mediaId = "9b1e4d2c-6a3f-4e8b-8c7d-5f2a1b0c9d8e.png"
 
-private func model(_ details: String, prompt: String? = "A lighthouse", policy: MarkdownImagePolicy = .tapToLoadRemote)
-    -> ImageGenerationCardModel
-{
+private func model(_ details: String, prompt: String? = "A lighthouse") -> ImageGenerationCardModel {
     let call = DecodedCall(
         arguments: prompt.map { ImageGenerationArguments(json: .object(["prompt": .string($0)]))! },
         result: ImageGenerationResult(json: value(details))!)
-    return ImageGenerationCardModel(call, policy: policy)
+    return ImageGenerationCardModel(call)
 }
 
 private func imageCards(_ messages: [ChatMessage]) -> [ToolCard] {
@@ -64,22 +62,16 @@ struct ImageGenerationSourceTests {
     @Test("mediaId + chatId → the media route; mediaId without chatId (a Group image) → nothing")
     func media() {
         let frames = model(
-            #"{"images":[{"mediaId":"\#(mediaId)","chatId":"\#(chatId)","mimeType":"image/png","dataUrl":"data:image/png;base64,AAAA"},{"mediaId":"\#(mediaId)","mimeType":"image/png"}]}"#
+            #"{"images":[{"mediaId":"\#(mediaId)","chatId":"\#(chatId)","mimeType":"image/png"},{"mediaId":"\#(mediaId)","mimeType":"image/png"}]}"#
         ).frames
         #expect(frames[0].source == .media(path: "/api/v1/media/\(chatId)/\(mediaId)"))
         #expect(frames[1].source == nil)
     }
 
-    @Test("a data URL is decoded in place; an https link follows the markdown's image policy")
-    func legacy() {
-        let details = #"{"images":[{"url":"data:image/png;base64,AAAA"},{"url":"https://oaidalle.invalid/img.png?sig=x"}]}"#
-        let url = URL(string: "https://oaidalle.invalid/img.png?sig=x")!
-        let tap = model(details, policy: .tapToLoadRemote).frames
-        #expect(tap[0].source == .inline("data:image/png;base64,AAAA"))
-        #expect(tap[1].source == .remote(url, host: "oaidalle.invalid", needsTap: true))
-        #expect(model(details, policy: .autoLoadRemote).frames[1].source == .remote(url, host: "oaidalle.invalid", needsTap: false))
-        #expect(model(details, policy: .blockRemote).frames[1].source == nil)
-        #expect(MarkdownImagePolicy.current == .tapToLoadRemote)
+    @Test("a row with no mediaId (a url or dataUrl of some other shape) has nothing to show")
+    func noMediaId() {
+        let details = #"{"images":[{"url":"data:image/png;base64,AAAA"},{"dataUrl":"data:image/png;base64,AAAA","chatId":"c1"}]}"#
+        #expect(model(details).frames.map(\.source) == [nil, nil])
     }
 
     @Test("the media path takes only the plain ids the desktop writes; anything else builds no URL")
@@ -232,28 +224,20 @@ struct ImageGenerationPendingTests {
         #expect(turn.pendingToolCalls.map(\.name) == ["terminal"])
     }
 
-    @Test("frame status: running, stopped, failed, loading, loaded, gone, retryable, waiting for a tap")
+    @Test("frame status: running, stopped, failed, loading, loaded, gone, retryable")
     func frameStatus() {
         typealias R = ImageGenerationRules
         let media = GeneratedImageSource.media(path: "/api/v1/media/c1/a.png")
-        let remote = GeneratedImageSource.remote(URL(string: "https://x.invalid/a.png")!, host: "x.invalid", needsTap: true)
-        #expect(R.frameStatus(card: .generating, isLive: true, source: nil, load: .idle, requested: false) == .generating)
-        #expect(R.frameStatus(card: .generating, isLive: false, source: nil, load: .idle, requested: false) == .unavailable)
-        #expect(R.frameStatus(card: .failed(message: "x"), isLive: true, source: nil, load: .idle, requested: false) == .error)
-        #expect(R.frameStatus(card: .complete, isLive: false, source: nil, load: .idle, requested: false) == .unavailable)
-        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .loading, requested: false) == .refining)
-        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .loaded, requested: false) == .complete)
-        #expect(
-            R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.unavailable), requested: false)
-                == .unavailable)
-        #expect(
-            R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.unauthorized), requested: false)
-                == .unavailable)
-        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.failed), requested: false) == .loadFailed)
-        #expect(
-            R.frameStatus(card: .complete, isLive: false, source: remote, load: .idle, requested: false)
-                == .askToLoad(host: "x.invalid"))
-        #expect(R.frameStatus(card: .complete, isLive: false, source: remote, load: .idle, requested: true) == .refining)
+        #expect(R.frameStatus(card: .generating, isLive: true, source: nil, load: .idle) == .generating)
+        #expect(R.frameStatus(card: .generating, isLive: false, source: nil, load: .idle) == .unavailable)
+        #expect(R.frameStatus(card: .failed(message: "x"), isLive: true, source: nil, load: .idle) == .error)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: nil, load: .idle) == .unavailable)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .idle) == .refining)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .loading) == .refining)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .loaded) == .complete)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.unavailable)) == .unavailable)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.unauthorized)) == .unavailable)
+        #expect(R.frameStatus(card: .complete, isLive: false, source: media, load: .failed(.failed)) == .loadFailed)
     }
 
     @Test("the desktop's status copy, in English")
@@ -377,51 +361,25 @@ struct GeneratedImageLoaderTests {
         #expect(requests.all.count == 1)
     }
 
-    @Test("a data URL decodes without the network; a legacy link that fails is unavailable")
-    func legacy() async throws {
-        let fetched = Mutex(0)
-        let loader = GeneratedImageLoader(
-            fetchMedia: { _ in
-                fetched.withLock { $0 += 1 }
-                return Data()
-            },
-            fetchRemote: { _ in throw MarkdownImageLoadError403() }, cache: GeneratedImageCache())
-        let inline = GeneratedImageSource.inline("data:image/png;base64,\(pngData().base64EncodedString())")
-        #expect(try await loader.load(inline).size == CGSize(width: 4, height: 6))
-        #expect(fetched.withLock { $0 } == 0)
-        await #expect(throws: GeneratedImageLoader.Failure.unavailable) {
-            try await loader.load(.inline("data:image/png,notbase64"))
-        }
-        let remote = GeneratedImageSource.remote(URL(string: "https://x.invalid/a.png")!, host: "x.invalid", needsTap: true)
-        await #expect(throws: GeneratedImageLoader.Failure.unavailable) { try await loader.load(remote) }
-    }
-
-    @Test("a legacy link or data URL is decoded downsampled, never at full size; the desktop's own sizes keep every pixel")
+    @Test("an oversized file is decoded downsampled, never at full size; the desktop's own sizes keep every pixel")
     func downsampled() async throws {
-        let wide = pngData(width: 3000, height: 30)
         let loader = GeneratedImageLoader(
-            fetchMedia: { _ in pngData(width: 1536, height: 1024) }, fetchRemote: { _ in wide }, cache: GeneratedImageCache())
-        let remote = GeneratedImageSource.remote(URL(string: "https://x.invalid/a.png")!, host: "x.invalid", needsTap: false)
-        let inline = GeneratedImageSource.inline("data:image/png;base64,\(wide.base64EncodedString())")
-        for source in [remote, inline] {
-            let image = try await loader.load(source)
-            #expect(image.size.width * image.scale == CGFloat(GeneratedImageLoader.maxPixelSize), "\(source)")
-        }
+            fetchMedia: { path in path.hasSuffix("wide.png") ? pngData(width: 3000, height: 30) : pngData(width: 1536, height: 1024) },
+            cache: GeneratedImageCache())
+        let wide = try await loader.load(.media(path: "/api/v1/media/c1/wide.png"))
+        #expect(wide.size.width * wide.scale == CGFloat(GeneratedImageLoader.maxPixelSize))
         let media = try await loader.load(.media(path: "/api/v1/media/c1/a.png"))
         #expect(media.size.width * media.scale == 1536)
     }
 
     @Test("cancellation is not a failure")
     func cancellation() throws {
-        let media = GeneratedImageSource.media(path: "/p")
-        #expect(throws: CancellationError.self) { try GeneratedImageLoader.failure(for: CancellationError(), source: media) }
-        #expect(throws: CancellationError.self) { try GeneratedImageLoader.failure(for: URLError(.cancelled), source: media) }
-        #expect(try GeneratedImageLoader.failure(for: URLError(.timedOut), source: media) == .failed)
-        #expect(try GeneratedImageLoader.failure(for: HTTPError(statusCode: 400, code: "BAD", message: ""), source: media) == .unavailable)
+        #expect(throws: CancellationError.self) { try GeneratedImageLoader.failure(for: CancellationError()) }
+        #expect(throws: CancellationError.self) { try GeneratedImageLoader.failure(for: URLError(.cancelled)) }
+        #expect(try GeneratedImageLoader.failure(for: URLError(.timedOut)) == .failed)
+        #expect(try GeneratedImageLoader.failure(for: HTTPError(statusCode: 400, code: "BAD", message: "")) == .unavailable)
     }
 }
-
-private struct MarkdownImageLoadError403: Error {}
 
 @MainActor
 @Suite("Image generation: drawn in a window")
@@ -436,8 +394,7 @@ struct ImageGenerationHostedTests {
             fetchMedia: { path in
                 fetched.withLock { $0.append(path) }
                 return png
-            },
-            fetchRemote: { _ in Data() }, cache: GeneratedImageCache())
+            }, cache: GeneratedImageCache())
         let details = #"{"images":[{"mediaId":"\#(mediaId)","chatId":"\#(chatId)","mimeType":"image/png"}]}"#
         let cards =
             imageCards([user, call("a1", "k1")])

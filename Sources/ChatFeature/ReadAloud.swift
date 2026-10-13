@@ -7,12 +7,13 @@ import Observation
 import SwiftUI
 
 /// What read-aloud says: the answer as prose. Markdown is taken off (`MarkdownPlainText`), and the citation markers
-/// (`【1-source】`, `【1,2-source】`) with the space before them, so nothing is left hanging before a full stop.
+/// (`【1-source】`, `【1,2-source】`) with the space before them, so nothing is left hanging before a full stop; a steps
+/// or stock block is read as its words (`InteractivePlainText`).
 enum SpeechText {
     nonisolated(unsafe) private static let marker = #/\s*\u{3010}[0-9,\s]+-source\u{3011}/#
 
     static func prose(_ markdown: String) -> String {
-        MarkdownPlainText.strip(withoutCitations(markdown))
+        MarkdownPlainText.strip(withoutCitations(InteractivePlainText.replacingBlock(in: markdown)))
     }
 
     /// The text without its `【N-source】` markers, and without the space before each.

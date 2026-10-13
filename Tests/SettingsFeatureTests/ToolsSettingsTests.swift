@@ -8,11 +8,11 @@ import Testing
 @MainActor
 @Suite("Built-in Tools")
 struct ToolsSettingsViewModelTests {
-    /// Off on the computer: terminal, web search under its pre-rename name, a tool the desktop does not switch here
-    /// (deep_research) and one this app has never heard of.
+    /// Off on the computer: terminal, web search, a tool the desktop does not switch here (deep_research) and one
+    /// this app has never heard of.
     private static let row = #"""
         {"id":"global","lastBackupAt":"2026-09-18T12:00:00.000Z",
-         "tools":{"disabledTools":["terminal","webSearch","deep_research","future_tool"],"extra":true}}
+         "tools":{"disabledTools":["terminal","web_search","deep_research","future_tool"],"extra":true}}
         """#
 
     private func loaded(_ server: SettingsPageTestServer, suite: String = #function) async -> ToolsSettingsViewModel {
@@ -21,7 +21,7 @@ struct ToolsSettingsViewModelTests {
         return vm
     }
 
-    @Test("load() reads the switches, a pre-rename name as its tool, and reports names this app does not know")
+    @Test("load() reads the switches and reports names this app does not know")
     func loadReadsSwitches() async throws {
         let server = SettingsPageTestServer(rows: [Self.row])
         let vm = await loaded(server)
@@ -54,15 +54,15 @@ struct ToolsSettingsViewModelTests {
         let body = try server.onlyPostBody()
         #expect(Set(body.keys) == ["id", "lastBackupAt", "tools"])
         let tools = try #require(body["tools"] as? [String: Any])
-        #expect(tools["disabledTools"] as? [String] == ["terminal", "webSearch", "deep_research", "future_tool", "grep"])
+        #expect(tools["disabledTools"] as? [String] == ["terminal", "web_search", "deep_research", "future_tool", "grep"])
         #expect(tools["extra"] as? Bool == true)
         #expect(vm.isEnabled("grep") == false)
     }
 
-    @Test("switching a tool on removes it under either spelling and nothing else")
-    func switchOnRemovesBothSpellings() async throws {
+    @Test("switching a tool on removes it and nothing else")
+    func switchOnRemoves() async throws {
         let server = SettingsPageTestServer(rows: [
-            #"{"id":"global","tools":{"disabledTools":["webSearch","terminal","web_search","future_tool"]}}"#
+            #"{"id":"global","tools":{"disabledTools":["terminal","web_search","future_tool"]}}"#
         ])
         let vm = await loaded(server)
         await vm.setEnabled("web_search", true)?.value
@@ -147,7 +147,6 @@ struct BuiltinToolsTableTests {
         }
 
         let toolNames: [String]
-        let legacyNames: [String: String]
         let groups: [String]
         let registry: [Entry]
         let configured: [String]
@@ -176,17 +175,16 @@ struct BuiltinToolsTableTests {
         #expect(Set(BuiltinTools.switchable.filter(\.configuredOnComputer).map(\.name)) == Set(desktop.configured))
     }
 
-    @Test("every TOOL_NAMES value is known, and the legacy spellings are LEGACY_TOOL_NAMES")
+    @Test("every TOOL_NAMES value is known")
     func namesMatchToolNames() throws {
         let desktop = try Self.fixture()
         #expect(BuiltinTools.allNames == Set(desktop.toolNames))
         #expect(Set(BuiltinTools.switchable.map(\.name)).isSubset(of: BuiltinTools.allNames))
-        #expect(BuiltinTools.legacyNames == desktop.legacyNames)
     }
 
     @Test("a name the server holds that the table does not know is reported, once, in order")
     func unknownNamesAreReported() {
-        #expect(BuiltinTools.unknownNames(in: ["grep", "brand_new", "webSearch", "call_mcp_tool", "brand_new", "x"])
+        #expect(BuiltinTools.unknownNames(in: ["grep", "brand_new", "web_search", "call_mcp_tool", "brand_new", "x"])
             == ["brand_new", "x"])
     }
 
@@ -215,11 +213,6 @@ struct BuiltinToolsTableTests {
         var byKey: [String: String] = [:]
         for match in toolNamesBlock.matches(of: /(\w+): '([a-z_]+)'/) { byKey[String(match.1)] = String(match.2) }
 
-        let legacyBlock = try #require(names.firstRange(of: "LEGACY_TOOL_NAMES").map { names[$0.upperBound...] })
-        let legacyList = try #require(legacyBlock.firstRange(of: "] as const").map { legacyBlock[..<$0.lowerBound] })
-        let legacy = Dictionary(
-            uniqueKeysWithValues: legacyList.matches(of: /'(\w+)'/).map { (String($0.1), byKey[String($0.1)] ?? "?") })
-
         let registry = tools.matches(
             of: /key: TOOL_NAMES\.(\w+),\s*labelKey: '([^']+)',\s*descriptionKey: '([^']+)',\s*group: '([^']+)'/
         ).map {
@@ -233,7 +226,7 @@ struct BuiltinToolsTableTests {
         let configured = config.matches(of: /\[TOOL_NAMES\.(\w+)\]/).map { byKey[String($0.1)] ?? "?" }
 
         let live = DesktopTools(
-            toolNames: byKey.values.sorted(), legacyNames: legacy,
+            toolNames: byKey.values.sorted(),
             groups: groupsBlock.matches(of: /'([^']+)'/).map { String($0.1) }, registry: registry,
             configured: configured.sorted())
         #expect(!live.toolNames.isEmpty && !live.registry.isEmpty)

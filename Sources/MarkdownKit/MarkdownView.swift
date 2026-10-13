@@ -6,7 +6,8 @@ import SwiftUI
 ///
 /// `citations` resolves `【N-source】` markers to chips (tapping one calls `onCitationTap(N)`); a marker
 /// whose number is not in it is stripped, like the desktop does. Only http(s) and mailto links open, through the
-/// parent's `openURL`; any other scheme in model-written text is dropped (`MarkdownLinkPolicy`).
+/// parent's `openURL`; any other scheme in model-written text is dropped (`MarkdownLinkPolicy`); an `entity:` link
+/// goes to `markdownEntityTap`.
 public struct MarkdownView: View {
     private let text: String
     private let citations: [MarkdownCitation]
@@ -18,6 +19,7 @@ public struct MarkdownView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.renderDiagnostics) private var diagnostics
     @Environment(\.markdownDrawsAsArriving) private var drawsAsArriving
+    @Environment(\.markdownEntityTap) private var entityTap
 
     public init(
         text: String, citations: [MarkdownCitation] = [], isStreaming: Bool, onCitationTap: ((Int) -> Void)? = nil
@@ -32,6 +34,7 @@ public struct MarkdownView: View {
         // Closures cannot be compared, so the router's handlers are refreshed here; its action stays the same.
         router.onCitationTap = onCitationTap
         router.openURL = { [openURL] in openURL($0) }
+        router.onEntityTap = entityTap.map { action in { action.perform($0) } }
         model.diagnostics = diagnostics
         let blocks = model.blocks(for: text, isStreaming: isStreaming)
         return MarkdownBlockStack(

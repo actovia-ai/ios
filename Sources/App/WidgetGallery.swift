@@ -4,9 +4,9 @@ import WidgetKit
 import WidgetKitShared
 import WidgetUI
 
-/// DEBUG-only visual check of the widgets: `-WidgetGallery` draws every widget on a fixture snapshot — small and
-/// medium at 07:00, 12:00, 18:30 and 23:00 over their sky, the accented Home Screen, the Lock Screen pair and the
-/// empty state. `-WidgetGallery <part>` shows one part only, sized for a screenshot: `day` (07:00, 12:00), `night`
+/// DEBUG-only visual check of the widgets: `-WidgetGallery` draws every widget on a fixture snapshot — small (the
+/// greeting, Ody, the capsule) and medium (the capsule, four round buttons) at 07:00, 12:00, 18:30 and 23:00 over
+/// their sky, the accented Home Screen, the Lock Screen pair and the empty state. `-WidgetGallery <part>` shows one part only, sized for a screenshot: `day` (07:00, 12:00), `night`
 /// (18:30, 23:00), `other` (accented, Lock Screen) or `empty`.
 enum WidgetGalleryLaunch {
     static var isEnabled: Bool { ProcessInfo.processInfo.arguments.contains("-WidgetGallery") }

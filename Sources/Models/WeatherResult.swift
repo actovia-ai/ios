@@ -1,8 +1,7 @@
 import Foundation
 
-/// The weather tool's details (`WeatherResult`, packages/shared/src/types/weather.ts). Numbers arrive as strings and
-/// times in the place's local time: ISO (`2026-09-23T06:02`) on new rows, wttr.in's `06:52 AM` / `300` on old ones.
-/// Codes are WMO (0–99) or, on old rows, WWO (113–395).
+/// The weather tool's details (`WeatherResult`, packages/shared/src/types/weather.ts), from Open-Meteo. Numbers arrive
+/// as strings, times as ISO in the place's local time (`2026-09-23T06:02`), codes as WMO (0–99).
 public struct WeatherResult: JSONValueDecodable {
     public struct Current: JSONValueDecodable {
         public let condition: String
@@ -18,8 +17,8 @@ public struct WeatherResult: JSONValueDecodable {
         public let visibility: String
         public let pressure: String
         public let observedAt: String
-        /// False at night; absent on old rows.
-        public let isDay: Bool?
+        /// False at night; a row without it reads as day.
+        public let isDay: Bool
 
         public init?(json: JSONValue) {
             guard let fields = JSONFields(json) else { return nil }
@@ -36,7 +35,7 @@ public struct WeatherResult: JSONValueDecodable {
             visibility = fields.text("visibility") ?? ""
             pressure = fields.text("pressure") ?? ""
             observedAt = fields.text("observedAt") ?? ""
-            isDay = fields.bool("isDay")
+            isDay = fields.bool("isDay") ?? true
         }
     }
 

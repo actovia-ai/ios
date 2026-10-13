@@ -80,7 +80,7 @@ enum InteractiveRendering {
     /// false only holds its Submit / Approve / Reject while a turn is in flight.
     static func fencedBlocks(
         fence: InteractiveFence?, runId: String, answered: InteractiveAnswered?, canAnswer: Bool,
-        isAnswerable: Bool = true, drafts: InteractiveDrafts? = nil,
+        isAnswerable: Bool = true, drafts: InteractiveDrafts? = nil, pictures: StepsPictures = StepsPictures(),
         sendAnswer: @escaping @MainActor @Sendable (String) -> Bool
     ) -> MarkdownFencedBlocks? {
         guard let fence else { return nil }
@@ -92,12 +92,13 @@ enum InteractiveRendering {
             guard drawn == language, fence.matches(code: code) else { return nil }
             return AnyView(
                 InteractiveBlockView(
-                    fence: fence, runId: runId, answered: answered, mode: mode, drafts: drafts, sendAnswer: send))
+                    fence: fence, runId: runId, answered: answered, mode: mode, drafts: drafts, pictures: pictures,
+                    sendAnswer: send))
         }
     }
 }
 
-/// A reply's block, drawn by its kind.
+/// A reply's block, drawn by its kind: the two that ask send through `sendAnswer`; the steps and the chart only show.
 struct InteractiveBlockView: View {
     let fence: InteractiveFence
     let runId: String
@@ -105,6 +106,8 @@ struct InteractiveBlockView: View {
     let mode: InteractiveMode
     /// Where the answer being made is kept; the view's own when the host keeps none (a sheet, a prototype).
     let drafts: InteractiveDrafts?
+    /// The pictures a steps block may show: the run's own search thumbnails.
+    let pictures: StepsPictures
     /// Sends the answer; false when it was not sent (a turn started meanwhile).
     let sendAnswer: @MainActor @Sendable (String) -> Bool
 
@@ -120,6 +123,10 @@ struct InteractiveBlockView: View {
             case .confirm(let block):
                 ConfirmationBlockView(
                     block: block, runId: runId, answered: answered, mode: mode, drafts: store, sendAnswer: sendAnswer)
+            case .steps(let block):
+                StepsBlockView(block: block, pictures: pictures)
+            case .stock(let block):
+                StockBlockView(block: block)
             }
         }
         // A frozen block's draft is done with.
@@ -149,6 +156,9 @@ struct InteractiveOptionRow: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            // The question's size, not the body's: a choice set larger than the question it answers read out of
+            // scale (owner, 2026-10-08).
+            .font(.subheadline)
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(minHeight: 44)
@@ -186,6 +196,7 @@ struct InteractiveNoteField: View {
                 .font(.subheadline.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
             TextField(text: $text, prompt: Text("ios:chat.block.notePlaceholder"), axis: .vertical) { title }
+                .font(.subheadline)
                 .lineLimit(1...4)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 11)

@@ -11,6 +11,7 @@ public struct MarkdownDocumentView: View {
     @State private var reported = false
     @Environment(\.openURL) private var openURL
     @Environment(\.renderDiagnostics) private var diagnostics
+    @Environment(\.markdownEntityTap) private var entityTap
 
     public init(parsed: MarkdownParseResult, citations: [MarkdownCitation] = [], onCitationTap: ((Int) -> Void)? = nil) {
         self.parsed = parsed
@@ -21,6 +22,7 @@ public struct MarkdownDocumentView: View {
     public var body: some View {
         router.onCitationTap = onCitationTap
         router.openURL = { [openURL] in openURL($0) }
+        router.onEntityTap = entityTap.map { action in { action.perform($0) } }
         return MarkdownBlockStack(
             blocks: parsed.blocks,
             citations: Dictionary(citations.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first }),

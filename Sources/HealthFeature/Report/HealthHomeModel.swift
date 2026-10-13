@@ -47,6 +47,9 @@ public final class HealthHomeModel {
     @ObservationIgnored private var running: Task<Void, Never>?
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var remembering = false
+    /// A run is reading Apple Health; `refresh()` waits on these until it has answered.
+    @ObservationIgnored private var readingDay = false
+    @ObservationIgnored private var dayReadWaiters: [CheckedContinuation<Void, Never>] = []
 
     public init(
         source: any HealthDataSource, summaries: any HealthSummaryService, memory: any MemoryWriter,
@@ -78,6 +81,27 @@ public final class HealthHomeModel {
     public func load(force: Bool = false) async {
         await reload(replacing: force, regenerate: force)
         await loadWeek()
+    }
+
+    /// Pull to refresh: a forced load that returns as soon as Apple Health has answered. The note, if one is
+    /// written, carries on in the returned task — the card shows it writing.
+    public func refresh() async -> Task<Void, Never> {
+        readingDay = true  // before the task runs, so the wait below has something to wait for
+        let task = Task { await load(force: true) }
+        await untilDayRead()
+        return task
+    }
+
+    private func untilDayRead() async {
+        guard readingDay else { return }
+        await withCheckedContinuation { dayReadWaiters.append($0) }
+    }
+
+    private func dayRead() {
+        readingDay = false
+        let waiters = dayReadWaiters
+        dayReadWaiters = []
+        for waiter in waiters { waiter.resume() }
     }
 
     /// `replacing` starts a fresh read of the store even while one runs (its day may predate a change); `regenerate`
@@ -116,9 +140,13 @@ public final class HealthHomeModel {
             show(cached.summary)
         }
         let built: HealthDay
+        readingDay = true
         do {
             built = try await builder.build(now: now(), locale: locale)
+            // Only the newest run answers a refresh: one it replaced may finish its read first.
+            if generation == mine { dayRead() }
         } catch {
+            if generation == mine { dayRead() }
             // Whatever is already on screen beats an error.
             if current(), !Self.isCancellation(error), day == nil { report = .failed }
             return
@@ -160,14 +188,24 @@ public final class HealthHomeModel {
     }
 
     public func authorize() async {
-        try? await source.requestAuthorization()
+        await requestAccess()
         await load()
+    }
+
+    /// Only Apple Health's own sheet: onboarding moves on as soon as it closes and reads the day behind it.
+    public func requestAccess() async {
+        try? await source.requestAuthorization()
     }
 
     public func grantConsent() async {
         preferences.summaryConsent = true
         hasConsent = true
-        await load()
+        // The card answers the tap at once, not after Apple Health has been read again.
+        if case .needsConsent = report { report = .writing }
+        // A fresh run, never one already under way: that one may have passed the consent check before it was given,
+        // and joining it would end without a note.
+        await reload(replacing: true, regenerate: false)
+        await loadWeek()
         await writeDueReports()
     }
 
@@ -186,6 +224,7 @@ public final class HealthHomeModel {
         running?.cancel()
         running = nil
         generation += 1
+        dayRead()  // the cancelled run will not answer a refresh waiting on it
         isLoading = false
         try? cache.clear()
         reports.stop()

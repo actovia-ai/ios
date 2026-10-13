@@ -69,7 +69,9 @@ private let pdf = Data("%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer <
 
 @Suite("Search media: what a run's results give the foot")
 struct SearchGalleryTests {
-    @Test("images and videos by kind, in result order, de-duplicated by URL; the thumbnail falls back to the image")
+    /// Only the copy Brave fetched is ever shown — a site's own file may refuse a hotlink, be gone, or not answer
+    /// (owner, 2026-09-30) — so an image the search gave no thumbnail for has nothing to show and is left out.
+    @Test("images and videos by kind, in result order, de-duplicated by URL; an image with no thumbnail is left out")
     func extraction() {
         let items = media([
             image("https://a.example/1.jpg", thumb: "https://imgs.search.example/t1"),
@@ -80,8 +82,8 @@ struct SearchGalleryTests {
             video("https://vimeo.example/2"),
         ])
         let gallery = SearchGallery(media: items)
-        #expect(gallery.images.map(\.preview.absoluteString) == ["https://imgs.search.example/t1", "https://b.example/2.png"])
-        #expect(gallery.images.map { $0.url?.absoluteString } == ["https://a.example/1.jpg", "https://b.example/2.png"])
+        #expect(gallery.images.map(\.preview.absoluteString) == ["https://imgs.search.example/t1"])
+        #expect(gallery.images.map { $0.url?.absoluteString } == ["https://a.example/1.jpg"])
         #expect(gallery.images.first?.sourceURL?.absoluteString == "https://pages.example/a")
         #expect(gallery.videos.map(\.url.absoluteString) == ["https://www.youtube.com/watch?v=1", "https://vimeo.example/2"])
         #expect(gallery.videos.first?.thumbnail?.absoluteString == "https://i.ytimg.example/1.jpg")
@@ -90,7 +92,7 @@ struct SearchGalleryTests {
 
     @Test("capped: 24 images and 12 videos at most")
     func caps() {
-        let images = (0..<40).map { image("https://a.example/\($0).jpg") }
+        let images = (0..<40).map { image("https://a.example/\($0).jpg", thumb: "https://imgs.search.example/\($0)") }
         let videos = (0..<20).map { video("https://v.example/\($0)") }
         let gallery = SearchGallery(media: media(images + videos))
         #expect(gallery.images.count == SearchGallery.imageCap)
@@ -122,14 +124,16 @@ struct SearchGalleryTests {
     @Test("the grouper builds the gallery with the turn, from every search of the run")
     func builtWithTheTurn() throws {
         let first =
-            #"[{"rank":1,"link":"https://Pages.Example/a","title":"A","snippet":"a","media":[\#(image("https://a.example/1.jpg"))]}]"#
+            #"[{"rank":1,"link":"https://Pages.Example/a","title":"A","snippet":"a","media":[\#(image("https://a.example/1.jpg", thumb: "https://imgs.search.example/1"))]}]"#
         let second =
-            #"[{"rank":1,"link":"https://other.example/b","hostname":"news.example","title":"B","snippet":"b","media":[\#(image("https://a.example/1.jpg")),\#(video("https://v.example/1"))]}]"#
+            #"[{"rank":1,"link":"https://other.example/b","hostname":"news.example","title":"B","snippet":"b","media":[\#(image("https://a.example/1.jpg", thumb: "https://imgs.search.example/1")),\#(video("https://v.example/1"))]}]"#
         let built = try #require(
             turn([user("u1"), searchResult("s1", "u1", first), searchResult("s2", "u1", second), answer("a1", "u1", "Hi")]))
         #expect(built.foot.gallery.images.count == 1)
         #expect(built.foot.gallery.videos.count == 1)
-        #expect(built.foot.gallery.trustedURLs == [URL(string: "https://a.example/1.jpg")!])
+        #expect(
+            built.foot.gallery.trustedURLs
+                == [URL(string: "https://a.example/1.jpg")!, URL(string: "https://imgs.search.example/1")!])
         #expect(try #require(turn([user("u2"), answer("a2", "u2", "Hi")])).foot.gallery.isEmpty)
     }
 }
@@ -295,7 +299,7 @@ struct SearchMediaLoaderTests {
 @Suite("Search media: drawn at the run foot")
 struct SearchMediaRenderTests {
     private static let details =
-        #"[{"rank":1,"link":"https://pages.example/a","title":"A","snippet":"a","media":[\#(image("https://pages.example/1.jpg", title: "One")),\#(image("https://pages.example/2.jpg", title: "Two")),\#(image("https://tracker.example/3.png", title: "Three")),\#(image("https://pages.example/4.jpg")),\#(video("https://v.example/1", thumb: "https://pages.example/v1.jpg"))]}]"#
+        #"[{"rank":1,"link":"https://pages.example/a","title":"A","snippet":"a","media":[\#(image("https://pages.example/1.jpg", thumb: "https://imgs.search.example/1", title: "One")),\#(image("https://pages.example/2.jpg", thumb: "https://imgs.search.example/2", title: "Two")),\#(image("https://tracker.example/3.png", thumb: "https://imgs.search.example/3", title: "Three")),\#(image("https://pages.example/4.jpg", thumb: "https://imgs.search.example/4")),\#(video("https://v.example/1", thumb: "https://pages.example/v1.jpg"))]}]"#
 
     @Test("a settled turn with media is not rebuilt while a later turn streams, and its view compares equal")
     func renderGuard() throws {
@@ -335,13 +339,14 @@ struct SearchMediaRenderTests {
         return fetched.withLock { $0 }
     }
 
+    /// The copies the search fetched, never the sites' own files (owner, 2026-09-30).
     @Test("the grid fetches the three thumbnails it shows and the video's, once each, all from the run's own results")
     func hostedGrid() async throws {
         let built = try #require(turn([user("u1"), searchResult("s1", "u1", Self.details), answer("a1", "u1", "Done")]))
         let urls = try await draw(built.foot)
         #expect(
             Set(urls) == [
-                "https://pages.example/1.jpg", "https://pages.example/2.jpg", "https://tracker.example/3.png",
+                "https://imgs.search.example/1", "https://imgs.search.example/2", "https://imgs.search.example/3",
                 "https://pages.example/v1.jpg",
             ])
         #expect(urls.count == 4)
@@ -350,10 +355,10 @@ struct SearchMediaRenderTests {
     @Test("a thumbnail outside the trusted set is not fetched until tapped")
     func hostedForeignHost() async throws {
         var foot = try #require(turn([user("u1"), searchResult("s1", "u1", Self.details), answer("a1", "u1", "Done")])).foot
-        foot.gallery.trustedURLs = foot.gallery.trustedURLs.filter { $0.host() == "pages.example" }
+        foot.gallery.trustedURLs = foot.gallery.trustedURLs.filter { $0.absoluteString != "https://imgs.search.example/3" }
         let urls = try await draw(foot)
-        #expect(!urls.contains("https://tracker.example/3.png"))
-        #expect(urls.contains("https://pages.example/1.jpg"))
+        #expect(!urls.contains("https://imgs.search.example/3"))
+        #expect(urls.contains("https://imgs.search.example/1"))
     }
 
     @Test("a video's line: the channel, else the site, then compact views")

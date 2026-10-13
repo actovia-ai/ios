@@ -52,13 +52,13 @@ struct ConfirmationBlockView: View {
             Button {
                 send(approved: false)
             } label: {
-                rejectLabel.frame(maxWidth: .infinity, minHeight: 44)
+                rejectLabel.font(.subheadline).frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.bordered)
             Button {
                 send(approved: true)
             } label: {
-                approveLabel.font(.body.weight(.semibold)).foregroundStyle(accentGlyph)
+                approveLabel.font(.subheadline.weight(.semibold)).foregroundStyle(accentGlyph)
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent)

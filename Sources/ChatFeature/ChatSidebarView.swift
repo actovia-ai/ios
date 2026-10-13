@@ -145,9 +145,19 @@ public struct ChatSidebarView<Workspaces: View>: View {
                                 .listRowInsets(sidebarRowInsets)
                         }
                     }
+                    if !isSearching, !list.favorites.isEmpty {
+                        Section("ios:chat.sidebar.favorites") {
+                            ForEach(list.favorites) { chat in
+                                row(for: chat)
+                            }
+                        }
+                    }
                     Section("ios:chat.sidebar.recents") {
-                        ForEach(list.chats) { chat in
+                        ForEach(list.recents) { chat in
                             row(for: chat)
+                        }
+                        if list.hasMore, !list.chats.isEmpty {
+                            loadMoreRow
                         }
                         recentsStateRow
                     }
@@ -267,8 +277,14 @@ public struct ChatSidebarView<Workspaces: View>: View {
         // `.listRowBackground` again out here would simply replace whichever one it set.
         .modifier(
             SidebarRow(isSelected: chat.id == activeChatId) { onSelectChat(chat.id, chat.title) })
+        // A leading swipe stars the chat (the desktop's star on hover); the row moves to Favorites at once.
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            favoriteButton(for: chat)
+                .tint(.yellow)
+        }
         // Closes over this row's chat, so nothing indexes `list.chats` after a concurrent load.
         .contextMenu {
+            favoriteButton(for: chat)
             Button {
                 renameText = chat.title.collapsedWhitespace
                 renamingChat = chat
@@ -296,6 +312,36 @@ public struct ChatSidebarView<Workspaces: View>: View {
 
     /// The chat list once a load has answered: before it the empty list means "not known yet", and passing that on
     /// would blank the widgets' recents at every launch; a failed load leaves what they last showed.
+    /// Star or unstar — two buttons, not one with a ternary label: each state has its own words.
+    @ViewBuilder
+    private func favoriteButton(for chat: ChatSummary) -> some View {
+        if chat.favorite == true {
+            Button {
+                Task { await list.toggleFavorite(chat) }
+            } label: {
+                Label("ios:chat.sidebar.unfavorite", systemImage: "star.slash")
+            }
+        } else {
+            Button {
+                Task { await list.toggleFavorite(chat) }
+            } label: {
+                Label("ios:chat.sidebar.favorite", systemImage: "star")
+            }
+        }
+    }
+
+    /// The list's end while older pages remain: a spinner that asks for the next page as it scrolls into view.
+    private var loadMoreRow: some View {
+        HStack {
+            Spacer()
+            ProgressView()
+            Spacer()
+        }
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .task { await list.loadMore() }
+    }
+
     private var loadedChats: [ChatSummary]? {
         list.hasLoaded && !list.loadFailed ? list.chats : nil
     }

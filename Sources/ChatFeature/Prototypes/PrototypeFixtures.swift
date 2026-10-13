@@ -141,9 +141,8 @@ extension ProtoFixtures {
 // MARK: - Weather
 
 /// weather: `{location, current{...}, forecast[{date, condition, weatherCode, maxTempC, minTempC, sunrise, sunset,
-/// hourly[{time, tempC, weatherCode, condition, rainChance}]}]}`, numbers as strings, ISO local times; the legacy row is
-/// wttr.in's (WWO codes, "06:52 AM" and "300" times, 8 slots a day, no `isDay`). The real card reads these through
-/// `ToolCard`.
+/// hourly[{time, tempC, weatherCode, condition, rainChance}]}]}`, numbers as strings, ISO local times, WMO codes. The
+/// real card reads these through `ToolCard`.
 extension ProtoFixtures {
     private static func hourly(date: String, base: Double, codes: [String]) -> String {
         (0..<24).map { hour in
@@ -176,29 +175,12 @@ extension ProtoFixtures {
     static let weatherShanghai = json(weatherJSON(location: "Shanghai, China", isDay: true))
     static let weatherLongName = json(
         weatherJSON(location: "Llanfairpwllgwyngyll-gogerychwyrndrobwllllantysiliogogogoch, Anglesey, Wales, United Kingdom", isDay: false))
-
-    static let weatherLegacy: JSONValue = {
-        let days: [(String, String, String, Int, Int)] = [
-            ("2025-11-02", "Light rain shower", "353", 14, 9), ("2025-11-03", "Overcast", "122", 12, 8),
-            ("2025-11-04", "Sunny", "113", 15, 7),
-        ]
-        let forecast = days.map { day in
-            let hourly = stride(from: 0, through: 2100, by: 300).map { slot in
-                let temp = day.4 + (day.3 - day.4) * (slot <= 1500 ? slot : 3000 - slot) / 1500
-                return #"{"time":"\#(slot)","tempC":"\#(temp)","weatherCode":"\#(day.2)","condition":"\#(day.1)","rainChance":"\#(slot / 100)"}"#
-            }
-            return #"{"date":"\#(day.0)","condition":"\#(day.1)","weatherCode":"\#(day.2)","maxTempC":"\#(day.3)","minTempC":"\#(day.4)","sunrise":"06:52 AM","sunset":"04:58 PM","hourly":[\#(hourly.joined(separator: ","))]}"#
-        }
-        return json(#"""
-            {"location":"Edinburgh, United Kingdom","current":{"condition":"Light rain shower","weatherCode":"353","tempC":"11","feelsLikeC":"8","humidity":"87","windKmph":"22","windDirDegree":"250","windDir":"WSW","precipMM":"0.4","uvIndex":"1","visibility":"10","pressure":"1006","observedAt":"02:15 PM"},"forecast":[\#(forecast.joined(separator: ","))]}
-            """#)
-    }()
 }
 
 // MARK: - Image generation
 
 /// image_generation: arguments `{prompt}`, details `{images: [{mediaId, chatId, mimeType, width?, height?,
-/// revisedPrompt?}], size?}`; legacy rows `{url}` (a `data:` URL or a DALL·E link).
+/// revisedPrompt?}], size?}`.
 extension ProtoFixtures {
     static let imagePrompt = "A lighthouse on a cliff at sunset, flat vector poster style"
     static let imageChatId = "3f0c2a4e-1b7d-4c1e-9a55-0d2b8f6c7e11"

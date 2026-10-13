@@ -6,6 +6,8 @@ import SwiftUI
 /// "Remember this?" — Remember folds the card and flies it into Ody's bindle; No thanks slides it away.
 struct MemorySuggestionCard: View {
     let suggestion: HealthSummary.MemorySuggestion
+    /// Remember was tapped and the computer has not answered yet: the card flies only once it is saved.
+    var isSaving = false
     let onRemember: () -> Void
     let onDismiss: () -> Void
 
@@ -34,12 +36,18 @@ struct MemorySuggestionCard: View {
     }
 
     @ViewBuilder private var buttons: some View {
-        Button("ios:health.memory.remember", action: onRemember)
-            .buttonStyle(.borderedProminent)
-            .tint(OdyPalette.marigold)
+        Button(action: onRemember) {
+            // The label keeps its width under the spinner, so the button does not jump.
+            Text("ios:health.memory.remember")
+                .opacity(isSaving ? 0 : 1)
+                .overlay { if isSaving { ProgressView().controlSize(.mini) } }
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(OdyPalette.marigold)
         Button("ios:health.memory.dismiss", action: onDismiss)
             .buttonStyle(.bordered)
             .tint(.primary)
+            .disabled(isSaving)
     }
 
     /// "Remember this?" in bold, then the suggestion as the computer wrote it.

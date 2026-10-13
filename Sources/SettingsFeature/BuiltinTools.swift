@@ -93,6 +93,10 @@ enum BuiltinTools {
             title: LocalizedStringResource("settings:tools.registry.updateMemory.label"),
             summary: LocalizedStringResource("settings:tools.registry.updateMemory.description")),
         Tool(
+            name: "recall", group: .aiData,
+            title: LocalizedStringResource("settings:tools.registry.recall.label"),
+            summary: LocalizedStringResource("settings:tools.registry.recall.description")),
+        Tool(
             name: "map_itinerary", group: .maps,
             title: LocalizedStringResource("settings:tools.registry.mapItinerary.label"),
             summary: LocalizedStringResource("settings:tools.registry.mapItinerary.description"), configuredOnComputer: true),
@@ -101,23 +105,9 @@ enum BuiltinTools {
     /// Every value of `TOOL_NAMES`: the switchable tools plus the ones the desktop binds on its own terms.
     static var allNames: Set<String> { Set(ToolNames.builtIn) }
 
-    /// `LEGACY_TOOL_NAMES`: the camelCase names stored before the desktop's migration 0007. The desktop still reads
-    /// them as the snake_case tool.
-    static let legacyNames: [String: String] = [
-        "computerUse": "computer_use", "deepResearch": "deep_research", "createArtifact": "create_artifact",
-        "imageGeneration": "image_generation", "findFiles": "find_files", "editFile": "edit_file",
-        "lcmGrep": "lcm_grep", "grep": "grep", "lcmDescribe": "lcm_describe",
-        "searchKnowledgeBase": "search_knowledge_base", "mapItinerary": "map_itinerary", "webSearch": "web_search",
-        "lcmExpand": "lcm_expand", "weather": "weather", "listDirectory": "list_directory", "terminal": "terminal",
-        "readFile": "read_file", "webFetch": "web_fetch", "writeFile": "write_file",
-    ]
-
-    /// `toToolName()`: a legacy name becomes its wire name; anything else is unchanged.
-    static func wireName(_ stored: String) -> String { legacyNames[stored] ?? stored }
-
     /// Names in `disabledTools` this app does not know: a tool the desktop added after this table was written.
     static func unknownNames(in disabled: [String]) -> [String] {
         var seen = Set<String>()
-        return disabled.filter { !allNames.contains(wireName($0)) && seen.insert($0).inserted }
+        return disabled.filter { !allNames.contains($0) && seen.insert($0).inserted }
     }
 }

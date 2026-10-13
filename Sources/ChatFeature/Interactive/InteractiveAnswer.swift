@@ -212,6 +212,10 @@ extension InteractiveAnswer.Head {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         block = try container.decode(InteractiveBlock.Kind.self, forKey: .block)
+        // Only the blocks that ask are answered (the desktop's `answerHead`): a steps or stock head is no answer.
+        guard block.isAnswerable else {
+            throw DecodingError.dataCorruptedError(forKey: .block, in: container, debugDescription: "not answerable")
+        }
         ref = try container.decode(String.self, forKey: .ref)
         title = try? container.decodeIfPresent(String.self, forKey: .title)
         decision = (try? container.decodeIfPresent(String.self, forKey: .decision)).flatMap(Decision.init(rawValue:))

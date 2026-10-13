@@ -73,10 +73,12 @@ struct PersonalitySettingsPage: View {
         }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("common:action.save") {
+                Button {
                     Task {
                         if await viewModel.save() { dismiss() }
                     }
+                } label: {
+                    if viewModel.isSaving { ProgressView() } else { Text("common:action.save") }
                 }
                 .disabled(!viewModel.hasChanges || viewModel.isSaving)
             }

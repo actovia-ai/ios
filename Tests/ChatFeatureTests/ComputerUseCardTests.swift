@@ -468,7 +468,7 @@ struct ComputerUseNetworkTests {
         let reply = call + update(1) + update(2) + update(2) + update(3) + end
         CUMockURLProtocol.handler = { request in
             if request.url?.path == "/api/v1/chat" { return (200, Data(reply.utf8)) }
-            return (200, Data("[]".utf8))
+            return (200, ChatPageFixture.wrap(Data("[]".utf8), path: request.url?.path ?? ""))
         }
         let store = ComputerUseFrameStore()
         let viewModel = ChatDetailViewModel(

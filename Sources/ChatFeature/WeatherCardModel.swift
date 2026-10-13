@@ -6,11 +6,11 @@ import SwiftUI
 
 /// The desktop's condition vocabulary (`WeatherConditionName`, packages/shared/src/types/weather.ts): one icon per name.
 enum WeatherConditionName: String, CaseIterable, Sendable {
-    case sunny, partlyCloudy, cloudy, veryCloudy, fog
-    case lightShowers, lightSleetShowers, lightSleet
+    case sunny, partlyCloudy, cloudy, fog
+    case lightShowers, lightSleet
     case lightSnow, lightSnowShowers, heavySnow, heavySnowShowers
     case lightRain, heavyShowers, heavyRain
-    case thunderyShowers, thunderyHeavyRain, thunderySnowShowers
+    case thunderyShowers, thunderyHeavyRain
 }
 
 enum WeatherCondition {
@@ -24,24 +24,9 @@ enum WeatherCondition {
         "95": .thunderyShowers, "96": .thunderyHeavyRain, "99": .thunderyHeavyRain,
     ]
 
-    /// World Weather Online codes (wttr.in), on rows saved before the Open-Meteo switch; the desktop's `WWO_CODE`.
-    static let wwo: [String: WeatherConditionName] = [
-        "113": .sunny, "116": .partlyCloudy, "119": .cloudy, "122": .veryCloudy, "143": .fog,
-        "176": .lightShowers, "179": .lightSleetShowers, "182": .lightSleet, "185": .lightSleet, "200": .thunderyShowers,
-        "227": .lightSnow, "230": .heavySnow, "248": .fog, "260": .fog, "263": .lightShowers, "266": .lightRain,
-        "281": .lightSleet, "284": .lightSleet, "293": .lightRain, "296": .lightRain, "299": .heavyShowers,
-        "302": .heavyRain, "305": .heavyShowers, "308": .heavyRain, "311": .lightSleet, "314": .lightSleet,
-        "317": .lightSleet, "320": .lightSnow, "323": .lightSnowShowers, "326": .lightSnowShowers, "329": .heavySnow,
-        "332": .heavySnow, "335": .heavySnowShowers, "338": .heavySnow, "350": .lightSleet, "353": .lightShowers,
-        "356": .heavyShowers, "359": .heavyRain, "362": .lightSleetShowers, "365": .lightSleetShowers,
-        "368": .lightSnowShowers, "371": .heavySnowShowers, "374": .lightSleetShowers, "377": .lightSleet,
-        "386": .thunderyShowers, "389": .thunderyHeavyRain, "392": .thunderySnowShowers, "395": .heavySnowShowers,
-    ]
-
-    /// The two ranges do not overlap (WMO 0–99, WWO 113–395); an unknown code is cloudy, as on the desktop.
+    /// An unknown code is cloudy, as on the desktop's `conditionNameOf`.
     static func name(of code: String) -> WeatherConditionName {
-        let code = code.trimmingCharacters(in: .whitespaces)
-        return wmo[code] ?? wwo[code] ?? .cloudy
+        wmo[code.trimmingCharacters(in: .whitespaces)] ?? .cloudy
     }
 
     /// A multicolour SF Symbol; a clear or partly cloudy night is a moon, not a sun.
@@ -49,15 +34,14 @@ enum WeatherCondition {
         switch name {
         case .sunny: isDay ? "sun.max.fill" : "moon.stars.fill"  // l10n:ignore: SF Symbol names
         case .partlyCloudy: isDay ? "cloud.sun.fill" : "cloud.moon.fill"  // l10n:ignore: SF Symbol names
-        case .cloudy, .veryCloudy: "cloud.fill"
+        case .cloudy: "cloud.fill"
         case .fog: "cloud.fog.fill"
         case .lightShowers: "cloud.drizzle.fill"
-        case .lightSleetShowers, .lightSleet: "cloud.sleet.fill"
+        case .lightSleet: "cloud.sleet.fill"
         case .lightSnow, .lightSnowShowers, .heavySnow, .heavySnowShowers: "cloud.snow.fill"
         case .lightRain: "cloud.rain.fill"
         case .heavyShowers, .heavyRain: "cloud.heavyrain.fill"
         case .thunderyShowers, .thunderyHeavyRain: "cloud.bolt.rain.fill"
-        case .thunderySnowShowers: "cloud.bolt.fill"
         }
     }
 
@@ -78,24 +62,12 @@ enum WeatherCondition {
 // MARK: - Clocks
 
 enum WeatherClock {
-    /// The hour of a weather time as a fraction (13.5 = 13:30), in any form a row may carry: ISO local
-    /// ("2026-09-23T06:02"), wttr.in's clock ("06:52 AM") or its hourly slot ("0" … "2100"). The desktop's
-    /// `weatherClockHours`.
+    /// The hour of a weather time as a fraction (13.5 = 13:30), from its ISO local form ("2026-09-23T06:02"); nil if
+    /// it is not one. The desktop's `weatherClockHours`.
     static func hours(_ time: String) -> Double? {
-        if let match = time.firstMatch(of: #/T(\d{2}):(\d{2})/#), let h = Double(match.1), let m = Double(match.2) {
-            return h + m / 60
-        }
-        let trimmed = time.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let match = trimmed.wholeMatch(of: #/(\d{1,2}):(\d{2})\s*([AaPp][Mm])/#),
-            let h = Double(match.1), let m = Double(match.2)
-        {
-            let pm = match.3.lowercased() == "pm"
-            return h.truncatingRemainder(dividingBy: 12) + (pm ? 12 : 0) + m / 60
-        }
-        if time.wholeMatch(of: #/\d{1,4}/#) != nil, let n = Int(time) {
-            return Double(n / 100) + Double(n % 100) / 60
-        }
-        return nil
+        guard let match = time.firstMatch(of: #/T(\d{2}):(\d{2})/#), let h = Double(match.1), let m = Double(match.2)
+        else { return nil }
+        return h + m / 60
     }
 
     /// A place's wall-clock time as a clock in the user's locale. The time is never converted: it is built and shown in
@@ -176,7 +148,7 @@ struct WeatherCardModel: Equatable, Sendable {
 
     struct Hour: Equatable, Sendable, Identifiable {
         let id: Int
-        /// Where it sits on the day's axis: its clock hour, or its slot number when a time does not read.
+        /// Where it sits on the day's axis: its hour (Open-Meteo gives 24 a day, from 0:00), as the desktop places it.
         let x: Double
         let temp: Double
         let tempText: String
@@ -231,7 +203,7 @@ struct WeatherCardModel: Equatable, Sendable {
         let current = result.current
         now = Now(
             temp: current.tempC, feelsLike: current.feelsLikeC, condition: current.condition,
-            symbol: WeatherCondition.symbol(code: current.weatherCode, isDay: current.isDay ?? true),
+            symbol: WeatherCondition.symbol(code: current.weatherCode, isDay: current.isDay),
             observedAt: current.observedAt)
         readings = Self.readings(current)
         let scale = WeatherRangeScale(
@@ -254,16 +226,13 @@ struct WeatherCardModel: Equatable, Sendable {
         Double(text.trimmingCharacters(in: .whitespaces)).flatMap { $0.isFinite ? $0 : nil }
     }
 
-    /// Every slot with a readable temperature. On the clock when every time reads (24 slots from Open-Meteo, 8 from
-    /// wttr.in), else by slot number.
+    /// Every slot with a readable temperature, at its hour of the day.
     private static func hours(_ hourly: [WeatherResult.Hourly]) -> [Hour] {
-        let clocks = hourly.map { WeatherClock.hours($0.time) }
-        let onClock = !clocks.contains(nil)
-        return hourly.enumerated().compactMap { index, hour in
+        hourly.enumerated().compactMap { index, hour in
             guard let temp = number(hour.tempC) else { return nil }
             return Hour(
-                id: index, x: onClock ? clocks[index] ?? Double(index) : Double(index), temp: temp, tempText: hour.tempC,
-                time: hour.time, rainChance: hour.rainChance)
+                id: index, x: Double(index), temp: temp, tempText: hour.tempC, time: hour.time,
+                rainChance: hour.rainChance)
         }
     }
 

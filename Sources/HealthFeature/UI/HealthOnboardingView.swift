@@ -26,8 +26,10 @@ struct HealthOnboardingView: View {
             if step == 0 {
                 Button {
                     Task {
-                        await model.authorize()
+                        // The next step needs nothing from the read, so it does not wait for it.
+                        await model.requestAccess()
                         withAnimation(.smooth) { step = 1 }
+                        await model.load()
                     }
                 } label: {
                     Text("ios:health.onboarding.connect").frame(maxWidth: .infinity)
@@ -36,10 +38,10 @@ struct HealthOnboardingView: View {
                 .controlSize(.large)
             } else {
                 Button {
-                    Task {
-                        await model.grantConsent()
-                        model.finishOnboarding()
-                    }
+                    // Into Health at once: the note is written there, in its own loading state. Waiting for it here
+                    // held the button for as long as the computer took to write the day's note and the reports due.
+                    model.finishOnboarding()
+                    Task { await model.grantConsent() }
                 } label: {
                     Text("ios:health.onboarding.allow").frame(maxWidth: .infinity)
                 }

@@ -9,9 +9,10 @@ import UniformTypeIdentifiers
 /// by kind, de-duplicated by URL, in result order. Built once with the turn.
 struct SearchGallery: Equatable, Sendable {
     struct Picture: Equatable, Sendable, Identifiable {
-        /// The full-size image, for the viewer; nil when it is not a fetchable https URL.
+        /// The site's own file, when it is an https URL: which picture this is, never loaded — it may refuse a
+        /// hotlink, be gone, or not answer (owner, 2026-09-30).
         let url: URL?
-        /// What the grid draws: the search's thumbnail, else the image itself.
+        /// The copy the search fetched: all the grid and the viewer ever show.
         let preview: URL
         let title: String
         let sourceURL: URL?
@@ -60,11 +61,11 @@ struct SearchGallery: Equatable, Sendable {
             switch item.kind {
             case .image:
                 guard images.count < Self.imageCap, seenImages.insert(item.url).inserted else { continue }
-                let full = SearchMediaPolicy.fetchableURL(item.url)
-                guard let preview = item.thumbnailUrl.flatMap(SearchMediaPolicy.fetchableURL) ?? full else { continue }
+                // No thumbnail, nothing to show: the site's own file is never fetched.
+                guard let preview = item.thumbnailUrl.flatMap(SearchMediaPolicy.fetchableURL) else { continue }
                 images.append(
                     Picture(
-                        url: full, preview: preview, title: item.title,
+                        url: SearchMediaPolicy.fetchableURL(item.url), preview: preview, title: item.title,
                         sourceURL: ExternalLinkPolicy.openableURL(item.sourceUrl), source: item.source))
             case .video:
                 guard videos.count < Self.videoCap, seenVideos.insert(item.url).inserted,

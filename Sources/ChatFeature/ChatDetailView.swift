@@ -3,6 +3,12 @@ import Models
 import NetworkingKit
 import SwiftUI
 
+/// What a new chat opens on when a widget's round button started it: the camera, or recording (`ChatDetailView`'s
+/// `initialOpening`). The widget's own link type lives in WidgetKitShared, which this module does not see.
+public enum ComposerOpening: Sendable {
+    case camera, voice
+}
+
 public struct ChatDetailView: View {
     /// This screen's view model, stores and loaders, built on first use and kept for the view's lifetime.
     /// `State(initialValue:)` is not lazy: building them in `init` built (and threw away) a full set on every re-render
@@ -11,21 +17,25 @@ public struct ChatDetailView: View {
     private let makeObjects: @MainActor () -> ChatScreenObjects
     private var objects: ChatScreenObjects { objectsBox.value(makeObjects) }
     private var viewModel: ChatDetailViewModel { objects.viewModel }
-    /// The measured height of the send/stop button. The button is taller than one line of text, so
-    /// the field is given it as a minimum height and centres its text in it: with the row bottom-
-    /// aligned the two boxes then have the same height at rest and their centres coincide, while a
-    /// field grown to several lines still leaves the button sitting on the composer's bottom edge.
-    @State private var turnButtonHeight: CGFloat = 0
-    /// Stands in for the measurement during the first layout pass, so the composer is not drawn one
-    /// line high for a frame and then grown.
-    @ScaledMetric(relativeTo: .body) private var estimatedTurnButtonHeight: CGFloat = 32
+    /// One line of the composer's text at the reader's size: past one and a half of it the field has wrapped and
+    /// takes the row's top (`ComposerRowLayout`).
+    @ScaledMetric(relativeTo: .body) private var composerLineHeight: CGFloat = 22
     /// Return inserts a newline in the multi-line composer, so the keyboard needs somewhere else to
     /// go: the composer's hide-keyboard button and a tap on the transcript both clear this.
     @FocusState private var isComposerFocused: Bool
     /// The Sources sheet, from an answer's Sources button or a tapped citation chip.
     @State private var sourcesSheet: SourcesSheetModel?
+    /// The entity link tapped in an answer, whose Wikipedia summary a sheet shows.
+    @State private var entity: EntityRequest?
     /// A folded answer opened from its "other version" link.
     @State private var otherVersion: OtherVersion?
+    /// When a long press threw a recording away: the tap its release ends in must not start another.
+    @State private var recordingDiscardedAt: Date?
+    /// The end of the transcript is in view (`TranscriptEnd`): a streaming reply is followed only then.
+    @State private var isAtEnd = true
+    /// The older pages whose arrival the transcript has already answered: a page put in above is not a new message,
+    /// and must not scroll the reader to the end.
+    @State private var handledOlderPages = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accentGlyph) private var accentGlyph
     @Environment(\.colorTone) private var colorTone
@@ -41,19 +51,28 @@ public struct ChatDetailView: View {
     /// value once, so a new `title:` argument alone would otherwise be silently ignored).
     private let title: String?
     /// A question handed over from Health, sent once the (new) chat's history is known.
+    private let isNew: Bool
     private let initialMessage: String?
     private let onInitialMessageSent: (() -> Void)?
     /// A prompt handed over from a widget: put in the composer, never sent by itself.
     private let initialDraft: String?
     private let onInitialDraftUsed: (() -> Void)?
+    /// What a widget's round button opens this new chat on: the camera, or recording.
+    private let initialOpening: ComposerOpening?
+    private let onInitialOpeningUsed: (() -> Void)?
 
     public init(
-        chatId: String, title: String? = nil, apiClient: APIClient, streamManager: ChatStreamManager,
-        serverConfig: ServerConfigStore, initialMessage: String? = nil, onInitialMessageSent: (() -> Void)? = nil,
-        initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil
+        chatId: String, title: String? = nil, isNew: Bool = false, apiClient: APIClient,
+        streamManager: ChatStreamManager, serverConfig: ServerConfigStore, initialMessage: String? = nil,
+        onInitialMessageSent: (() -> Void)? = nil,
+        initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil,
+        initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil
     ) {
         self.title = title
+        self.isNew = isNew
         self.initialDraft = initialDraft
+        self.initialOpening = initialOpening
+        self.onInitialOpeningUsed = onInitialOpeningUsed
         self.onInitialDraftUsed = onInitialDraftUsed
         self.initialMessage = initialMessage
         self.onInitialMessageSent = onInitialMessageSent
@@ -67,6 +86,10 @@ public struct ChatDetailView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24) {
+                    if viewModel.hasOlder {
+                        OlderHistoryRow(isLoading: viewModel.isLoadingOlder)
+                            .onAppear { loadOlder(proxy) }
+                    }
                     TranscriptRows(
                         segments: viewModel.segments, streamingTurnId: viewModel.streamingTurnId,
                         showsTypingIndicator: viewModel.showsPendingRow, liveError: viewModel.liveRunError,
@@ -89,10 +112,14 @@ public struct ChatDetailView: View {
                 .environment(\.artifactSandbox, objects.artifactSandbox)
                 .environment(\.readAloud, viewModel.readAloud)
                 .environment(\.markdownAskAbout, MarkdownAskAction { [viewModel] text in viewModel.askAbout(text) })
+                .environment(\.markdownEntityTap, MarkdownEntityAction { title in entity = EntityRequest(title: title) })
             }
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
             .scrollDismissesKeyboard(.interactively)
+            // What scrolls under the composer fades out, as under the title bar. Set, not left to the default: the
+            // default left the bottom edge bare, and a reply showed sharp below the bar and doubled in its glass.
+            .scrollEdgeEffectStyle(.soft, for: .bottom)
             // Tapping the transcript puts the keyboard away. Rows are not inert — an answer's
             // Markdown holds tappable links, a timeline expands, a card opens — so this is
             // attached *simultaneously*: it recognises alongside whatever the content does instead
@@ -104,16 +131,27 @@ public struct ChatDetailView: View {
                 await viewModel.loadHistory()
                 await viewModel.loadMemoryUsage()
             }
-            .onChange(of: viewModel.segments.count) {
-                scrollToBottom(proxy, animated: true)
+            .transcriptEnd(isAtEnd: $isAtEnd) { scrollToBottom(proxy, animated: true) }
+            .onChange(of: viewModel.segments.count) { old, new in
+                if viewModel.olderPageCount != handledOlderPages {
+                    handledOlderPages = viewModel.olderPageCount
+                    return
+                }
+                scrollToBottom(proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
             }
-            // Follow a reply as it streams in: the segment count is constant while the last turn grows.
+            // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
+            // the reader has scrolled up — the button over the composer brings them back.
             .onChange(of: scrollKey) {
-                scrollToBottom(proxy, animated: false)
+                if isAtEnd { scrollToBottom(proxy, animated: false) }
             }
             // Sending adds the pending row; reaching it is the point of `isTurnInFlight` flipping.
             .onChange(of: viewModel.isTurnInFlight) {
                 scrollToBottom(proxy, animated: true)
+            }
+        }
+        .overlay(alignment: .top) {
+            if !viewModel.hasLoadedHistory && viewModel.errorMessage == nil {
+                TranscriptSkeleton().allowsHitTesting(false)
             }
         }
         .overlay {
@@ -129,6 +167,7 @@ public struct ChatDetailView: View {
             NoticeStack(notice: viewModel.notice, onDismiss: viewModel.dismissNotice) { composer }
         }
         .sheet(item: $sourcesSheet) { SourcesSheet(model: $0) }
+        .sheet(item: $entity) { EntitySheet(title: $0.title, loader: objects.entities) }
         .sheet(item: $otherVersion) { version in
             OtherVersionSheet(version: version) { [viewModel] in
                 Task { await viewModel.choose(runId: version.id) }
@@ -155,7 +194,7 @@ public struct ChatDetailView: View {
         .task {
             // First: a turn reads the session's choices when it starts, and one may start right below.
             viewModel.composerTools = composerTools
-            await viewModel.onAppear()
+            await viewModel.onAppear(isNew: isNew)
             if let initialMessage {
                 // Handed over now, not when the reply ends: the question is this chat's from here on.
                 onInitialMessageSent?()
@@ -165,6 +204,13 @@ public struct ChatDetailView: View {
                 // Handed over now: the chat screen is made again on a later visit, and must not fill it again.
                 viewModel.applyDraft(initialDraft)
                 onInitialDraftUsed?()
+            }
+            if let initialOpening {
+                onInitialOpeningUsed?()
+                switch initialOpening {
+                case .camera: viewModel.requestCamera()
+                case .voice: await viewModel.startRecording()
+                }
             }
         }
         // Apart from `onAppear`, which waits out a turn it re-attaches to.
@@ -176,10 +222,17 @@ public struct ChatDetailView: View {
                 Task { await viewModel.memoryFoot.refreshEntries() }
             }
             // Nothing is read aloud from behind another app.
-            if scenePhase == .background { viewModel.readAloud.stop() }
+            if scenePhase == .background {
+                viewModel.readAloud.stop()
+                // The microphone stops in the background: what was recorded so far is thrown away, unsent.
+                viewModel.cancelRecording()
+            }
         }
         // Nor from a chat that was left.
-        .onDisappear { viewModel.readAloud.stop() }
+        .onDisappear {
+            viewModel.readAloud.stop()
+            viewModel.cancelRecording()
+        }
         // A rename from the sidebar while this chat is the one open: `title` changing is that
         // signal, since renaming never changes `chatId` and so never recreates this view.
         .onChange(of: title) { _, newTitle in
@@ -205,12 +258,28 @@ public struct ChatDetailView: View {
         .sensoryFeedback(.selection, trigger: viewModel.choiceCount)
         // Once per failure, even when a second failure has the same text.
         .sensoryFeedback(.error, trigger: viewModel.failureCount)
+        .sensoryFeedback(.start, trigger: viewModel.recordingStartCount)
+        .sensoryFeedback(.success, trigger: viewModel.transcriptionCount)
+        .alert("ios:chat.composer.micDeniedMessage", isPresented: Binding(
+                get: { viewModel.explainsMicrophone },
+                set: { viewModel.explainsMicrophone = $0 }
+            )
+        ) {
+            Button("ios:settings.pairing.openSystemSettings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("common:action.cancel", role: .cancel) {}
+        }
         // The colour tone is the chat's own: the transcript, the composer and the sheets opened from them.
         // What tints is the tone's ink, since a tint colours text; a surface in the tone asks for its fill
         // (`toneFill`). Neutral is black and white, as the desktop's default: nothing here is system blue, and
         // a link, which the tint alone would no longer set apart from the text around it, is underlined.
         .tint(toneInk)
         .environment(\.markdownUnderlinesLinks, colorTone == .neutral)
+        // While recording the voice rises from the bottom of the screen, as voice-glow's phone demo, over the composer.
+        .screenVoiceGlow(active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
     }
 
     private var emptyState: some View {
@@ -242,9 +311,9 @@ public struct ChatDetailView: View {
             composerRow
         }
         .padding(.leading, 16)
-        .padding(.trailing, 6)
-        .padding(.vertical, 10)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .padding(.trailing, ComposerRowLayout.inset)
+        .padding(.vertical, ComposerRowLayout.inset)
+        .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,
@@ -254,21 +323,39 @@ public struct ChatDetailView: View {
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.attachments)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.preparingPictures)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: composerTools?.turnOptions)
+        // The field growing a line, and the row's change of shape when it wraps (`ComposerRowLayout`).
+        .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: viewModel.composerText)
     }
 
+    /// As ChatGPT's: one line and the field sits between `+` and the round button, a pill; more and the field takes
+    /// the top on its own with the buttons in a row under it. One layout with the same children either way, so the
+    /// field keeps the keyboard across the change.
     private var composerRow: some View {
         @Bindable var viewModel = viewModel
-        return HStack(alignment: .bottom, spacing: 8) {
-            ComposerToolsButton(tools: composerTools, attachments: viewModel.attachments) { items in
+        return ComposerRowLayout(oneLineHeight: composerLineHeight) {
+            ComposerToolsButton(
+                tools: composerTools, attachments: viewModel.attachments, cameraRequest: viewModel.cameraRequest
+            ) { items in
                 Task { await viewModel.addPictures(items) }
             }
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.
-            .padding(.leading, -10)
+            .padding(.leading, ComposerRowLayout.inset - 16)
+            .composerRole(.leading)
             TextField("ios:chat.composer.placeholder", text: $viewModel.composerText, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($isComposerFocused)
-                .frame(minHeight: turnButtonHeight > 0 ? turnButtonHeight : estimatedTurnButtonHeight)
                 .accessibilityIdentifier("composerField")
+                // While recording, and until its text is in, nothing is typed; the meter takes the field's place.
+                .disabled(viewModel.recording != .idle)
+                .opacity(isRecording ? 0 : 1)
+                .accessibilityHidden(isRecording)
+                .overlay(alignment: .leading) {
+                    if case .recording(let since) = viewModel.recording {
+                        RecordingMeter(since: since)
+                            .transition(.opacity)
+                    }
+                }
+                .composerRole(.field)
             if isComposerFocused {
                 // Return inserts a newline in this multi-line field, so without a button the only
                 // ways out of the keyboard are gestures, which is what the owner could not find.
@@ -290,9 +377,10 @@ public struct ChatDetailView: View {
                 // and leaving the way it would if it grew from nothing turns that into a slide
                 // (apple-design: preventing a jarring change, not a showy one).
                 .transition(.scale(scale: 0.8).combined(with: .opacity))
+                .composerRole(.trailing)
             }
             turnButton
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { turnButtonHeight = $0 }
+                .composerRole(.trailing)
         }
     }
 
@@ -300,53 +388,69 @@ public struct ChatDetailView: View {
     /// an `if`: only a stable identity lets the icon morph (`.contentTransition`) instead of being
     /// destroyed and recreated with a hard cut. Stop is the way out of a turn that will not finish
     /// (a half-open connection can otherwise keep the composer locked for up to an hour).
+    /// With nothing typed and nothing picked it records (`TurnButtonState`): tapped, a red stop while recording, then
+    /// a spinner while the computer transcribes, and send once the text is in. A long press on the red stop throws
+    /// the recording away.
     private var turnButton: some View {
-        Button {
-            if viewModel.isTurnInFlight {
+        let state = turnState
+        return Button {
+            // Read at the tap, not when the button was drawn: the long press that discarded a recording ends in a tap.
+            switch turnState {
+            case .stop:
                 Task { await viewModel.stop() }
-            } else {
+            case .send:
                 // The question is on its way: the keyboard goes, so the reply has the screen.
                 isComposerFocused = false
                 Task { await viewModel.sendMessage() }
+            case .mic:
+                if let discarded = recordingDiscardedAt, Date.now.timeIntervalSince(discarded) < 5 {
+                    recordingDiscardedAt = nil
+                    return
+                }
+                isComposerFocused = false
+                Task { await viewModel.startRecording() }
+            case .recording:
+                Task { await viewModel.stopRecordingAndTranscribe() }
+            case .transcribing:
+                break
             }
         } label: {
-            Label {
-                // One literal per branch, never a ternary of the two (scripts/l10n.py audit bans
-                // it: it can quietly resolve to the non-localizing `String` overload).
-                if viewModel.isTurnInFlight {
-                    Text("chat:composer.stop")
-                } else {
-                    Text("chat:composer.send")
-                }
-            } icon: {
-                Image(systemName: viewModel.isTurnInFlight ? "stop.fill" : "arrow.up") // l10n:ignore: SF Symbol names
-            }
-            .labelStyle(.iconOnly)
             // Stop is neutral whatever the tone, as ChatGPT's: a dark square on a soft tone fill read as a stray
-            // blot, and a stop that differs from send says a reply is running.
-            .foregroundStyle(sendGlyph)
-            // The single most-tapped control in the app (apple-design §13: state indication, tens
-            // of times a day, so the motion stays fast and subtle, never a showy morph).
-            .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
+            // blot, and a stop that differs from send says a reply is running. A recording's stop is red.
+            TurnButtonLabel(
+                state: state, glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
-        // Set on the button itself (an outer `.tint` loses to an inner one): the tone's fill to send, neutral to stop.
-        .tint(sendFill)
-        .disabled(!viewModel.isTurnInFlight && !viewModel.canSend)
-        .accessibilityIdentifier(viewModel.isTurnInFlight ? "stopButton" : "sendButton") // l10n:ignore: a testing identifier, never shown to the user
+        // Set on the button itself (an outer `.tint` loses to an inner one): in light the tone's ink with a white
+        // arrow (a white arrow on the soft fill is 1.6:1 in yellow, and a dark one read as a blot), in dark the fill
+        // and its glyph.
+        .tint(TurnButtonLabel.fill(state, scheme: colorScheme, toneFill: toneFillColor, toneInk: toneInk))
+        .disabled(state == .transcribing || (state == .send && !viewModel.canSend))
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.6).onEnded { _ in
+                guard case .recording = viewModel.recording else { return }
+                recordingDiscardedAt = .now
+                viewModel.cancelRecording()
+            })
+        .accessibilityActions {
+            if state == .recording {
+                Button("common:action.cancel") { viewModel.cancelRecording() }
+            }
+        }
+        .accessibilityIdentifier(state.identifier)
     }
 
-    /// Send, by appearance: in light the tone's ink with a white arrow (a white arrow on the soft fill is 1.6:1 in
-    /// yellow, and a dark one read as a blot), in dark the fill and its glyph. Stop is neutral in both.
-    private var sendFill: Color {
-        if viewModel.isTurnInFlight { return Color(.label) }
-        return colorScheme == .dark ? toneFillColor : toneInk
+    private var turnState: TurnButtonState {
+        TurnButtonState.for(
+            text: viewModel.composerText,
+            hasPictures: !viewModel.attachments.isEmpty || viewModel.isPreparingPictures,
+            inFlight: viewModel.isTurnInFlight, recording: viewModel.recording)
     }
 
-    private var sendGlyph: Color {
-        if viewModel.isTurnInFlight { return Color(.systemBackground) }
-        return colorScheme == .dark ? accentGlyph : .white
+    private var isRecording: Bool {
+        if case .recording = viewModel.recording { return true }
+        return false
     }
 
     private var transcriptActions: TranscriptActions {
@@ -375,8 +479,20 @@ public struct ChatDetailView: View {
             liveError: viewModel.liveRunError)
     }
 
-    /// To the end of the transcript, its room over the composer included: whatever the last row is — an answer,
-    /// the pending dots, an error line — the end is under it.
+    /// Loads the page before the first run shown and keeps the reader where they were: on the run that was first, or —
+    /// when the transcript was short enough to show its end — at the end.
+    private func loadOlder(_ proxy: ScrollViewProxy) {
+        let first = viewModel.segments.first?.id
+        Task {
+            await viewModel.loadOlder()
+            if isAtEnd {
+                scrollToBottom(proxy, animated: false)
+            } else if let first {
+                proxy.scrollTo(first, anchor: .top)
+            }
+        }
+    }
+
     private func scrollToBottom(_ proxy: ScrollViewProxy, animated: Bool) {
         guard !viewModel.segments.isEmpty || viewModel.showsPendingRow else { return }
         if animated {
@@ -385,6 +501,12 @@ public struct ChatDetailView: View {
             proxy.scrollTo(TranscriptRows.endID, anchor: .bottom)
         }
     }
+}
+
+/// An entity link's article title, as the sheet that shows its summary is presented.
+struct EntityRequest: Identifiable {
+    let title: String
+    var id: String { title }
 }
 
 /// What one chat screen owns: its view model, and the stores and loaders its cards read, all over the paired session.
@@ -403,6 +525,8 @@ final class ChatScreenObjects {
     let artifactSandbox: ArtifactSandboxSource
     /// This chat's workspace files (a file card's View), through the same paired session.
     let workspaceFiles: WorkspaceFileLoader
+    /// Wikipedia's summaries for entity links, through the same paired session.
+    let entities: EntityLoader
 
     init(
         chatId: String, title: String?, apiClient: APIClient, streamManager: ChatStreamManager,
@@ -416,6 +540,7 @@ final class ChatScreenObjects {
         placePhotos = PlacePhotoLoader(apiClient: apiClient)
         artifactSandbox = ArtifactSandboxSource(apiClient: apiClient)
         workspaceFiles = WorkspaceFileLoader(apiClient: apiClient, chatId: chatId)
+        entities = EntityLoader(apiClient: apiClient)
     }
 }
 

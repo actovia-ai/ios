@@ -4,7 +4,9 @@ public enum ChatSseEvent: Sendable {
     case messageUpdate(ChatMessage)
     case toolCallStart(toolCallId: String, toolName: String)
     case toolCallEnd(toolCallId: String, toolName: String, isError: Bool)
-    case done(messages: [ChatMessage])
+    /// `attempts`: protocol 2 only — every regenerate group's stored state, by run; `messages` is then the run alone,
+    /// to merge (`RunMerge`). Without it, `messages` is the whole conversation.
+    case done(messages: [ChatMessage], attempts: [String: RunAttempt]?)
     case title(String)
     case error(String)
     case notice(level: String, message: String)
@@ -33,7 +35,10 @@ extension ChatSseEvent: Decodable {
             let toolName: String
             let isError: Bool
         }
-        struct DonePayload: Decodable { let messages: [ChatMessage] }
+        struct DonePayload: Decodable {
+            let messages: [ChatMessage]
+            let attempts: [String: String]?
+        }
         struct TitlePayload: Decodable { let title: String }
         struct ErrorPayload: Decodable { let error: String }
         struct NoticePayload: Decodable { let level: String; let message: String }
@@ -49,7 +54,8 @@ extension ChatSseEvent: Decodable {
             let p = try single.decode(ToolCallEndPayload.self)
             self = .toolCallEnd(toolCallId: p.toolCallId, toolName: p.toolName, isError: p.isError)
         case "done":
-            self = .done(messages: try single.decode(DonePayload.self).messages)
+            let p = try single.decode(DonePayload.self)
+            self = .done(messages: p.messages, attempts: p.attempts?.compactMapValues(RunAttempt.init(rawValue:)))
         case "title":
             self = .title(try single.decode(TitlePayload.self).title)
         case "error":

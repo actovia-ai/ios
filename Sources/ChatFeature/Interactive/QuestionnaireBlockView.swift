@@ -40,7 +40,7 @@ struct QuestionnaireBlockView: View {
                 InteractiveNoteField(label: block.note, text: Binding(get: { draft.note }, set: { draft.note = $0 }))
                 Button(action: submit) {
                     submitLabel
-                        .font(.body.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(accentGlyph)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
@@ -79,6 +79,7 @@ struct QuestionnaireBlockView: View {
                     TextField(text: otherText(question), prompt: Text("ios:chat.block.otherPlaceholder")) {
                         Text("ios:chat.block.otherPlaceholder")
                     }
+                    .font(.subheadline)
                     .padding(.horizontal, 12)
                     .frame(minHeight: 44)
                     .background(.fill.tertiary, in: CardStyle.innerShape)
