@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "Mercato delle skill"
     },
-    "fullTextSearch": {
-      "title": "Ricerca full text"
-    },
     "knowledgeBase": {
       "title": "Knowledge Base"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "Apri impostazioni"
       },
+      "go-back": {
+        "label": "Indietro"
+      },
+      "go-forward": {
+        "label": "Avanti"
+      },
       "lock-now": {
         "label": "Blocca ora"
       },
@@ -145,7 +148,7 @@
         "label": "Chiudi barra di ricerca"
       },
       "close-tab": {
-        "label": "Chiudi scheda corrente"
+        "label": "Chiudi chat"
       },
       "focus-chat-input": {
         "label": "Metti a fuoco il campo di chat"
@@ -329,7 +332,11 @@
       "refresh": "Aggiorna elenco modelli",
       "fetchErrorTitle": "Impossibile recuperare l'elenco dei modelli",
       "fetchErrorFallback": "Recupero dell'elenco dei modelli non riuscito",
-      "reenterKey": "Inserisci di nuovo la chiave API per usarla con il nuovo URL di base."
+      "reenterKey": "Inserisci di nuovo la chiave API per usarla con il nuovo URL di base.",
+      "retiring": "in dismissione",
+      "retired": "dismesso",
+      "retiringOn": "Sarà dismesso il {{date}}",
+      "retiredOn": "Dismesso il {{date}}"
     }
   },
   "tools": {
@@ -399,6 +406,10 @@
         "label": "Aggiorna memoria",
         "description": "Consente all'assistente di correggere, aggiungere o rimuovere voci di memoria quando gli dici che qualcosa su di te è sbagliato."
       },
+      "recall": {
+        "label": "Richiama",
+        "description": "Consente all'assistente di rileggere per intero un risultato di ricerca o l'output di uno strumento che i turni precedenti riportano ormai solo in breve, da quanto salvato e senza cercare di nuovo."
+      },
       "mapItinerary": {
         "label": "Itinerario mappa",
         "description": "Visualizza luoghi, percorsi e viaggi di più giorni in un'unica scheda mappa interattiva"
@@ -457,11 +468,11 @@
       },
       "maxResults": {
         "label": "Risultati massimi",
-        "description": "Numero di risultati di ricerca per query (1-50). Predefinito: 10."
+        "description": "Fonti restituite da una ricerca (1–20). Predefinito: 10."
       },
       "deepRecall": {
         "label": "Recall approfondito",
-        "description": "Esegue una seconda ricerca web più ampia insieme alla chiamata di grounding e unisce i risultati aggiuntivi — forum, notizie e pagine che il filtro di grounding scarta. Recall più alto, circa il doppio dell'utilizzo dell'API Brave per ricerca."
+        "description": "Cerca con tre formulazioni della domanda e aggiunge un passaggio più ampio: forum, notizie, pagine che la prima ricerca scarta. Più fonti e più token per ricerca, e circa sei richieste a Brave invece di una."
       },
       "recency": {
         "label": "Filtro di recenza",
@@ -589,54 +600,21 @@
       "errorFallback": "Impossibile eliminare i dati."
     }
   },
-  "fullTextSearch": {
-    "alert": "La ricerca integrata di Exodus funziona con tutte le lingue, incluse cinese, giapponese e coreano — <strong>trova corrispondenze di testo esatte, non risultati \"intelligenti\"</strong>: nessuna classificazione per rilevanza, nessuna tolleranza per gli errori di battitura, nessuno stemming (cercare \"corri\" non troverà \"correndo\"). Configura qui sotto un cluster Elasticsearch self-hosted o cloud per una migliore classificazione per rilevanza e una segmentazione reale delle parole. Questo è facoltativo; lascia l'URL vuoto per continuare a usare la ricerca integrata. Exodus legge e scrive solo documenti nell'indice del tuo cluster — per una segmentazione cinese reale a livello di parola (anziché di carattere), configura un analizzatore linguistico dedicato (es. <4>ik</4>, <6>smartcn</6>, oppure quello integrato <9>cjk</9>) sul tuo cluster prima di puntarci Exodus.",
-    "url": {
-      "label": "URL di Elasticsearch",
-      "description": "Lascia vuoto per usare la ricerca full text integrata basata su PGlite."
-    },
-    "username": {
-      "label": "Nome utente"
-    },
-    "password": {
-      "label": "Password"
-    },
-    "optionalSecurityHint": "Facoltativo — richiesto solo se il tuo cluster ha la sicurezza abilitata.",
-    "indexName": {
-      "label": "Nome indice",
-      "description": "Il valore predefinito è \"exodus-messages\" se lasciato vuoto."
-    },
-    "connection": {
-      "label": "Connessione",
-      "description": "Verifica la connettività, oppure reindicizza tutta la cronologia chat esistente in Elasticsearch.",
-      "testButton": "Verifica connessione",
-      "testingLabel": "Verifica in corso...",
-      "reindexButton": "Reindicizza cronologia",
-      "reindexingLabel": "Reindicizzazione in corso..."
-    },
-    "toast": {
-      "connected": "Connesso a Elasticsearch",
-      "connectFailed": "Connessione a Elasticsearch non riuscita",
-      "reindexed_one": "Reindicizzato {{count}} messaggio",
-      "reindexed_other": "Reindicizzati {{count}} messaggi",
-      "reindexFailed": "Reindicizzazione dei messaggi non riuscita"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "Tutti",
       "allScopes": "Tutti",
       "datePlaceholder": "Data",
-      "levelPlaceholder": "Livello",
       "scopePlaceholder": "Ambito",
-      "keywordPlaceholder": "Cerca parola chiave...",
-      "traceChip": "trace {{id}}"
+      "traceChip": "trace {{id}}",
+      "searchPlaceholder": "Cerca  ·  scope:chat  trace:a1b2  -escludi",
+      "clear": "Rimuovi filtri"
     },
     "actions": {
       "openDirectory": "Apri directory",
       "export": "Esporta",
       "clearAll": "Cancella tutto",
-      "clearAllConfirm": "Sei sicuro di voler eliminare tutti i file di log?"
+      "clearAllConfirm": "Sei sicuro di voler eliminare tutti i file di log?",
+      "more": "Altre azioni"
     },
     "toast": {
       "exported": "Log esportati",
@@ -649,15 +627,48 @@
       "level": "Livello",
       "scope": "Ambito",
       "message": "Messaggio",
-      "trace": "Trace",
-      "empty": "Nessuna voce di log trovata."
+      "empty": "Nessuna voce di log trovata.",
+      "noMatch": "Nessuna riga corrisponde a questi filtri."
     },
     "pagination": {
-      "total_one": "{{count}} voce totale",
-      "total_other": "{{count}} voci totali",
       "pageOf": "Pagina {{page}} di {{totalPages}}",
       "prev": "Prec",
-      "next": "Succ"
+      "next": "Succ",
+      "range": "{{from}}–{{to}} di {{total}}"
+    },
+    "details": {
+      "stack": "Traccia dello stack",
+      "componentStack": "Stack dei componenti",
+      "attributes": "Attributi"
+    },
+    "live": {
+      "label": "Live",
+      "onlyToday": "Live segue il log di oggi"
+    },
+    "levels": {
+      "error": "Errore",
+      "warn": "Avviso",
+      "info": "Info",
+      "debug": "Debug"
+    },
+    "chart": {
+      "lines_one": "riga",
+      "lines_other": "righe",
+      "newestFirst": "più recenti prima",
+      "label": "Righe nel tempo",
+      "noLines": "Nessuna riga"
+    },
+    "detail": {
+      "previous": "Riga precedente",
+      "next": "Riga successiva",
+      "close": "Chiudi",
+      "linesAround": "Righe intorno",
+      "copyForAi": "Copia per l'IA",
+      "sameTrace": "Stessa trace",
+      "message": "Messaggio",
+      "fields": "Campi",
+      "resource": "Risorsa",
+      "copied": "Copiato per l'IA"
     }
   },
   "mcpServers": {
@@ -938,11 +949,12 @@
     "snapshot": {
       "title": "Snapshot",
       "none": "Nessuno snapshot",
-      "noneHint": "Creane uno per copiare chat, messaggi e progetti in un file DuckDB.",
+      "noneHint": "Creane uno per copiare chat e messaggi in un file DuckDB.",
       "build": "Crea snapshot",
       "rebuild": "Ricrea",
       "building": "Creazione…",
       "builtAt": "Creato {{when}}",
+      "stale": "Creato prima delle tabelle attuali: ricostruiscilo, altrimenti alcuni preset non funzioneranno.",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (copiati dai file di log)",
       "logsMissing": "logs (nessun file di log trovato)",
@@ -952,6 +964,7 @@
     },
     "presets": {
       "title": "Query predefinite",
+      "cacheByRun": "Cache del prompt per turno",
       "messagesPerDay": "Messaggi al giorno (30 giorni)",
       "costByModel": "Token e costo per modello",
       "toolCalls": "Chiamate agli strumenti",
@@ -965,7 +978,7 @@
       "title": "Query",
       "run": "Esegui query",
       "running": "In esecuzione…",
-      "tables": "Tabelle: chats, messages, projects, logs"
+      "tables": "Tabelle: chats, messages, logs"
     },
     "results": {
       "rowCount_one": "{{count}} riga",
@@ -1051,10 +1064,8 @@
       "googleApiKey": "Chiave API Google Maps",
       "braveApiKey": "Chiave API Brave Search",
       "knowledgeBaseApiKey": "Chiave API LightRAG",
-      "elasticsearchPassword": "Password di Elasticsearch",
       "s3AccessKeyId": "ID chiave di accesso Amazon S3",
       "s3SecretAccessKey": "Chiave di accesso segreta Amazon S3",
-      "legacyMcpServers": "Configurazione MCP precedente",
       "mcp": "Server MCP «{{server}}»: {{field}}"
     }
   }

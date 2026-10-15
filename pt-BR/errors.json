@@ -29,7 +29,6 @@
     "AGENT_NOT_FOUND": "Agente ou departamento não encontrado.",
     "TASK_NOT_FOUND": "Tarefa não encontrada.",
     "MEMORY_NOT_FOUND": "Memória {{id}} não encontrada.",
-    "PROJECT_NOT_FOUND": "Projeto não encontrado.",
     "SKILL_NOT_FOUND": "Habilidade não encontrada.",
     "AUDIO_NOT_FOUND": "Arquivo de áudio não encontrado.",
     "VALIDATION_FAILED": "Falha na validação da entrada.",
@@ -66,7 +65,9 @@
     "INTERNAL_ERROR": "Ocorreu um erro interno no servidor.",
     "UNKNOWN_ERROR": "Ocorreu um erro desconhecido.",
     "APP_LOCKED": "O aplicativo está bloqueado.",
-    "APPROVAL_NOT_FOUND": "Esta solicitação não está mais aguardando resposta."
+    "APPROVAL_NOT_FOUND": "Esta solicitação não está mais aguardando resposta.",
+    "RUN_NOT_FOUND": "Essa resposta não está mais neste chat.",
+    "ATTEMPT_LOCKED": "A conversa seguiu em frente, então esta resposta não pode mais ser trocada."
   },
   "routeBoundary": {
     "title": "Algo deu errado",

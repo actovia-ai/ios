@@ -15,6 +15,7 @@
   },
   "composer": {
     "placeholder": "Pregunte lo que quiera",
+    "listening": "Escuchando…",
     "pleaseWaitTitle": "Espere un momento",
     "pleaseWaitDescription": "El modelo todavía está generando una respuesta.",
     "stop": "Detener",
@@ -36,7 +37,14 @@
     "greetingTitle": "¡Hola!",
     "greetingSubtitle": "¿En qué puedo ayudarle hoy?",
     "attachmentAlt": "adjunto",
-    "scrollToBottom": "Desplazarse al final"
+    "scrollToBottom": "Desplazarse al final",
+    "moreImages": "Mostrar {{count}} más",
+    "showMore": "Mostrar más"
+  },
+  "history": {
+    "olderFailed": "No se pudieron cargar los mensajes anteriores",
+    "loadingOlder": "Cargando mensajes anteriores",
+    "loading": "Cargando la conversación"
   },
   "toolPreview": {
     "mapItineraryDayCount_one": "{{count}} día",
@@ -105,7 +113,12 @@
     "exitFullscreen": "Salir de pantalla completa",
     "enterFullscreen": "Entrar en pantalla completa",
     "exitFullscreenEsc": "Salir de pantalla completa (Esc)",
-    "fullscreen": "Pantalla completa"
+    "fullscreen": "Pantalla completa",
+    "draft": {
+      "untitled": "Artefacto sin título",
+      "writing_one": "Escribiendo · {{count}} línea",
+      "writing_other": "Escribiendo · {{count}} líneas"
+    }
   },
   "computerUseCard": {
     "title": "Uso del equipo",
@@ -196,11 +209,39 @@
     "details": "Detalles",
     "less": "Menos"
   },
-  "sourcesPanel": {
-    "title_one": "{{count}} fuente",
-    "title_other": "{{count}} fuentes",
-    "citations": "Citas ({{count}})",
-    "more": "Más"
+  "header": {
+    "back": "Atrás",
+    "forward": "Adelante",
+    "streaming": "Respondiendo…",
+    "noModel": "Elegir un modelo",
+    "modelMenu": "Modelo",
+    "noModels": "Aún no se han obtenido modelos",
+    "openProviders": "Abrir proveedores de IA",
+    "menu": "Opciones del chat",
+    "exportMarkdown": "Exportar como Markdown…",
+    "exportPdf": "Exportar como PDF…",
+    "exportFailed": "No se pudo exportar el chat",
+    "panel": "Archivos, herramientas y fuentes"
+  },
+  "export": {
+    "you": "Tú",
+    "assistant": "Exodus",
+    "pictures_one": "{{count}} imagen adjunta",
+    "pictures_other": "{{count}} imágenes adjuntas",
+    "tool": "Herramienta: {{name}}"
+  },
+  "panel": {
+    "files": "Archivos",
+    "tools": "Herramientas",
+    "sources": "Fuentes",
+    "empty": "Los archivos, herramientas y fuentes de este chat aparecerán aquí.",
+    "yours": "Tuyos",
+    "madeHere": "Creados aquí",
+    "picture": "Imagen {{index}}",
+    "generatedPicture": "Imagen generada {{index}}",
+    "calls_one": "{{count}} llamada",
+    "calls_other": "{{count}} llamadas",
+    "untitledQuestion": "(sin texto)"
   },
   "sidebar": {
     "newChat": "Nuevo chat",
@@ -212,16 +253,9 @@
       "favoritesGroup": "Favoritos",
       "chats": "Chats",
       "more": "Más",
-      "rename": "Renombrar"
-    },
-    "projects": {
-      "title": "Proyectos",
-      "newProject": "Nuevo proyecto",
-      "editProject": "Editar proyecto",
-      "createTitle": "Crear proyecto",
-      "namePlaceholder": "Nombre del proyecto",
-      "deleteTitle": "¿Eliminar proyecto?",
-      "deleteDescription": "Esto eliminará permanentemente \"{{name}}\" y todos sus chats. Esta acción no se puede deshacer."
+      "rename": "Renombrar",
+      "copyId": "Copiar ID de la conversación",
+      "idCopied": "ID de la conversación copiado"
     },
     "renameDialog": {
       "title": "Renombrar chat",
@@ -232,41 +266,12 @@
       "description": "Esto eliminará <strong>{{title}}</strong>."
     },
     "search": {
-      "placeholder": "Buscar chat…",
-      "ariaLabel": "Buscar mensajes del chat",
-      "noContents": "Sin contenido"
-    }
-  },
-  "projectDetail": {
-    "namePlaceholder": "Nombre del proyecto",
-    "descriptionPlaceholder": "Agregar una descripción…",
-    "saveChanges": "Guardar cambios",
-    "tabs": {
-      "chats": "Chats ({{count}})",
-      "instructions": "Instrucciones",
-      "knowledgeComingSoon": "Conocimiento (Fase 2)"
-    },
-    "newChatButton": "Nuevo chat en el proyecto",
-    "emptyChats": "Aún no hay chats en este proyecto. Inicie un nuevo chat para comenzar.",
-    "customInstructionsLabel": "Instrucciones personalizadas",
-    "instructionsPlaceholder": "Indique a la IA cómo comportarse en este proyecto…",
-    "useStructuredLabel": "Usar instrucciones estructuradas",
-    "structuredFields": {
-      "role": "Rol",
-      "tone": "Tono",
-      "responseFormat": "Formato de respuesta",
-      "constraints": "Restricciones"
-    },
-    "structuredPlaceholders": {
-      "role": "P. ej., Ingeniero sénior, Tutor de escritura",
-      "tone": "P. ej., Formal, Informal, Técnico",
-      "responseFormat": "P. ej., Viñetas, Párrafos detallados",
-      "constraints": "P. ej., Mantenga las respuestas por debajo de 200 palabras"
-    },
-    "toast": {
-      "createdTitle": "Proyecto creado",
-      "updatedTitle": "Proyecto actualizado",
-      "deletedTitle": "Proyecto eliminado"
+      "title": "Buscar chats",
+      "description": "Encuentra un chat por su título o por lo que se dijo en él.",
+      "placeholder": "Buscar chats…",
+      "ariaLabel": "Buscar chats",
+      "recent": "Recientes",
+      "noResults": "Ningún chat coincide con «{{query}}»"
     }
   },
   "run": {
@@ -288,7 +293,9 @@
   "usedMemories": {
     "label_one": "Se usó {{count}} memoria · {{keys}}",
     "label_other": "Se usaron {{count}} memorias · {{keys}}",
-    "wrong": "Esto es incorrecto",
+    "intro": "Estos recuerdos dieron forma a la respuesta.",
+    "wrong": "¿Incorrecto?",
+    "fixHint": "¿Algún recuerdo es incorrecto? Haz clic en «¿Incorrecto?» y corrígelo en el chat: Exodus lo actualizará.",
     "openSettings": "Abrir en Configuración",
     "deleted": "Eliminado",
     "prefill": "La memoria sobre «{{key}}» es incorrecta: "
@@ -322,5 +329,147 @@
     "decideFailed": "No se pudo enviar su respuesta",
     "truncatedNote_one": "{{count}} carácter más no mostrado",
     "truncatedNote_other": "{{count}} caracteres más no mostrados"
+  },
+  "compare": {
+    "useThis": "Usar esta",
+    "useInstead": "Usar esta en su lugar",
+    "otherVersion_one": "{{count}} versión más",
+    "otherVersion_other": "{{count}} versiones más",
+    "answerTab": "Respuesta {{n}}",
+    "tabsLabel": "Respuestas",
+    "otherVersionTitle": "La otra versión",
+    "otherVersionDescription": "La respuesta que no conservaste.",
+    "locked": "La conversación ha continuado, así que esta respuesta ya no se puede usar.",
+    "chooseFailed": "No se pudo cambiar la respuesta"
+  },
+  "citation": {
+    "previous": "Fuente anterior",
+    "next": "Fuente siguiente",
+    "position": "{{current}}/{{total}}"
+  },
+  "ask": {
+    "button": "Preguntar a Exodus",
+    "remove": "Quitar cita"
+  },
+  "health": {
+    "attached": "Datos de salud enviados con esta pregunta: {{values}}",
+    "fallback": "Salud",
+    "asOf": "{{date}}, {{time}}",
+    "lastDays_one": "{{category}}, último {{count}} día",
+    "lastDays_other": "{{category}}, últimos {{count}} días",
+    "noData": "Sin datos",
+    "withUsual": "{{value}} · lo habitual {{usual}}",
+    "ofGoal": "{{value}} de {{goal}}",
+    "bpm": "{{value}} lpm",
+    "ms": "{{value}} ms",
+    "kg": "{{value}} kg",
+    "kcal": "{{value}} kcal",
+    "perMin": "{{value}}/min",
+    "cups_one": "{{count}} vaso",
+    "cups_other": "{{count}} vasos",
+    "hours_one": "{{count}} hora",
+    "hours_other": "{{count}} horas",
+    "category": {
+      "sleep": "Sueño",
+      "activity": "Actividad",
+      "recovery": "Corazón y recuperación",
+      "body": "Cuerpo y ánimo"
+    },
+    "field": {
+      "asleep": "Dormido",
+      "inBed": "En cama",
+      "deep": "Profundo",
+      "core": "Esencial",
+      "rem": "REM",
+      "awake": "Despierto",
+      "wake": "Despertar",
+      "steps": "Pasos",
+      "activeEnergy": "Energía activa",
+      "exercise": "Ejercicio",
+      "stand": "De pie",
+      "workouts": "Entrenamientos",
+      "level": "Recuperación",
+      "hrv": "VFC",
+      "restingHr": "Frecuencia cardiaca en reposo",
+      "respRate": "Frecuencia respiratoria",
+      "water": "Agua",
+      "weight": "Peso",
+      "weightTrend": "Cambio en 30 días",
+      "mood": "Ánimo"
+    },
+    "level": {
+      "good": "Buena",
+      "fair": "Regular",
+      "low": "Baja"
+    },
+    "mood": {
+      "veryUnpleasant": "Muy desagradable",
+      "unpleasant": "Desagradable",
+      "slightlyUnpleasant": "Algo desagradable",
+      "neutral": "Neutral",
+      "slightlyPleasant": "Algo agradable",
+      "pleasant": "Agradable",
+      "veryPleasant": "Muy agradable"
+    }
+  },
+  "interactive": {
+    "other": "Otra…",
+    "otherPlaceholder": "Tu respuesta",
+    "noteDefault": "¿Algo más?",
+    "notePlaceholder": "Opcional",
+    "submit": "Enviar",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "skip": "Omitir",
+    "progress": "Pregunta {{current}} de {{total}}",
+    "chooseOrSkip": "Elige una respuesta u omite esta pregunta.",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "answered": "Respondido",
+    "answer": {
+      "other": "Otra",
+      "addition": "Además",
+      "note": "Nota",
+      "title": "Tu respuesta"
+    }
+  },
+  "richBlocks": {
+    "stepLabel": "Paso {{number}}",
+    "openOnTradingView": "Abrir en TradingView",
+    "chartBy": "Gráfico de TradingView",
+    "chartUnavailable": "No se pudo cargar el gráfico.",
+    "entityLoading": "Cargando…",
+    "entityNothing": "No se encontró nada en Wikipedia.",
+    "entityFailed": "No se pudo conectar con Wikipedia.",
+    "readMore": "Leer más en Wikipedia"
+  },
+  "workspaceFile": {
+    "created": "Creado",
+    "edited": "Editado",
+    "meta": "{{change}} · {{size}}",
+    "open": "Abrir",
+    "quickLook": "Vista rápida",
+    "revealInFinder": "Mostrar en el Finder",
+    "showInExplorer": "Mostrar en el Explorador",
+    "showInFolder": "Mostrar en la carpeta",
+    "missing": "Ya no está",
+    "outside": "Fuera del espacio de trabajo",
+    "untitled": "Archivo",
+    "linkTitle": "Haz clic para abrir · clic derecho para más",
+    "previewMeta": "{{size}} · Solo lectura",
+    "readOnly": "Solo lectura",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "tooLarge": "Este archivo es demasiado grande para previsualizarlo. Ábrelo en su app.",
+    "binary": "Este archivo no es texto, así que no se puede previsualizar aquí. Ábrelo en su app.",
+    "readFailed": "No se pudo leer este archivo.",
+    "missingDescription": "Puede que se haya movido o eliminado.",
+    "outsideDescription": "Desde aquí solo se pueden abrir archivos del espacio de trabajo de un chat.",
+    "unsafeTitle": "Se mostró en su carpeta",
+    "unsafeDescription": "Abrir este archivo lo ejecutaría, así que no se abrió.",
+    "openFailed": "No se pudo abrir el archivo",
+    "revealFailed": "No se pudo mostrar el archivo"
   }
 }

@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "Skills-Markt"
     },
-    "fullTextSearch": {
-      "title": "Volltextsuche"
-    },
     "knowledgeBase": {
       "title": "Wissensdatenbank"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "Einstellungen öffnen"
       },
+      "go-back": {
+        "label": "Zurück"
+      },
+      "go-forward": {
+        "label": "Vorwärts"
+      },
       "lock-now": {
         "label": "Jetzt sperren"
       },
@@ -145,7 +148,7 @@
         "label": "Suchleiste schließen"
       },
       "close-tab": {
-        "label": "Aktuellen Tab schließen"
+        "label": "Chat schließen"
       },
       "focus-chat-input": {
         "label": "Chat-Eingabe fokussieren"
@@ -329,7 +332,11 @@
       "refresh": "Modellliste aktualisieren",
       "fetchErrorTitle": "Modellliste konnte nicht abgerufen werden",
       "fetchErrorFallback": "Abrufen der Modellliste fehlgeschlagen",
-      "reenterKey": "Geben Sie den API-Schlüssel erneut ein, um ihn mit der neuen Basis-URL zu verwenden."
+      "reenterKey": "Geben Sie den API-Schlüssel erneut ein, um ihn mit der neuen Basis-URL zu verwenden.",
+      "retiring": "wird eingestellt",
+      "retired": "eingestellt",
+      "retiringOn": "Wird am {{date}} eingestellt",
+      "retiredOn": "Am {{date}} eingestellt"
     }
   },
   "tools": {
@@ -399,6 +406,10 @@
         "label": "Gedächtnis aktualisieren",
         "description": "Erlaubt dem Assistenten, Gedächtniseinträge zu korrigieren, hinzuzufügen oder zu entfernen, wenn Sie ihm sagen, dass etwas über Sie nicht stimmt."
       },
+      "recall": {
+        "label": "Abrufen",
+        "description": "Lässt den Assistenten ein früheres Suchergebnis oder eine Werkzeugausgabe, die ältere Runden nur noch gekürzt enthalten, vollständig nachlesen – aus dem Gespeicherten, ohne erneut zu suchen."
+      },
       "mapItinerary": {
         "label": "Reiseroute",
         "description": "Orte, Routen und mehrtägige Reisen auf einer interaktiven Kartenkarte darstellen"
@@ -457,11 +468,11 @@
       },
       "maxResults": {
         "label": "Max. Ergebnisse",
-        "description": "Anzahl der Suchergebnisse pro Abfrage (1-50). Standard: 10."
+        "description": "Quellen, die eine Suche liefert (1–20). Standard: 10."
       },
       "deepRecall": {
         "label": "Tiefenabruf",
-        "description": "Führt parallel zum Grounding-Aufruf eine zweite, breiter angelegte Websuche durch und ergänzt die Ergebnisse um zusätzliche Treffer — Foren, News und Seiten, die der Grounding-Filter aussortiert. Höhere Trefferquote, ca. doppelter Brave-API-Verbrauch pro Suche."
+        "description": "Sucht mit drei Formulierungen der Frage und ergänzt einen breiteren Durchlauf – Foren, Nachrichten, Seiten, die die erste Suche auslässt. Mehr Quellen und mehr Tokens pro Suche, und etwa sechs Brave-Anfragen statt einer."
       },
       "recency": {
         "label": "Aktualitätsfilter",
@@ -589,54 +600,21 @@
       "errorFallback": "Daten konnten nicht gelöscht werden."
     }
   },
-  "fullTextSearch": {
-    "alert": "Die integrierte Suche von Exodus funktioniert über alle Sprachen hinweg, einschließlich Chinesisch, Japanisch und Koreanisch — <strong>sie liefert exakte Textübereinstimmungen, keine „intelligenten“ Ergebnisse</strong>: kein Relevanz-Ranking, keine Tippfehlertoleranz, kein Stemming (die Suche nach „run“ findet „running“ nicht). Konfigurieren Sie unten einen selbst gehosteten oder Cloud-Elasticsearch-Cluster für ein besseres Relevanz-Ranking und echte Wortsegmentierung. Dies ist optional; lassen Sie die URL leer, um weiterhin die integrierte Suche zu verwenden. Exodus liest und schreibt Dokumente ausschließlich in den Index Ihres Clusters — konfigurieren Sie für eine echte wortbasierte chinesische Segmentierung (statt zeichenbasiert) auf Ihrem Cluster einen sprachbewussten Analyzer (z. B. <4>ik</4>, <6>smartcn</6> oder den integrierten <9>cjk</9>), bevor Sie Exodus darauf verweisen.",
-    "url": {
-      "label": "Elasticsearch-URL",
-      "description": "Leer lassen, um die integrierte PGlite-Volltextsuche zu verwenden."
-    },
-    "username": {
-      "label": "Benutzername"
-    },
-    "password": {
-      "label": "Passwort"
-    },
-    "optionalSecurityHint": "Optional — nur erforderlich, wenn für Ihren Cluster Sicherheit aktiviert ist.",
-    "indexName": {
-      "label": "Indexname",
-      "description": "Standardmäßig „exodus-messages“, wenn leer gelassen."
-    },
-    "connection": {
-      "label": "Verbindung",
-      "description": "Verbindung testen oder den gesamten bestehenden Chat-Verlauf in Elasticsearch neu indizieren.",
-      "testButton": "Verbindung testen",
-      "testingLabel": "Wird getestet...",
-      "reindexButton": "Verlauf neu indizieren",
-      "reindexingLabel": "Wird neu indiziert..."
-    },
-    "toast": {
-      "connected": "Mit Elasticsearch verbunden",
-      "connectFailed": "Verbindung zu Elasticsearch fehlgeschlagen",
-      "reindexed_one": "{{count}} Nachricht neu indiziert",
-      "reindexed_other": "{{count}} Nachrichten neu indiziert",
-      "reindexFailed": "Neuindizierung der Nachrichten fehlgeschlagen"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "Alle",
       "allScopes": "Alle",
       "datePlaceholder": "Datum",
-      "levelPlaceholder": "Stufe",
       "scopePlaceholder": "Bereich",
-      "keywordPlaceholder": "Stichwort suchen...",
-      "traceChip": "Trace {{id}}"
+      "traceChip": "Trace {{id}}",
+      "searchPlaceholder": "Suchen  ·  scope:chat  trace:a1b2  -ausschließen",
+      "clear": "Filter zurücksetzen"
     },
     "actions": {
       "openDirectory": "Verzeichnis öffnen",
       "export": "Exportieren",
       "clearAll": "Alle löschen",
-      "clearAllConfirm": "Möchten Sie wirklich alle Protokolldateien löschen?"
+      "clearAllConfirm": "Möchten Sie wirklich alle Protokolldateien löschen?",
+      "more": "Weitere Aktionen"
     },
     "toast": {
       "exported": "Protokolle exportiert",
@@ -649,15 +627,48 @@
       "level": "Stufe",
       "scope": "Bereich",
       "message": "Nachricht",
-      "trace": "Trace",
-      "empty": "Keine Protokolleinträge gefunden."
+      "empty": "Keine Protokolleinträge gefunden.",
+      "noMatch": "Keine Zeilen entsprechen diesen Filtern."
     },
     "pagination": {
-      "total_one": "{{count}} Eintrag insgesamt",
-      "total_other": "{{count}} Einträge insgesamt",
       "pageOf": "Seite {{page}} von {{totalPages}}",
       "prev": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "range": "{{from}}–{{to}} von {{total}}"
+    },
+    "details": {
+      "stack": "Stacktrace",
+      "componentStack": "Komponenten-Stack",
+      "attributes": "Attribute"
+    },
+    "live": {
+      "label": "Live",
+      "onlyToday": "Live folgt dem heutigen Protokoll"
+    },
+    "levels": {
+      "error": "Fehler",
+      "warn": "Warnung",
+      "info": "Info",
+      "debug": "Debug"
+    },
+    "chart": {
+      "lines_one": "Zeile",
+      "lines_other": "Zeilen",
+      "newestFirst": "neueste zuerst",
+      "label": "Zeilen im Zeitverlauf",
+      "noLines": "Keine Zeilen"
+    },
+    "detail": {
+      "previous": "Vorherige Zeile",
+      "next": "Nächste Zeile",
+      "close": "Schließen",
+      "linesAround": "Zeilen rundherum",
+      "copyForAi": "Für KI kopieren",
+      "sameTrace": "Gleicher Trace",
+      "message": "Nachricht",
+      "fields": "Felder",
+      "resource": "Ressource",
+      "copied": "Für KI kopiert"
     }
   },
   "mcpServers": {
@@ -938,11 +949,12 @@
     "snapshot": {
       "title": "Snapshot",
       "none": "Noch kein Snapshot",
-      "noneHint": "Erstellen Sie einen, um Chats, Nachrichten und Projekte in eine DuckDB-Datei zu kopieren.",
+      "noneHint": "Erstellen Sie einen, um Chats und Nachrichten in eine DuckDB-Datei zu kopieren.",
       "build": "Snapshot erstellen",
       "rebuild": "Neu erstellen",
       "building": "Wird erstellt…",
       "builtAt": "Erstellt {{when}}",
+      "stale": "Vor den aktuellen Tabellen erstellt – neu erstellen, sonst schlagen einige Vorlagen fehl.",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (aus den Logdateien kopiert)",
       "logsMissing": "logs (keine Logdateien gefunden)",
@@ -952,6 +964,7 @@
     },
     "presets": {
       "title": "Vorlagen",
+      "cacheByRun": "Prompt-Cache pro Durchlauf",
       "messagesPerDay": "Nachrichten pro Tag (30 Tage)",
       "costByModel": "Tokens & Kosten pro Modell",
       "toolCalls": "Tool-Aufrufe",
@@ -965,7 +978,7 @@
       "title": "Abfrage",
       "run": "Abfrage ausführen",
       "running": "Läuft…",
-      "tables": "Tabellen: chats, messages, projects, logs"
+      "tables": "Tabellen: chats, messages, logs"
     },
     "results": {
       "rowCount_one": "{{count}} Zeile",
@@ -1051,10 +1064,8 @@
       "googleApiKey": "Google-Maps-API-Schlüssel",
       "braveApiKey": "Brave-Search-API-Schlüssel",
       "knowledgeBaseApiKey": "LightRAG-API-Schlüssel",
-      "elasticsearchPassword": "Elasticsearch-Passwort",
       "s3AccessKeyId": "Amazon-S3-Zugriffsschlüssel-ID",
       "s3SecretAccessKey": "Geheimer Amazon-S3-Zugriffsschlüssel",
-      "legacyMcpServers": "Alte MCP-Konfiguration",
       "mcp": "MCP-Server „{{server}}“: {{field}}"
     }
   }

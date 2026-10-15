@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "スキルマーケット"
     },
-    "fullTextSearch": {
-      "title": "全文検索"
-    },
     "knowledgeBase": {
       "title": "ナレッジベース"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "設定を開く"
       },
+      "go-back": {
+        "label": "戻る"
+      },
+      "go-forward": {
+        "label": "進む"
+      },
       "lock-now": {
         "label": "今すぐロック"
       },
@@ -145,7 +148,7 @@
         "label": "検索バーを閉じる"
       },
       "close-tab": {
-        "label": "現在のタブを閉じる"
+        "label": "チャットを閉じる"
       },
       "focus-chat-input": {
         "label": "チャット入力欄にフォーカス"
@@ -329,7 +332,11 @@
       "refresh": "モデル一覧を更新",
       "fetchErrorTitle": "モデル一覧を取得できませんでした",
       "fetchErrorFallback": "モデル一覧の取得に失敗しました",
-      "reenterKey": "新しいベース URL で使うには、API キーをもう一度入力してください。"
+      "reenterKey": "新しいベース URL で使うには、API キーをもう一度入力してください。",
+      "retiring": "提供終了予定",
+      "retired": "提供終了",
+      "retiringOn": "{{date}} に提供終了予定",
+      "retiredOn": "{{date}} に提供終了"
     }
   },
   "tools": {
@@ -399,6 +406,10 @@
         "label": "メモリーを更新",
         "description": "あなたについての情報が間違っていると伝えると、アシスタントがメモリーを訂正・追加・削除できるようになります。"
       },
+      "recall": {
+        "label": "呼び戻し",
+        "description": "以前のターンでは要約だけになった検索結果やツールの出力を、保存済みの内容から全文で読み直せるようにします。再検索はしません。"
+      },
       "mapItinerary": {
         "label": "旅程マップ",
         "description": "スポット、ルート、複数日の旅程を1枚のインタラクティブなマップカードに表示します"
@@ -457,11 +468,11 @@
       },
       "maxResults": {
         "label": "最大結果数",
-        "description": "クエリごとの検索結果数(1〜50)。デフォルト: 10。"
+        "description": "1 回の検索で返すソース数（1〜20）。既定値: 10。"
       },
       "deepRecall": {
         "label": "ディープリコール",
-        "description": "グラウンディング呼び出しと並行して、より広範な2回目のウェブ検索を実行し、フォーラムやニュースなどグラウンディングフィルターで除外されるページを追加の結果として統合します。再現率が高まる一方、検索あたりのBrave API使用量は約2倍になります。"
+        "description": "質問を 3 通りの言い回しで検索し、さらに広い検索（フォーラム、ニュース、最初の検索で落ちたページ）を加えます。1 回の検索あたりのソースとトークンが増え、Brave へのリクエストは 1 回ではなく約 6 回になります。"
       },
       "recency": {
         "label": "更新日フィルター",
@@ -588,53 +599,21 @@
       "errorFallback": "データの削除に失敗しました。"
     }
   },
-  "fullTextSearch": {
-    "alert": "Exodusの組み込み検索は、中国語、日本語、韓国語を含むすべての言語に対応していますが、<strong>「スマート」な結果ではなく、完全一致のテキスト検索</strong>です。関連度によるランキング、タイプミスの許容、語幹処理は行われません(「run」で検索しても「running」はヒットしません)。より良い関連度ランキングと本格的な単語分割を利用するには、以下でセルフホストまたはクラウドのElasticsearchクラスターを設定してください。これは任意の設定です。組み込み検索を使い続ける場合はURLを空欄のままにしてください。Exodusはお使いのクラスターのインデックスに対してドキュメントの読み書きのみを行います — 中国語の(文字単位ではなく)本格的な単語レベルの分割を行うには、Exodusを接続する前にクラスター側で言語対応のアナライザー(例:<4>ik</4>、<6>smartcn</6>、または組み込みの<9>cjk</9>)を設定してください。",
-    "url": {
-      "label": "Elasticsearch URL",
-      "description": "組み込みのPGlite全文検索を使う場合は空欄のままにしてください。"
-    },
-    "username": {
-      "label": "ユーザー名"
-    },
-    "password": {
-      "label": "パスワード"
-    },
-    "optionalSecurityHint": "任意 — クラスターでセキュリティが有効になっている場合のみ必要です。",
-    "indexName": {
-      "label": "インデックス名",
-      "description": "空欄の場合は「exodus-messages」がデフォルトで使用されます。"
-    },
-    "connection": {
-      "label": "接続",
-      "description": "接続を確認するか、既存のすべてのチャット履歴をElasticsearchに再インデックスします。",
-      "testButton": "接続をテスト",
-      "testingLabel": "テスト中...",
-      "reindexButton": "履歴を再インデックス",
-      "reindexingLabel": "再インデックス中..."
-    },
-    "toast": {
-      "connected": "Elasticsearchに接続しました",
-      "connectFailed": "Elasticsearchへの接続に失敗しました",
-      "reindexed_other": "{{count}}件のメッセージを再インデックスしました",
-      "reindexFailed": "メッセージの再インデックスに失敗しました"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "すべて",
       "allScopes": "すべて",
       "datePlaceholder": "日付",
-      "levelPlaceholder": "レベル",
       "scopePlaceholder": "スコープ",
-      "keywordPlaceholder": "キーワードを検索...",
-      "traceChip": "トレース {{id}}"
+      "traceChip": "トレース {{id}}",
+      "searchPlaceholder": "検索  ·  scope:chat  trace:a1b2  -除外",
+      "clear": "フィルタをクリア"
     },
     "actions": {
       "openDirectory": "ディレクトリを開く",
       "export": "エクスポート",
       "clearAll": "すべて消去",
-      "clearAllConfirm": "すべてのログファイルを削除してもよろしいですか?"
+      "clearAllConfirm": "すべてのログファイルを削除してもよろしいですか?",
+      "more": "その他の操作"
     },
     "toast": {
       "exported": "ログをエクスポートしました",
@@ -647,14 +626,47 @@
       "level": "レベル",
       "scope": "スコープ",
       "message": "メッセージ",
-      "trace": "トレース",
-      "empty": "ログエントリが見つかりません。"
+      "empty": "ログエントリが見つかりません。",
+      "noMatch": "このフィルタに一致する行はありません。"
     },
     "pagination": {
-      "total_other": "全{{count}}件",
       "pageOf": "{{page}} / {{totalPages}}ページ",
       "prev": "前へ",
-      "next": "次へ"
+      "next": "次へ",
+      "range": "{{total}} 件中 {{from}}–{{to}}"
+    },
+    "details": {
+      "stack": "スタックトレース",
+      "componentStack": "コンポーネントスタック",
+      "attributes": "属性"
+    },
+    "live": {
+      "label": "ライブ",
+      "onlyToday": "ライブは今日のログを追跡します"
+    },
+    "levels": {
+      "error": "エラー",
+      "warn": "警告",
+      "info": "情報",
+      "debug": "デバッグ"
+    },
+    "chart": {
+      "lines_other": "行",
+      "newestFirst": "新しい順",
+      "label": "時間ごとの行数",
+      "noLines": "行なし"
+    },
+    "detail": {
+      "previous": "前の行",
+      "next": "次の行",
+      "close": "閉じる",
+      "linesAround": "前後の行",
+      "copyForAi": "AI 用にコピー",
+      "sameTrace": "同じトレース",
+      "message": "メッセージ",
+      "fields": "フィールド",
+      "resource": "リソース",
+      "copied": "AI 用にコピーしました"
     }
   },
   "mcpServers": {
@@ -932,11 +944,12 @@
     "snapshot": {
       "title": "スナップショット",
       "none": "スナップショットはまだありません",
-      "noneHint": "作成すると、チャット・メッセージ・プロジェクトが DuckDB ファイルにコピーされます。",
+      "noneHint": "作成すると、チャットとメッセージが DuckDB ファイルにコピーされます。",
       "build": "スナップショットを作成",
       "rebuild": "再作成",
       "building": "作成中…",
       "builtAt": "{{when}} に作成",
+      "stale": "現在のテーブルより前に作成されています。再構築しないと一部のプリセットが失敗します。",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (ログファイルからコピー)",
       "logsMissing": "logs (ログファイルなし)",
@@ -946,6 +959,7 @@
     },
     "presets": {
       "title": "プリセット",
+      "cacheByRun": "ラン別のプロンプトキャッシュ",
       "messagesPerDay": "1 日あたりのメッセージ数 (30 日間)",
       "costByModel": "モデル別トークン数とコスト",
       "toolCalls": "ツール呼び出し",
@@ -959,7 +973,7 @@
       "title": "クエリ",
       "run": "クエリを実行",
       "running": "実行中…",
-      "tables": "テーブル: chats, messages, projects, logs"
+      "tables": "テーブル: chats, messages, logs"
     },
     "results": {
       "rowCount_one": "{{count}} 行",
@@ -1045,10 +1059,8 @@
       "googleApiKey": "Google Maps API キー",
       "braveApiKey": "Brave Search API キー",
       "knowledgeBaseApiKey": "LightRAG API キー",
-      "elasticsearchPassword": "Elasticsearch のパスワード",
       "s3AccessKeyId": "Amazon S3 のアクセスキー ID",
       "s3SecretAccessKey": "Amazon S3 のシークレットアクセスキー",
-      "legacyMcpServers": "旧形式の MCP 設定",
       "mcp": "MCP サーバー「{{server}}」: {{field}}"
     }
   }

@@ -15,6 +15,7 @@
   },
   "composer": {
     "placeholder": "有什麼想問的？",
+    "listening": "正在聆聽…",
     "pleaseWaitTitle": "請稍候",
     "pleaseWaitDescription": "模型仍在生成回覆中。",
     "stop": "停止",
@@ -36,7 +37,14 @@
     "greetingTitle": "你好！",
     "greetingSubtitle": "有什麼我可以幫忙的嗎？",
     "attachmentAlt": "附件",
-    "scrollToBottom": "捲動至底部"
+    "scrollToBottom": "捲動至底部",
+    "moreImages": "顯示其餘 {{count}} 張",
+    "showMore": "顯示更多"
+  },
+  "history": {
+    "olderFailed": "無法載入較早的訊息",
+    "loadingOlder": "正在載入較早的訊息",
+    "loading": "正在載入對話"
   },
   "toolPreview": {
     "mapItineraryDayCount_other": "{{count}} 天",
@@ -99,7 +107,11 @@
     "exitFullscreen": "結束全螢幕",
     "enterFullscreen": "進入全螢幕",
     "exitFullscreenEsc": "結束全螢幕（Esc）",
-    "fullscreen": "全螢幕"
+    "fullscreen": "全螢幕",
+    "draft": {
+      "untitled": "未命名的 Artifact",
+      "writing_other": "撰寫中 · {{count}} 行"
+    }
   },
   "computerUseCard": {
     "title": "電腦操作",
@@ -189,10 +201,37 @@
     "details": "詳情",
     "less": "收起"
   },
-  "sourcesPanel": {
-    "title_other": "{{count}} 項來源",
-    "citations": "引用（{{count}}）",
-    "more": "更多"
+  "header": {
+    "back": "上一頁",
+    "forward": "下一頁",
+    "streaming": "回覆中…",
+    "noModel": "選擇模型",
+    "modelMenu": "模型",
+    "noModels": "尚未取得模型",
+    "openProviders": "開啟 AI 供應商",
+    "menu": "聊天選項",
+    "exportMarkdown": "匯出為 Markdown…",
+    "exportPdf": "匯出為 PDF…",
+    "exportFailed": "無法匯出聊天",
+    "panel": "檔案、工具與來源"
+  },
+  "export": {
+    "you": "你",
+    "assistant": "Exodus",
+    "pictures_other": "附加 {{count}} 張圖片",
+    "tool": "工具：{{name}}"
+  },
+  "panel": {
+    "files": "檔案",
+    "tools": "工具",
+    "sources": "來源",
+    "empty": "此聊天的檔案、工具與來源會顯示在這裡。",
+    "yours": "你的",
+    "madeHere": "在此產生",
+    "picture": "圖片 {{index}}",
+    "generatedPicture": "生成圖片 {{index}}",
+    "calls_other": "{{count}} 次",
+    "untitledQuestion": "（無文字）"
   },
   "sidebar": {
     "newChat": "開新聊天",
@@ -204,16 +243,9 @@
       "favoritesGroup": "最愛",
       "chats": "聊天",
       "more": "更多",
-      "rename": "重新命名"
-    },
-    "projects": {
-      "title": "項目",
-      "newProject": "新增項目",
-      "editProject": "編輯項目",
-      "createTitle": "建立項目",
-      "namePlaceholder": "項目名稱",
-      "deleteTitle": "刪除項目？",
-      "deleteDescription": "此操作將永久刪除「{{name}}」及其所有聊天記錄，且無法復原。"
+      "rename": "重新命名",
+      "copyId": "複製對話 ID",
+      "idCopied": "已複製對話 ID"
     },
     "renameDialog": {
       "title": "重新命名聊天",
@@ -224,41 +256,12 @@
       "description": "這將會刪除 <strong>{{title}}</strong>。"
     },
     "search": {
-      "placeholder": "搜尋聊天記錄...",
-      "ariaLabel": "搜尋聊天訊息",
-      "noContents": "沒有內容"
-    }
-  },
-  "projectDetail": {
-    "namePlaceholder": "項目名稱",
-    "descriptionPlaceholder": "新增描述...",
-    "saveChanges": "儲存變更",
-    "tabs": {
-      "chats": "聊天記錄（{{count}}）",
-      "instructions": "指示",
-      "knowledgeComingSoon": "知識庫（第二階段）"
-    },
-    "newChatButton": "在項目中開新聊天",
-    "emptyChats": "此項目暫時未有任何聊天記錄，開始新的聊天即可開始使用。",
-    "customInstructionsLabel": "自訂指示",
-    "instructionsPlaceholder": "告訴 AI 在此項目中應該如何表現...",
-    "useStructuredLabel": "使用結構化指示",
-    "structuredFields": {
-      "role": "角色",
-      "tone": "語氣",
-      "responseFormat": "回覆格式",
-      "constraints": "限制條件"
-    },
-    "structuredPlaceholders": {
-      "role": "例如：資深工程師、寫作導師",
-      "tone": "例如：正式、輕鬆、技術性",
-      "responseFormat": "例如：條列式、詳細段落",
-      "constraints": "例如：回覆內容請勿超過 200 字"
-    },
-    "toast": {
-      "createdTitle": "項目已建立",
-      "updatedTitle": "項目已更新",
-      "deletedTitle": "項目已刪除"
+      "title": "搜尋聊天",
+      "description": "按標題或對話內容搜尋聊天。",
+      "placeholder": "搜尋聊天…",
+      "ariaLabel": "搜尋聊天",
+      "recent": "最近",
+      "noResults": "沒有符合「{{query}}」的聊天"
     }
   },
   "run": {
@@ -279,7 +282,9 @@
   },
   "usedMemories": {
     "label_other": "使用了 {{count}} 項記憶 · {{keys}}",
-    "wrong": "這是錯的",
+    "intro": "這個回答參考了這些記憶。",
+    "wrong": "有誤？",
+    "fixHint": "記憶有誤？點擊「有誤」在對話中修正，Exodus 會更新這條記憶。",
     "openSettings": "在設定中開啟",
     "deleted": "已刪除",
     "prefill": "關於「{{key}}」的記憶有誤："
@@ -312,5 +317,143 @@
     "expired": "已不再等待",
     "decideFailed": "無法傳送你的回覆",
     "truncatedNote_other": "另有 {{count}} 個字符未顯示"
+  },
+  "compare": {
+    "useThis": "使用這個",
+    "useInstead": "改用這個",
+    "otherVersion_other": "另有 {{count}} 個版本",
+    "answerTab": "回答 {{n}}",
+    "tabsLabel": "回答",
+    "otherVersionTitle": "另一個版本",
+    "otherVersionDescription": "你沒有保留的回答。",
+    "locked": "對話已繼續，無法再使用這個回答。",
+    "chooseFailed": "無法切換回答"
+  },
+  "citation": {
+    "previous": "上一個來源",
+    "next": "下一個來源",
+    "position": "{{current}}/{{total}}"
+  },
+  "ask": {
+    "button": "問 Exodus",
+    "remove": "移除引用"
+  },
+  "health": {
+    "attached": "隨此問題傳送的健康資料：{{values}}",
+    "fallback": "健康",
+    "asOf": "{{date}} {{time}}",
+    "lastDays_other": "{{category}}，最近 {{count}} 日",
+    "noData": "沒有資料",
+    "withUsual": "{{value}} · 平時 {{usual}}",
+    "ofGoal": "{{value}} / {{goal}}",
+    "bpm": "{{value}} 次/分",
+    "ms": "{{value}} 毫秒",
+    "kg": "{{value}} 公斤",
+    "kcal": "{{value}} 千卡",
+    "perMin": "每分鐘 {{value}} 次",
+    "cups_other": "{{count}} 杯",
+    "hours_other": "{{count}} 小時",
+    "category": {
+      "sleep": "睡眠",
+      "activity": "活動",
+      "recovery": "心臟與恢復",
+      "body": "身體與心情"
+    },
+    "field": {
+      "asleep": "睡眠時間",
+      "inBed": "上床",
+      "deep": "深層",
+      "core": "核心",
+      "rem": "REM",
+      "awake": "清醒",
+      "wake": "起床",
+      "steps": "步數",
+      "activeEnergy": "活動能量",
+      "exercise": "運動",
+      "stand": "站立",
+      "workouts": "體能訓練",
+      "level": "恢復",
+      "hrv": "心率變異",
+      "restingHr": "靜止心率",
+      "respRate": "呼吸速率",
+      "water": "飲水",
+      "weight": "體重",
+      "weightTrend": "30 日變化",
+      "mood": "心情"
+    },
+    "level": {
+      "good": "良好",
+      "fair": "一般",
+      "low": "偏低"
+    },
+    "mood": {
+      "veryUnpleasant": "非常不愉快",
+      "unpleasant": "不愉快",
+      "slightlyUnpleasant": "有點不愉快",
+      "neutral": "平常",
+      "slightlyPleasant": "有點愉快",
+      "pleasant": "愉快",
+      "veryPleasant": "非常愉快"
+    }
+  },
+  "interactive": {
+    "other": "其他…",
+    "otherPlaceholder": "你嘅答案",
+    "noteDefault": "仲有冇嘢想補充？",
+    "notePlaceholder": "可選填",
+    "submit": "提交",
+    "previous": "上一題",
+    "next": "下一題",
+    "skip": "略過",
+    "progress": "第 {{current}} 題，共 {{total}} 題",
+    "chooseOrSkip": "揀一個答案，或者略過呢題。",
+    "approve": "同意",
+    "reject": "拒絕",
+    "approved": "已同意",
+    "rejected": "已拒絕",
+    "answered": "已回答",
+    "answer": {
+      "other": "其他",
+      "addition": "補充",
+      "note": "備註",
+      "title": "你嘅答案"
+    }
+  },
+  "richBlocks": {
+    "stepLabel": "第 {{number}} 步",
+    "openOnTradingView": "喺 TradingView 開啟",
+    "chartBy": "圖表：TradingView",
+    "chartUnavailable": "載入唔到圖表。",
+    "entityLoading": "載入緊…",
+    "entityNothing": "維基百科冇相關條目。",
+    "entityFailed": "連接唔到維基百科。",
+    "readMore": "喺維基百科閱讀更多"
+  },
+  "workspaceFile": {
+    "created": "已建立",
+    "edited": "已編輯",
+    "meta": "{{change}} · {{size}}",
+    "open": "打開",
+    "quickLook": "快速查看",
+    "revealInFinder": "在 Finder 中顯示",
+    "showInExplorer": "在檔案總管中顯示",
+    "showInFolder": "在資料夾中顯示",
+    "missing": "已不存在",
+    "outside": "不在工作區內",
+    "untitled": "檔案",
+    "linkTitle": "按一下打開 · 按右鍵查看更多",
+    "previewMeta": "{{size}} · 唯讀",
+    "readOnly": "唯讀",
+    "copy": "拷貝",
+    "copied": "已拷貝",
+    "tooLarge": "這個檔案太大，無法預覽。請改用對應的 App 打開。",
+    "binary": "這個檔案不是文字，無法在這裏預覽。請改用對應的 App 打開。",
+    "readFailed": "無法讀取這個檔案。",
+    "missingDescription": "它可能已被移動或刪除。",
+    "outsideDescription": "這裏只能打開聊天工作區中的檔案。",
+    "unsafeTitle": "已改為在資料夾中顯示",
+    "unsafeDescription": "打開這個檔案會執行它，因此沒有打開。",
+    "openFailed": "無法打開檔案",
+    "revealFailed": "無法顯示檔案"
   }
 }

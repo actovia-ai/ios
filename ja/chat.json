@@ -15,6 +15,7 @@
   },
   "composer": {
     "placeholder": "何でも聞いてください",
+    "listening": "聞いています…",
     "pleaseWaitTitle": "少々お待ちください",
     "pleaseWaitDescription": "モデルが応答を生成しています。",
     "stop": "停止",
@@ -36,7 +37,14 @@
     "greetingTitle": "こんにちは!",
     "greetingSubtitle": "今日はどのようなご用件ですか?",
     "attachmentAlt": "添付ファイル",
-    "scrollToBottom": "最下部へスクロール"
+    "scrollToBottom": "最下部へスクロール",
+    "moreImages": "さらに{{count}}件を表示",
+    "showMore": "もっと見る"
+  },
+  "history": {
+    "olderFailed": "以前のメッセージを読み込めませんでした",
+    "loadingOlder": "以前のメッセージを読み込んでいます",
+    "loading": "会話を読み込んでいます"
   },
   "toolPreview": {
     "mapItineraryDayCount_other": "{{count}}日間",
@@ -99,7 +107,11 @@
     "exitFullscreen": "全画面表示を終了",
     "enterFullscreen": "全画面表示にする",
     "exitFullscreenEsc": "全画面表示を終了 (Esc)",
-    "fullscreen": "全画面表示"
+    "fullscreen": "全画面表示",
+    "draft": {
+      "untitled": "無題のアーティファクト",
+      "writing_other": "作成中 · {{count}} 行"
+    }
   },
   "computerUseCard": {
     "title": "Computer Use",
@@ -189,10 +201,37 @@
     "details": "詳細",
     "less": "閉じる"
   },
-  "sourcesPanel": {
-    "title_other": "{{count}}件のソース",
-    "citations": "引用({{count}}件)",
-    "more": "もっと見る"
+  "header": {
+    "back": "戻る",
+    "forward": "進む",
+    "streaming": "返信中…",
+    "noModel": "モデルを選択",
+    "modelMenu": "モデル",
+    "noModels": "まだモデルを取得していません",
+    "openProviders": "AIプロバイダーを開く",
+    "menu": "チャットのオプション",
+    "exportMarkdown": "Markdownとして書き出す…",
+    "exportPdf": "PDFとして書き出す…",
+    "exportFailed": "チャットを書き出せませんでした",
+    "panel": "ファイル・ツール・ソース"
+  },
+  "export": {
+    "you": "あなた",
+    "assistant": "Exodus",
+    "pictures_other": "添付画像 {{count}} 枚",
+    "tool": "ツール: {{name}}"
+  },
+  "panel": {
+    "files": "ファイル",
+    "tools": "ツール",
+    "sources": "ソース",
+    "empty": "このチャットのファイル・ツール・ソースがここに表示されます。",
+    "yours": "あなたのもの",
+    "madeHere": "ここで作成",
+    "picture": "画像 {{index}}",
+    "generatedPicture": "生成画像 {{index}}",
+    "calls_other": "{{count}} 回",
+    "untitledQuestion": "（テキストなし）"
   },
   "sidebar": {
     "newChat": "新しいチャット",
@@ -204,16 +243,9 @@
       "favoritesGroup": "お気に入り",
       "chats": "チャット",
       "more": "もっと見る",
-      "rename": "名前を変更"
-    },
-    "projects": {
-      "title": "プロジェクト",
-      "newProject": "新しいプロジェクト",
-      "editProject": "プロジェクトを編集",
-      "createTitle": "プロジェクトを作成",
-      "namePlaceholder": "プロジェクト名",
-      "deleteTitle": "プロジェクトを削除しますか?",
-      "deleteDescription": "「{{name}}」とそのすべてのチャットが完全に削除されます。この操作は取り消せません。"
+      "rename": "名前を変更",
+      "copyId": "会話 ID をコピー",
+      "idCopied": "会話 ID をコピーしました"
     },
     "renameDialog": {
       "title": "チャット名を変更",
@@ -224,41 +256,12 @@
       "description": "<strong>{{title}}</strong>を削除します。"
     },
     "search": {
+      "title": "チャットを検索",
+      "description": "タイトルや会話の内容からチャットを探します。",
       "placeholder": "チャットを検索…",
-      "ariaLabel": "チャットメッセージを検索",
-      "noContents": "該当する内容がありません"
-    }
-  },
-  "projectDetail": {
-    "namePlaceholder": "プロジェクト名",
-    "descriptionPlaceholder": "説明を追加…",
-    "saveChanges": "変更を保存",
-    "tabs": {
-      "chats": "チャット({{count}}件)",
-      "instructions": "指示",
-      "knowledgeComingSoon": "ナレッジ(フェーズ2)"
-    },
-    "newChatButton": "プロジェクトで新しいチャット",
-    "emptyChats": "このプロジェクトにはまだチャットがありません。新しいチャットを始めましょう。",
-    "customInstructionsLabel": "カスタム指示",
-    "instructionsPlaceholder": "このプロジェクトでAIにどう振る舞ってほしいかを記入してください…",
-    "useStructuredLabel": "構造化された指示を使用",
-    "structuredFields": {
-      "role": "役割",
-      "tone": "トーン",
-      "responseFormat": "応答形式",
-      "constraints": "制約"
-    },
-    "structuredPlaceholders": {
-      "role": "例:シニアエンジニア、ライティング講師",
-      "tone": "例:フォーマル、カジュアル、テクニカル",
-      "responseFormat": "例:箇条書き、詳細な段落",
-      "constraints": "例:応答は200語以内に収める"
-    },
-    "toast": {
-      "createdTitle": "プロジェクトを作成しました",
-      "updatedTitle": "プロジェクトを更新しました",
-      "deletedTitle": "プロジェクトを削除しました"
+      "ariaLabel": "チャットを検索",
+      "recent": "最近",
+      "noResults": "「{{query}}」に一致するチャットはありません"
     }
   },
   "run": {
@@ -279,7 +282,9 @@
   },
   "usedMemories": {
     "label_other": "{{count}} 件のメモリーを使用 · {{keys}}",
-    "wrong": "これは間違っています",
+    "intro": "この回答はこれらの記憶をもとにしています。",
+    "wrong": "違う？",
+    "fixHint": "記憶が違っていたら、「違う？」をクリックしてチャットで修正してください。Exodus が記憶を更新します。",
     "openSettings": "設定で開く",
     "deleted": "削除済み",
     "prefill": "「{{key}}」についてのメモリーは間違っています: "
@@ -312,5 +317,143 @@
     "expired": "待機は終了しています",
     "decideFailed": "回答を送信できませんでした",
     "truncatedNote_other": "さらに{{count}}文字が表示されていません"
+  },
+  "compare": {
+    "useThis": "これを使う",
+    "useInstead": "代わりにこれを使う",
+    "otherVersion_other": "他のバージョン {{count}} 件",
+    "answerTab": "回答 {{n}}",
+    "tabsLabel": "回答",
+    "otherVersionTitle": "もう一方のバージョン",
+    "otherVersionDescription": "採用しなかった回答です。",
+    "locked": "会話が先に進んだため、この回答はもう使用できません。",
+    "chooseFailed": "回答を切り替えられませんでした"
+  },
+  "citation": {
+    "previous": "前のソース",
+    "next": "次のソース",
+    "position": "{{current}}/{{total}}"
+  },
+  "ask": {
+    "button": "Exodus に質問",
+    "remove": "引用を削除"
+  },
+  "health": {
+    "attached": "この質問と一緒に送ったヘルスケアデータ：{{values}}",
+    "fallback": "ヘルスケア",
+    "asOf": "{{date}} {{time}}",
+    "lastDays_other": "{{category}}、直近 {{count}} 日間",
+    "noData": "データなし",
+    "withUsual": "{{value}} · 普段 {{usual}}",
+    "ofGoal": "{{value}} / {{goal}}",
+    "bpm": "{{value}} bpm",
+    "ms": "{{value}} ミリ秒",
+    "kg": "{{value}} kg",
+    "kcal": "{{value}} kcal",
+    "perMin": "{{value}} 回/分",
+    "cups_other": "{{count}} 杯",
+    "hours_other": "{{count}} 時間",
+    "category": {
+      "sleep": "睡眠",
+      "activity": "アクティビティ",
+      "recovery": "心臓と回復",
+      "body": "体と気分"
+    },
+    "field": {
+      "asleep": "睡眠時間",
+      "inBed": "就寝",
+      "deep": "深い睡眠",
+      "core": "コア睡眠",
+      "rem": "レム睡眠",
+      "awake": "覚醒",
+      "wake": "起床",
+      "steps": "歩数",
+      "activeEnergy": "アクティブエネルギー",
+      "exercise": "エクササイズ",
+      "stand": "スタンド",
+      "workouts": "ワークアウト",
+      "level": "回復",
+      "hrv": "心拍変動",
+      "restingHr": "安静時心拍数",
+      "respRate": "呼吸数",
+      "water": "水分",
+      "weight": "体重",
+      "weightTrend": "30日間の変化",
+      "mood": "気分"
+    },
+    "level": {
+      "good": "良好",
+      "fair": "ふつう",
+      "low": "低め"
+    },
+    "mood": {
+      "veryUnpleasant": "とても不快",
+      "unpleasant": "不快",
+      "slightlyUnpleasant": "やや不快",
+      "neutral": "ふつう",
+      "slightlyPleasant": "やや快適",
+      "pleasant": "快適",
+      "veryPleasant": "とても快適"
+    }
+  },
+  "interactive": {
+    "other": "その他…",
+    "otherPlaceholder": "回答を入力",
+    "noteDefault": "ほかに伝えたいことは？",
+    "notePlaceholder": "任意",
+    "submit": "送信",
+    "previous": "前へ",
+    "next": "次へ",
+    "skip": "スキップ",
+    "progress": "質問 {{current}}/{{total}}",
+    "chooseOrSkip": "回答を選ぶか、この質問をスキップしてください。",
+    "approve": "承認",
+    "reject": "却下",
+    "approved": "承認済み",
+    "rejected": "却下済み",
+    "answered": "回答済み",
+    "answer": {
+      "other": "その他",
+      "addition": "補足",
+      "note": "メモ",
+      "title": "あなたの回答"
+    }
+  },
+  "richBlocks": {
+    "stepLabel": "ステップ {{number}}",
+    "openOnTradingView": "TradingView で開く",
+    "chartBy": "チャート: TradingView",
+    "chartUnavailable": "チャートを読み込めませんでした。",
+    "entityLoading": "読み込み中…",
+    "entityNothing": "Wikipedia に該当する記事はありません。",
+    "entityFailed": "Wikipedia に接続できませんでした。",
+    "readMore": "Wikipedia で続きを読む"
+  },
+  "workspaceFile": {
+    "created": "作成",
+    "edited": "編集",
+    "meta": "{{change}} · {{size}}",
+    "open": "開く",
+    "quickLook": "クイックルック",
+    "revealInFinder": "Finderで表示",
+    "showInExplorer": "エクスプローラーで表示",
+    "showInFolder": "フォルダで表示",
+    "missing": "見つかりません",
+    "outside": "ワークスペースの外",
+    "untitled": "ファイル",
+    "linkTitle": "クリックで開く · 右クリックでその他の操作",
+    "previewMeta": "{{size}} · 読み取り専用",
+    "readOnly": "読み取り専用",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "tooLarge": "このファイルは大きすぎてプレビューできません。対応するアプリで開いてください。",
+    "binary": "このファイルはテキストではないため、ここではプレビューできません。対応するアプリで開いてください。",
+    "readFailed": "このファイルを読み込めませんでした。",
+    "missingDescription": "移動または削除された可能性があります。",
+    "outsideDescription": "ここから開けるのはチャットのワークスペース内のファイルだけです。",
+    "unsafeTitle": "代わりにフォルダで表示しました",
+    "unsafeDescription": "このファイルは開くと実行されるため、開きませんでした。",
+    "openFailed": "ファイルを開けませんでした",
+    "revealFailed": "ファイルを表示できませんでした"
   }
 }

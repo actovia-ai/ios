@@ -29,7 +29,6 @@
     "AGENT_NOT_FOUND": "エージェントまたは部門が見つかりません。",
     "TASK_NOT_FOUND": "タスクが見つかりません。",
     "MEMORY_NOT_FOUND": "メモリー {{id}} が見つかりません。",
-    "PROJECT_NOT_FOUND": "プロジェクトが見つかりません。",
     "SKILL_NOT_FOUND": "スキルが見つかりません。",
     "AUDIO_NOT_FOUND": "音声ファイルが見つかりません。",
     "VALIDATION_FAILED": "入力の検証に失敗しました。",
@@ -66,7 +65,9 @@
     "INTERNAL_ERROR": "内部サーバーエラーが発生しました。",
     "UNKNOWN_ERROR": "不明なエラーが発生しました。",
     "APP_LOCKED": "アプリケーションはロックされています。",
-    "APPROVAL_NOT_FOUND": "このリクエストはもう回答を待っていません。"
+    "APPROVAL_NOT_FOUND": "このリクエストはもう回答を待っていません。",
+    "RUN_NOT_FOUND": "その回答はこのチャットにもうありません。",
+    "ATTEMPT_LOCKED": "会話が先に進んだため、この回答はもう入れ替えられません。"
   },
   "routeBoundary": {
     "title": "問題が発生しました",
