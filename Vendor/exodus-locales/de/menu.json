@@ -17,5 +17,17 @@
   "notification": {
     "philharmonicGroupError": "In der Gruppe „{{title}}“ ist ein Fehler aufgetreten",
     "philharmonicGroupFinished": "Gruppe „{{title}}“ abgeschlossen"
+  },
+  "attachment": {
+    "saveImageAs": "Bild speichern unter …",
+    "copyImage": "Bild kopieren",
+    "saveAs": "Speichern unter …"
+  },
+  "workspaceFile": {
+    "open": "Öffnen",
+    "revealInFinder": "Im Finder zeigen",
+    "showInExplorer": "Im Explorer anzeigen",
+    "showInFolder": "Im Ordner anzeigen",
+    "quickLook": "Übersicht"
   }
 }

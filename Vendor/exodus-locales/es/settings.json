@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "Mercado de habilidades"
     },
-    "fullTextSearch": {
-      "title": "Búsqueda de texto completo"
-    },
     "knowledgeBase": {
       "title": "Base de conocimientos"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "Abrir configuración"
       },
+      "go-back": {
+        "label": "Atrás"
+      },
+      "go-forward": {
+        "label": "Adelante"
+      },
       "lock-now": {
         "label": "Bloquear ahora"
       },
@@ -145,7 +148,7 @@
         "label": "Cerrar barra de búsqueda"
       },
       "close-tab": {
-        "label": "Cerrar pestaña actual"
+        "label": "Cerrar chat"
       },
       "focus-chat-input": {
         "label": "Enfocar el campo de mensaje"
@@ -329,7 +332,11 @@
       "refresh": "Actualizar lista de modelos",
       "fetchErrorTitle": "No se pudo obtener la lista de modelos",
       "fetchErrorFallback": "Error al obtener la lista de modelos",
-      "reenterKey": "Vuelva a introducir la clave de API para usarla con la nueva URL base."
+      "reenterKey": "Vuelva a introducir la clave de API para usarla con la nueva URL base.",
+      "retiring": "se retira",
+      "retired": "retirado",
+      "retiringOn": "Se retira el {{date}}",
+      "retiredOn": "Retirado el {{date}}"
     }
   },
   "tools": {
@@ -593,54 +600,21 @@
       "errorFallback": "No se pudieron eliminar los datos."
     }
   },
-  "fullTextSearch": {
-    "alert": "La búsqueda integrada de Exodus funciona en todos los idiomas, incluidos chino, japonés y coreano — <strong>coincide con el texto exacto, no con resultados \"inteligentes\"</strong>: sin clasificación por relevancia, sin tolerancia a errores tipográficos, sin lematización (buscar \"correr\" no encontrará \"corriendo\"). Configure un clúster de Elasticsearch autoalojado o en la nube más abajo para obtener una mejor clasificación por relevancia y una segmentación real de palabras. Esto es opcional; deje la URL vacía para seguir usando la búsqueda integrada. Exodus solo lee y escribe documentos en el índice de su clúster; para una segmentación real a nivel de palabra en chino (en lugar de a nivel de carácter), configure un analizador sensible al idioma (p. ej., <4>ik</4>, <6>smartcn</6> o el <9>cjk</9> integrado) en su clúster antes de apuntar Exodus hacia él.",
-    "url": {
-      "label": "URL de Elasticsearch",
-      "description": "Déjelo vacío para usar la búsqueda de texto completo integrada de PGlite."
-    },
-    "username": {
-      "label": "Nombre de usuario"
-    },
-    "password": {
-      "label": "Contraseña"
-    },
-    "optionalSecurityHint": "Opcional: solo es necesario si su clúster tiene la seguridad habilitada.",
-    "indexName": {
-      "label": "Nombre del índice",
-      "description": "El valor predeterminado es \"exodus-messages\" si se deja vacío."
-    },
-    "connection": {
-      "label": "Conexión",
-      "description": "Pruebe la conectividad o reindexe todo el historial de chats existente en Elasticsearch.",
-      "testButton": "Probar conexión",
-      "testingLabel": "Probando...",
-      "reindexButton": "Reindexar historial",
-      "reindexingLabel": "Reindexando..."
-    },
-    "toast": {
-      "connected": "Conectado a Elasticsearch",
-      "connectFailed": "No se pudo conectar a Elasticsearch",
-      "reindexed_one": "Se reindexó {{count}} mensaje",
-      "reindexed_other": "Se reindexaron {{count}} mensajes",
-      "reindexFailed": "No se pudieron reindexar los mensajes"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "Todos",
       "allScopes": "Todos",
       "datePlaceholder": "Fecha",
-      "levelPlaceholder": "Nivel",
       "scopePlaceholder": "Ámbito",
-      "keywordPlaceholder": "Buscar palabra clave...",
-      "traceChip": "traza {{id}}"
+      "traceChip": "traza {{id}}",
+      "searchPlaceholder": "Buscar  ·  scope:chat  trace:a1b2  -excluir",
+      "clear": "Quitar filtros"
     },
     "actions": {
       "openDirectory": "Abrir directorio",
       "export": "Exportar",
       "clearAll": "Borrar todo",
-      "clearAllConfirm": "¿Está seguro de que desea eliminar todos los archivos de registro?"
+      "clearAllConfirm": "¿Está seguro de que desea eliminar todos los archivos de registro?",
+      "more": "Más acciones"
     },
     "toast": {
       "exported": "Registros exportados",
@@ -653,19 +627,48 @@
       "level": "Nivel",
       "scope": "Ámbito",
       "message": "Mensaje",
-      "trace": "Traza",
-      "empty": "No se encontraron entradas de registro."
+      "empty": "No se encontraron entradas de registro.",
+      "noMatch": "Ninguna línea coincide con estos filtros."
     },
     "pagination": {
-      "total_one": "{{count}} entrada en total",
-      "total_other": "{{count}} entradas en total",
       "pageOf": "Página {{page}} de {{totalPages}}",
       "prev": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "range": "{{from}}–{{to}} de {{total}}"
     },
     "details": {
       "stack": "Traza de pila",
-      "componentStack": "Pila de componentes"
+      "componentStack": "Pila de componentes",
+      "attributes": "Atributos"
+    },
+    "live": {
+      "label": "En vivo",
+      "onlyToday": "En vivo sigue el registro de hoy"
+    },
+    "levels": {
+      "error": "Error",
+      "warn": "Aviso",
+      "info": "Info",
+      "debug": "Depuración"
+    },
+    "chart": {
+      "lines_one": "línea",
+      "lines_other": "líneas",
+      "newestFirst": "más recientes primero",
+      "label": "Líneas a lo largo del tiempo",
+      "noLines": "Sin líneas"
+    },
+    "detail": {
+      "previous": "Línea anterior",
+      "next": "Línea siguiente",
+      "close": "Cerrar",
+      "linesAround": "Líneas alrededor",
+      "copyForAi": "Copiar para IA",
+      "sameTrace": "Misma traza",
+      "message": "Mensaje",
+      "fields": "Campos",
+      "resource": "Recurso",
+      "copied": "Copiado para IA"
     }
   },
   "mcpServers": {
@@ -951,6 +954,7 @@
       "rebuild": "Regenerar",
       "building": "Creando…",
       "builtAt": "Creada {{when}}",
+      "stale": "Creada antes de las tablas actuales: vuelve a crearla o algunas consultas predefinidas fallarán.",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (copiados de los archivos de registro)",
       "logsMissing": "logs (no se encontraron archivos de registro)",
@@ -1060,10 +1064,8 @@
       "googleApiKey": "Clave de API de Google Maps",
       "braveApiKey": "Clave de API de Brave Search",
       "knowledgeBaseApiKey": "Clave de API de LightRAG",
-      "elasticsearchPassword": "Contraseña de Elasticsearch",
       "s3AccessKeyId": "ID de clave de acceso de Amazon S3",
       "s3SecretAccessKey": "Clave de acceso secreta de Amazon S3",
-      "legacyMcpServers": "Configuración MCP heredada",
       "mcp": "Servidor MCP «{{server}}»: {{field}}"
     }
   }

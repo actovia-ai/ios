@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "技能市集"
     },
-    "fullTextSearch": {
-      "title": "全文搜尋"
-    },
     "knowledgeBase": {
       "title": "知識庫"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "開啟設定"
       },
+      "go-back": {
+        "label": "上一頁"
+      },
+      "go-forward": {
+        "label": "下一頁"
+      },
       "lock-now": {
         "label": "立即鎖定"
       },
@@ -145,7 +148,7 @@
         "label": "關閉尋找列"
       },
       "close-tab": {
-        "label": "關閉目前分頁"
+        "label": "關閉聊天"
       },
       "focus-chat-input": {
         "label": "聚焦聊天輸入框"
@@ -329,7 +332,11 @@
       "refresh": "重新整理模型清單",
       "fetchErrorTitle": "無法取得模型清單",
       "fetchErrorFallback": "取得模型清單失敗",
-      "reenterKey": "請重新輸入 API 金鑰，才能搭配新的基礎 URL 使用。"
+      "reenterKey": "請重新輸入 API 金鑰，才能搭配新的基礎 URL 使用。",
+      "retiring": "即將停用",
+      "retired": "已停用",
+      "retiringOn": "將於 {{date}} 停用",
+      "retiredOn": "已於 {{date}} 停用"
     }
   },
   "tools": {
@@ -592,53 +599,21 @@
       "errorFallback": "資料刪除失敗。"
     }
   },
-  "fullTextSearch": {
-    "alert": "Exodus 內建的搜尋功能可跨所有語言運作，包括中文、日文及韓文——<strong>但僅比對完全相符的文字，並非「智慧」搜尋結果</strong>：沒有相關性排序、不容許錯字、也不做詞形還原（搜尋「run」不會找到「running」）。若需要更好的相關性排序與真正的斷詞功能，請在下方設定自架或雲端 Elasticsearch 叢集。此設定為選填；將 URL 留空即可繼續使用內建搜尋。Exodus 只會讀寫你叢集索引中的文件——若要取得真正以詞為單位的中文斷詞（而非以字為單位），請先在你的叢集上設定具語言感知能力的分析器（例如 <4>ik</4>、<6>smartcn</6>，或內建的 <9>cjk</9>），再讓 Exodus 連接至該叢集。",
-    "url": {
-      "label": "Elasticsearch URL",
-      "description": "留空則使用內建的 PGlite 全文搜尋。"
-    },
-    "username": {
-      "label": "使用者名稱"
-    },
-    "password": {
-      "label": "密碼"
-    },
-    "optionalSecurityHint": "選填——僅在你的叢集已啟用安全性驗證時才需要。",
-    "indexName": {
-      "label": "索引名稱",
-      "description": "若留空，預設為「exodus-messages」。"
-    },
-    "connection": {
-      "label": "連線",
-      "description": "測試連線，或將所有現有聊天紀錄重新索引至 Elasticsearch。",
-      "testButton": "測試連線",
-      "testingLabel": "測試中...",
-      "reindexButton": "重新索引紀錄",
-      "reindexingLabel": "重新索引中..."
-    },
-    "toast": {
-      "connected": "已連接至 Elasticsearch",
-      "connectFailed": "連接 Elasticsearch 失敗",
-      "reindexed_other": "已重新索引 {{count}} 則訊息",
-      "reindexFailed": "訊息重新索引失敗"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "全部",
       "allScopes": "全部",
       "datePlaceholder": "日期",
-      "levelPlaceholder": "等級",
       "scopePlaceholder": "範圍",
-      "keywordPlaceholder": "搜尋關鍵字...",
-      "traceChip": "追蹤 {{id}}"
+      "traceChip": "追蹤 {{id}}",
+      "searchPlaceholder": "搜尋  ·  scope:chat  trace:a1b2  -排除",
+      "clear": "清除篩選"
     },
     "actions": {
       "openDirectory": "開啟目錄",
       "export": "匯出",
       "clearAll": "全部清除",
-      "clearAllConfirm": "確定要刪除所有日誌檔案嗎？"
+      "clearAllConfirm": "確定要刪除所有日誌檔案嗎？",
+      "more": "更多操作"
     },
     "toast": {
       "exported": "日誌已匯出",
@@ -651,18 +626,47 @@
       "level": "等級",
       "scope": "範圍",
       "message": "訊息",
-      "trace": "追蹤",
-      "empty": "找不到日誌項目。"
+      "empty": "找不到日誌項目。",
+      "noMatch": "沒有符合這些篩選的記錄。"
     },
     "pagination": {
-      "total_other": "共 {{count}} 筆項目",
       "pageOf": "第 {{page}} 頁，共 {{totalPages}} 頁",
       "prev": "上一頁",
-      "next": "下一頁"
+      "next": "下一頁",
+      "range": "第 {{from}}–{{to}} 行，共 {{total}} 行"
     },
     "details": {
       "stack": "堆疊追蹤",
-      "componentStack": "元件堆疊"
+      "componentStack": "元件堆疊",
+      "attributes": "屬性"
+    },
+    "live": {
+      "label": "即時",
+      "onlyToday": "即時只跟隨今天的日誌"
+    },
+    "levels": {
+      "error": "錯誤",
+      "warn": "警告",
+      "info": "資訊",
+      "debug": "除錯"
+    },
+    "chart": {
+      "lines_other": "行",
+      "newestFirst": "最新在前",
+      "label": "依時間的行數",
+      "noLines": "沒有記錄"
+    },
+    "detail": {
+      "previous": "上一行",
+      "next": "下一行",
+      "close": "關閉",
+      "linesAround": "前後記錄",
+      "copyForAi": "複製給 AI",
+      "sameTrace": "同一追蹤",
+      "message": "訊息",
+      "fields": "欄位",
+      "resource": "資源",
+      "copied": "已複製給 AI"
     }
   },
   "mcpServers": {
@@ -945,6 +949,7 @@
       "rebuild": "重新建立",
       "building": "建立中…",
       "builtAt": "建立於{{when}}",
+      "stale": "這個快照建立於目前的資料表之前——請重建，否則部分預設查詢會失敗。",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (從記錄檔複製)",
       "logsMissing": "logs (找不到記錄檔)",
@@ -1054,10 +1059,8 @@
       "googleApiKey": "Google Maps API 金鑰",
       "braveApiKey": "Brave Search API 金鑰",
       "knowledgeBaseApiKey": "LightRAG API 金鑰",
-      "elasticsearchPassword": "Elasticsearch 密碼",
       "s3AccessKeyId": "Amazon S3 存取金鑰 ID",
       "s3SecretAccessKey": "Amazon S3 秘密存取金鑰",
-      "legacyMcpServers": "舊版 MCP 設定",
       "mcp": "MCP 伺服器「{{server}}」：{{field}}"
     }
   }

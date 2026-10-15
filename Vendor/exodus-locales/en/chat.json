@@ -15,6 +15,7 @@
   },
   "composer": {
     "placeholder": "Ask anything",
+    "listening": "Listening…",
     "pleaseWaitTitle": "Please wait",
     "pleaseWaitDescription": "The model is still generating a response.",
     "stop": "Stop",
@@ -36,7 +37,9 @@
     "greetingTitle": "Hello there!",
     "greetingSubtitle": "How can I assist you today?",
     "attachmentAlt": "attachment",
-    "scrollToBottom": "Scroll to bottom"
+    "scrollToBottom": "Scroll to bottom",
+    "moreImages": "Show {{count}} more",
+    "showMore": "Show more"
   },
   "history": {
     "olderFailed": "Couldn't load earlier messages",
@@ -110,7 +113,12 @@
     "exitFullscreen": "Exit fullscreen",
     "enterFullscreen": "Enter fullscreen",
     "exitFullscreenEsc": "Exit fullscreen (Esc)",
-    "fullscreen": "Fullscreen"
+    "fullscreen": "Fullscreen",
+    "draft": {
+      "untitled": "Untitled artifact",
+      "writing_one": "Writing · {{count}} line",
+      "writing_other": "Writing · {{count}} lines"
+    }
   },
   "computerUseCard": {
     "title": "Computer Use",
@@ -201,11 +209,39 @@
     "details": "Details",
     "less": "Less"
   },
-  "sourcesPanel": {
-    "title_one": "{{count}} Source",
-    "title_other": "{{count}} Sources",
-    "citations": "Citations ({{count}})",
-    "more": "More"
+  "header": {
+    "back": "Back",
+    "forward": "Forward",
+    "streaming": "Replying…",
+    "noModel": "Choose a model",
+    "modelMenu": "Model",
+    "noModels": "No models fetched yet",
+    "openProviders": "Open AI Providers",
+    "menu": "Chat options",
+    "exportMarkdown": "Export as Markdown…",
+    "exportPdf": "Export as PDF…",
+    "exportFailed": "Couldn't export the chat",
+    "panel": "Files, tools and sources"
+  },
+  "export": {
+    "you": "You",
+    "assistant": "Exodus",
+    "pictures_one": "{{count}} picture attached",
+    "pictures_other": "{{count}} pictures attached",
+    "tool": "Tool: {{name}}"
+  },
+  "panel": {
+    "files": "Files",
+    "tools": "Tools",
+    "sources": "Sources",
+    "empty": "Files, tools and sources from this chat will show up here.",
+    "yours": "Yours",
+    "madeHere": "Made here",
+    "picture": "Picture {{index}}",
+    "generatedPicture": "Generated picture {{index}}",
+    "calls_one": "{{count}} call",
+    "calls_other": "{{count}} calls",
+    "untitledQuestion": "(no text)"
   },
   "sidebar": {
     "newChat": "New chat",
@@ -230,9 +266,12 @@
       "description": "This will delete <strong>{{title}}</strong>."
     },
     "search": {
-      "placeholder": "Search Chat...",
-      "ariaLabel": "Search chat messages",
-      "noContents": "No contents"
+      "title": "Search chats",
+      "description": "Find a chat by its title or by what was said in it.",
+      "placeholder": "Search chats…",
+      "ariaLabel": "Search chats",
+      "recent": "Recent",
+      "noResults": "No chats match “{{query}}”"
     }
   },
   "run": {
@@ -311,5 +350,126 @@
   "ask": {
     "button": "Ask Exodus",
     "remove": "Remove quote"
+  },
+  "health": {
+    "attached": "Health data sent with this question: {{values}}",
+    "fallback": "Health",
+    "asOf": "{{date}}, {{time}}",
+    "lastDays_one": "{{category}}, last {{count}} day",
+    "lastDays_other": "{{category}}, last {{count}} days",
+    "noData": "No data",
+    "withUsual": "{{value}} · usual {{usual}}",
+    "ofGoal": "{{value}} of {{goal}}",
+    "bpm": "{{value}} bpm",
+    "ms": "{{value}} ms",
+    "kg": "{{value}} kg",
+    "kcal": "{{value}} kcal",
+    "perMin": "{{value}}/min",
+    "cups_one": "{{count}} cup",
+    "cups_other": "{{count}} cups",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "category": {
+      "sleep": "Sleep",
+      "activity": "Activity",
+      "recovery": "Heart & recovery",
+      "body": "Body & mood"
+    },
+    "field": {
+      "asleep": "Asleep",
+      "inBed": "In bed",
+      "deep": "Deep",
+      "core": "Core",
+      "rem": "REM",
+      "awake": "Awake",
+      "wake": "Woke up",
+      "steps": "Steps",
+      "activeEnergy": "Active energy",
+      "exercise": "Exercise",
+      "stand": "Stand",
+      "workouts": "Workouts",
+      "level": "Recovery",
+      "hrv": "HRV",
+      "restingHr": "Resting heart rate",
+      "respRate": "Respiratory rate",
+      "water": "Water",
+      "weight": "Weight",
+      "weightTrend": "30-day change",
+      "mood": "Mood"
+    },
+    "level": {
+      "good": "Good",
+      "fair": "Fair",
+      "low": "Low"
+    },
+    "mood": {
+      "veryUnpleasant": "Very unpleasant",
+      "unpleasant": "Unpleasant",
+      "slightlyUnpleasant": "Slightly unpleasant",
+      "neutral": "Neutral",
+      "slightlyPleasant": "Slightly pleasant",
+      "pleasant": "Pleasant",
+      "veryPleasant": "Very pleasant"
+    }
+  },
+  "interactive": {
+    "other": "Other…",
+    "otherPlaceholder": "Your answer",
+    "noteDefault": "Anything else?",
+    "notePlaceholder": "Optional",
+    "submit": "Submit",
+    "previous": "Previous",
+    "next": "Next",
+    "skip": "Skip",
+    "progress": "Question {{current}} of {{total}}",
+    "chooseOrSkip": "Choose an answer, or skip this question.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "answered": "Answered",
+    "answer": {
+      "other": "Other",
+      "addition": "Also",
+      "note": "Note",
+      "title": "Your answer"
+    }
+  },
+  "richBlocks": {
+    "stepLabel": "Step {{number}}",
+    "openOnTradingView": "Open on TradingView",
+    "chartBy": "Chart by TradingView",
+    "chartUnavailable": "The chart could not be loaded.",
+    "entityLoading": "Loading…",
+    "entityNothing": "Nothing found on Wikipedia.",
+    "entityFailed": "Could not reach Wikipedia.",
+    "readMore": "Read more on Wikipedia"
+  },
+  "workspaceFile": {
+    "created": "Created",
+    "edited": "Edited",
+    "meta": "{{change}} · {{size}}",
+    "open": "Open",
+    "quickLook": "Quick look",
+    "revealInFinder": "Reveal in Finder",
+    "showInExplorer": "Show in Explorer",
+    "showInFolder": "Show in folder",
+    "missing": "No longer there",
+    "outside": "Outside the workspace",
+    "untitled": "File",
+    "linkTitle": "Click to open · right-click for more",
+    "previewMeta": "{{size}} · Read-only",
+    "readOnly": "Read-only",
+    "copy": "Copy",
+    "copied": "Copied",
+    "tooLarge": "This file is too large to preview. Open it in its app instead.",
+    "binary": "This file isn't text, so it can't be previewed here. Open it in its app instead.",
+    "readFailed": "Couldn't read this file.",
+    "missingDescription": "It may have been moved or deleted.",
+    "outsideDescription": "Only files in a chat's workspace can be opened from here.",
+    "unsafeTitle": "Shown in its folder instead",
+    "unsafeDescription": "Opening this file would run it, so it wasn't opened.",
+    "openFailed": "Couldn't open the file",
+    "revealFailed": "Couldn't show the file"
   }
 }

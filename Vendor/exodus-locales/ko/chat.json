@@ -15,6 +15,7 @@
   },
   "composer": {
     "placeholder": "무엇이든 물어보세요",
+    "listening": "듣고 있어요…",
     "pleaseWaitTitle": "잠시만 기다려 주세요",
     "pleaseWaitDescription": "모델이 아직 응답을 생성하고 있습니다.",
     "stop": "중지",
@@ -36,7 +37,9 @@
     "greetingTitle": "안녕하세요!",
     "greetingSubtitle": "무엇을 도와드릴까요?",
     "attachmentAlt": "첨부 파일",
-    "scrollToBottom": "맨 아래로 스크롤"
+    "scrollToBottom": "맨 아래로 스크롤",
+    "moreImages": "{{count}}개 더 보기",
+    "showMore": "더 보기"
   },
   "history": {
     "olderFailed": "이전 메시지를 불러오지 못했습니다",
@@ -104,7 +107,11 @@
     "exitFullscreen": "전체 화면 종료",
     "enterFullscreen": "전체 화면으로 보기",
     "exitFullscreenEsc": "전체 화면 종료 (Esc)",
-    "fullscreen": "전체 화면"
+    "fullscreen": "전체 화면",
+    "draft": {
+      "untitled": "제목 없는 아티팩트",
+      "writing_other": "작성 중 · {{count}}줄"
+    }
   },
   "computerUseCard": {
     "title": "Computer Use",
@@ -194,10 +201,37 @@
     "details": "상세",
     "less": "접기"
   },
-  "sourcesPanel": {
-    "title_other": "출처 {{count}}개",
-    "citations": "인용 ({{count}})",
-    "more": "더 보기"
+  "header": {
+    "back": "뒤로",
+    "forward": "앞으로",
+    "streaming": "답변 중…",
+    "noModel": "모델 선택",
+    "modelMenu": "모델",
+    "noModels": "아직 가져온 모델이 없습니다",
+    "openProviders": "AI 제공업체 열기",
+    "menu": "채팅 옵션",
+    "exportMarkdown": "Markdown으로 내보내기…",
+    "exportPdf": "PDF로 내보내기…",
+    "exportFailed": "채팅을 내보낼 수 없습니다",
+    "panel": "파일, 도구 및 출처"
+  },
+  "export": {
+    "you": "나",
+    "assistant": "Exodus",
+    "pictures_other": "사진 {{count}}장 첨부",
+    "tool": "도구: {{name}}"
+  },
+  "panel": {
+    "files": "파일",
+    "tools": "도구",
+    "sources": "출처",
+    "empty": "이 채팅의 파일, 도구, 출처가 여기에 표시됩니다.",
+    "yours": "내 파일",
+    "madeHere": "여기서 생성됨",
+    "picture": "사진 {{index}}",
+    "generatedPicture": "생성된 사진 {{index}}",
+    "calls_other": "{{count}}회",
+    "untitledQuestion": "(텍스트 없음)"
   },
   "sidebar": {
     "newChat": "새 채팅",
@@ -222,9 +256,12 @@
       "description": "<strong>{{title}}</strong>이(가) 삭제됩니다."
     },
     "search": {
-      "placeholder": "채팅 검색...",
-      "ariaLabel": "채팅 메시지 검색",
-      "noContents": "내용 없음"
+      "title": "채팅 검색",
+      "description": "제목이나 대화 내용으로 채팅을 찾습니다.",
+      "placeholder": "채팅 검색…",
+      "ariaLabel": "채팅 검색",
+      "recent": "최근",
+      "noResults": "“{{query}}”와(과) 일치하는 채팅이 없습니다"
     }
   },
   "run": {
@@ -300,5 +337,123 @@
   "ask": {
     "button": "Exodus에 질문",
     "remove": "인용 제거"
+  },
+  "health": {
+    "attached": "이 질문과 함께 보낸 건강 데이터: {{values}}",
+    "fallback": "건강",
+    "asOf": "{{date}} {{time}}",
+    "lastDays_other": "{{category}}, 최근 {{count}}일",
+    "noData": "데이터 없음",
+    "withUsual": "{{value}} · 평소 {{usual}}",
+    "ofGoal": "{{value}} / {{goal}}",
+    "bpm": "{{value}}bpm",
+    "ms": "{{value}}ms",
+    "kg": "{{value}}kg",
+    "kcal": "{{value}}kcal",
+    "perMin": "분당 {{value}}회",
+    "cups_other": "{{count}}잔",
+    "hours_other": "{{count}}시간",
+    "category": {
+      "sleep": "수면",
+      "activity": "활동",
+      "recovery": "심장 및 회복",
+      "body": "신체 및 기분"
+    },
+    "field": {
+      "asleep": "수면 시간",
+      "inBed": "취침",
+      "deep": "깊은 수면",
+      "core": "코어 수면",
+      "rem": "REM 수면",
+      "awake": "깸",
+      "wake": "기상",
+      "steps": "걸음 수",
+      "activeEnergy": "활동 에너지",
+      "exercise": "운동",
+      "stand": "서 있기",
+      "workouts": "운동 기록",
+      "level": "회복",
+      "hrv": "심박 변이",
+      "restingHr": "안정 시 심박수",
+      "respRate": "호흡수",
+      "water": "물",
+      "weight": "체중",
+      "weightTrend": "30일 변화",
+      "mood": "기분"
+    },
+    "level": {
+      "good": "좋음",
+      "fair": "보통",
+      "low": "낮음"
+    },
+    "mood": {
+      "veryUnpleasant": "매우 불쾌함",
+      "unpleasant": "불쾌함",
+      "slightlyUnpleasant": "약간 불쾌함",
+      "neutral": "보통",
+      "slightlyPleasant": "약간 기분 좋음",
+      "pleasant": "기분 좋음",
+      "veryPleasant": "매우 기분 좋음"
+    }
+  },
+  "interactive": {
+    "other": "기타…",
+    "otherPlaceholder": "답변 입력",
+    "noteDefault": "더 하고 싶은 말이 있나요?",
+    "notePlaceholder": "선택 사항",
+    "submit": "보내기",
+    "previous": "이전",
+    "next": "다음",
+    "skip": "건너뛰기",
+    "progress": "질문 {{current}}/{{total}}",
+    "chooseOrSkip": "답을 고르거나 이 질문을 건너뛰세요.",
+    "approve": "승인",
+    "reject": "거절",
+    "approved": "승인함",
+    "rejected": "거절함",
+    "answered": "답변함",
+    "answer": {
+      "other": "기타",
+      "addition": "추가",
+      "note": "메모",
+      "title": "내 답변"
+    }
+  },
+  "richBlocks": {
+    "stepLabel": "{{number}}단계",
+    "openOnTradingView": "TradingView에서 열기",
+    "chartBy": "차트: TradingView",
+    "chartUnavailable": "차트를 불러올 수 없습니다.",
+    "entityLoading": "불러오는 중…",
+    "entityNothing": "Wikipedia에서 찾을 수 없습니다.",
+    "entityFailed": "Wikipedia에 연결할 수 없습니다.",
+    "readMore": "Wikipedia에서 더 읽기"
+  },
+  "workspaceFile": {
+    "created": "생성됨",
+    "edited": "편집됨",
+    "meta": "{{change}} · {{size}}",
+    "open": "열기",
+    "quickLook": "훑어보기",
+    "revealInFinder": "Finder에서 보기",
+    "showInExplorer": "탐색기에서 보기",
+    "showInFolder": "폴더에서 보기",
+    "missing": "더 이상 없음",
+    "outside": "작업 공간 밖",
+    "untitled": "파일",
+    "linkTitle": "클릭하여 열기 · 오른쪽 클릭으로 더 보기",
+    "previewMeta": "{{size}} · 읽기 전용",
+    "readOnly": "읽기 전용",
+    "copy": "복사",
+    "copied": "복사됨",
+    "tooLarge": "이 파일은 너무 커서 미리 볼 수 없습니다. 해당 앱에서 여세요.",
+    "binary": "이 파일은 텍스트가 아니어서 여기서 미리 볼 수 없습니다. 해당 앱에서 여세요.",
+    "readFailed": "이 파일을 읽을 수 없습니다.",
+    "missingDescription": "이동되었거나 삭제되었을 수 있습니다.",
+    "outsideDescription": "여기서는 채팅 작업 공간에 있는 파일만 열 수 있습니다.",
+    "unsafeTitle": "대신 폴더에서 표시함",
+    "unsafeDescription": "이 파일을 열면 실행되므로 열지 않았습니다.",
+    "openFailed": "파일을 열 수 없음",
+    "revealFailed": "파일을 표시할 수 없음"
   }
 }

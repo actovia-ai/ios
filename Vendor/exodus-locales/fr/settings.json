@@ -56,9 +56,6 @@
     "skillsMarket": {
       "title": "Marché de compétences"
     },
-    "fullTextSearch": {
-      "title": "Recherche en texte intégral"
-    },
     "knowledgeBase": {
       "title": "Base de connaissances"
     },
@@ -123,6 +120,12 @@
       "open-settings": {
         "label": "Ouvrir les paramètres"
       },
+      "go-back": {
+        "label": "Précédent"
+      },
+      "go-forward": {
+        "label": "Suivant"
+      },
       "lock-now": {
         "label": "Verrouiller maintenant"
       },
@@ -145,7 +148,7 @@
         "label": "Fermer la barre de recherche"
       },
       "close-tab": {
-        "label": "Fermer l'onglet actuel"
+        "label": "Fermer la discussion"
       },
       "focus-chat-input": {
         "label": "Placer le curseur dans le champ de saisie"
@@ -329,7 +332,11 @@
       "refresh": "Actualiser la liste des modèles",
       "fetchErrorTitle": "Impossible de récupérer la liste des modèles",
       "fetchErrorFallback": "Échec de la récupération de la liste des modèles",
-      "reenterKey": "Saisissez à nouveau la clé API pour l’utiliser avec la nouvelle URL de base."
+      "reenterKey": "Saisissez à nouveau la clé API pour l’utiliser avec la nouvelle URL de base.",
+      "retiring": "bientôt retiré",
+      "retired": "retiré",
+      "retiringOn": "Sera retiré le {{date}}",
+      "retiredOn": "Retiré le {{date}}"
     }
   },
   "tools": {
@@ -593,54 +600,21 @@
       "errorFallback": "Échec de la suppression des données."
     }
   },
-  "fullTextSearch": {
-    "alert": "La recherche intégrée d'Exodus fonctionne dans toutes les langues, y compris le chinois, le japonais et le coréen — <strong>elle ne renvoie que des correspondances de texte exact, pas des résultats « intelligents »</strong> : aucun classement par pertinence, aucune tolérance aux fautes de frappe, aucune racinisation (rechercher « run » ne trouvera pas « running »). Configurez ci-dessous un cluster Elasticsearch auto-hébergé ou dans le cloud pour un meilleur classement par pertinence et une véritable segmentation des mots. C'est optionnel ; laissez l'URL vide pour continuer à utiliser la recherche intégrée. Exodus ne fait que lire et écrire des documents dans l'index de votre cluster — pour une segmentation du chinois au niveau des mots (plutôt qu'au niveau des caractères), configurez un analyseur adapté à la langue (par ex. <4>ik</4>, <6>smartcn</6>, ou l'analyseur intégré <9>cjk</9>) sur votre cluster avant d'y connecter Exodus.",
-    "url": {
-      "label": "URL Elasticsearch",
-      "description": "Laissez vide pour utiliser la recherche en texte intégral PGlite intégrée."
-    },
-    "username": {
-      "label": "Nom d'utilisateur"
-    },
-    "password": {
-      "label": "Mot de passe"
-    },
-    "optionalSecurityHint": "Facultatif — requis uniquement si la sécurité est activée sur votre cluster.",
-    "indexName": {
-      "label": "Nom de l'index",
-      "description": "Par défaut « exodus-messages » si laissé vide."
-    },
-    "connection": {
-      "label": "Connexion",
-      "description": "Testez la connectivité, ou réindexez tout l'historique des conversations existant dans Elasticsearch.",
-      "testButton": "Tester la connexion",
-      "testingLabel": "Test en cours...",
-      "reindexButton": "Réindexer l'historique",
-      "reindexingLabel": "Réindexation en cours..."
-    },
-    "toast": {
-      "connected": "Connecté à Elasticsearch",
-      "connectFailed": "Échec de la connexion à Elasticsearch",
-      "reindexed_one": "{{count}} message réindexé",
-      "reindexed_other": "{{count}} messages réindexés",
-      "reindexFailed": "Échec de la réindexation des messages"
-    }
-  },
   "logger": {
     "filters": {
-      "allLevels": "Tous",
       "allScopes": "Tous",
       "datePlaceholder": "Date",
-      "levelPlaceholder": "Niveau",
       "scopePlaceholder": "Portée",
-      "keywordPlaceholder": "Rechercher un mot-clé...",
-      "traceChip": "trace {{id}}"
+      "traceChip": "trace {{id}}",
+      "searchPlaceholder": "Rechercher  ·  scope:chat  trace:a1b2  -exclure",
+      "clear": "Effacer les filtres"
     },
     "actions": {
       "openDirectory": "Ouvrir le dossier",
       "export": "Exporter",
       "clearAll": "Tout effacer",
-      "clearAllConfirm": "Êtes-vous sûr de vouloir supprimer tous les fichiers journaux ?"
+      "clearAllConfirm": "Êtes-vous sûr de vouloir supprimer tous les fichiers journaux ?",
+      "more": "Plus d'actions"
     },
     "toast": {
       "exported": "Journaux exportés",
@@ -653,19 +627,48 @@
       "level": "Niveau",
       "scope": "Portée",
       "message": "Message",
-      "trace": "Trace",
-      "empty": "Aucune entrée de journal trouvée."
+      "empty": "Aucune entrée de journal trouvée.",
+      "noMatch": "Aucune ligne ne correspond à ces filtres."
     },
     "pagination": {
-      "total_one": "{{count}} entrée au total",
-      "total_other": "{{count}} entrées au total",
       "pageOf": "Page {{page}} sur {{totalPages}}",
       "prev": "Préc.",
-      "next": "Suiv."
+      "next": "Suiv.",
+      "range": "{{from}}–{{to}} sur {{total}}"
     },
     "details": {
       "stack": "Trace de la pile",
-      "componentStack": "Pile de composants"
+      "componentStack": "Pile de composants",
+      "attributes": "Attributs"
+    },
+    "live": {
+      "label": "En direct",
+      "onlyToday": "Le direct suit le journal d'aujourd'hui"
+    },
+    "levels": {
+      "error": "Erreur",
+      "warn": "Avert.",
+      "info": "Info",
+      "debug": "Débogage"
+    },
+    "chart": {
+      "lines_one": "ligne",
+      "lines_other": "lignes",
+      "newestFirst": "plus récentes d'abord",
+      "label": "Lignes dans le temps",
+      "noLines": "Aucune ligne"
+    },
+    "detail": {
+      "previous": "Ligne précédente",
+      "next": "Ligne suivante",
+      "close": "Fermer",
+      "linesAround": "Lignes autour",
+      "copyForAi": "Copier pour l'IA",
+      "sameTrace": "Même trace",
+      "message": "Message",
+      "fields": "Champs",
+      "resource": "Ressource",
+      "copied": "Copié pour l'IA"
     }
   },
   "mcpServers": {
@@ -951,6 +954,7 @@
       "rebuild": "Recréer",
       "building": "Création…",
       "builtAt": "Créé {{when}}",
+      "stale": "Créé avant les tables actuelles — reconstruisez-le, sinon certains préréglages échoueront.",
       "engine": "DuckDB {{version}}",
       "logsIncluded": "logs (copiés depuis les fichiers journaux)",
       "logsMissing": "logs (aucun fichier journal trouvé)",
@@ -1060,10 +1064,8 @@
       "googleApiKey": "Clé API Google Maps",
       "braveApiKey": "Clé API Brave Search",
       "knowledgeBaseApiKey": "Clé API LightRAG",
-      "elasticsearchPassword": "Mot de passe Elasticsearch",
       "s3AccessKeyId": "ID de clé d’accès Amazon S3",
       "s3SecretAccessKey": "Clé d’accès secrète Amazon S3",
-      "legacyMcpServers": "Ancienne configuration MCP",
       "mcp": "Serveur MCP « {{server}} » : {{field}}"
     }
   }

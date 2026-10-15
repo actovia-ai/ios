@@ -17,5 +17,17 @@
   "notification": {
     "philharmonicGroupError": "群組「{{title}}」發生錯誤",
     "philharmonicGroupFinished": "群組「{{title}}」已完成"
+  },
+  "attachment": {
+    "saveImageAs": "將影像另存為…",
+    "copyImage": "拷貝影像",
+    "saveAs": "另存新檔…"
+  },
+  "workspaceFile": {
+    "open": "打開",
+    "revealInFinder": "在 Finder 中顯示",
+    "showInExplorer": "在檔案總管中顯示",
+    "showInFolder": "在資料夾中顯示",
+    "quickLook": "快速查看"
   }
 }
