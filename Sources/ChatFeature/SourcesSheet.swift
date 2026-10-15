@@ -106,11 +106,11 @@ struct SourcesSectionHeader: View {
             // The desktop's catalog takes the number as text.
             let count = section.entries.count.formatted()
             return String(
-                localized: "chat:sourcesPanel.citations", defaultValue: "Citations (\(count))",
+                localized: "ios:chat.sources.citations", defaultValue: "Citations (\(count))",
                 comment: "Heading over the sources an answer cites, in the Sources sheet. %@ is how many.")
         case .more:
             return String(
-                localized: "chat:sourcesPanel.more", defaultValue: "More",
+                localized: "ios:chat.sources.more", defaultValue: "More",
                 comment: "Heading over the sources an answer's searches found and it does not cite.")
         }
     }

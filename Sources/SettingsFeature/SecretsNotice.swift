@@ -66,8 +66,6 @@ struct SecretNoticeItem: Identifiable, Equatable {
             String(localized: "settings:secrets.fields.googleApiKey", defaultValue: "Google Maps API key", comment: "A key to enter again.")
         case .braveApiKey:
             String(localized: "settings:secrets.fields.braveApiKey", defaultValue: "Brave Search API key", comment: "A key to enter again.")
-        case .elasticsearchPassword:
-            String(localized: "settings:secrets.fields.elasticsearchPassword", defaultValue: "Elasticsearch password", comment: "A key to enter again.")
         case .knowledgeBaseApiKey:
             String(localized: "settings:secrets.fields.knowledgeBaseApiKey", defaultValue: "LightRAG API key", comment: "A key to enter again.")
         case .s3AccessKeyId:

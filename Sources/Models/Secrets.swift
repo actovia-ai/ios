@@ -169,7 +169,6 @@ public enum SecretReentryName: Equatable, Sendable {
         case xAiApiKey = "providers.xAiApiKey"
         case googleApiKey = "googleCloud.googleApiKey"
         case braveApiKey = "webSearch.braveApiKey"
-        case elasticsearchPassword = "fullTextSearch.elasticsearch.password"
         case knowledgeBaseApiKey = "knowledgeBase.apiKey"
         case s3AccessKeyId = "s3.accessKeyId"
         case s3SecretAccessKey = "s3.secretAccessKey"
