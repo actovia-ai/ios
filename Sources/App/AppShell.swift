@@ -108,6 +108,7 @@ struct AppShell: View {
                         }
                     }
             }
+            .horizontalBars()
         }
         .sheet(
             item: $settings,
@@ -118,6 +119,7 @@ struct AppShell: View {
             }
         ) { route in
             SettingsView(apiClient: apiClient, serverConfig: serverConfig, opensMemory: route == .memory)
+                .horizontalBars()
         }
         // The workspace actually changing, once (apple-design §13): `workspace` only changes when
         // a row not already selected is tapped, so re-tapping the active row fires nothing. And
@@ -261,4 +263,19 @@ enum SettingsRoute: String, Identifiable {
     case root, memory
 
     var id: String { rawValue }
+}
+
+extension View {
+    /// Keeps the bars horizontal — the navigation bar on top, beside the status bar — where iOS 27.1 would move
+    /// them into a vertical bar beside the camera (an iPhone Duo). A chat's two bar buttons don't fill that bar, and
+    /// the transcript and the composer gave up its whole width for them; with horizontal bars they run edge to edge.
+    /// Applied once per presentation: the shell, and sheets that bring their own bars.
+    @ViewBuilder
+    func horizontalBars() -> some View {
+        if #available(iOS 27.1, *) {
+            toolbarVerticalBehavior(.disabled)
+        } else {
+            self
+        }
+    }
 }
