@@ -38888,61 +38888,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skills suchen, installieren und entfernen Sie in Actovia auf Ihrem Computer oder mit actovia-cli."
+            "value" : "Skills suchen, installieren und entfernen Sie in Actovia auf Ihrem Computer oder mit Actovia CLI."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Find, install and remove skills in Actovia on your computer, or with actovia-cli."
+            "value" : "Find, install and remove skills in Actovia on your computer, or with the Actovia CLI."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Busca, instala y elimina skills en Actovia en tu ordenador o con actovia-cli."
+            "value" : "Busca, instala y elimina skills en Actovia en tu ordenador o con Actovia CLI."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recherchez, installez et supprimez des skills dans Actovia sur votre ordinateur, ou avec actovia-cli."
+            "value" : "Recherchez, installez et supprimez des skills dans Actovia sur votre ordinateur, ou avec Actovia CLI."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca, installa e rimuovi le skill in Actovia sul tuo computer o con actovia-cli."
+            "value" : "Cerca, installa e rimuovi le skill in Actovia sul tuo computer o con Actovia CLI."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スキルの検索・インストール・削除は、コンピュータの Actovia か actovia-cli で行います。"
+            "value" : "スキルの検索・インストール・削除は、コンピュータの Actovia か Actovia CLI で行います。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스킬 찾기, 설치, 제거는 컴퓨터의 Actovia 또는 actovia-cli에서 할 수 있습니다."
+            "value" : "스킬 찾기, 설치, 제거는 컴퓨터의 Actovia 또는 Actovia CLI에서 할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encontre, instale e remova skills no Actovia do seu computador ou com o actovia-cli."
+            "value" : "Encontre, instale e remova skills no Actovia do seu computador ou com o Actovia CLI."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Actovia 或使用 actovia-cli 尋找、安裝和移除技能。"
+            "value" : "請在電腦上的 Actovia 或使用 Actovia CLI 尋找、安裝和移除技能。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Actovia 或使用 actovia-cli 尋找、安裝和移除技能。"
+            "value" : "請在電腦上的 Actovia 或使用 Actovia CLI 尋找、安裝和移除技能。"
           }
         }
       }
