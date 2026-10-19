@@ -173,7 +173,7 @@ throwaway worktree and fast-forward (the commit touches only `Vendor/`). A scrat
 out of the desktop repository:
 
 ```sh
-git clone -q --no-checkout ~/Code/exodus/exodus /tmp/exodus-split       # add -b <branch> for a branch other than master
+git clone -q --no-checkout ~/Code/actovia/actovia /tmp/exodus-split       # add -b <branch> for a branch other than master
 git -C /tmp/exodus-split subtree split --prefix=packages/shared/src/i18n/locales <commit> -b exodus-locales-split
 git worktree add --detach /tmp/ios-subtree HEAD
 git -C /tmp/ios-subtree subtree pull --prefix=Vendor/exodus-locales /tmp/exodus-split exodus-locales-split --squash \
