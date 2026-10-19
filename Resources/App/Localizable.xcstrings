@@ -8389,7 +8389,7 @@
       }
     },
     "ios:app.lock.title" : {
-      "comment" : "Shown full-screen while the pairing credential is locked behind Face ID. Exodus is the app's name.",
+      "comment" : "Shown full-screen while the pairing credential is locked behind Face ID. Actovia is the app's name.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -9326,7 +9326,7 @@
       }
     },
     "ios:chat.artifact.fallback.outdated" : {
-      "comment" : "Shown instead of an artifact preview when the computer's Exodus is too old to serve it.",
+      "comment" : "Shown instead of an artifact preview when the computer's Actovia is too old to serve it.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -9524,7 +9524,7 @@
       }
     },
     "ios:chat.artifact.inline.outdated" : {
-      "comment" : "Shown in an artifact's card in the chat, instead of the artifact, when the computer's Exodus is too old to serve it to the phone.",
+      "comment" : "Shown in an artifact's card in the chat, instead of the artifact, when the computer's Actovia is too old to serve it to the phone.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -12032,7 +12032,7 @@
       }
     },
     "ios:chat.card.computer.error.self" : {
-      "comment" : "Computer Use card: the model asked to control Exodus itself, which is refused.",
+      "comment" : "Computer Use card: the model asked to control Actovia itself, which is refused.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -17276,7 +17276,7 @@
       }
     },
     "ios:chat.composer.cameraDeniedMessage" : {
-      "comment" : "Alert when Take Photo is chosen but camera access was refused. Exodus is the app's name and stays as is.",
+      "comment" : "Alert when Take Photo is chosen but camera access was refused. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -18266,7 +18266,7 @@
       }
     },
     "ios:chat.composer.placeholder" : {
-      "comment" : "Placeholder of the message field. Exodus is the app's name and stays as is.",
+      "comment" : "Placeholder of the message field. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -34196,7 +34196,7 @@
       }
     },
     "ios:onboarding.getExodus" : {
-      "comment" : "Welcome screen of an unpaired iPhone: a link to the desktop app's website. Exodus is the app's name.",
+      "comment" : "Welcome screen of an unpaired iPhone: a link to the desktop app's website. Actovia is the app's name.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -36374,7 +36374,7 @@
       }
     },
     "ios:settings.pairing.cameraDeniedMessage" : {
-      "comment" : "Alert message under 'Camera access is off'. Exodus is the app's name.",
+      "comment" : "Alert message under 'Camera access is off'. Actovia is the app's name.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -36440,7 +36440,7 @@
       }
     },
     "ios:settings.pairing.cameraDeniedTitle" : {
-      "comment" : "Alert title: the user has denied Exodus the camera, so the pairing code cannot be scanned.",
+      "comment" : "Alert title: the user has denied Actovia the camera, so the pairing code cannot be scanned.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -36704,7 +36704,7 @@
       }
     },
     "ios:settings.pairing.notAPairingCode" : {
-      "comment" : "Error: the scanned or pasted text is not a pairing link from the Exodus desktop app. Exodus is the app's name.",
+      "comment" : "Error: the scanned or pasted text is not a pairing link from the Actovia desktop app. Actovia is the app's name.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -36770,7 +36770,7 @@
       }
     },
     "ios:settings.pairing.openSystemSettings" : {
-      "comment" : "Alert button: opens the iOS Settings app at Exodus's permissions.",
+      "comment" : "Alert button: opens the iOS Settings app at Actovia's permissions.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -40070,7 +40070,7 @@
       }
     },
     "ios:widget.greeting.question" : {
-      "comment" : "Widget: the line under the greeting, inviting a chat with Exodus.",
+      "comment" : "Widget: the line under the greeting, inviting a chat with Actovia.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

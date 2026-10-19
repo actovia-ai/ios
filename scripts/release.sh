@@ -42,5 +42,5 @@ sed -i '' -E \
   "$file"
 
 git commit -q -m "chore(release): v$version (build $build)" -- "$file"
-git tag -a "v$version" -m "Exodus iOS v$version (build $build)"
+git tag -a "v$version" -m "Actovia iOS v$version (build $build)"
 echo "v$version, build $build — committed and tagged. Push with: git push origin HEAD --follow-tags"

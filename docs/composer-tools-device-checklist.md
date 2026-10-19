@@ -9,7 +9,7 @@ What the Simulator cannot show (it has no camera, and its Photos holds a handful
       both come back.
 - [ ] `+` → Take Photo, first time: the system asks for the camera, and its text mentions taking photos for a chat.
       Allow → the camera opens; take a photo → "Use Photo" → a square appears. Cancel leaves nothing.
-- [ ] Refuse camera access (or turn it off in Settings › Exodus), then Take Photo: "Camera access is off" with Open
+- [ ] Refuse camera access (or turn it off in Settings › Actovia), then Take Photo: "Camera access is off" with Open
       Settings, which opens the app's page in Settings.
 - [ ] Send a pictures-only message (nothing typed): Send is enabled; the question shows its pictures above an absent
       bubble; the answer describes them. On the desktop the same chat shows the pictures on the question.

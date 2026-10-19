@@ -17,7 +17,7 @@ Things the simulator cannot show. Run on a real iPhone (iOS 27) with an Apple Wa
 - [ ] Zoom transitions: a card grows into its detail header and shrinks back.
 - [ ] Reduce Motion on: Ody still, no confetti, the memory card fades instead of flying, no slosh, scrub without momentum.
 - [ ] Lock the phone on Health, unlock: data reloads without errors.
-- [ ] Deny Health access in Settings → Health → Exodus: home shows the no-data Ody with the explanation and Open Settings.
+- [ ] Deny Health access in Settings → Health → Actovia: home shows the no-data Ody with the explanation and Open Settings.
 - [ ] End to end with the desktop running (paired, model key set): ladybug menu → write sample health data → pull to refresh → a real note appears → Remember → Settings → Memory shows it → ask "Why am I tired?" → Chat opens a new chat showing the health card and an answer.
 
 ## Calendar and archive (trends phase 1)

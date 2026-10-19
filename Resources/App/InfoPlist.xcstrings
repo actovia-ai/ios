@@ -15,7 +15,7 @@
       "shouldTranslate" : false
     },
     "NSCameraUsageDescription" : {
-      "comment" : "Camera permission prompt: scanning the pairing code, and taking photos for a chat. Exodus is the app's name and stays as is.",
+      "comment" : "Camera permission prompt: scanning the pairing code, and taking photos for a chat. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -81,7 +81,7 @@
       }
     },
     "NSFaceIDUsageDescription" : {
-      "comment" : "Face ID permission prompt. Exodus is the app's name and stays as is.",
+      "comment" : "Face ID permission prompt. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -277,7 +277,7 @@
       }
     },
     "NSLocalNetworkUsageDescription" : {
-      "comment" : "Local-network permission prompt. Exodus is the app's name and stays as is.",
+      "comment" : "Local-network permission prompt. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -343,7 +343,7 @@
       }
     },
     "NSLocationWhenInUseUsageDescription" : {
-      "comment" : "Location permission prompt. Exodus is the app's name and stays as is.",
+      "comment" : "Location permission prompt. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -474,7 +474,7 @@
       }
     },
     "NSPhotoLibraryAddUsageDescription" : {
-      "comment" : "Photo library (add only) permission prompt, shown when saving a generated image. Exodus is the app's name and stays as is.",
+      "comment" : "Photo library (add only) permission prompt, shown when saving a generated image. Actovia is the app's name and stays as is.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
