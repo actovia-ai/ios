@@ -9,14 +9,20 @@
   "view": "View",
   "window": "Window",
   "learnMore": "Learn More",
+  "app": {
+    "about": "About {{name}}",
+    "hide": "Hide {{name}}",
+    "quit": "Quit {{name}}"
+  },
   "tray": {
     "showApp": "Show App",
     "hideApp": "Hide App",
-    "quitExodus": "Quit Exodus"
+    "quitExodus": "Quit Actovia"
   },
   "notification": {
     "philharmonicGroupError": "Group \"{{title}}\" hit an error",
-    "philharmonicGroupFinished": "Group \"{{title}}\" finished"
+    "philharmonicGroupFinished": "Group \"{{title}}\" finished",
+    "agentWaiting": "{{name}} is waiting for you"
   },
   "attachment": {
     "saveImageAs": "Save Image As…",

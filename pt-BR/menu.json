@@ -9,14 +9,20 @@
   "view": "Visualizar",
   "window": "Janela",
   "learnMore": "Saiba Mais",
+  "app": {
+    "about": "Sobre o {{name}}",
+    "hide": "Ocultar {{name}}",
+    "quit": "Sair do {{name}}"
+  },
   "tray": {
     "showApp": "Mostrar Aplicativo",
     "hideApp": "Ocultar Aplicativo",
-    "quitExodus": "Sair do Exodus"
+    "quitExodus": "Sair do Actovia"
   },
   "notification": {
     "philharmonicGroupError": "O grupo \"{{title}}\" encontrou um erro",
-    "philharmonicGroupFinished": "O grupo \"{{title}}\" foi concluído"
+    "philharmonicGroupFinished": "O grupo \"{{title}}\" foi concluído",
+    "agentWaiting": "{{name}} está esperando por você"
   },
   "attachment": {
     "saveImageAs": "Salvar imagem como…",

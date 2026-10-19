@@ -9,14 +9,20 @@
   "view": "Visualizza",
   "window": "Finestra",
   "learnMore": "Scopri di più",
+  "app": {
+    "about": "Informazioni su {{name}}",
+    "hide": "Nascondi {{name}}",
+    "quit": "Esci da {{name}}"
+  },
   "tray": {
     "showApp": "Mostra app",
     "hideApp": "Nascondi app",
-    "quitExodus": "Esci da Exodus"
+    "quitExodus": "Esci da Actovia"
   },
   "notification": {
     "philharmonicGroupError": "Il gruppo \"{{title}}\" ha riscontrato un errore",
-    "philharmonicGroupFinished": "Il gruppo \"{{title}}\" ha terminato"
+    "philharmonicGroupFinished": "Il gruppo \"{{title}}\" ha terminato",
+    "agentWaiting": "{{name}} ti sta aspettando"
   },
   "attachment": {
     "saveImageAs": "Salva immagine come…",

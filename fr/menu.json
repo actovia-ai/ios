@@ -9,14 +9,20 @@
   "view": "Affichage",
   "window": "Fenêtre",
   "learnMore": "En savoir plus",
+  "app": {
+    "about": "À propos de {{name}}",
+    "hide": "Masquer {{name}}",
+    "quit": "Quitter {{name}}"
+  },
   "tray": {
     "showApp": "Afficher l'application",
     "hideApp": "Masquer l'application",
-    "quitExodus": "Quitter Exodus"
+    "quitExodus": "Quitter Actovia"
   },
   "notification": {
     "philharmonicGroupError": "Le groupe « {{title}} » a rencontré une erreur",
-    "philharmonicGroupFinished": "Le groupe « {{title}} » a terminé"
+    "philharmonicGroupFinished": "Le groupe « {{title}} » a terminé",
+    "agentWaiting": "{{name}} vous attend"
   },
   "attachment": {
     "saveImageAs": "Enregistrer l’image sous…",
