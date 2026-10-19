@@ -48,7 +48,7 @@ let project = Project(
             name: "App",
             destinations: .iOS,
             product: .app,
-            productName: "Exodus",
+            productName: "Actovia",
             bundleId: bundleIdRoot,
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
@@ -75,21 +75,21 @@ let project = Project(
                         ]
                     ],
                     "NSLocalNetworkUsageDescription":
-                        "Exodus needs local network access to connect to the Exodus service running on your computer.",
+                        "Actovia needs local network access to connect to the Actovia service running on your computer.",
                     "NSMicrophoneUsageDescription":
-                        "Exodus records your voice only while you are dictating a message, to turn it into text for the chat.",
+                        "Actovia records your voice only while you are dictating a message, to turn it into text for the chat.",
                     "NSCameraUsageDescription":
-                        "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
+                        "Actovia uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
                     "NSFaceIDUsageDescription":
-                        "Exodus uses Face ID to unlock the connection to your computer.",
+                        "Actovia uses Face ID to unlock the connection to your computer.",
                     "NSLocationWhenInUseUsageDescription":
-                        "Exodus uses your location to show your position on the itinerary map and center the map when you tap the location button.",
+                        "Actovia uses your location to show your position on the itinerary map and center the map when you tap the location button.",
                     "NSPhotoLibraryAddUsageDescription":
-                        "Exodus saves the images you choose to your photo library.",
+                        "Actovia saves the images you choose to your photo library.",
                     "NSHealthShareUsageDescription":
-                        "Exodus reads your sleep, activity, heart and body data to write your daily health report.",
+                        "Actovia reads your sleep, activity, heart and body data to write your daily health report.",
                     "NSHealthUpdateUsageDescription":
-                        "Exodus saves the water you log to Apple Health.",
+                        "Actovia saves the water you log to Apple Health.",
                     // exodus:// — the widgets' links (WidgetKitShared.DeepLink).
                     "CFBundleURLTypes": [
                         ["CFBundleURLName": "app.yancey.exodus.link", "CFBundleURLSchemes": ["exodus"]]

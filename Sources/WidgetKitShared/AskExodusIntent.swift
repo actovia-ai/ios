@@ -3,7 +3,7 @@ import Foundation
 
 /// Control Center and the Action button: open the app on a new chat.
 public struct AskExodusIntent: AppIntent {
-    public static let title: LocalizedStringResource = LocalizedStringResource("ios:widget.ask.title", defaultValue: "Ask Exodus")
+    public static let title: LocalizedStringResource = LocalizedStringResource("ios:widget.ask.title", defaultValue: "Ask Actovia")
     public static let openAppWhenRun = true
 
     public init() {}

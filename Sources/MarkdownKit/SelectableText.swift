@@ -303,7 +303,7 @@ struct SelectableText: UIViewRepresentable {
             return UITextItem.MenuConfiguration(preview: nil, menu: defaultMenu)
         }
 
-        /// A selection's menu leads with "Ask Exodus" where the text can be asked about: the words selected, chips
+        /// A selection's menu leads with "Ask Actovia" where the text can be asked about: the words selected, chips
         /// left out as Copy leaves them, go to the composer as a quote.
         func textView(
             _ textView: UITextView, editMenuForTextIn range: NSRange, suggestedActions: [UIMenuElement]
@@ -311,7 +311,7 @@ struct SelectableText: UIViewRepresentable {
             guard let askAbout, range.length > 0 else { return nil }
             let ask = UIAction(
                 title: String(
-                    localized: "ios:chat.ask.button", defaultValue: "Ask Exodus",
+                    localized: "ios:chat.ask.button", defaultValue: "Ask Actovia",
                     comment: "First item of the menu over text selected in a message: asks a question about it."),
                 image: UIImage(systemName: "arrow.turn.down.right")
             ) { [weak textView] _ in

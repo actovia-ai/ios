@@ -65,8 +65,8 @@ struct UnlockGate<Content: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .screenTitle(
             String(
-                localized: "ios:app.lock.title", defaultValue: "Exodus is locked",
-                comment: "Shown full-screen while the pairing credential is locked behind Face ID. Exodus is the app's name."))
+                localized: "ios:app.lock.title", defaultValue: "Actovia is locked",
+                comment: "Shown full-screen while the pairing credential is locked behind Face ID. Actovia is the app's name."))
     }
 
     private func unlockIfNeeded() async {

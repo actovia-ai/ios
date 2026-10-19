@@ -13,7 +13,7 @@ public struct PairingWelcomeView: View {
     }
 
     /// Where the desktop app is downloaded from (the desktop's `package.json` `homepage`).
-    static let website = URL(string: "https://exodus.yancey.app")!  // l10n:ignore: a URL
+    static let website = URL(string: "https://actovia.yancey.app")!  // l10n:ignore: a URL
 
     public var body: some View {
         NavigationStack {

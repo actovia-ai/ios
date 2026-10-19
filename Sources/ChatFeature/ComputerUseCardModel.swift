@@ -138,8 +138,8 @@ enum ComputerUseRules {
         case "self":
             String(
                 localized: "ios:chat.card.computer.error.self",
-                defaultValue: "Exodus can’t operate its own windows.",
-                comment: "Computer Use card: the model asked to control Exodus itself, which is refused.")
+                defaultValue: "Actovia can’t operate its own windows.",
+                comment: "Computer Use card: the model asked to control Actovia itself, which is refused.")
         default: code
         }
     }

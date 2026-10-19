@@ -37,8 +37,8 @@ public final class PairingViewModel {
         guard let text, let link = PairingLink(string: text) else {
             fail(
                 String(
-                    localized: "ios:settings.pairing.notAPairingCode", defaultValue: "That is not an Exodus pairing code.",
-                    comment: "Error: the scanned or pasted text is not a pairing link from the Exodus desktop app. Exodus is the app's name."),
+                    localized: "ios:settings.pairing.notAPairingCode", defaultValue: "That is not an Actovia pairing code.",
+                    comment: "Error: the scanned or pasted text is not a pairing link from the Actovia desktop app. Actovia is the app's name."),
                 detail: nil)
             return false
         }

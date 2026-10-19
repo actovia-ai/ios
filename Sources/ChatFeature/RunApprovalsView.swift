@@ -1,7 +1,7 @@
 import Models
 import SwiftUI
 
-/// The foot of a run whose tool call touched a secret outside Exodus (an SSH key, cloud credentials, a `.env`
+/// The foot of a run whose tool call touched a secret outside Actovia (an SSH key, cloud credentials, a `.env`
 /// elsewhere): what it wants, with Allow once / Deny, then one quiet line saying how it ended. Reads only its own run's
 /// list from the store, so a streaming frame of this or another run does not redraw it.
 struct RunApprovalsView: View {

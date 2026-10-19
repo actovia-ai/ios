@@ -7,7 +7,7 @@ import SwiftUI
 /// The artifact card, live in the reply, and full screen, against a sandbox build on disk instead of a computer:
 /// `-ArtifactSandboxDir <renderer build dir>` serves `exodus-artifact://sandbox/…` from that directory (a desktop
 /// `vite build` of `vite.renderer.config.mts`; the Simulator reads the Mac's disk). Without it every request is a 404,
-/// so the cards say to update Exodus on the computer. `-ArtifactPreviewOpen ok|broken` opens the working or the broken
+/// so the cards say to update Actovia on the computer. `-ArtifactPreviewOpen ok|broken` opens the working or the broken
 /// sample full screen at launch.
 struct ProtoArtifactSection: View {
     @State private var opened: ArtifactResult?

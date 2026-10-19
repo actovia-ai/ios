@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings → Personality: how Exodus answers in every chat, on the phone and on the computer alike. Sections and
+/// Settings → Personality: how Actovia answers in every chat, on the phone and on the computer alike. Sections and
 /// fields follow the desktop's `personality.tsx`: Style, Instructions, About you.
 struct PersonalitySettingsPage: View {
     @Bindable var viewModel: PersonalityViewModel

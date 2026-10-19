@@ -1,6 +1,6 @@
-# Exodus iOS
+# Actovia iOS
 
-A native iPhone client for the desktop Exodus app (`exodus`): a ChatGPT-style slide-out drawer lists your
+A native iPhone client for the desktop Actovia app (the `exodus` checkout at `../exodus`): a ChatGPT-style slide-out drawer lists your
 Recents and searches them, and the chat beside it sends messages, streams the replies and edits the
 AI-provider settings, all through the desktop's local HTTP server. It stores nothing but the server address.
 Swift 6 and SwiftUI: prefer native frameworks as much as possible and reach for a third-party library only
@@ -84,7 +84,7 @@ iOS asks once for local-network permission.
 
 ## Connecting to the computer
 
-A device reaches Exodus only after it has been **paired**. On the computer, Settings → Devices → Pair a device
+A device reaches Actovia only after it has been **paired**. On the computer, Settings → Devices → Pair a device
 shows a QR code: `exodus://pair?h=<hosts>&p=63129&c=<one-time code>&f=<certificate fingerprint>&n=<name>`
 (`PairingLink`). Settings → Computer here scans it (`QRScannerView`, VisionKit) — or pastes the link, which is
 what the Simulator does — and `ServerConnection.pair` trades the code for a per-device token over HTTPS.
@@ -107,7 +107,7 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
 - **The Simulator needs none of it.** Unpaired, requests go to the manual address (`http://localhost:60223`),
   the computer's plaintext listener — which is bound to loopback, so a real device cannot use it.
 
-The desktop side is `src/main/lib/lan/` in the exodus repo; its design is
+The desktop side is `src/main/lib/lan/` in the Actovia desktop repo; its design is
 `docs/superpowers/specs/2026-09-20-lan-pairing-sandbox-isolation-design.md` there.
 
 ## Localization

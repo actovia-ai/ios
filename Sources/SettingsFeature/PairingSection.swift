@@ -3,7 +3,7 @@ import NetworkingKit
 import SwiftUI
 import UIKit
 
-/// Settings → Computer. A device reaches Exodus only after it has been paired:
+/// Settings → Computer. A device reaches Actovia only after it has been paired:
 /// the computer shows a QR code (Settings → Devices → Pair a device) carrying a
 /// one-time code and the fingerprint of the certificate to trust.
 struct PairingSection: View {

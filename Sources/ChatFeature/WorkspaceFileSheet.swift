@@ -62,7 +62,7 @@ final class WorkspaceFileSheetModel {
         var message: String {
             switch self {
             case .unreachable:
-                String(localized: "ios:chat.card.file.sheet.unreachable", defaultValue: "Couldn’t get this file from your computer. Make sure Exodus is running there, then try again.", comment: "The file viewer, when the computer did not send the file.")
+                String(localized: "ios:chat.card.file.sheet.unreachable", defaultValue: "Couldn’t get this file from your computer. Make sure Actovia is running there, then try again.", comment: "The file viewer, when the computer did not send the file.")
             case .tooLarge:
                 String(localized: "ios:chat.card.file.sheet.tooLarge", defaultValue: "This file is too large to show on your phone. Open it on your computer.", comment: "The file viewer, when the file is over the size the phone is sent (1 MB).")
             case .notText:

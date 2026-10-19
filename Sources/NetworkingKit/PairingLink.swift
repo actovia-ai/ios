@@ -1,6 +1,6 @@
 import Foundation
 
-/// What the desktop's pairing QR code says: where Exodus is, the one-time code
+/// What the desktop's pairing QR code says: where Actovia is, the one-time code
 /// that lets this device in, and the fingerprint of the only certificate to
 /// trust. Built by `buildPairingLink` in the desktop's `src/main/lib/lan/pairing.ts`.
 ///

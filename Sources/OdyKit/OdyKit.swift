@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Ody, the Exodus mascot, as a living SwiftUI character and the scenes it appears in. The body curve and palette
+/// Ody, the Actovia mascot, as a living SwiftUI character and the scenes it appears in. The body curve and palette
 /// come from the desktop's `brand/art.mjs` — keep them in sync.
 public enum OdyKit {
     static let version = 1

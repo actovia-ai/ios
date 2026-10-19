@@ -278,7 +278,7 @@ struct ComputerUseRulesTests {
             ComputerUseRules.errorText("not-allowed", target: "Numbers")
                 == "“Numbers” isn’t on the Computer Use allowlist. Add it in Settings on the computer.")
         #expect(ComputerUseRules.errorText("disabled", target: "") == "Computer Use is turned off in Settings on the computer.")
-        #expect(ComputerUseRules.errorText("self", target: "") == "Exodus can’t operate its own windows.")
+        #expect(ComputerUseRules.errorText("self", target: "") == "Actovia can’t operate its own windows.")
         #expect(ComputerUseRules.errorText("helper crashed", target: "") == "helper crashed")
     }
 }

@@ -30,7 +30,7 @@ public enum MessageGalleryLaunch {
     static var readAloud: String? { value(after: "-MessageGalleryReadAloud") }
     /// `-MessageGalleryCopied`: every action row shows its checkmark, as just after Copy.
     static var copied: Bool { ProcessInfo.processInfo.arguments.contains("-MessageGalleryCopied") }
-    /// `-MessageGalleryQuote`: the composer with a quote set, as "Ask Exodus" leaves it.
+    /// `-MessageGalleryQuote`: the composer with a quote set, as "Ask Actovia" leaves it.
     static var quote: Bool { ProcessInfo.processInfo.arguments.contains("-MessageGalleryQuote") }
     static var notice: StreamNotice? {
         switch value(after: "-MessageGalleryNotice") {

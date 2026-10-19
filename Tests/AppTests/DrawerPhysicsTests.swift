@@ -1,8 +1,8 @@
 import CoreGraphics
 import Testing
 
-// The app target ships as `Exodus`, so that — not `App` — is the module name to import.
-@testable import Exodus
+// The app target ships as `Actovia`, so that — not `App` — is the module name to import.
+@testable import Actovia
 
 /// A phone-sized drawer: 402 pt wide screen × 0.78.
 private let width: CGFloat = 313

@@ -18,7 +18,7 @@ public struct AskCircularView: View {
     }
 }
 
-/// Lock Screen, rectangular: the note's headline and today's numbers → Health; without today's note, "Ask Exodus".
+/// Lock Screen, rectangular: the note's headline and today's numbers → Health; without today's note, "Ask Actovia".
 public struct TodayRectangularView: View {
     let snapshot: WidgetSnapshot
     let date: Date

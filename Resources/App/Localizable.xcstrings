@@ -5813,61 +5813,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stimmt eine Erinnerung nicht? Klicken Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Exodus aktualisiert sie."
+            "value" : "Stimmt eine Erinnerung nicht? Klicken Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Actovia aktualisiert sie."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A memory wrong? Click Wrong? and fix it in chat — Exodus updates it."
+            "value" : "A memory wrong? Click Wrong? and fix it in chat — Actovia updates it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Algún recuerdo es incorrecto? Haz clic en «¿Incorrecto?» y corrígelo en el chat: Exodus lo actualizará."
+            "value" : "¿Algún recuerdo es incorrecto? Haz clic en «¿Incorrecto?» y corrígelo en el chat: Actovia lo actualizará."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un souvenir est erroné ? Cliquez sur « Erroné ? » et corrigez-le dans le chat — Exodus le met à jour."
+            "value" : "Un souvenir est erroné ? Cliquez sur « Erroné ? » et corrigez-le dans le chat — Actovia le met à jour."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una memoria è sbagliata? Fai clic su «Sbagliata?» e correggila in chat: Exodus la aggiorna."
+            "value" : "Una memoria è sbagliata? Fai clic su «Sbagliata?» e correggila in chat: Actovia la aggiorna."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶が違っていたら、「違う？」をクリックしてチャットで修正してください。Exodus が記憶を更新します。"
+            "value" : "記憶が違っていたら、「違う？」をクリックしてチャットで修正してください。Actovia が記憶を更新します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기억이 틀렸나요? '틀렸나요?'를 클릭해 채팅에서 고치면 Exodus가 기억을 업데이트합니다."
+            "value" : "기억이 틀렸나요? '틀렸나요?'를 클릭해 채팅에서 고치면 Actovia가 기억을 업데이트합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alguma memória errada? Clique em “Errado?” e corrija no chat — o Exodus a atualiza."
+            "value" : "Alguma memória errada? Clique em “Errado?” e corrija no chat — o Actovia a atualiza."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶有誤？點擊「有誤」在對話中修正，Exodus 會更新這條記憶。"
+            "value" : "記憶有誤？點擊「有誤」在對話中修正，Actovia 會更新這條記憶。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶有誤？點擊「有誤」在對話中修正，Exodus 會更新這條記憶。"
+            "value" : "記憶有誤？點擊「有誤」在對話中修正，Actovia 會更新這條記憶。"
           }
         }
       }
@@ -8395,61 +8395,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus ist gesperrt"
+            "value" : "Actovia ist gesperrt"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus is locked"
+            "value" : "Actovia is locked"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus está bloqueado"
+            "value" : "Actovia está bloqueado"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus est verrouillé"
+            "value" : "Actovia est verrouillé"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus è bloccato"
+            "value" : "Actovia è bloccato"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus はロックされています"
+            "value" : "Actovia はロックされています"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus가 잠겨 있습니다"
+            "value" : "Actovia가 잠겨 있습니다"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus está bloqueado"
+            "value" : "O Actovia está bloqueado"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 已鎖定"
+            "value" : "Actovia 已鎖定"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 已鎖定"
+            "value" : "Actovia 已鎖定"
           }
         }
       }
@@ -9266,61 +9266,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses Artefakt kann auf dem iPhone nicht angezeigt werden. Öffne diesen Chat in Exodus auf deinem Computer, um es zu sehen."
+            "value" : "Dieses Artefakt kann auf dem iPhone nicht angezeigt werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This artifact can't be shown on iPhone. Open this chat in Exodus on your computer to see it."
+            "value" : "This artifact can't be shown on iPhone. Open this chat in Actovia on your computer to see it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este artefacto no se puede mostrar en el iPhone. Abre este chat en Exodus en tu ordenador para verlo."
+            "value" : "Este artefacto no se puede mostrar en el iPhone. Abre este chat en Actovia en tu ordenador para verlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cet artefact ne peut pas s’afficher sur iPhone. Ouvrez cette conversation dans Exodus sur votre ordinateur pour le voir."
+            "value" : "Cet artefact ne peut pas s’afficher sur iPhone. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo artefatto non può essere mostrato su iPhone. Apri questa chat in Exodus sul computer per vederlo."
+            "value" : "Questo artefatto non può essere mostrato su iPhone. Apri questa chat in Actovia sul computer per vederlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このアーティファクトは iPhone では表示できません。コンピュータの Exodus でこのチャットを開いて確認してください。"
+            "value" : "このアーティファクトは iPhone では表示できません。コンピュータの Actovia でこのチャットを開いて確認してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 아티팩트는 iPhone에서 표시할 수 없습니다. 컴퓨터의 Exodus에서 이 채팅을 열어 확인하세요."
+            "value" : "이 아티팩트는 iPhone에서 표시할 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este artefato não pode ser exibido no iPhone. Abra esta conversa no Exodus do seu computador para vê-lo."
+            "value" : "Este artefato não pode ser exibido no iPhone. Abra esta conversa no Actovia do seu computador para vê-lo."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Exodus 開啟這個對話查看。"
+            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Exodus 開啟這個對話查看。"
+            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
           }
         }
       }
@@ -9332,61 +9332,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aktualisiere Exodus auf deinem Computer, um Artefakte auf dem iPhone in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
+            "value" : "Aktualisiere Actovia auf deinem Computer, um Artefakte auf dem iPhone in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update Exodus on your computer to preview artifacts on iPhone. Until then, open this chat there to see it."
+            "value" : "Update Actovia on your computer to preview artifacts on iPhone. Until then, open this chat there to see it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Actualiza Exodus en tu ordenador para previsualizar artefactos en el iPhone. Mientras tanto, abre este chat allí para verlo."
+            "value" : "Actualiza Actovia en tu ordenador para previsualizar artefactos en el iPhone. Mientras tanto, abre este chat allí para verlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mettez à jour Exodus sur votre ordinateur pour prévisualiser les artefacts sur iPhone. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
+            "value" : "Mettez à jour Actovia sur votre ordinateur pour prévisualiser les artefacts sur iPhone. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiorna Exodus sul computer per vedere l’anteprima degli artefatti su iPhone. Nel frattempo, apri questa chat lì per vederlo."
+            "value" : "Aggiorna Actovia sul computer per vedere l’anteprima degli artefatti su iPhone. Nel frattempo, apri questa chat lì per vederlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iPhone でアーティファクトをプレビューするには、コンピュータの Exodus をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
+            "value" : "iPhone でアーティファクトをプレビューするには、コンピュータの Actovia をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iPhone에서 아티팩트를 미리 보려면 컴퓨터의 Exodus를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
+            "value" : "iPhone에서 아티팩트를 미리 보려면 컴퓨터의 Actovia를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Atualize o Exodus no seu computador para visualizar artefatos no iPhone. Até lá, abra esta conversa no computador para vê-lo."
+            "value" : "Atualize o Actovia no seu computador para visualizar artefatos no iPhone. Até lá, abra esta conversa no computador para vê-lo."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請更新電腦上的 Exodus，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+            "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請更新電腦上的 Exodus，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+            "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
           }
         }
       }
@@ -9464,61 +9464,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Vorschau konnte nicht geladen werden. Öffne diesen Chat in Exodus auf deinem Computer, um es zu sehen."
+            "value" : "Die Vorschau konnte nicht geladen werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The preview couldn't load. Open this chat in Exodus on your computer to see it."
+            "value" : "The preview couldn't load. Open this chat in Actovia on your computer to see it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudo cargar la vista previa. Abre este chat en Exodus en tu ordenador para verlo."
+            "value" : "No se pudo cargar la vista previa. Abre este chat en Actovia en tu ordenador para verlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible de charger l’aperçu. Ouvrez cette conversation dans Exodus sur votre ordinateur pour le voir."
+            "value" : "Impossible de charger l’aperçu. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossibile caricare l’anteprima. Apri questa chat in Exodus sul computer per vederlo."
+            "value" : "Impossibile caricare l’anteprima. Apri questa chat in Actovia sul computer per vederlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "プレビューを読み込めませんでした。コンピュータの Exodus でこのチャットを開いて確認してください。"
+            "value" : "プレビューを読み込めませんでした。コンピュータの Actovia でこのチャットを開いて確認してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "미리보기를 불러올 수 없습니다. 컴퓨터의 Exodus에서 이 채팅을 열어 확인하세요."
+            "value" : "미리보기를 불러올 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível carregar a visualização. Abra esta conversa no Exodus do seu computador para vê-lo."
+            "value" : "Não foi possível carregar a visualização. Abra esta conversa no Actovia do seu computador para vê-lo."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法載入預覽。請在電腦上的 Exodus 開啟這個對話查看。"
+            "value" : "無法載入預覽。請在電腦上的 Actovia 開啟這個對話查看。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法載入預覽。請在電腦上的 Exodus 開啟這個對話查看。"
+            "value" : "無法載入預覽。請在電腦上的 Actovia 開啟這個對話查看。"
           }
         }
       }
@@ -9530,61 +9530,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aktualisiere Exodus auf deinem Computer, um dies hier zu sehen."
+            "value" : "Aktualisiere Actovia auf deinem Computer, um dies hier zu sehen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update Exodus on your computer to see this here."
+            "value" : "Update Actovia on your computer to see this here."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Actualiza Exodus en tu ordenador para verlo aquí."
+            "value" : "Actualiza Actovia en tu ordenador para verlo aquí."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mettez à jour Exodus sur votre ordinateur pour le voir ici."
+            "value" : "Mettez à jour Actovia sur votre ordinateur pour le voir ici."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiorna Exodus sul computer per vederlo qui."
+            "value" : "Aggiorna Actovia sul computer per vederlo qui."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ここに表示するには、コンピュータの Exodus をアップデートしてください。"
+            "value" : "ここに表示するには、コンピュータの Actovia をアップデートしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "여기에서 보려면 컴퓨터의 Exodus를 업데이트하세요."
+            "value" : "여기에서 보려면 컴퓨터의 Actovia를 업데이트하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Atualize o Exodus no seu computador para ver isto aqui."
+            "value" : "Atualize o Actovia no seu computador para ver isto aqui."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請更新電腦上的 Exodus，即可在這裡查看。"
+            "value" : "請更新電腦上的 Actovia，即可在這裡查看。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請更新電腦上的 Exodus，即可在這裡查看。"
+            "value" : "請更新電腦上的 Actovia，即可在這裡查看。"
           }
         }
       }
@@ -9662,61 +9662,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus fragen"
+            "value" : "Actovia fragen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Exodus"
+            "value" : "Ask Actovia"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preguntar a Exodus"
+            "value" : "Preguntar a Actovia"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Demander à Exodus"
+            "value" : "Demander à Actovia"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiedi a Exodus"
+            "value" : "Chiedi a Actovia"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus に質問"
+            "value" : "Actovia に質問"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus에 질문"
+            "value" : "Actovia에 질문"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perguntar ao Exodus"
+            "value" : "Perguntar ao Actovia"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus"
+            "value" : "問 Actovia"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus"
+            "value" : "問 Actovia"
           }
         }
       }
@@ -12038,61 +12038,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus kann seine eigenen Fenster nicht bedienen."
+            "value" : "Actovia kann seine eigenen Fenster nicht bedienen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus can’t operate its own windows."
+            "value" : "Actovia can’t operate its own windows."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus no puede manejar sus propias ventanas."
+            "value" : "Actovia no puede manejar sus propias ventanas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus ne peut pas piloter ses propres fenêtres."
+            "value" : "Actovia ne peut pas piloter ses propres fenêtres."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus non può controllare le proprie finestre."
+            "value" : "Actovia non può controllare le proprie finestre."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は自分自身のウインドウを操作できません。"
+            "value" : "Actovia は自分自身のウインドウを操作できません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 자신의 창을 조작할 수 없습니다."
+            "value" : "Actovia는 자신의 창을 조작할 수 없습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus não pode operar as próprias janelas."
+            "value" : "O Actovia não pode operar as próprias janelas."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 無法操作自己的視窗。"
+            "value" : "Actovia 無法操作自己的視窗。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 無法操作自己的視窗。"
+            "value" : "Actovia 無法操作自己的視窗。"
           }
         }
       }
@@ -13490,61 +13490,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Datei konnte nicht von deinem Computer geladen werden. Stelle sicher, dass Exodus dort läuft, und versuche es erneut."
+            "value" : "Die Datei konnte nicht von deinem Computer geladen werden. Stelle sicher, dass Actovia dort läuft, und versuche es erneut."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn’t get this file from your computer. Make sure Exodus is running there, then try again."
+            "value" : "Couldn’t get this file from your computer. Make sure Actovia is running there, then try again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudo obtener este archivo de tu ordenador. Asegúrate de que Exodus esté abierto en él y vuelve a intentarlo."
+            "value" : "No se pudo obtener este archivo de tu ordenador. Asegúrate de que Actovia esté abierto en él y vuelve a intentarlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible de récupérer ce fichier depuis votre ordinateur. Vérifiez qu’Exodus y est ouvert, puis réessayez."
+            "value" : "Impossible de récupérer ce fichier depuis votre ordinateur. Vérifiez qu’Actovia y est ouvert, puis réessayez."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossibile ottenere questo file dal computer. Assicurati che Exodus sia in esecuzione, poi riprova."
+            "value" : "Impossibile ottenere questo file dal computer. Assicurati che Actovia sia in esecuzione, poi riprova."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コンピュータからこのファイルを取得できませんでした。コンピュータで Exodus が起動していることを確認して、もう一度お試しください。"
+            "value" : "コンピュータからこのファイルを取得できませんでした。コンピュータで Actovia が起動していることを確認して、もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "컴퓨터에서 이 파일을 가져올 수 없습니다. 컴퓨터에서 Exodus가 실행 중인지 확인한 다음 다시 시도하세요."
+            "value" : "컴퓨터에서 이 파일을 가져올 수 없습니다. 컴퓨터에서 Actovia가 실행 중인지 확인한 다음 다시 시도하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível obter este arquivo do seu computador. Verifique se o Exodus está aberto nele e tente novamente."
+            "value" : "Não foi possível obter este arquivo do seu computador. Verifique se o Actovia está aberto nele e tente novamente."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法從電腦取得這個檔案。請確認電腦上的 Exodus 正在執行，然後再試一次。"
+            "value" : "無法從電腦取得這個檔案。請確認電腦上的 Actovia 正在執行，然後再試一次。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法從電腦取得這個檔案。請確認電腦上的 Exodus 正在執行，然後再試一次。"
+            "value" : "無法從電腦取得這個檔案。請確認電腦上的 Actovia 正在執行，然後再試一次。"
           }
         }
       }
@@ -17282,61 +17282,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erlauben Sie Exodus in den Einstellungen den Kamerazugriff, um ein Foto für diesen Chat aufzunehmen."
+            "value" : "Erlauben Sie Actovia in den Einstellungen den Kamerazugriff, um ein Foto für diesen Chat aufzunehmen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Exodus to use the camera in Settings to take a photo for this chat."
+            "value" : "Allow Actovia to use the camera in Settings to take a photo for this chat."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permite que Exodus use la cámara en Ajustes para hacer una foto para este chat."
+            "value" : "Permite que Actovia use la cámara en Ajustes para hacer una foto para este chat."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorisez Exodus à utiliser l’appareil photo dans les Réglages pour prendre une photo pour cette discussion."
+            "value" : "Autorisez Actovia à utiliser l’appareil photo dans les Réglages pour prendre une photo pour cette discussion."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consenti a Exodus di usare la fotocamera nelle Impostazioni per scattare una foto per questa chat."
+            "value" : "Consenti a Actovia di usare la fotocamera nelle Impostazioni per scattare una foto per questa chat."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このチャット用に写真を撮るには、「設定」で Exodus にカメラの使用を許可してください。"
+            "value" : "このチャット用に写真を撮るには、「設定」で Actovia にカメラの使用を許可してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 채팅에 사진을 찍으려면 설정에서 Exodus의 카메라 사용을 허용하세요."
+            "value" : "이 채팅에 사진을 찍으려면 설정에서 Actovia의 카메라 사용을 허용하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permita que o Exodus use a câmera nos Ajustes para tirar uma foto para este chat."
+            "value" : "Permita que o Actovia use a câmera nos Ajustes para tirar uma foto para este chat."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在「設定」中允許 Exodus 使用相機，以便為這個對話影相。"
+            "value" : "請在「設定」中允許 Actovia 使用相機，以便為這個對話影相。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在「設定」中允許 Exodus 使用相機，以便為這個聊天拍照。"
+            "value" : "請在「設定」中允許 Actovia 使用相機，以便為這個聊天拍照。"
           }
         }
       }
@@ -18272,61 +18272,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus fragen"
+            "value" : "Actovia fragen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Exodus"
+            "value" : "Ask Actovia"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pregunte a Exodus"
+            "value" : "Pregunte a Actovia"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Demandez à Exodus"
+            "value" : "Demandez à Actovia"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiedi a Exodus"
+            "value" : "Chiedi a Actovia"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodusに質問する"
+            "value" : "Actoviaに質問する"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus에게 질문하기"
+            "value" : "Actovia에게 질문하기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pergunte ao Exodus"
+            "value" : "Pergunte ao Actovia"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "詢問 Exodus"
+            "value" : "詢問 Actovia"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "詢問 Exodus"
+            "value" : "詢問 Actovia"
           }
         }
       }
@@ -24572,61 +24572,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stimmt eine Erinnerung nicht? Tippen Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Exodus aktualisiert sie."
+            "value" : "Stimmt eine Erinnerung nicht? Tippen Sie auf „Falsch?“ und korrigieren Sie sie im Chat – Actovia aktualisiert sie."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A memory wrong? Tap Wrong? and fix it in chat — Exodus updates it."
+            "value" : "A memory wrong? Tap Wrong? and fix it in chat — Actovia updates it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Algún recuerdo es incorrecto? Toca «¿Incorrecto?» y corrígelo en el chat: Exodus lo actualizará."
+            "value" : "¿Algún recuerdo es incorrecto? Toca «¿Incorrecto?» y corrígelo en el chat: Actovia lo actualizará."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un souvenir est erroné ? Touchez « Erroné ? » et corrigez-le dans le chat — Exodus le met à jour."
+            "value" : "Un souvenir est erroné ? Touchez « Erroné ? » et corrigez-le dans le chat — Actovia le met à jour."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una memoria è sbagliata? Tocca «Sbagliata?» e correggila in chat: Exodus la aggiorna."
+            "value" : "Una memoria è sbagliata? Tocca «Sbagliata?» e correggila in chat: Actovia la aggiorna."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶が違っていたら、「違う？」をタップしてチャットで修正してください。Exodus が記憶を更新します。"
+            "value" : "記憶が違っていたら、「違う？」をタップしてチャットで修正してください。Actovia が記憶を更新します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기억이 틀렸나요? '틀렸나요?'를 탭해 채팅에서 고치면 Exodus가 기억을 업데이트합니다."
+            "value" : "기억이 틀렸나요? '틀렸나요?'를 탭해 채팅에서 고치면 Actovia가 기억을 업데이트합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alguma memória errada? Toque em “Errado?” e corrija no chat — o Exodus a atualiza."
+            "value" : "Alguma memória errada? Toque em “Errado?” e corrija no chat — o Actovia a atualiza."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
+            "value" : "記憶有誤？點「有誤」在對話中修正，Actovia 會更新這條記憶。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "記憶有誤？點「有誤」在對話中修正，Exodus 會更新這條記憶。"
+            "value" : "記憶有誤？點「有誤」在對話中修正，Actovia 會更新這條記憶。"
           }
         }
       }
@@ -29324,61 +29324,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hier ist noch nichts. Für Schlaf braucht es eine Apple Watch oder den Schlafmodus. Falls du den Health-Zugriff abgelehnt hast, schalte ihn in Einstellungen › Datenschutz & Sicherheit › Health › Exodus ein."
+            "value" : "Hier ist noch nichts. Für Schlaf braucht es eine Apple Watch oder den Schlafmodus. Falls du den Health-Zugriff abgelehnt hast, schalte ihn in Einstellungen › Datenschutz & Sicherheit › Health › Actovia ein."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nothing here yet. Sleep needs an Apple Watch or a Sleep Focus. If you declined Health access, turn it on in Settings › Privacy & Security › Health › Exodus."
+            "value" : "Nothing here yet. Sleep needs an Apple Watch or a Sleep Focus. If you declined Health access, turn it on in Settings › Privacy & Security › Health › Actovia."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aún no hay nada. El sueño necesita un Apple Watch o el modo Sueño. Si rechazaste el acceso a Salud, actívalo en Ajustes › Privacidad y seguridad › Salud › Exodus."
+            "value" : "Aún no hay nada. El sueño necesita un Apple Watch o el modo Sueño. Si rechazaste el acceso a Salud, actívalo en Ajustes › Privacidad y seguridad › Salud › Actovia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien pour l'instant. Le sommeil nécessite une Apple Watch ou le mode Sommeil. Si tu as refusé l'accès à Santé, active-le dans Réglages › Confidentialité et sécurité › Santé › Exodus."
+            "value" : "Rien pour l'instant. Le sommeil nécessite une Apple Watch ou le mode Sommeil. Si tu as refusé l'accès à Santé, active-le dans Réglages › Confidentialité et sécurité › Santé › Actovia."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ancora niente. Il sonno richiede un Apple Watch o la modalità Sonno. Se hai rifiutato l'accesso a Salute, attivalo in Impostazioni › Privacy e sicurezza › Salute › Exodus."
+            "value" : "Ancora niente. Il sonno richiede un Apple Watch o la modalità Sonno. Se hai rifiutato l'accesso a Salute, attivalo in Impostazioni › Privacy e sicurezza › Salute › Actovia."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだデータがありません。睡眠には Apple Watch か睡眠集中モードが必要です。ヘルスケアへのアクセスを許可しなかった場合は、「設定 › プライバシーとセキュリティ › ヘルスケア › Exodus」でオンにしてください。"
+            "value" : "まだデータがありません。睡眠には Apple Watch か睡眠集中モードが必要です。ヘルスケアへのアクセスを許可しなかった場合は、「設定 › プライバシーとセキュリティ › ヘルスケア › Actovia」でオンにしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 데이터가 없어요. 수면 기록에는 Apple Watch나 수면 집중 모드가 필요해요. 건강 접근을 거부했다면 설정 › 개인정보 보호 및 보안 › 건강 › Exodus에서 켜 주세요."
+            "value" : "아직 데이터가 없어요. 수면 기록에는 Apple Watch나 수면 집중 모드가 필요해요. 건강 접근을 거부했다면 설정 › 개인정보 보호 및 보안 › 건강 › Actovia에서 켜 주세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ainda não há nada. O sono precisa de um Apple Watch ou do foco Sono. Se você recusou o acesso ao Saúde, ative em Ajustes › Privacidade e Segurança › Saúde › Exodus."
+            "value" : "Ainda não há nada. O sono precisa de um Apple Watch ou do foco Sono. Se você recusou o acesso ao Saúde, ative em Ajustes › Privacidade e Segurança › Saúde › Actovia."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "呢度仲未有資料。睡眠要 Apple Watch 或者睡眠專注模式。如果你拒絕咗健康 App 嘅權限，可以喺「設定 › 私隱與保安 › 健康 › Exodus」開返。"
+            "value" : "呢度仲未有資料。睡眠要 Apple Watch 或者睡眠專注模式。如果你拒絕咗健康 App 嘅權限，可以喺「設定 › 私隱與保安 › 健康 › Actovia」開返。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這裡還沒有資料。睡眠需要 Apple Watch 或睡眠專注模式。如果你拒絕了健康 App 的取用權限，請到「設定 › 隱私權與安全性 › 健康 › Exodus」開啟。"
+            "value" : "這裡還沒有資料。睡眠需要 Apple Watch 或睡眠專注模式。如果你拒絕了健康 App 的取用權限，請到「設定 › 隱私權與安全性 › 健康 › Actovia」開啟。"
           }
         }
       }
@@ -34202,61 +34202,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus für den Computer holen"
+            "value" : "Actovia für den Computer holen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Get Exodus for your computer"
+            "value" : "Get Actovia for your computer"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consigue Exodus para tu ordenador"
+            "value" : "Consigue Actovia para tu ordenador"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Obtenir Exodus pour ordinateur"
+            "value" : "Obtenir Actovia pour ordinateur"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scarica Exodus per il computer"
+            "value" : "Scarica Actovia per il computer"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コンピュータ版 Exodus を入手"
+            "value" : "コンピュータ版 Actovia を入手"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "컴퓨터용 Exodus 받기"
+            "value" : "컴퓨터용 Actovia 받기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Baixe o Exodus para computador"
+            "value" : "Baixe o Actovia para computador"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "下載電腦版 Exodus"
+            "value" : "下載電腦版 Actovia"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "下載電腦版 Exodus"
+            "value" : "下載電腦版 Actovia"
           }
         }
       }
@@ -34268,61 +34268,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
+            "value" : "Actovia läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
+            "value" : "Actovia runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
+            "value" : "Actovia se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
+            "value" : "Actovia tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
+            "value" : "Actovia gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
+            "value" : "Actovia はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
+            "value" : "Actovia는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
+            "value" : "O Actovia roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
+            "value" : "Actovia 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
+            "value" : "Actovia 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
           }
         }
       }
@@ -34334,61 +34334,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus ist noch nicht auf Ihrem Computer? Installieren Sie es von exodus.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
+            "value" : "Actovia ist noch nicht auf Ihrem Computer? Installieren Sie es von actovia.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Don’t have Exodus on your computer yet? Install it from exodus.yancey.app, then pair this iPhone from its Settings."
+            "value" : "Don’t have Actovia on your computer yet? Install it from actovia.yancey.app, then pair this iPhone from its Settings."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Aún no tienes Exodus en tu ordenador? Instálalo desde exodus.yancey.app y vincula este iPhone desde sus ajustes."
+            "value" : "¿Aún no tienes Actovia en tu ordenador? Instálalo desde actovia.yancey.app y vincula este iPhone desde sus ajustes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus n’est pas encore sur votre ordinateur ? Installez-le depuis exodus.yancey.app, puis associez cet iPhone depuis ses réglages."
+            "value" : "Actovia n’est pas encore sur votre ordinateur ? Installez-le depuis actovia.yancey.app, puis associez cet iPhone depuis ses réglages."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non hai ancora Exodus sul computer? Installalo da exodus.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
+            "value" : "Non hai ancora Actovia sul computer? Installalo da actovia.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コンピュータにまだ Exodus がありませんか？exodus.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
+            "value" : "コンピュータにまだ Actovia がありませんか？actovia.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "컴퓨터에 아직 Exodus가 없나요? exodus.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
+            "value" : "컴퓨터에 아직 Actovia가 없나요? actovia.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ainda não tem o Exodus no computador? Instale em exodus.yancey.app e depois pareie este iPhone nas configurações dele."
+            "value" : "Ainda não tem o Actovia no computador? Instale em actovia.yancey.app e depois pareie este iPhone nas configurações dele."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電腦上還沒有 Exodus？到 exodus.yancey.app 安裝，再從它的設定配對這部 iPhone。"
+            "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這部 iPhone。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "電腦上還沒有 Exodus？到 exodus.yancey.app 安裝，再從它的設定配對這支 iPhone。"
+            "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這支 iPhone。"
           }
         }
       }
@@ -35654,61 +35654,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MCP-Server fügen Sie in Exodus auf Ihrem Computer hinzu, bearbeiten und entfernen sie dort."
+            "value" : "MCP-Server fügen Sie in Actovia auf Ihrem Computer hinzu, bearbeiten und entfernen sie dort."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add, edit and remove MCP servers in Exodus on your computer."
+            "value" : "Add, edit and remove MCP servers in Actovia on your computer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade, edita y elimina servidores MCP en Exodus en tu ordenador."
+            "value" : "Añade, edita y elimina servidores MCP en Actovia en tu ordenador."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoutez, modifiez et supprimez des serveurs MCP dans Exodus sur votre ordinateur."
+            "value" : "Ajoutez, modifiez et supprimez des serveurs MCP dans Actovia sur votre ordinateur."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi, modifica e rimuovi i server MCP in Exodus sul tuo computer."
+            "value" : "Aggiungi, modifica e rimuovi i server MCP in Actovia sul tuo computer."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MCP サーバーの追加・編集・削除は、コンピュータの Exodus で行います。"
+            "value" : "MCP サーバーの追加・編集・削除は、コンピュータの Actovia で行います。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MCP 서버 추가, 편집, 제거는 컴퓨터의 Exodus에서 할 수 있습니다."
+            "value" : "MCP 서버 추가, 편집, 제거는 컴퓨터의 Actovia에서 할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicione, edite e remova servidores MCP no Exodus do seu computador."
+            "value" : "Adicione, edite e remova servidores MCP no Actovia do seu computador."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Exodus 新增、編輯和移除 MCP 伺服器。"
+            "value" : "請在電腦上的 Actovia 新增、編輯和移除 MCP 伺服器。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Exodus 新增、編輯和移除 MCP 伺服器。"
+            "value" : "請在電腦上的 Actovia 新增、編輯和移除 MCP 伺服器。"
           }
         }
       }
@@ -36380,61 +36380,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erlauben Sie Exodus in den Einstellungen den Kamerazugriff oder fügen Sie stattdessen den Kopplungslink ein."
+            "value" : "Erlauben Sie Actovia in den Einstellungen den Kamerazugriff oder fügen Sie stattdessen den Kopplungslink ein."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Exodus to use the camera in Settings, or paste the pairing link instead."
+            "value" : "Allow Actovia to use the camera in Settings, or paste the pairing link instead."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permite que Exodus use la cámara en Ajustes o pega el enlace de vinculación."
+            "value" : "Permite que Actovia use la cámara en Ajustes o pega el enlace de vinculación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorisez Exodus à utiliser l’appareil photo dans les Réglages, ou collez le lien de jumelage."
+            "value" : "Autorisez Actovia à utiliser l’appareil photo dans les Réglages, ou collez le lien de jumelage."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consenti a Exodus di usare la fotocamera nelle Impostazioni, oppure incolla il link di abbinamento."
+            "value" : "Consenti a Actovia di usare la fotocamera nelle Impostazioni, oppure incolla il link di abbinamento."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「設定」で Exodus にカメラの使用を許可するか、代わりにペアリングリンクをペーストしてください。"
+            "value" : "「設定」で Actovia にカメラの使用を許可するか、代わりにペアリングリンクをペーストしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "설정에서 Exodus의 카메라 사용을 허용하거나, 대신 페어링 링크를 붙여넣으세요."
+            "value" : "설정에서 Actovia의 카메라 사용을 허용하거나, 대신 페어링 링크를 붙여넣으세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permita que o Exodus use a câmera nos Ajustes ou cole o link de pareamento."
+            "value" : "Permita que o Actovia use a câmera nos Ajustes ou cole o link de pareamento."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在「設定」中允許 Exodus 使用相機，或改為貼上配對連結。"
+            "value" : "請在「設定」中允許 Actovia 使用相機，或改為貼上配對連結。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在「設定」中允許 Exodus 使用相機，或改為貼上配對連結。"
+            "value" : "請在「設定」中允許 Actovia 使用相機，或改為貼上配對連結。"
           }
         }
       }
@@ -36644,61 +36644,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Koppeln Sie dieses iPhone mit Exodus auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
+            "value" : "Koppeln Sie dieses iPhone mit Actovia auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pair this iPhone with Exodus on your computer: open Settings → Devices there and choose Pair a device."
+            "value" : "Pair this iPhone with Actovia on your computer: open Settings → Devices there and choose Pair a device."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vincula este iPhone con Exodus en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
+            "value" : "Vincula este iPhone con Actovia en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jumelez cet iPhone avec Exodus sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
+            "value" : "Jumelez cet iPhone avec Actovia sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abbina questo iPhone a Exodus sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
+            "value" : "Abbina questo iPhone a Actovia sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この iPhone をコンピュータの Exodus とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
+            "value" : "この iPhone をコンピュータの Actovia とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 iPhone을 컴퓨터의 Exodus와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
+            "value" : "이 iPhone을 컴퓨터의 Actovia와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pareie este iPhone com o Exodus no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
+            "value" : "Pareie este iPhone com o Actovia no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將這部 iPhone 與電腦上的 Exodus 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+            "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將這部 iPhone 與電腦上的 Exodus 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+            "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
           }
         }
       }
@@ -36710,61 +36710,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das ist kein Exodus-Kopplungscode."
+            "value" : "Das ist kein Actovia-Kopplungscode."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "That is not an Exodus pairing code."
+            "value" : "That is not an Actovia pairing code."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eso no es un código de vinculación de Exodus."
+            "value" : "Eso no es un código de vinculación de Actovia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce n’est pas un code de jumelage Exodus."
+            "value" : "Ce n’est pas un code de jumelage Actovia."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo non è un codice di abbinamento di Exodus."
+            "value" : "Questo non è un codice di abbinamento di Actovia."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "これは Exodus のペアリングコードではありません。"
+            "value" : "これは Actovia のペアリングコードではありません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 페어링 코드가 아닙니다."
+            "value" : "Actovia 페어링 코드가 아닙니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Isso não é um código de pareamento do Exodus."
+            "value" : "Isso não é um código de pareamento do Actovia."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這不是 Exodus 的配對碼。"
+            "value" : "這不是 Actovia 的配對碼。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這不是 Exodus 的配對碼。"
+            "value" : "這不是 Actovia 的配對碼。"
           }
         }
       }
@@ -38888,61 +38888,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skills suchen, installieren und entfernen Sie in Exodus auf Ihrem Computer oder mit exodus-cli."
+            "value" : "Skills suchen, installieren und entfernen Sie in Actovia auf Ihrem Computer oder mit actovia-cli."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Find, install and remove skills in Exodus on your computer, or with exodus-cli."
+            "value" : "Find, install and remove skills in Actovia on your computer, or with actovia-cli."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Busca, instala y elimina skills en Exodus en tu ordenador o con exodus-cli."
+            "value" : "Busca, instala y elimina skills en Actovia en tu ordenador o con actovia-cli."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recherchez, installez et supprimez des skills dans Exodus sur votre ordinateur, ou avec exodus-cli."
+            "value" : "Recherchez, installez et supprimez des skills dans Actovia sur votre ordinateur, ou avec actovia-cli."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca, installa e rimuovi le skill in Exodus sul tuo computer o con exodus-cli."
+            "value" : "Cerca, installa e rimuovi le skill in Actovia sul tuo computer o con actovia-cli."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スキルの検索・インストール・削除は、コンピュータの Exodus か exodus-cli で行います。"
+            "value" : "スキルの検索・インストール・削除は、コンピュータの Actovia か actovia-cli で行います。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스킬 찾기, 설치, 제거는 컴퓨터의 Exodus 또는 exodus-cli에서 할 수 있습니다."
+            "value" : "스킬 찾기, 설치, 제거는 컴퓨터의 Actovia 또는 actovia-cli에서 할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encontre, instale e remova skills no Exodus do seu computador ou com o exodus-cli."
+            "value" : "Encontre, instale e remova skills no Actovia do seu computador ou com o actovia-cli."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Exodus 或使用 exodus-cli 尋找、安裝和移除技能。"
+            "value" : "請在電腦上的 Actovia 或使用 actovia-cli 尋找、安裝和移除技能。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請在電腦上的 Exodus 或使用 exodus-cli 尋找、安裝和移除技能。"
+            "value" : "請在電腦上的 Actovia 或使用 actovia-cli 尋找、安裝和移除技能。"
           }
         }
       }
@@ -39614,61 +39614,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Starte ein Gespräch mit Exodus."
+            "value" : "Starte ein Gespräch mit Actovia."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start a conversation with Exodus."
+            "value" : "Start a conversation with Actovia."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empieza una conversación con Exodus."
+            "value" : "Empieza una conversación con Actovia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lancez une conversation avec Exodus."
+            "value" : "Lancez une conversation avec Actovia."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inizia una conversazione con Exodus."
+            "value" : "Inizia una conversazione con Actovia."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus と会話を始めましょう。"
+            "value" : "Actovia と会話を始めましょう。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus와 대화를 시작하세요."
+            "value" : "Actovia와 대화를 시작하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comece uma conversa com o Exodus."
+            "value" : "Comece uma conversa com o Actovia."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開始同 Exodus 傾偈。"
+            "value" : "開始同 Actovia 傾偈。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開始和 Exodus 對話。"
+            "value" : "開始和 Actovia 對話。"
           }
         }
       }
@@ -39680,61 +39680,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus fragen …"
+            "value" : "Actovia fragen …"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Exodus…"
+            "value" : "Ask Actovia…"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pregunta a Exodus…"
+            "value" : "Pregunta a Actovia…"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Demander à Exodus…"
+            "value" : "Demander à Actovia…"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiedi a Exodus…"
+            "value" : "Chiedi a Actovia…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus に質問…"
+            "value" : "Actovia に質問…"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus에게 묻기…"
+            "value" : "Actovia에게 묻기…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pergunte ao Exodus…"
+            "value" : "Pergunte ao Actovia…"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus…"
+            "value" : "問 Actovia…"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus…"
+            "value" : "問 Actovia…"
           }
         }
       }
@@ -39746,61 +39746,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus fragen"
+            "value" : "Actovia fragen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Exodus"
+            "value" : "Ask Actovia"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pregunta a Exodus"
+            "value" : "Pregunta a Actovia"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Demander à Exodus"
+            "value" : "Demander à Actovia"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiedi a Exodus"
+            "value" : "Chiedi a Actovia"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus に質問"
+            "value" : "Actovia に質問"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus에게 묻기"
+            "value" : "Actovia에게 묻기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pergunte ao Exodus"
+            "value" : "Pergunte ao Actovia"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus"
+            "value" : "問 Actovia"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "問 Exodus"
+            "value" : "問 Actovia"
           }
         }
       }
@@ -44569,61 +44569,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Legen Sie fest, in welchem Stil und Ton Exodus Ihnen antwortet"
+            "value" : "Legen Sie fest, in welchem Stil und Ton Actovia Ihnen antwortet"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set the style and tone of how Exodus responds to you"
+            "value" : "Set the style and tone of how Actovia responds to you"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Defina el estilo y el tono con que Exodus le responde"
+            "value" : "Defina el estilo y el tono con que Actovia le responde"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Définissez le style et le ton des réponses d'Exodus"
+            "value" : "Définissez le style et le ton des réponses d'Actovia"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imposta lo stile e il tono con cui Exodus ti risponde"
+            "value" : "Imposta lo stile e il tono con cui Actovia ti risponde"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodusがあなたに応答する際のスタイルとトーンを設定します"
+            "value" : "Actoviaがあなたに応答する際のスタイルとトーンを設定します"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus가 응답하는 스타일과 어조를 설정합니다"
+            "value" : "Actovia가 응답하는 스타일과 어조를 설정합니다"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Defina o estilo e o tom de como o Exodus responde a você"
+            "value" : "Defina o estilo e o tom de como o Actovia responde a você"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定 Exodus 回覆你時的風格與語氣"
+            "value" : "設定 Actovia 回覆你時的風格與語氣"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定 Exodus 回覆你時的風格與語氣"
+            "value" : "設定 Actovia 回覆你時的風格與語氣"
           }
         }
       }
@@ -45739,61 +45739,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wie soll Exodus Sie nennen?"
+            "value" : "Wie soll Actovia Sie nennen?"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What should Exodus call you?"
+            "value" : "What should Actovia call you?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Cómo debería llamarle Exodus?"
+            "value" : "¿Cómo debería llamarle Actovia?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comment Exodus doit-il vous appeler ?"
+            "value" : "Comment Actovia doit-il vous appeler ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Come dovrebbe chiamarti Exodus?"
+            "value" : "Come dovrebbe chiamarti Actovia?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodusにどう呼んでほしいですか?"
+            "value" : "Actoviaにどう呼んでほしいですか?"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus가 당신을 어떻게 부르면 될까요?"
+            "value" : "Actovia가 당신을 어떻게 부르면 될까요?"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Como o Exodus deve chamar você?"
+            "value" : "Como o Actovia deve chamar você?"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 應該怎樣稱呼你？"
+            "value" : "Actovia 應該怎樣稱呼你？"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 應該怎麼稱呼你？"
+            "value" : "Actovia 應該怎麼稱呼你？"
           }
         }
       }

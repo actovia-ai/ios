@@ -292,8 +292,8 @@ private struct ArtifactInlineView: View {
         if case .fallback(.outdatedComputer) = state.phase {
             return String(
                 localized: "ios:chat.artifact.inline.outdated",
-                defaultValue: "Update Exodus on your computer to see this here.",
-                comment: "Shown in an artifact's card in the chat, instead of the artifact, when the computer's Exodus is too old to serve it to the phone.")
+                defaultValue: "Update Actovia on your computer to see this here.",
+                comment: "Shown in an artifact's card in the chat, instead of the artifact, when the computer's Actovia is too old to serve it to the phone.")
         }
         return String(
             localized: "ios:chat.artifact.fallback.title", defaultValue: "View it on your computer",
@@ -412,17 +412,17 @@ struct ArtifactFallbackView: View {
         case .outdatedComputer:
             String(
                 localized: "ios:chat.artifact.fallback.outdated",
-                defaultValue: "Update Exodus on your computer to preview artifacts on iPhone. Until then, open this chat there to see it.",
-                comment: "Shown instead of an artifact preview when the computer's Exodus is too old to serve it.")
+                defaultValue: "Update Actovia on your computer to preview artifacts on iPhone. Until then, open this chat there to see it.",
+                comment: "Shown instead of an artifact preview when the computer's Actovia is too old to serve it.")
         case .unreachable:
             String(
                 localized: "ios:chat.artifact.fallback.unreachable",
-                defaultValue: "The preview couldn't load. Open this chat in Exodus on your computer to see it.",
+                defaultValue: "The preview couldn't load. Open this chat in Actovia on your computer to see it.",
                 comment: "Shown instead of an artifact preview when the computer did not answer in time.")
         case .renderFailed:
             String(
                 localized: "ios:chat.artifact.fallback.failed",
-                defaultValue: "This artifact can't be shown on iPhone. Open this chat in Exodus on your computer to see it.",
+                defaultValue: "This artifact can't be shown on iPhone. Open this chat in Actovia on your computer to see it.",
                 comment: "Shown instead of an artifact preview when its code did not render on the phone.")
         }
     }

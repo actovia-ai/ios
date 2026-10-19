@@ -8,7 +8,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus"
+            "value" : "Actovia"
           }
         }
       },
@@ -21,61 +21,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus verwendet die Kamera, um den auf Ihrem Computer angezeigten Kopplungscode zu scannen und Fotos aufzunehmen, die Sie einem Chat hinzufügen."
+            "value" : "Actovia verwendet die Kamera, um den auf Ihrem Computer angezeigten Kopplungscode zu scannen und Fotos aufzunehmen, die Sie einem Chat hinzufügen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat."
+            "value" : "Actovia uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa la cámara para escanear el código de vinculación que aparece en tu ordenador y para hacer fotos que añades a un chat."
+            "value" : "Actovia usa la cámara para escanear el código de vinculación que aparece en tu ordenador y para hacer fotos que añades a un chat."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus utilise l’appareil photo pour scanner le code de jumelage affiché sur votre ordinateur et pour prendre les photos que vous ajoutez à une discussion."
+            "value" : "Actovia utilise l’appareil photo pour scanner le code de jumelage affiché sur votre ordinateur et pour prendre les photos que vous ajoutez à une discussion."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa la fotocamera per scansionare il codice di abbinamento mostrato sul tuo computer e per scattare le foto che aggiungi a una chat."
+            "value" : "Actovia usa la fotocamera per scansionare il codice di abbinamento mostrato sul tuo computer e per scattare le foto che aggiungi a una chat."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus はコンピュータに表示されたペアリングコードのスキャンと、チャットに追加する写真の撮影にカメラを使用します。"
+            "value" : "Actovia はコンピュータに表示されたペアリングコードのスキャンと、チャットに追加する写真の撮影にカメラを使用します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 컴퓨터에 표시된 페어링 코드를 스캔하고 채팅에 추가할 사진을 찍기 위해 카메라를 사용합니다."
+            "value" : "Actovia는 컴퓨터에 표시된 페어링 코드를 스캔하고 채팅에 추가할 사진을 찍기 위해 카메라를 사용합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat."
+            "value" : "O Actovia usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入聊天的照片。"
+            "value" : "Actovia 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入聊天的照片。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。"
+            "value" : "Actovia 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。"
           }
         }
       }
@@ -87,61 +87,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus verwendet Face ID, um die Verbindung zu Ihrem Computer zu entsperren."
+            "value" : "Actovia verwendet Face ID, um die Verbindung zu Ihrem Computer zu entsperren."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus uses Face ID to unlock the connection to your computer."
+            "value" : "Actovia uses Face ID to unlock the connection to your computer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa Face ID para desbloquear la conexión con tu ordenador."
+            "value" : "Actovia usa Face ID para desbloquear la conexión con tu ordenador."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus utilise Face ID pour déverrouiller la connexion à votre ordinateur."
+            "value" : "Actovia utilise Face ID pour déverrouiller la connexion à votre ordinateur."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa Face ID per sbloccare la connessione al tuo computer."
+            "value" : "Actovia usa Face ID per sbloccare la connessione al tuo computer."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus はコンピュータとの接続のロックを解除するために Face ID を使用します。"
+            "value" : "Actovia はコンピュータとの接続のロックを解除するために Face ID を使用します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 컴퓨터와의 연결 잠금을 해제하기 위해 Face ID를 사용합니다."
+            "value" : "Actovia는 컴퓨터와의 연결 잠금을 해제하기 위해 Face ID를 사용합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus usa o Face ID para desbloquear a conexão com o seu computador."
+            "value" : "O Actovia usa o Face ID para desbloquear a conexão com o seu computador."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 使用 Face ID 解鎖與電腦的連線。"
+            "value" : "Actovia 使用 Face ID 解鎖與電腦的連線。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 使用 Face ID 解鎖與電腦的連接。"
+            "value" : "Actovia 使用 Face ID 解鎖與電腦的連接。"
           }
         }
       }
@@ -152,61 +152,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus liest deine Schlaf-, Aktivitäts-, Herz- und Körperdaten, um deinen täglichen Gesundheitsbericht zu erstellen."
+            "value" : "Actovia liest deine Schlaf-, Aktivitäts-, Herz- und Körperdaten, um deinen täglichen Gesundheitsbericht zu erstellen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus reads your sleep, activity, heart and body data to write your daily health report."
+            "value" : "Actovia reads your sleep, activity, heart and body data to write your daily health report."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus lee tus datos de sueño, actividad, corazón y cuerpo para redactar tu informe de salud diario."
+            "value" : "Actovia lee tus datos de sueño, actividad, corazón y cuerpo para redactar tu informe de salud diario."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus lit vos données de sommeil, d'activité, de cœur et de corps pour rédiger votre bilan de santé quotidien."
+            "value" : "Actovia lit vos données de sommeil, d'activité, de cœur et de corps pour rédiger votre bilan de santé quotidien."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus legge i tuoi dati su sonno, attività, cuore e corpo per scrivere il tuo resoconto di salute giornaliero."
+            "value" : "Actovia legge i tuoi dati su sonno, attività, cuore e corpo per scrivere il tuo resoconto di salute giornaliero."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は、毎日のヘルスレポートを作成するために、睡眠、アクティビティ、心臓、身体のデータを読み取ります。"
+            "value" : "Actovia は、毎日のヘルスレポートを作成するために、睡眠、アクティビティ、心臓、身体のデータを読み取ります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 일일 건강 리포트를 작성하기 위해 수면, 활동, 심장 및 신체 데이터를 읽습니다."
+            "value" : "Actovia는 일일 건강 리포트를 작성하기 위해 수면, 활동, 심장 및 신체 데이터를 읽습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus lê seus dados de sono, atividade, coração e corpo para escrever seu relatório de saúde diário."
+            "value" : "O Actovia lê seus dados de sono, atividade, coração e corpo para escrever seu relatório de saúde diário."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會讀取你的睡眠、活動、心臟與身體資料，用來撰寫你的每日健康報告。"
+            "value" : "Actovia 會讀取你的睡眠、活動、心臟與身體資料，用來撰寫你的每日健康報告。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會讀取你的睡眠、活動、心臟與身體資料，用嚟撰寫你嘅每日健康報告。"
+            "value" : "Actovia 會讀取你的睡眠、活動、心臟與身體資料，用嚟撰寫你嘅每日健康報告。"
           }
         }
       }
@@ -217,61 +217,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus speichert die Wassermenge, die du erfasst, in Apple Health."
+            "value" : "Actovia speichert die Wassermenge, die du erfasst, in Apple Health."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus saves the water you log to Apple Health."
+            "value" : "Actovia saves the water you log to Apple Health."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus guarda en Salud el agua que registras."
+            "value" : "Actovia guarda en Salud el agua que registras."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus enregistre dans Santé l'eau que vous consignez."
+            "value" : "Actovia enregistre dans Santé l'eau que vous consignez."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus salva in Salute l'acqua che registri."
+            "value" : "Actovia salva in Salute l'acqua che registri."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は、記録した水分摂取量を「ヘルスケア」に保存します。"
+            "value" : "Actovia は、記録した水分摂取量を「ヘルスケア」に保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 기록한 물 섭취량을 건강 앱에 저장합니다."
+            "value" : "Actovia는 기록한 물 섭취량을 건강 앱에 저장합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus salva no Saúde a água que você registra."
+            "value" : "O Actovia salva no Saúde a água que você registra."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會將你記錄的飲水量儲存到「健康」App。"
+            "value" : "Actovia 會將你記錄的飲水量儲存到「健康」App。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會將你記錄嘅飲水量儲存到「健康」App。"
+            "value" : "Actovia 會將你記錄嘅飲水量儲存到「健康」App。"
           }
         }
       }
@@ -283,61 +283,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus benötigt Zugriff auf das lokale Netzwerk, um sich mit dem auf Ihrem Computer laufenden Exodus-Dienst zu verbinden."
+            "value" : "Actovia benötigt Zugriff auf das lokale Netzwerk, um sich mit dem auf Ihrem Computer laufenden Actovia-Dienst zu verbinden."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus needs local network access to connect to the Exodus service running on your computer."
+            "value" : "Actovia needs local network access to connect to the Actovia service running on your computer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus necesita acceso a la red local para conectarse al servicio de Exodus que se ejecuta en su equipo."
+            "value" : "Actovia necesita acceso a la red local para conectarse al servicio de Actovia que se ejecuta en su equipo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus a besoin d'un accès au réseau local pour se connecter au service Exodus qui s'exécute sur votre ordinateur."
+            "value" : "Actovia a besoin d'un accès au réseau local pour se connecter au service Actovia qui s'exécute sur votre ordinateur."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus ha bisogno dell'accesso alla rete locale per connettersi al servizio Exodus in esecuzione sul tuo computer."
+            "value" : "Actovia ha bisogno dell'accesso alla rete locale per connettersi al servizio Actovia in esecuzione sul tuo computer."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodusは、お使いのコンピュータで動作しているExodusサービスに接続するために、ローカルネットワークへのアクセスを必要とします。"
+            "value" : "Actoviaは、お使いのコンピュータで動作しているActoviaサービスに接続するために、ローカルネットワークへのアクセスを必要とします。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus가 컴퓨터에서 실행 중인 Exodus 서비스에 연결하려면 로컬 네트워크 접근 권한이 필요합니다."
+            "value" : "Actovia가 컴퓨터에서 실행 중인 Actovia 서비스에 연결하려면 로컬 네트워크 접근 권한이 필요합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus precisa de acesso à rede local para se conectar ao serviço do Exodus em execução no seu computador."
+            "value" : "O Actovia precisa de acesso à rede local para se conectar ao serviço do Actovia em execução no seu computador."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 需要區域網路存取權，才能連線到在你電腦上執行的 Exodus 服務。"
+            "value" : "Actovia 需要區域網路存取權，才能連線到在你電腦上執行的 Actovia 服務。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 需要本地網絡存取權，才能連線到在你電腦上執行的 Exodus 服務。"
+            "value" : "Actovia 需要本地網絡存取權，才能連線到在你電腦上執行的 Actovia 服務。"
           }
         }
       }
@@ -349,61 +349,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus verwendet deinen Standort, um deine Position auf der Routenkarte anzuzeigen und die Karte beim Tippen auf die Standorttaste dorthin zu zentrieren."
+            "value" : "Actovia verwendet deinen Standort, um deine Position auf der Routenkarte anzuzeigen und die Karte beim Tippen auf die Standorttaste dorthin zu zentrieren."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus uses your location to show your position on the itinerary map and center the map when you tap the location button."
+            "value" : "Actovia uses your location to show your position on the itinerary map and center the map when you tap the location button."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa tu ubicación para mostrar tu posición en el mapa del itinerario y centrarlo al tocar el botón de ubicación."
+            "value" : "Actovia usa tu ubicación para mostrar tu posición en el mapa del itinerario y centrarlo al tocar el botón de ubicación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus utilise votre position pour l'afficher sur la carte de l'itinéraire et centrer la carte lorsque vous touchez le bouton de localisation."
+            "value" : "Actovia utilise votre position pour l'afficher sur la carte de l'itinéraire et centrer la carte lorsque vous touchez le bouton de localisation."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus usa la tua posizione per mostrarla sulla mappa dell'itinerario e centrare la mappa quando tocchi il pulsante della posizione."
+            "value" : "Actovia usa la tua posizione per mostrarla sulla mappa dell'itinerario e centrare la mappa quando tocchi il pulsante della posizione."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は、旅程マップに現在地を表示し、現在地ボタンをタップしたときに地図を現在地へ移動するために位置情報を使用します。"
+            "value" : "Actovia は、旅程マップに現在地を表示し、現在地ボタンをタップしたときに地図を現在地へ移動するために位置情報を使用します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 일정 지도에 현재 위치를 표시하고 위치 버튼을 탭할 때 지도를 해당 위치로 이동하기 위해 위치 정보를 사용합니다."
+            "value" : "Actovia는 일정 지도에 현재 위치를 표시하고 위치 버튼을 탭할 때 지도를 해당 위치로 이동하기 위해 위치 정보를 사용합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus usa sua localização para mostrar sua posição no mapa do roteiro e centralizar o mapa quando você toca no botão de localização."
+            "value" : "O Actovia usa sua localização para mostrar sua posição no mapa do roteiro e centralizar o mapa quando você toca no botão de localização."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會使用你的位置，在行程地圖上顯示你的位置，並在你點選定位按鈕時將地圖移至該處。"
+            "value" : "Actovia 會使用你的位置，在行程地圖上顯示你的位置，並在你點選定位按鈕時將地圖移至該處。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會使用你的位置，在行程地圖上顯示你的位置，並在你點按定位按鈕時將地圖移至該處。"
+            "value" : "Actovia 會使用你的位置，在行程地圖上顯示你的位置，並在你點按定位按鈕時將地圖移至該處。"
           }
         }
       }
@@ -414,61 +414,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus nimmt Ihre Stimme nur auf, während Sie eine Nachricht diktieren, um sie in Text für den Chat umzuwandeln."
+            "value" : "Actovia nimmt Ihre Stimme nur auf, während Sie eine Nachricht diktieren, um sie in Text für den Chat umzuwandeln."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus records your voice only while you are dictating a message, to turn it into text for the chat."
+            "value" : "Actovia records your voice only while you are dictating a message, to turn it into text for the chat."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus graba tu voz solo mientras dictas un mensaje, para convertirla en texto para el chat."
+            "value" : "Actovia graba tu voz solo mientras dictas un mensaje, para convertirla en texto para el chat."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus n'enregistre votre voix que pendant que vous dictez un message, pour la transformer en texte pour la conversation."
+            "value" : "Actovia n'enregistre votre voix que pendant que vous dictez un message, pour la transformer en texte pour la conversation."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus registra la tua voce solo mentre detti un messaggio, per trasformarla in testo per la chat."
+            "value" : "Actovia registra la tua voce solo mentre detti un messaggio, per trasformarla in testo per la chat."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は、メッセージを音声入力している間だけ音声を録音し、チャット用のテキストに変換します。"
+            "value" : "Actovia は、メッセージを音声入力している間だけ音声を録音し、チャット用のテキストに変換します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 메시지를 음성으로 입력하는 동안에만 음성을 녹음하여 채팅용 텍스트로 변환합니다."
+            "value" : "Actovia는 메시지를 음성으로 입력하는 동안에만 음성을 녹음하여 채팅용 텍스트로 변환합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus grava sua voz apenas enquanto você dita uma mensagem, para transformá-la em texto para a conversa."
+            "value" : "O Actovia grava sua voz apenas enquanto você dita uma mensagem, para transformá-la em texto para a conversa."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為聊天的文字。"
+            "value" : "Actovia 只會在你以語音輸入訊息時錄音，並將其轉為聊天的文字。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 只會在你以語音輸入訊息時錄音，並將其轉為對話的文字。"
+            "value" : "Actovia 只會在你以語音輸入訊息時錄音，並將其轉為對話的文字。"
           }
         }
       }
@@ -480,61 +480,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus speichert die von Ihnen ausgewählten Bilder in Ihrer Fotomediathek."
+            "value" : "Actovia speichert die von Ihnen ausgewählten Bilder in Ihrer Fotomediathek."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus saves the images you choose to your photo library."
+            "value" : "Actovia saves the images you choose to your photo library."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus guarda en tu fototeca las imágenes que elijas."
+            "value" : "Actovia guarda en tu fototeca las imágenes que elijas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus enregistre les images que vous choisissez dans votre photothèque."
+            "value" : "Actovia enregistre les images que vous choisissez dans votre photothèque."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus salva nella tua libreria foto le immagini che scegli."
+            "value" : "Actovia salva nella tua libreria foto le immagini che scegli."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus は選択した画像を写真ライブラリに保存します。"
+            "value" : "Actovia は選択した画像を写真ライブラリに保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus는 선택한 이미지를 사진 보관함에 저장합니다."
+            "value" : "Actovia는 선택한 이미지를 사진 보관함에 저장합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Exodus salva as imagens que você escolher na sua fototeca."
+            "value" : "O Actovia salva as imagens que você escolher na sua fototeca."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會把你選擇的圖片儲存到你的照片圖庫。"
+            "value" : "Actovia 會把你選擇的圖片儲存到你的照片圖庫。"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exodus 會把你選擇的圖片儲存到你的相片圖庫。"
+            "value" : "Actovia 會把你選擇的圖片儲存到你的相片圖庫。"
           }
         }
       }

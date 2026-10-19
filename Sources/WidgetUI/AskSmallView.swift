@@ -45,7 +45,7 @@ public struct AskSmallView: View {
     }
 }
 
-/// "Ask Exodus…" with the marigold send glyph.
+/// "Ask Actovia…" with the marigold send glyph.
 struct AskCapsule: View {
     let ink: Color
 

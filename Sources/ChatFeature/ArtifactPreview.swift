@@ -214,7 +214,7 @@ final class ArtifactSchemeHandler: NSObject, WKURLSchemeHandler {
 
 /// Why the preview shows the calm "see it on your computer" state instead of the artifact.
 enum ArtifactFallbackReason: Equatable {
-    /// The computer has no sandbox route (404): an Exodus from before phones could preview.
+    /// The computer has no sandbox route (404): an Actovia from before phones could preview.
     case outdatedComputer
     /// The computer did not answer, or the page did not come up in time.
     case unreachable

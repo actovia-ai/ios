@@ -87,7 +87,7 @@ struct PairingViewModelTests {
         let (viewModel, _) = makeViewModel()
 
         #expect(!(await viewModel.pair(from: text)))
-        #expect(viewModel.errorMessage == "That is not an Exodus pairing code.")
+        #expect(viewModel.errorMessage == "That is not an Actovia pairing code.")
         #expect(!viewModel.isPaired)
     }
 

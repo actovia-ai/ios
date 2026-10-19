@@ -101,7 +101,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
     private let workspaces: Workspaces
 
     /// A brand name: a plain `String`, shown as is and never looked up in the catalog.
-    private static var appName: String { "Exodus" }
+    private static var appName: String { "Actovia" }
 
     public init(
         apiClient: APIClient,
@@ -179,7 +179,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
             .animation(.easeOut(duration: 0.15), value: search.phase)
             .animation(.easeOut(duration: 0.15), value: search.isSearching)
             // Blank always: the system's own inline title centres itself and stays small, neither
-            // of which is what "Exodus" should do here. `sidebarToolbar`'s leading item draws it
+            // of which is what "Actovia" should do here. `sidebarToolbar`'s leading item draws it
             // instead, left-aligned and a size up from that.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -458,7 +458,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 // instead of centred, on the same line as Search either way.
                 Text(Self.appName)
                     .font(.title2.weight(.semibold))
-                    // The toolbar proposes this item a width tighter than "Exodus" needs (it
+                    // The toolbar proposes this item a width tighter than "Actovia" needs (it
                     // truncated to "Ex…" with room to spare) — this is six fixed characters,
                     // never user content, so laying out at its own ideal size is safe.
                     .fixedSize()

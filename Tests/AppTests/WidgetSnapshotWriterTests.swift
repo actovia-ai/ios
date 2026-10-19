@@ -3,8 +3,8 @@ import Models
 import Testing
 import WidgetKitShared
 
-// The app target ships as `Exodus`, so that — not `App` — is the module name to import.
-@testable import Exodus
+// The app target ships as `Actovia`, so that — not `App` — is the module name to import.
+@testable import Actovia
 
 @MainActor
 @Suite("WidgetSnapshotWriter")
