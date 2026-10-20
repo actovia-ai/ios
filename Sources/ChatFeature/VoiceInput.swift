@@ -152,11 +152,18 @@ enum Transcriber {
         audio: Data, filename: String = "voice.m4a", mimeType: String = "audio/mp4", serverConfig: ServerConfigStore,
         boundary: String = "actovia-\(UUID().uuidString)"
     ) -> URLRequest? {
-        guard let base = URL(string: serverConfig.baseURLString) else { return nil }
+        request(audio: audio, filename: filename, mimeType: mimeType, route: serverConfig.route, boundary: boundary)
+    }
+
+    static func request(
+        audio: Data, filename: String = "voice.m4a", mimeType: String = "audio/mp4", route: ServerRoute,
+        boundary: String = "actovia-\(UUID().uuidString)"
+    ) -> URLRequest? {
+        guard let first = route.bases.first, let base = URL(string: first) else { return nil }
         var request = URLRequest(url: base.appendingPathComponent(path))
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        if let authorization = serverConfig.authorization {
+        if let authorization = route.authorization {
             request.setValue(authorization, forHTTPHeaderField: "Authorization")
         }
         // Five minutes of speech uploads in seconds, but the model may take a while to answer.
@@ -189,11 +196,13 @@ enum Transcriber {
     /// Sends the recording over the paired computer's pinned session (the plain address's, unpaired); a computer
     /// that answers "locked" is unlocked once and asked again, as a chat turn is.
     static func transcribe(audio: Data, serverConfig: ServerConfigStore) async throws -> String {
-        guard let request = request(audio: audio, serverConfig: serverConfig) else { throw Failure.unreadable }
-        let session = serverConfig.connection?.session ?? URLSession.shared
+        // Address, token and session in one piece (see `ServerRoute`).
+        let route = serverConfig.route
+        guard let request = request(audio: audio, route: route) else { throw Failure.unreadable }
+        let session = route.session ?? serverConfig.connection?.session ?? URLSession.shared
         var (data, response) = try await session.data(for: request)
         if (response as? HTTPURLResponse)?.statusCode == 423, let connection = serverConfig.connection,
-            await connection.unlockComputer(session: session)
+            await connection.unlockComputer(route: route)
         {
             (data, response) = try await session.data(for: request)
         }

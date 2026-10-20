@@ -693,7 +693,7 @@ struct ChatStreamManagerLockedTests {
             PairedServer(
                 hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac",
                 deviceId: "dev-1", token: "TOKEN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: { _ in RoutedMockURLProtocol.makeSession() })
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: suite)!)
         config.connection = connection
         return config

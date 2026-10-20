@@ -5,6 +5,9 @@ import Testing
 
 @testable import NetworkingKit
 
+/// Every computer's pinned session, in these tests the mock protocol's.
+private let mockSessions: @Sendable (String) -> URLSession = { _ in MockURLProtocol.makeSession() }
+
 /// Uses `MockURLProtocol`, whose handler is process-global — hence `.serialized`.
 @Suite("ServerConnection", .serialized)
 struct ServerConnectionTests {
@@ -17,7 +20,7 @@ struct ServerConnectionTests {
 
     @Test("unpaired, it contributes nothing — the app uses the manual address")
     func unpaired() {
-        let connection = ServerConnection(store: InMemoryCredentialStore())
+        let connection = ServerConnection(store: InMemoryCredentialStore(), sessionFactory: mockSessions)
         #expect(!connection.isPaired)
         #expect(!connection.isUnlocked)
         #expect(connection.baseURLString == nil)
@@ -27,7 +30,7 @@ struct ServerConnectionTests {
 
     @Test("paired but locked, it still gives nothing away until unlocked")
     func lockedUntilUnlocked() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         #expect(connection.isPaired)
         #expect(!connection.isUnlocked)
         #expect(connection.authorization == nil)
@@ -42,7 +45,7 @@ struct ServerConnectionTests {
 
     @Test("the pinned session caches nothing: settings and MCP responses never reach the disk")
     func sessionHasNoDiskCache() {
-        let configuration = ServerConnection(store: InMemoryCredentialStore()).session.configuration
+        let configuration = ServerConnection(store: InMemoryCredentialStore(), sessionFactory: mockSessions).session.configuration
         #expect((configuration.urlCache?.diskCapacity ?? 0) == 0)
         #expect((configuration.urlCache?.memoryCapacity ?? 0) == 0)
         #expect(configuration.requestCachePolicy == .reloadIgnoringLocalCacheData)
@@ -51,7 +54,7 @@ struct ServerConnectionTests {
 
     @Test("lock() forgets the token but not the pairing")
     func lockForgets() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         connection.lock()
 
@@ -64,7 +67,7 @@ struct ServerConnectionTests {
     @Test("unpair() forgets everything")
     func unpairClears() async throws {
         let store = InMemoryCredentialStore(stored)
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         connection.unpair()
 
@@ -76,31 +79,31 @@ struct ServerConnectionTests {
     @Test("unpair() tells whoever keeps things from the computer, once per unpair; lock() does not")
     func unpairNotifies() async {
         let calls = Mutex(0)
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         connection.onComputerChange { calls.withLock { $0 += 1 } }
         connection.lock()
         #expect(calls.withLock { $0 } == 0)
-        await connection.unpair()?.value
+        connection.unpair()
         #expect(calls.withLock { $0 } == 1)
     }
 
     @Test("unlockComputer() is a no-op on an unpaired connection — no request sent")
     func unlockComputerUnpaired() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore())
+        let connection = ServerConnection(store: InMemoryCredentialStore(), sessionFactory: mockSessions)
         let seen = Mutex<Int>(0)
         MockURLProtocol.handler = { _ in
             seen.withLock { $0 += 1 }
             return (200, Data())
         }
 
-        let unlocked = await connection.unlockComputer(session: MockURLProtocol.makeSession())
+        let unlocked = await connection.unlockComputer()
         #expect(!unlocked)
         #expect(seen.withLock { $0 } == 0)
     }
 
     @Test("unlockComputer() posts the token to /api/v1/lock/unlock and reports success on 2xx")
     func unlockComputerSucceeds() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let seen = Mutex<(url: String, authorization: String?)?>(nil)
         MockURLProtocol.handler = { request in
@@ -113,7 +116,7 @@ struct ServerConnectionTests {
             return (200, Data(#"{"locked":false}"#.utf8))
         }
 
-        let unlocked = await connection.unlockComputer(session: MockURLProtocol.makeSession())
+        let unlocked = await connection.unlockComputer()
         #expect(unlocked)
         let request = try #require(seen.withLock { $0 })
         #expect(request.url == "https://10.0.0.2:63129/api/v1/lock/unlock")
@@ -122,22 +125,22 @@ struct ServerConnectionTests {
 
     @Test("unlockComputer() reports failure on a non-2xx, and on a transport error")
     func unlockComputerFails() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         MockURLProtocol.handler = { _ in (500, Data()) }
-        #expect(await connection.unlockComputer(session: MockURLProtocol.makeSession()) == false)
+        #expect(await connection.unlockComputer() == false)
 
         MockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
-        #expect(await connection.unlockComputer(session: MockURLProtocol.makeSession()) == false)
+        #expect(await connection.unlockComputer() == false)
     }
 
     @Test("unlockComputer() reads the token first (Face ID) when it isn't already in memory")
     func unlockComputerReadsTheTokenFirst() async throws {
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         #expect(!connection.isUnlocked)
         MockURLProtocol.handler = { _ in (200, Data(#"{"locked":false}"#.utf8)) }
 
-        let unlocked = await connection.unlockComputer(session: MockURLProtocol.makeSession())
+        let unlocked = await connection.unlockComputer()
         #expect(unlocked)
         #expect(connection.isUnlocked)
     }
@@ -145,7 +148,7 @@ struct ServerConnectionTests {
     @Test("remembers the address that answered, and tries it first from then on")
     func remembersReachableHost() async throws {
         let store = InMemoryCredentialStore(stored)
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
 
         connection.noteReachable(host: "mac.local")
@@ -160,7 +163,7 @@ struct ServerConnectionTests {
     @Test("pairing posts the code, stores the token, and leaves the connection unlocked")
     func pairs() async throws {
         let store = InMemoryCredentialStore()
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         let changes = Mutex(0)
         connection.onComputerChange { changes.withLock { $0 += 1 } }
         let seen = Mutex<(url: String, body: [String: String])?>(nil)
@@ -200,7 +203,7 @@ struct ServerConnectionTests {
     @Test("a refused code pairs nothing and says why")
     func refusedCode() async throws {
         let store = InMemoryCredentialStore()
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         MockURLProtocol.handler = { _ in (403, Data(#"{"type":"error"}"#.utf8)) }
 
         await #expect(throws: HTTPError.self) {
@@ -218,10 +221,11 @@ struct ServerConnectionTests {
         #expect(config.baseURLString == "http://localhost:60223")
         #expect(config.authorization == nil)
 
-        let connection = ServerConnection(store: InMemoryCredentialStore(stored))
+        let connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
         config.connection = connection
-        // Paired but locked: still the manual address, still no token.
-        #expect(config.baseURLString == "http://localhost:60223")
+        // Paired but locked: nowhere to go and no token — never the plain manual address.
+        #expect(config.baseURLCandidates.isEmpty)
+        #expect(config.authorization == nil)
 
         try await connection.unlock(reason: "test")
         #expect(config.baseURLString == "https://10.0.0.2:63129")
@@ -236,7 +240,7 @@ struct ServerConnectionTests {
     @Test("pairing a second computer keeps the first, and the new one becomes current")
     func pairsAnother() async throws {
         let store = InMemoryCredentialStore(stored)
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         MockURLProtocol.handler = { _ in (200, Data(#"{"deviceId":"dev-9","token":"MINI-TOKEN"}"#.utf8)) }
         let mini = try #require(PairingLink(string: "actovia://pair?h=100.64.0.9&p=63129&c=CODE&f=MINI&n=Mac+mini"))
@@ -253,12 +257,12 @@ struct ServerConnectionTests {
     func switches() async throws {
         let store = InMemoryCredentialStore(
             computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         let changes = Mutex(0)
         connection.onComputerChange { changes.withLock { $0 += 1 } }
         try await connection.unlock(reason: "test")
 
-        try await connection.switchTo(fingerprint: "HOMELAB")
+        try connection.switchTo(fingerprint: "HOMELAB")
         #expect(connection.baseURLString == "https://100.64.0.9:63129")
         #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
         #expect(connection.pin == "HOMELAB")
@@ -266,7 +270,7 @@ struct ServerConnectionTests {
         #expect(try await store.load(reason: "test")?.activeFingerprint == "HOMELAB")
 
         // Switching to the one already current changes nothing.
-        try await connection.switchTo(fingerprint: "HOMELAB")
+        try connection.switchTo(fingerprint: "HOMELAB")
         #expect(changes.withLock { $0 } == 1)
     }
 
@@ -274,7 +278,7 @@ struct ServerConnectionTests {
     func forgetsOne() async throws {
         let store = InMemoryCredentialStore(
             computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let told = Mutex<[String]>([])
         MockURLProtocol.handler = { request in
@@ -295,25 +299,55 @@ struct ServerConnectionTests {
         #expect(connection.authorization == nil)
     }
 
-    /// A request reads its address and its token at different moments, and TLS connections stay pooled between
-    /// requests: the old computer's token and pin go at once, and the next computer's come only after the pool has
-    /// been flushed — never one computer's token on another's address or connection.
-    @Test("a revocation (401) unpairs the current computer only; the next takes over once old connections are gone")
-    func revokedHandsOver() async throws {
+    /// Every computer has a session of its own, and a request takes its address, token and session together: no
+    /// computer's token ever travels with another's address or down another's pooled connections.
+    @Test("each computer's route carries its own token and its own session, across a switch")
+    func routesStayWithTheirComputer() async throws {
         let store = InMemoryCredentialStore(
             computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
         let connection = ServerConnection(store: store)
         try await connection.unlock(reason: "test")
 
-        let handover = connection.unpair()
-        #expect(connection.authorization == nil, "no token while connections to the old computer may be pooled")
-        #expect(connection.pin == nil, "and no certificate trusted either")
-        #expect(connection.baseURLCandidates.isEmpty)
-        #expect(connection.isUnlocked, "Face ID is not asked again for a handover")
-        await handover?.value
-        #expect(connection.isPaired)
+        let mac = try #require(connection.route)
+        try connection.switchTo(fingerprint: "HOMELAB")
+        let mini = try #require(connection.route)
+
+        #expect(mac.fingerprint == "PIN" && mac.authorization == "Bearer TOKEN")
+        #expect(mac.bases == ["https://10.0.0.2:63129", "https://mac.local:63129"])
+        #expect(mini.fingerprint == "HOMELAB" && mini.authorization == "Bearer HOMELAB-TOKEN")
+        #expect(mini.bases == ["https://100.64.0.9:63129"])
+        #expect(mac.session !== mini.session, "separate pools: no connection is shared between computers")
+        #expect(mac.session !== connection.session, "nor with the pairing session")
+        // The same computer keeps its session while paired.
+        try connection.switchTo(fingerprint: "PIN")
+        #expect(connection.route?.session === mac.session)
+    }
+
+    @Test("a 401 forgets the computer the request went to, even after a switch; the current one stays")
+    func revokedForgetsItsOwnComputer() async throws {
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
+        try await connection.unlock(reason: "test")
+        try connection.switchTo(fingerprint: "HOMELAB")
+
+        connection.revoked(fingerprint: "PIN")
+        #expect(connection.pairedComputers.map(\.name) == ["Mac mini"])
         #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
-        #expect(connection.pairedComputers.map(\.isActive) == [true])
+
+        connection.unpair()
+        #expect(!connection.isPaired)
+        #expect(connection.route == nil)
+    }
+
+    @Test("paired but locked, requests have nowhere to go — never the plain manual address")
+    func lockedNeverFallsBackToPlainHTTP() async throws {
+        let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
+        config.connection = ServerConnection(store: InMemoryCredentialStore(stored), sessionFactory: mockSessions)
+        #expect(config.route.bases.isEmpty)
+        #expect(config.baseURLCandidates.isEmpty)
+        #expect(config.authorization == nil)
+        #expect(config.baseURLString == "")
     }
 }
 
@@ -326,7 +360,7 @@ struct PairedAPIClientTests {
             PairedServer(
                 hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac",
                 deviceId: "dev-1", token: "TOKEN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
         config.connection = connection
@@ -437,7 +471,7 @@ struct AppLockedRetryTests {
             PairedServer(
                 hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac",
                 deviceId: "dev-1", token: "TOKEN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
         config.connection = connection
@@ -480,7 +514,7 @@ struct AppLockedRetryTests {
             PairedServer(
                 hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac",
                 deviceId: "dev-1", token: "TOKEN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let loadCallsAfterUnlock = store.loadCount
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
@@ -520,7 +554,7 @@ struct AppLockedRetryTests {
     @Test("an unpaired client gets the original locked error, with no unlock attempt")
     func unpairedGetsTheOriginalError() async throws {
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
-        config.connection = ServerConnection(store: InMemoryCredentialStore())
+        config.connection = ServerConnection(store: InMemoryCredentialStore(), sessionFactory: mockSessions)
         let client = APIClient(session: MockURLProtocol.makeSession(), serverConfig: config)
         let seen = Mutex<[String]>([])
         MockURLProtocol.handler = { request in
@@ -545,7 +579,7 @@ struct HostFailoverTests {
             PairedServer(
                 hosts: ["10.0.0.2", "100.64.0.7"], port: 63129, fingerprint: "PIN", name: "Mac",
                 deviceId: "dev-1", token: "TOKEN"))
-        let connection = ServerConnection(store: store)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)
         config.connection = connection

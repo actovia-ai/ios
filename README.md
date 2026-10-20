@@ -92,8 +92,12 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
 - **Trust is the pin.** The computer's certificate is self-signed; `PinnedSessionDelegate` accepts exactly the
   certificate whose SHA-256 came with the QR code, checks no CA and no host name (so an IP, a `.local` name or a
   tailnet name all work), and does so during the TLS handshake — before a byte of any request is sent. With no
-  pin, no TLS server is trusted at all. `ServerConnection.session` is the one `URLSession` that carries it;
-  `APIClient` and `SSEClient` both use it.
+  pin, no TLS server is trusted at all. Each paired computer has a `URLSession` of its own whose delegate trusts
+  that computer's certificate only, so its pool of TLS connections is its own; a request takes the computer's
+  addresses, token and session together (`ServerRoute`, `ServerConfigStore.route`), so no token travels with
+  another computer's address or connections. `ServerConnection.session` is for pairing (it trusts only the
+  certificate the QR code named) and the Simulator's plain address. A paired device never falls back to the plain
+  address: locked behind Face ID, its requests have nowhere to go.
 - **The token is behind Face ID.** `KeychainCredentialStore` keeps it in one Keychain item with access control
   `biometryCurrentSet` or device passcode, this device only, never synced — a device without a passcode cannot
   pair. `UnlockGate` reads it on a cold start and again after more than five minutes in the background
@@ -108,9 +112,10 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
   reads as a list of one). Settings → Computer lists them: a tap switches (`ServerConnection.switchTo`), a swipe
   unpairs one (`forget`, which tells that computer over a session pinned to its own certificate). A switch fires
   `onComputerChange`, and `PairingGate` gives the app's content a new identity, so every screen loads again from
-  the new computer.
-- **Revoked means unpaired.** A `401` to a request that carried our token forgets the current computer; another
-  paired one, if any, takes its place, and with none left the app is back at pairing.
+  the new computer; a request already under way finishes on the computer it was sent to.
+- **Revoked means unpaired.** A `401` to a request that carried our token forgets the computer that request went
+  to (`ServerRoute.fingerprint`); when that was the current one another paired one, if any, takes its place, and
+  with none left the app is back at pairing.
 - **The Simulator needs none of it.** Unpaired, requests go to the manual address (`http://localhost:60223`),
   the computer's plaintext listener — which is bound to loopback, so a real device cannot use it.
 

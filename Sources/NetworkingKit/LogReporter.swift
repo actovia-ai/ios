@@ -262,7 +262,8 @@ public actor LogReporter {
     }
 
     private func send(_ batch: [Entry], droppedBefore: Int) async -> Outcome {
-        guard let base = URL(string: serverConfig.baseURLString) else { return .retry("no server address") }
+        let route = serverConfig.route
+        guard let first = route.bases.first, let base = URL(string: first) else { return .retry("no server address") }
         var reports = batch.map { entry in
             Payload.Report(
                 level: entry.level, scope: entry.scope, message: entry.message,
@@ -278,12 +279,12 @@ public actor LogReporter {
         request.httpMethod = "POST"
         request.timeoutInterval = configuration.requestTimeout
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let authorization = serverConfig.authorization {
+        if let authorization = route.authorization {
             request.setValue(authorization, forHTTPHeaderField: "Authorization")
         }
         do {
             request.httpBody = try JSONEncoder().encode(Payload(reports: reports))
-            let (_, response) = try await session.data(for: request)
+            let (_, response) = try await (route.session ?? session).data(for: request)
             guard let http = response as? HTTPURLResponse else { return .retry("no HTTP response") }
             return Self.outcome(status: http.statusCode)
         } catch {

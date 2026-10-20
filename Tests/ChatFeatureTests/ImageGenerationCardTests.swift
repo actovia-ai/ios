@@ -295,7 +295,12 @@ struct GeneratedImageLoaderTests {
         let connection = ServerConnection(
             store: InMemoryCredentialStore(
                 PairedServer(
-                    hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac", deviceId: "dev-1", token: "TOKEN")))
+                    hosts: ["10.0.0.2"], port: 63129, fingerprint: "PIN", name: "Mac", deviceId: "dev-1", token: "TOKEN")),
+            sessionFactory: { _ in
+                let configuration = URLSessionConfiguration.ephemeral
+                configuration.protocolClasses = [MediaMockURLProtocol.self]
+                return URLSession(configuration: configuration)
+            })
         try await connection.unlock(reason: "test")
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)

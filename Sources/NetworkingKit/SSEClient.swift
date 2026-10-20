@@ -2,9 +2,7 @@ import Foundation
 import Models
 
 public struct SSEClient: Sendable {
-    /// Not private: `ChatStreamManager` reads it to pass along to
-    /// `ServerConnection.unlockComputer(session:)` on a 423, so the retry uses the same session
-    /// (and so the same pin) this client's events came from.
+    /// For the plain manual address; a paired computer's request passes that computer's own session.
     let session: URLSession
     let reporter: LogReporter?
 
@@ -13,8 +11,10 @@ public struct SSEClient: Sendable {
         self.reporter = reporter
     }
 
-    public func events(for request: URLRequest) -> AsyncThrowingStream<ChatSseEvent, Error> {
-        AsyncThrowingStream { continuation in
+    /// `session`: the paired computer's own (its `ServerRoute.session`); nil uses this client's.
+    public func events(for request: URLRequest, session given: URLSession? = nil) -> AsyncThrowingStream<ChatSseEvent, Error> {
+        let session = given ?? self.session
+        return AsyncThrowingStream { continuation in
             let reporter = self.reporter
             let path = request.url?.path ?? ""
             let task = Task {

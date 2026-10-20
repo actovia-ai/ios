@@ -117,8 +117,9 @@ public actor ChatStreamManager {
             generation: generation, task: nil, messages: messages, status: .submitted, continuation: continuation)
         continuation.yield(.status(.submitted))
 
-        let request = Self.makeRequest(
-            chatId: chatId, messages: messages, serverConfig: serverConfig, options: options)
+        // Address, token and session in one piece (see `ServerRoute`).
+        let route = serverConfig.route
+        let request = Self.makeRequest(chatId: chatId, messages: messages, route: route, options: options)
         let sseClient = self.sseClient
 
         let task = Task { [weak self] in
@@ -131,7 +132,9 @@ public actor ChatStreamManager {
                 return
             }
             do {
-                try await Self.stream(request: request, sseClient: sseClient, serverConfig: serverConfig) { event in
+                try await Self.stream(
+                    request: request, route: route, sseClient: sseClient, serverConfig: serverConfig
+                ) { event in
                     await self?.apply(chatId: chatId, generation: generation, event: event)
                 }
                 await self?.finish(chatId: chatId, generation: generation)
@@ -248,18 +251,18 @@ public actor ChatStreamManager {
     /// status check inside `SSEClient.events` happens before it yields anything, so this can
     /// never retry mid-stream — only ever before the first event, real or not.
     private static func stream(
-        request: URLRequest, sseClient: SSEClient, serverConfig: ServerConfigStore,
+        request: URLRequest, route: ServerRoute, sseClient: SSEClient, serverConfig: ServerConfigStore,
         onEvent: (ChatSseEvent) async -> Void
     ) async throws {
         do {
-            for try await event in sseClient.events(for: request) {
+            for try await event in sseClient.events(for: request, session: route.session) {
                 await onEvent(event)
             }
         } catch let error as HTTPError where error.code == "APP_LOCKED" {
             guard let connection = serverConfig.connection,
-                await connection.unlockComputer(session: sseClient.session)
+                await connection.unlockComputer(route: route)
             else { throw error }
-            for try await event in sseClient.events(for: request) {
+            for try await event in sseClient.events(for: request, session: route.session) {
                 await onEvent(event)
             }
         }
@@ -272,11 +275,20 @@ public actor ChatStreamManager {
         serverConfig: ServerConfigStore,
         options: TurnOptions = TurnOptions()
     ) -> URLRequest? {
-        guard let base = URL(string: serverConfig.baseURLString) else { return nil }
+        makeRequest(chatId: chatId, messages: messages, route: serverConfig.route, options: options)
+    }
+
+    static func makeRequest(
+        chatId: String,
+        messages: [ChatMessage],
+        route: ServerRoute,
+        options: TurnOptions = TurnOptions()
+    ) -> URLRequest? {
+        guard let first = route.bases.first, let base = URL(string: first) else { return nil }
         var request = URLRequest(url: base.appendingPathComponent("/api/v1/chat"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let authorization = serverConfig.authorization {
+        if let authorization = route.authorization {
             request.setValue(authorization, forHTTPHeaderField: "Authorization")
         }
         // The server sends no keep-alive frames, and URLSession's default 60 s

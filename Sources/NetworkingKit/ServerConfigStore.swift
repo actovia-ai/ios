@@ -22,20 +22,26 @@ public final class ServerConfigStore: @unchecked Sendable {
         set { userDefaults.set(newValue, forKey: Self.key) }
     }
 
-    /// Where requests go: the paired computer (HTTPS, pinned) once unlocked,
-    /// otherwise the manual address.
+    /// Where requests go, taken in one piece: the current paired computer's addresses, token and pinned session;
+    /// the manual address (and the caller's own session) while unpaired. Paired but locked behind Face ID, nothing:
+    /// a paired device never falls back to the plain address, where a request would leave in cleartext.
+    public var route: ServerRoute {
+        if let route = connection?.route { return route }
+        if connection?.isPaired == true {
+            return ServerRoute(bases: [], authorization: nil, session: nil, fingerprint: nil)
+        }
+        return ServerRoute(bases: [manualBaseURLString], authorization: nil, session: nil, fingerprint: nil)
+    }
+
+    /// The first address of `route` ("" when there is none, which no request can be built from).
     public var baseURLString: String {
-        get { connection?.baseURLString ?? manualBaseURLString }
+        get { route.bases.first ?? "" }
         set { manualBaseURLString = newValue }
     }
 
     /// Where requests may go, best first — see `ServerConnection.baseURLCandidates`.
-    /// Unpaired, just the manual address.
-    public var baseURLCandidates: [String] {
-        let paired = connection?.baseURLCandidates ?? []
-        return paired.isEmpty ? [manualBaseURLString] : paired
-    }
+    public var baseURLCandidates: [String] { route.bases }
 
     /// `Authorization` for the paired computer; nil for the manual address.
-    public var authorization: String? { connection?.authorization }
+    public var authorization: String? { route.authorization }
 }

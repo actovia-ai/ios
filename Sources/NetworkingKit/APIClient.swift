@@ -108,7 +108,9 @@ public struct APIClient: Sendable {
         decodeResponse: Bool,
         timeout: TimeInterval?
     ) async throws -> T {
-        let bases = serverConfig.baseURLCandidates
+        // Addresses, token and session in one piece: a switch of computer mid-request cannot mix two computers.
+        let route = serverConfig.route
+        let bases = route.bases
         let idempotent = ["GET", "HEAD", "PUT", "DELETE"].contains(method)
         var unreachable: Error?
         // Each address tried and how it failed, for the report when none answers: which one hung, which refused.
@@ -118,7 +120,7 @@ public struct APIClient: Sendable {
             let started = ContinuousClock.now
             do {
                 return try await attempt(
-                    url: url, method: method, body: body, bases: bases, decodeResponse: decodeResponse,
+                    url: url, method: method, body: body, route: route, decodeResponse: decodeResponse,
                     timeout: timeout)
             } catch let error as URLError
                 where index < bases.count - 1
@@ -139,7 +141,7 @@ public struct APIClient: Sendable {
                 // connection, Face ID declined, the unlock call itself failing — surfaces this
                 // original "locked" error, not a new one.
                 return try await unlockAndRetry(
-                    url: url, method: method, body: body, bases: bases, decodeResponse: decodeResponse,
+                    url: url, method: method, body: body, route: route, decodeResponse: decodeResponse,
                     timeout: timeout, original: error)
             }
         }
@@ -156,11 +158,12 @@ public struct APIClient: Sendable {
     }
 
     private func attempt<Body: Encodable, T: Decodable>(
-        url: URL, method: String, body: Body?, bases: [String], decodeResponse: Bool, timeout: TimeInterval?
+        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool, timeout: TimeInterval?
     ) async throws -> T {
+        let bases = route.bases
         var request = URLRequest(url: url)
         request.httpMethod = method
-        if let authorization = serverConfig.authorization {
+        if let authorization = route.authorization {
             request.setValue(authorization, forHTTPHeaderField: "Authorization")
         }
         if let body {
@@ -175,14 +178,16 @@ public struct APIClient: Sendable {
             request.timeoutInterval = 15
         }
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await (route.session ?? session).data(for: request)
         if let http = response as? HTTPURLResponse {
-            if http.statusCode == 401, request.value(forHTTPHeaderField: "Authorization") != nil {
-                // Our token was refused: this device was revoked on the computer.
-                // Forget the pairing so the app returns to the pairing screen.
-                serverConfig.connection?.unpair()
+            if http.statusCode == 401, request.value(forHTTPHeaderField: "Authorization") != nil,
+                let fingerprint = route.fingerprint
+            {
+                // Our token was refused: this device was revoked on that computer. Forget it — the app returns to
+                // the pairing screen when it was the last one.
+                serverConfig.connection?.revoked(fingerprint: fingerprint)
             } else if let host = url.host {
-                serverConfig.connection?.noteReachable(host: host)
+                serverConfig.connection?.noteReachable(host: host, fingerprint: route.fingerprint)
             }
         }
         try Self.throwIfError(data: data, response: response)
@@ -204,13 +209,13 @@ public struct APIClient: Sendable {
     /// token that released. One retry, on the same base that just answered (it is reachable,
     /// just locked); any failure along the way surfaces this original error, not a new one.
     private func unlockAndRetry<Body: Encodable, T: Decodable>(
-        url: URL, method: String, body: Body?, bases: [String], decodeResponse: Bool, timeout: TimeInterval?,
+        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool, timeout: TimeInterval?,
         original: HTTPError
     ) async throws -> T {
-        guard let connection = serverConfig.connection, await connection.unlockComputer(session: session)
+        guard let connection = serverConfig.connection, await connection.unlockComputer(route: route)
         else { throw original }
         return try await attempt(
-            url: url, method: method, body: body, bases: bases, decodeResponse: decodeResponse, timeout: timeout)
+            url: url, method: method, body: body, route: route, decodeResponse: decodeResponse, timeout: timeout)
     }
 
     private func makeURL(base: String, path: String, query: [URLQueryItem]) throws -> URL {

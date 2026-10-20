@@ -107,7 +107,7 @@ public final class PairingViewModel {
         isWorking = true
         defer { isWorking = false }
         do {
-            try await connection.switchTo(fingerprint: fingerprint)
+            try connection.switchTo(fingerprint: fingerprint)
         } catch {
             fail(
                 String(
