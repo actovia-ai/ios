@@ -8,10 +8,27 @@ public struct PairedComputers: Codable, Equatable, Sendable {
     public var servers: [PairedServer]
     /// The computer requests go to; the first one when it names none that is here.
     public var activeFingerprint: String?
+    /// Computers unpaired here that could not be told at the time (off, out of reach). Their tokens still open them
+    /// until they are told, so they stay in this item, behind Face ID like every other token, and are told again at
+    /// each check while another computer is paired. With the last computer gone the item goes, and these with it:
+    /// such a computer's Devices page can still remove the phone.
+    public var pendingLeaves: [PairedServer]
 
-    public init(servers: [PairedServer] = [], activeFingerprint: String? = nil) {
+    public init(servers: [PairedServer] = [], activeFingerprint: String? = nil, pendingLeaves: [PairedServer] = []) {
         self.servers = servers
         self.activeFingerprint = activeFingerprint
+        self.pendingLeaves = pendingLeaves
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case servers, activeFingerprint, pendingLeaves
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        servers = try container.decode([PairedServer].self, forKey: .servers)
+        activeFingerprint = try container.decodeIfPresent(String.self, forKey: .activeFingerprint)
+        pendingLeaves = try container.decodeIfPresent([PairedServer].self, forKey: .pendingLeaves) ?? []
     }
 
     public var isEmpty: Bool { servers.isEmpty }

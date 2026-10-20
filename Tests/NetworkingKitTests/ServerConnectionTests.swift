@@ -364,15 +364,15 @@ struct ServerConnectionTests {
 
     @Test("an unpair the computer could not hear is told again later, then forgotten")
     func retriesAnUnheardUnpair() async throws {
-        let leaves = InMemoryPendingLeaves()
         let store = InMemoryCredentialStore(
             computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
-        let connection = ServerConnection(store: store, pendingLeaves: leaves, sessionFactory: mockSessions)
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
         try await connection.unlock(reason: "test")
 
         MockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
         await connection.forget(fingerprint: "HOMELAB")?.value
-        #expect(leaves.load().map(\.fingerprint) == ["HOMELAB"])
+        // Kept in the Face ID item, beside the computer still paired.
+        #expect(try await store.load(reason: "test")?.pendingLeaves.map(\.fingerprint) == ["HOMELAB"])
 
         let told = Mutex<[String]>([])
         MockURLProtocol.handler = { request in
@@ -381,7 +381,12 @@ struct ServerConnectionTests {
         }
         await connection.tellPendingLeaves()
         #expect(told.withLock { $0 } == ["DELETE https://100.64.0.9:63129/api/v1/pair Bearer HOMELAB-TOKEN"])
-        #expect(leaves.load().isEmpty)
+        #expect(try await store.load(reason: "test")?.pendingLeaves.isEmpty == true)
+
+        // With the last computer gone the item goes, pending ones included: nothing is kept outside it.
+        MockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
+        await connection.leave()?.value
+        #expect(!store.exists)
     }
 
     @Test("paired but locked, requests have nowhere to go — never the plain manual address")

@@ -271,6 +271,8 @@ private struct DrawerPan: UIGestureRecognizerRepresentable {
             // Judged from the movement, not the velocity: a finger creeping across the screen has a
             // direction to read and barely a velocity, and would lose the drawer to noise.
             guard abs(movement.x) > abs(movement.y) else { return false }
+            // Held still before it moved: a long press (a row's menu), not a swipe.
+            guard pan.heldFor < DrawerPanRecognizer.heldTooLong else { return false }
             // Closed there is only rightward to go, open only leftward. The other direction has
             // nothing to show, so the touch is left to whatever is underneath it.
             return isOpen ? movement.x < 0 : movement.x > 0
@@ -389,7 +391,16 @@ private final class DrawerLiveOffset: Sendable {
 /// points is a direction, not a wobble.
 private final class DrawerPanRecognizer: UIPanGestureRecognizer {
     private var touchDown: CGPoint?
+    private var touchDownTime: CFTimeInterval = 0
     private var lastEvent: CFTimeInterval = 0
+
+    /// A drawer swipe moves at once; a finger that has been held still first was pressing something — a row's
+    /// long-press menu, a text selection — and its later drift is not a swipe. Without this, the slight leftward
+    /// movement of a finger still on a row whose menu had just opened was read as closing the drawer.
+    static let heldTooLong: CFTimeInterval = 0.35
+
+    /// How long the finger has been down.
+    var heldFor: CFTimeInterval { touchDown == nil ? 0 : CACurrentMediaTime() - touchDownTime }
 
     /// Everything the finger has done since it landed, hysteresis included.
     var movementSinceTouchDown: CGPoint {
@@ -414,6 +425,7 @@ private final class DrawerPanRecognizer: UIPanGestureRecognizer {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         if touchDown == nil, let first = touches.first {
             touchDown = first.location(in: view)
+            touchDownTime = CACurrentMediaTime()
         }
         super.touchesBegan(touches, with: event)
     }

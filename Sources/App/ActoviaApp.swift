@@ -24,7 +24,7 @@ struct ActoviaApp: App {
         // certificate this device was paired with — shared by everything that
         // talks to the computer. Unpaired (the Simulator), both are inert and
         // requests go to the plain manual address.
-        let connection = ServerConnection(store: KeychainCredentialStore(), pendingLeaves: KeychainPendingLeaves())
+        let connection = ServerConnection(store: KeychainCredentialStore())
         connection.onComputerChange { Task { @MainActor in ChatCaches.clearAll() } }
         // Nothing of the old computer stays on the Home Screen.
         let widgetWriter = WidgetSnapshotWriter()

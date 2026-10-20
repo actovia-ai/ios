@@ -116,8 +116,9 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
 - **Each computer is asked.** Opening Settings → Computer asks every paired computer whether this device still is
   (`GET /api/v1/pair`, `ServerConnection.checkPairings`): one that refuses the token unpaired it there and is
   forgotten here, with an alert naming it; one that does not answer is shown as unreachable. An unpair the computer
-  could not hear (off, out of reach) is kept in a Keychain item of its own (`KeychainPendingLeaves`: device-unlock,
-  this device only, no Face ID) and told again at each check, so the device leaves that computer's list too.
+  could not hear (off, out of reach) is kept in the same Face ID item as the paired computers
+  (`PairedComputers.pendingLeaves` — its token still opens that computer until it is told) and told again at each
+  check while another computer is paired, so the device leaves that computer's list too.
 - **Revoked means unpaired.** A `401` to a request that carried our token forgets the computer that request went
   to (`ServerRoute.fingerprint`); when that was the current one another paired one, if any, takes its place, and
   with none left the app is back at pairing.

@@ -49,16 +49,10 @@ public final class ServerConnection: @unchecked Sendable {
     /// One pinned session per computer, by fingerprint; made on first use, invalidated when it is unpaired.
     private var sessions: [String: URLSession] = [:]
     private let makeSession: @Sendable (String) -> URLSession
-    private let pendingLeaves: PendingLeaveStoring
 
-    /// `sessionFactory` is for tests: by default each computer's session trusts exactly its own certificate. The app
-    /// passes `KeychainPendingLeaves()`; tests keep the in-memory default.
-    public init(
-        store: CredentialStoring, pendingLeaves: PendingLeaveStoring = InMemoryPendingLeaves(),
-        sessionFactory: (@Sendable (String) -> URLSession)? = nil
-    ) {
+    /// `sessionFactory` is for tests: by default each computer's session trusts exactly its own certificate.
+    public init(store: CredentialStoring, sessionFactory: (@Sendable (String) -> URLSession)? = nil) {
         self.store = store
-        self.pendingLeaves = pendingLeaves
         makeSession =
             sessionFactory ?? { fingerprint in
                 URLSession(
@@ -216,14 +210,22 @@ public final class ServerConnection: @unchecked Sendable {
         remove(fingerprint: fingerprint, keepSession: true)
         guard let gone, let own else { return nil }
         let urlSession = session ?? own
-        let leaves = pendingLeaves
-        return Task.detached {
+        return Task.detached { [weak self] in
             defer { own.invalidateAndCancel() }
             // Out of reach now: told again later (`tellPendingLeaves`), so it leaves that computer's list too.
-            if await !Self.tell(gone, session: urlSession) {
-                leaves.save(leaves.load().filter { $0.fingerprint != gone.fingerprint } + [gone])
-            }
+            if await !Self.tell(gone, session: urlSession) { self?.keepPendingLeave(gone) }
         }
+    }
+
+    /// Kept in the Face ID item beside the computers still paired; with none left there is nowhere safe to keep it.
+    private func keepPendingLeave(_ gone: PairedServer) {
+        let updated: PairedComputers? = state.withLock {
+            guard var all = computers, !all.servers.isEmpty else { return nil }
+            all.pendingLeaves = all.pendingLeaves.filter { $0.fingerprint != gone.fingerprint } + [gone]
+            computers = all
+            return all
+        }
+        if let updated { try? store.save(updated) }
     }
 
     /// `DELETE /api/v1/pair` to each of a forgotten computer's addresses in turn; true once one answers — told, or
@@ -243,7 +245,7 @@ public final class ServerConnection: @unchecked Sendable {
 
     /// Tells the computers unpaired here while they were out of reach (`forget`); each one that answers is done.
     public func tellPendingLeaves() async {
-        let waiting = pendingLeaves.load()
+        let waiting = state.withLock { computers?.pendingLeaves ?? [] }
         guard !waiting.isEmpty else { return }
         var told: Set<String> = []
         for gone in waiting {
@@ -252,7 +254,13 @@ public final class ServerConnection: @unchecked Sendable {
             session.invalidateAndCancel()
         }
         guard !told.isEmpty else { return }
-        pendingLeaves.save(pendingLeaves.load().filter { !told.contains($0.fingerprint) })
+        let updated: PairedComputers? = state.withLock {
+            guard var all = computers else { return nil }
+            all.pendingLeaves.removeAll { told.contains($0.fingerprint) }
+            computers = all
+            return all
+        }
+        if let updated { try? store.save(updated) }
     }
 
     /// What asking a paired computer whether this device still is paired with it found.
