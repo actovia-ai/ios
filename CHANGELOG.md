@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/actovia-ai/ios/compare/v1.1.0...v1.2.0) (2026-10-20)
+
+
+### Bug Fixes
+
+* **pairing:** a session per computer, and one route per request — no shared pool, no plaintext fallback ([f5d0075](https://github.com/actovia-ai/ios/commit/f5d0075e18b6475f451454455d50a8f9dc93af69))
+* **pairing:** no computer's token reaches another during a switch ([8a890b3](https://github.com/actovia-ai/ios/commit/8a890b3ac0694618b8c5a306aa6d8b7322363ead))
+
+
+### Features
+
+* **pairing:** pair with more than one computer and switch between them in Settings ([197f57d](https://github.com/actovia-ai/ios/commit/197f57d789faf9f2b551e5c9dd526f71f49067d1))
+
 # [1.1.0](https://github.com/actovia-ai/ios/compare/v1.0.0...v1.1.0) (2026-10-20)
 
 
