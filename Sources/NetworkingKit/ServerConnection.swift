@@ -49,10 +49,16 @@ public final class ServerConnection: @unchecked Sendable {
     /// One pinned session per computer, by fingerprint; made on first use, invalidated when it is unpaired.
     private var sessions: [String: URLSession] = [:]
     private let makeSession: @Sendable (String) -> URLSession
+    private let pendingLeaves: PendingLeaveStoring
 
-    /// `sessionFactory` is for tests: by default each computer's session trusts exactly its own certificate.
-    public init(store: CredentialStoring, sessionFactory: (@Sendable (String) -> URLSession)? = nil) {
+    /// `sessionFactory` is for tests: by default each computer's session trusts exactly its own certificate. The app
+    /// passes `KeychainPendingLeaves()`; tests keep the in-memory default.
+    public init(
+        store: CredentialStoring, pendingLeaves: PendingLeaveStoring = InMemoryPendingLeaves(),
+        sessionFactory: (@Sendable (String) -> URLSession)? = nil
+    ) {
         self.store = store
+        self.pendingLeaves = pendingLeaves
         makeSession =
             sessionFactory ?? { fingerprint in
                 URLSession(
@@ -210,20 +216,85 @@ public final class ServerConnection: @unchecked Sendable {
         remove(fingerprint: fingerprint, keepSession: true)
         guard let gone, let own else { return nil }
         let urlSession = session ?? own
-        let token = "Bearer \(gone.token)"
-        let candidates = gone.orderedHosts.map { gone.baseURLString(host: $0) }
+        let leaves = pendingLeaves
         return Task.detached {
             defer { own.invalidateAndCancel() }
-            for base in candidates {
-                guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
-                var request = URLRequest(url: url, timeoutInterval: 5)
-                request.httpMethod = "DELETE"
-                request.setValue(token, forHTTPHeaderField: "Authorization")
-                if let (_, response) = try? await urlSession.data(for: request), response is HTTPURLResponse {
-                    break  // It answered: told, or already gone (a 401) — either way done.
-                }
+            // Out of reach now: told again later (`tellPendingLeaves`), so it leaves that computer's list too.
+            if await !Self.tell(gone, session: urlSession) {
+                leaves.save(leaves.load().filter { $0.fingerprint != gone.fingerprint } + [gone])
             }
         }
+    }
+
+    /// `DELETE /api/v1/pair` to each of a forgotten computer's addresses in turn; true once one answers — told, or
+    /// already gone (a 401), either way done.
+    private static func tell(_ gone: PairedServer, session: URLSession) async -> Bool {
+        for base in gone.orderedHosts.map({ gone.baseURLString(host: $0) }) {
+            guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
+            var request = URLRequest(url: url, timeoutInterval: 5)
+            request.httpMethod = "DELETE"
+            request.setValue("Bearer \(gone.token)", forHTTPHeaderField: "Authorization")
+            if let (_, response) = try? await session.data(for: request), response is HTTPURLResponse {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Tells the computers unpaired here while they were out of reach (`forget`); each one that answers is done.
+    public func tellPendingLeaves() async {
+        let waiting = pendingLeaves.load()
+        guard !waiting.isEmpty else { return }
+        var told: Set<String> = []
+        for gone in waiting {
+            let session = makeSession(gone.fingerprint)
+            if await Self.tell(gone, session: session) { told.insert(gone.fingerprint) }
+            session.invalidateAndCancel()
+        }
+        guard !told.isEmpty else { return }
+        pendingLeaves.save(pendingLeaves.load().filter { !told.contains($0.fingerprint) })
+    }
+
+    /// What asking a paired computer whether this device still is paired with it found.
+    public enum PairingStatus: Equatable, Sendable {
+        /// It answered and knows this device.
+        case paired
+        /// It refused the token: unpaired there. Forgotten here too.
+        case revoked
+        /// None of its addresses answered.
+        case unreachable
+    }
+
+    /// Asks every paired computer whether this device is still paired with it (`GET /api/v1/pair`, over that
+    /// computer's own session) — Settings → Computer, as it opens. One that refuses the token was unpaired there
+    /// and is forgotten here (`revoked`); one that answers anything else (an older Actovia has no such route) is
+    /// taken as paired. Also tells the computers waiting to be told of an unpair here.
+    public func checkPairings() async -> [String: PairingStatus] {
+        let servers: [(PairedServer, URLSession)] = state.withLock {
+            (computers?.servers ?? []).map { ($0, sessionLocked(for: $0.fingerprint)) }
+        }
+        var found: [String: PairingStatus] = [:]
+        await withTaskGroup(of: (String, PairingStatus).self) { group in
+            for (server, session) in servers {
+                group.addTask { (server.fingerprint, await Self.ask(server, session: session)) }
+            }
+            for await (fingerprint, status) in group { found[fingerprint] = status }
+        }
+        for (fingerprint, status) in found where status == .revoked { revoked(fingerprint: fingerprint) }
+        await tellPendingLeaves()
+        return found
+    }
+
+    private static func ask(_ server: PairedServer, session: URLSession) async -> PairingStatus {
+        for base in server.orderedHosts.map({ server.baseURLString(host: $0) }) {
+            guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
+            var request = URLRequest(url: url, timeoutInterval: 4)
+            request.setValue("Bearer \(server.token)", forHTTPHeaderField: "Authorization")
+            guard let (_, response) = try? await session.data(for: request), let http = response as? HTTPURLResponse
+            else { continue }
+            return http.statusCode == 401 ? .revoked : .paired
+        }
+        return .unreachable
     }
 
     /// Forget the current computer: unpaired here. Another paired computer, if there is one, becomes the current one.

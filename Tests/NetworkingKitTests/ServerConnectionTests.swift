@@ -340,6 +340,50 @@ struct ServerConnectionTests {
         #expect(connection.route == nil)
     }
 
+    @Test("asking each computer: one that refuses the token is forgotten, one that does not answer is unreachable")
+    func checksEachPairing() async throws {
+        let offline = PairedServer(
+            hosts: ["10.9.9.9"], port: 63129, fingerprint: "OFF", name: "Laptop", deviceId: "d3", token: "OFF-TOKEN")
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab, offline], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store, sessionFactory: mockSessions)
+        try await connection.unlock(reason: "test")
+        MockURLProtocol.handler = { request in
+            switch request.url?.host {
+            case "10.0.0.2": return (200, Data(#"{"deviceId":"dev-1","name":"iPhone"}"#.utf8))
+            case "100.64.0.9": return (401, Data(#"{"type":"error","error":{"code":"UNAUTHORIZED"}}"#.utf8))
+            default: throw URLError(.cannotConnectToHost)
+            }
+        }
+
+        let found = await connection.checkPairings()
+        #expect(found == ["PIN": .paired, "HOMELAB": .revoked, "OFF": .unreachable])
+        #expect(connection.pairedComputers.map(\.name) == ["Mac", "Laptop"])
+        #expect(connection.authorization == "Bearer TOKEN")
+    }
+
+    @Test("an unpair the computer could not hear is told again later, then forgotten")
+    func retriesAnUnheardUnpair() async throws {
+        let leaves = InMemoryPendingLeaves()
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store, pendingLeaves: leaves, sessionFactory: mockSessions)
+        try await connection.unlock(reason: "test")
+
+        MockURLProtocol.handler = { _ in throw URLError(.cannotConnectToHost) }
+        await connection.forget(fingerprint: "HOMELAB")?.value
+        #expect(leaves.load().map(\.fingerprint) == ["HOMELAB"])
+
+        let told = Mutex<[String]>([])
+        MockURLProtocol.handler = { request in
+            told.withLock { $0.append("\(request.httpMethod ?? "") \(request.url?.absoluteString ?? "") \(request.value(forHTTPHeaderField: "Authorization") ?? "")") }
+            return (200, Data(#"{"ok":true}"#.utf8))
+        }
+        await connection.tellPendingLeaves()
+        #expect(told.withLock { $0 } == ["DELETE https://100.64.0.9:63129/api/v1/pair Bearer HOMELAB-TOKEN"])
+        #expect(leaves.load().isEmpty)
+    }
+
     @Test("paired but locked, requests have nowhere to go — never the plain manual address")
     func lockedNeverFallsBackToPlainHTTP() async throws {
         let config = ServerConfigStore(userDefaults: UserDefaults(suiteName: #function)!)

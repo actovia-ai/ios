@@ -12,6 +12,11 @@ public final class PairingViewModel {
     public private(set) var computerName: String?
     /// Every paired computer, the current one marked.
     public private(set) var computers: [PairedComputer]
+    /// What asking each computer found (`check()`), by fingerprint; absent while not asked yet.
+    public private(set) var statuses: [String: ServerConnection.PairingStatus] = [:]
+    public private(set) var isChecking = false
+    /// Computers that had unpaired this device on their side, found by the last `check()` and forgotten here.
+    public private(set) var unpairedThere: [String] = []
     public private(set) var isWorking = false
     /// Shown in an alert; nil when there is nothing to report.
     public private(set) var errorMessage: String?
@@ -120,6 +125,21 @@ public final class PairingViewModel {
         refresh()
         return true
     }
+
+    /// Asks every paired computer whether this device is still paired with it; those that unpaired it are forgotten
+    /// here and named in `unpairedThere`.
+    public func check() async {
+        guard !isChecking, !computers.isEmpty else { return }
+        let names = Dictionary(computers.map { ($0.fingerprint, $0.name) }, uniquingKeysWith: { a, _ in a })
+        isChecking = true
+        let found = await connection.checkPairings()
+        isChecking = false
+        statuses = found
+        unpairedThere = found.filter { $0.value == .revoked }.compactMap { names[$0.key] }.sorted()
+        refresh()
+    }
+
+    public func clearUnpairedThere() { unpairedThere = [] }
 
     private func refresh() {
         isPaired = connection.isPaired

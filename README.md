@@ -113,6 +113,11 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
   unpairs one (`forget`, which tells that computer over a session pinned to its own certificate). A switch fires
   `onComputerChange`, and `PairingGate` gives the app's content a new identity, so every screen loads again from
   the new computer; a request already under way finishes on the computer it was sent to.
+- **Each computer is asked.** Opening Settings → Computer asks every paired computer whether this device still is
+  (`GET /api/v1/pair`, `ServerConnection.checkPairings`): one that refuses the token unpaired it there and is
+  forgotten here, with an alert naming it; one that does not answer is shown as unreachable. An unpair the computer
+  could not hear (off, out of reach) is kept in a Keychain item of its own (`KeychainPendingLeaves`: device-unlock,
+  this device only, no Face ID) and told again at each check, so the device leaves that computer's list too.
 - **Revoked means unpaired.** A `401` to a request that carried our token forgets the computer that request went
   to (`ServerRoute.fingerprint`); when that was the current one another paired one, if any, takes its place, and
   with none left the app is back at pairing.

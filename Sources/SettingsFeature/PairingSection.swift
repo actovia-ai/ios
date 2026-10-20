@@ -70,6 +70,25 @@ struct PairingSection: View {
         .onChange(of: isScanning) { _, showing in
             if !showing { pairWithScannedLink() }
         }
+        // Each computer is asked whether it still knows this device: one unpaired there goes here too.
+        .task { await viewModel.check() }
+        .alert(
+            "ios:settings.pairing.unpairedThereTitle",
+            isPresented: Binding(
+                get: { !viewModel.unpairedThere.isEmpty },
+                set: { if !$0 { viewModel.clearUnpairedThere() } })
+        ) {
+            Button("ios:app.alert.ok", role: .cancel) { onChange() }
+        } message: {
+            Text(
+                String(
+                    localized: "ios:settings.pairing.unpairedThereMessage",
+                    defaultValue:
+                        "\(viewModel.unpairedThere.formatted(.list(type: .and))) removed this iPhone from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices.",
+                    comment:
+                        "Settings → Computer, after checking each paired computer. %@ is the computer's name (or several, joined)."
+                ))
+        }
         .alert(
             unpairTitle,
             isPresented: Binding(get: { confirmUnpair != nil }, set: { if !$0 { confirmUnpair = nil } }),
@@ -116,7 +135,11 @@ struct PairingSection: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: computer.name)
                         .foregroundStyle(.primary)
-                    if let host = computer.host {
+                    if viewModel.statuses[computer.fingerprint] == .unreachable {
+                        Label("ios:settings.pairing.status.unreachable", systemImage: "wifi.exclamationmark")
+                            .font(.footnote)
+                            .foregroundStyle(.orange)
+                    } else if let host = computer.host {
                         Text(verbatim: host)
                             .font(.footnote)
                             .foregroundStyle(.secondary)

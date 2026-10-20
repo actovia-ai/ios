@@ -37297,6 +37297,72 @@
         }
       }
     },
+    "ios:settings.pairing.status.unreachable" : {
+      "comment" : "Settings → Computer, under a paired computer that did not answer when asked whether this iPhone is still paired.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerade nicht erreichbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not reachable right now"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Injoignable pour le moment"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non raggiungibile ora"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在接続できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금은 연결할 수 없음"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inacessível no momento"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前無法連線"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前無法連線"
+          }
+        }
+      }
+    },
     "ios:settings.pairing.switchFailed" : {
       "comment" : "Error: saving which paired computer is the current one failed.",
       "extractionState" : "manual",
@@ -37557,6 +37623,138 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "要取消與 %@ 的配對嗎?"
+          }
+        }
+      }
+    },
+    "ios:settings.pairing.unpairedThereMessage" : {
+      "comment" : "Settings → Computer, after checking each paired computer. %@ is the computer's name (or several, joined).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hat dieses iPhone aus seinen Geräten entfernt, daher wurde die Kopplung auch hier aufgehoben. Um es wieder zu nutzen, kopple es über Einstellungen → Geräte dort."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ removed this iPhone from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ quitó este iPhone de sus dispositivos, así que también se desvinculó aquí. Para volver a usarlo, vincúlalo desde Ajustes → Dispositivos allí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a retiré cet iPhone de ses appareils, il a donc aussi été dissocié ici. Pour l’utiliser à nouveau, associez-le depuis Réglages → Appareils sur l’ordinateur."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ha rimosso questo iPhone dai suoi dispositivi, quindi l'abbinamento è stato annullato anche qui. Per usarlo di nuovo, abbinalo da Impostazioni → Dispositivi sul computer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ がこの iPhone をデバイスから削除したため、こちらでもペアリングを解除しました。再び使うには、そのコンピュータの設定 → デバイスからペアリングしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에서 이 iPhone을 기기 목록에서 제거하여 여기서도 페어링을 해제했습니다. 다시 사용하려면 해당 컴퓨터의 설정 → 기기에서 페어링하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ removeu este iPhone dos dispositivos, então ele também foi despareado aqui. Para usá-lo de novo, pareie em Ajustes → Dispositivos no computador."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 已將這部 iPhone 從裝置中移除，所以這裡也已取消配對。如要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 已將這台 iPhone 從裝置中移除，所以這裡也已取消配對。若要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+          }
+        }
+      }
+    },
+    "ios:settings.pairing.unpairedThereTitle" : {
+      "comment" : "Alert title in Settings → Computer: a paired computer had removed this iPhone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf dem Computer entkoppelt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpaired on the computer"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desvinculado en el ordenador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dissocié sur l’ordinateur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbinamento annullato sul computer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンピュータ側でペアリング解除されました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴퓨터에서 페어링이 해제됨"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Despareado no computador"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在電腦上取消配對"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在電腦上取消配對"
           }
         }
       }
