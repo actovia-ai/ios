@@ -36505,6 +36505,138 @@
         }
       }
     },
+    "ios:settings.pairing.computersFooter" : {
+      "comment" : "Settings → Computer, footer under the list of paired computers when there is more than one.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe auf einen Computer, um zu ihm zu wechseln. Wische, um die Kopplung aufzuheben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a computer to switch to it. Swipe to unpair."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca un ordenador para cambiar a él. Desliza para desvincularlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez un ordinateur pour basculer dessus. Balayez pour le dissocier."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca un computer per passare a quello. Scorri per annullare l'abbinamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンピュータをタップすると切り替わります。スワイプでペアリングを解除できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴퓨터를 탭하면 전환됩니다. 쓸어서 페어링을 해제하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque em um computador para mudar para ele. Deslize para desparear."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下電腦即可切換。掃動可取消配對。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下電腦即可切換。滑動可取消配對。"
+          }
+        }
+      }
+    },
+    "ios:settings.pairing.current" : {
+      "comment" : "Settings → Computer, accessibility label of the checkmark on the computer the app talks to now.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuell"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actuel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attuale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atual"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前"
+          }
+        }
+      }
+    },
     "ios:settings.pairing.failedTitle" : {
       "comment" : "Alert title when pairing with the computer did not succeed.",
       "extractionState" : "manual",
@@ -36835,68 +36967,68 @@
         }
       }
     },
-    "ios:settings.pairing.pairedWith" : {
-      "comment" : "Settings → Computer. %@ is the computer's name.",
+    "ios:settings.pairing.pairAnother" : {
+      "comment" : "Settings → Computer, under the paired computers: shows the steps to pair one more computer.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gekoppelt mit %@"
+            "value" : "Weiteren Computer koppeln"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paired with %@"
+            "value" : "Pair another computer"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vinculado con %@"
+            "value" : "Vincular otro ordenador"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jumelé avec %@"
+            "value" : "Associer un autre ordinateur"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abbinato a %@"
+            "value" : "Abbina un altro computer"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「%@」とペアリング済み"
+            "value" : "別のコンピュータとペアリング"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "‘%@’와(과) 페어링됨"
+            "value" : "다른 컴퓨터와 페어링"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pareado com %@"
+            "value" : "Parear outro computador"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已與「%@」配對"
+            "value" : "配對另一部電腦"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已與「%@」配對"
+            "value" : "配對另一台電腦"
           }
         }
       }
@@ -37165,6 +37297,72 @@
         }
       }
     },
+    "ios:settings.pairing.switchFailed" : {
+      "comment" : "Error: saving which paired computer is the current one failed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wechsel zu diesem Computer nicht möglich."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not switch to that computer."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cambiar a ese ordenador."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de basculer sur cet ordinateur."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile passare a quel computer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "そのコンピュータに切り替えられませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해당 컴퓨터로 전환할 수 없습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível mudar para esse computador."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法切換到該部電腦。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法切換到該電腦。"
+          }
+        }
+      }
+    },
     "ios:settings.pairing.unpair" : {
       "comment" : "Button, and its confirmation: forget the paired computer.",
       "extractionState" : "manual",
@@ -37297,68 +37495,68 @@
         }
       }
     },
-    "ios:settings.pairing.unpairConfirmTitle" : {
-      "comment" : "Alert title confirming Unpair.",
+    "ios:settings.pairing.unpairNamedTitle" : {
+      "comment" : "Settings → Computer, confirming Unpair. %@ is the computer's name.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Von diesem Computer entkoppeln?"
+            "value" : "Kopplung mit %@ aufheben?"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unpair from this computer?"
+            "value" : "Unpair from %@?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Desvincular de este ordenador?"
+            "value" : "¿Desvincular de %@?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dissocier cet ordinateur ?"
+            "value" : "Dissocier de %@ ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Annullare l’abbinamento con questo computer?"
+            "value" : "Annullare l'abbinamento con %@?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このコンピュータとのペアリングを解除しますか？"
+            "value" : "%@ とのペアリングを解除しますか?"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 컴퓨터와의 페어링을 해제할까요?"
+            "value" : "%@와(과)의 페어링을 해제할까요?"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desparear deste computador?"
+            "value" : "Desparear de %@?"
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要取消與這部電腦的配對嗎？"
+            "value" : "要取消與 %@ 的配對嗎?"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要取消與這部電腦的配對嗎？"
+            "value" : "要取消與 %@ 的配對嗎?"
           }
         }
       }

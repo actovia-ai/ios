@@ -10,6 +10,8 @@ import Observation
 public final class PairingViewModel {
     public private(set) var isPaired: Bool
     public private(set) var computerName: String?
+    /// Every paired computer, the current one marked.
+    public private(set) var computers: [PairedComputer]
     public private(set) var isWorking = false
     /// Shown in an alert; nil when there is nothing to report.
     public private(set) var errorMessage: String?
@@ -29,6 +31,7 @@ public final class PairingViewModel {
         self.session = session
         self.isPaired = connection.isPaired
         self.computerName = connection.serverName
+        self.computers = connection.pairedComputers
     }
 
     /// `text` is whatever was scanned or pasted. Returns whether pairing succeeded.
@@ -89,8 +92,36 @@ public final class PairingViewModel {
         return telling
     }
 
+    /// Unpairs one computer — the current one or another (`ServerConnection.forget`).
+    @discardableResult
+    public func forget(_ fingerprint: String) -> Task<Void, Never>? {
+        let telling = connection.forget(fingerprint: fingerprint, session: session)
+        refresh()
+        return telling
+    }
+
+    /// Talks to another paired computer from now on. Returns whether it switched.
+    @discardableResult
+    public func switchTo(_ fingerprint: String) -> Bool {
+        guard computers.contains(where: { $0.fingerprint == fingerprint && !$0.isActive }) else { return false }
+        do {
+            try connection.switchTo(fingerprint: fingerprint)
+        } catch {
+            fail(
+                String(
+                    localized: "ios:settings.pairing.switchFailed",
+                    defaultValue: "Could not switch to that computer.",
+                    comment: "Error: saving which paired computer is the current one failed."),
+                detail: String(describing: error))
+            return false
+        }
+        refresh()
+        return true
+    }
+
     private func refresh() {
         isPaired = connection.isPaired
         computerName = connection.serverName
+        computers = connection.pairedComputers
     }
 }

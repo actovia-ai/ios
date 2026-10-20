@@ -102,8 +102,15 @@ what the Simulator does — and `ServerConnection.pair` trades the code for a pe
   Tailscale IP, its `.local` name); `APIClient` tries them in turn when one is unreachable and remembers the one
   that answered (`PairedServer.lastGoodHost`), so the same pairing works on the home Wi-Fi and, over Tailscale,
   from anywhere. The certificate pin does not depend on the address.
-- **Revoked means unpaired.** A `401` to a request that carried our token clears the credential, and the app is
-  back at pairing.
+- **More than one computer.** A device can be paired with several (a home Mac mini running the release, a laptop
+  running a development build). The Keychain item holds them all with the current one (`PairedComputers`, keyed by
+  certificate fingerprint; pairing the same computer again replaces its entry, and an item written before this
+  reads as a list of one). Settings → Computer lists them: a tap switches (`ServerConnection.switchTo`), a swipe
+  unpairs one (`forget`, which tells that computer over a session pinned to its own certificate). A switch fires
+  `onComputerChange`, and `PairingGate` gives the app's content a new identity, so every screen loads again from
+  the new computer.
+- **Revoked means unpaired.** A `401` to a request that carried our token forgets the current computer; another
+  paired one, if any, takes its place, and with none left the app is back at pairing.
 - **The Simulator needs none of it.** Unpaired, requests go to the manual address (`http://localhost:60223`),
   the computer's plaintext listener — which is bound to loopback, so a real device cannot use it.
 

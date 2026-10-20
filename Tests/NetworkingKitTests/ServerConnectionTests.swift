@@ -150,7 +150,7 @@ struct ServerConnectionTests {
 
         connection.noteReachable(host: "mac.local")
         #expect(connection.baseURLString == "https://mac.local:63129")
-        #expect(try await store.load(reason: "test")?.lastGoodHost == "mac.local")
+        #expect(try await store.load(reason: "test")?.active?.lastGoodHost == "mac.local")
 
         // An address the computer never advertised is not adopted.
         connection.noteReachable(host: "evil.example")
@@ -191,7 +191,7 @@ struct ServerConnectionTests {
         #expect(connection.isUnlocked)
         #expect(connection.authorization == "Bearer NEW-TOKEN")
         #expect(connection.pin == "PIN")
-        let saved = try #require(try await store.load(reason: "test"))
+        let saved = try #require(try await store.load(reason: "test")?.active)
         #expect(saved.token == "NEW-TOKEN")
         #expect(saved.hosts == ["10.0.0.2", "mac.local"])
         #expect(saved.lastGoodHost == "10.0.0.2")
@@ -227,6 +227,85 @@ struct ServerConnectionTests {
         #expect(config.baseURLString == "https://10.0.0.2:63129")
         #expect(config.authorization == "Bearer TOKEN")
         #expect(config.manualBaseURLString == "http://localhost:60223")
+    }
+
+    private let homelab = PairedServer(
+        hosts: ["100.64.0.9"], port: 63129, fingerprint: "HOMELAB", name: "Mac mini",
+        deviceId: "dev-2", token: "HOMELAB-TOKEN")
+
+    @Test("pairing a second computer keeps the first, and the new one becomes current")
+    func pairsAnother() async throws {
+        let store = InMemoryCredentialStore(stored)
+        let connection = ServerConnection(store: store)
+        try await connection.unlock(reason: "test")
+        MockURLProtocol.handler = { _ in (200, Data(#"{"deviceId":"dev-9","token":"MINI-TOKEN"}"#.utf8)) }
+        let mini = try #require(PairingLink(string: "actovia://pair?h=100.64.0.9&p=63129&c=CODE&f=MINI&n=Mac+mini"))
+
+        try await connection.pair(mini, deviceName: "iPhone", session: MockURLProtocol.makeSession())
+
+        #expect(connection.pairedComputers.map(\.name) == ["Mac", "Mac mini"])
+        #expect(connection.pairedComputers.map(\.isActive) == [false, true])
+        #expect(connection.authorization == "Bearer MINI-TOKEN")
+        #expect(try await store.load(reason: "test")?.servers.count == 2)
+    }
+
+    @Test("switching sends requests to the other computer, trusts its certificate, and says the computer changed")
+    func switches() async throws {
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store)
+        let changes = Mutex(0)
+        connection.onComputerChange { changes.withLock { $0 += 1 } }
+        try await connection.unlock(reason: "test")
+
+        try connection.switchTo(fingerprint: "HOMELAB")
+        #expect(connection.baseURLString == "https://100.64.0.9:63129")
+        #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
+        #expect(connection.pin == "HOMELAB")
+        #expect(changes.withLock { $0 } == 1)
+        #expect(try await store.load(reason: "test")?.activeFingerprint == "HOMELAB")
+
+        // Switching to the one already current changes nothing.
+        try connection.switchTo(fingerprint: "HOMELAB")
+        #expect(changes.withLock { $0 } == 1)
+    }
+
+    @Test("unpairing one computer tells that computer with its own token and keeps the other")
+    func forgetsOne() async throws {
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store)
+        try await connection.unlock(reason: "test")
+        let told = Mutex<[String]>([])
+        MockURLProtocol.handler = { request in
+            told.withLock {
+                $0.append("\(request.httpMethod ?? "") \(request.url?.absoluteString ?? "") \(request.value(forHTTPHeaderField: "Authorization") ?? "")")
+            }
+            return (200, Data("{}".utf8))
+        }
+
+        await connection.forget(fingerprint: "HOMELAB", session: MockURLProtocol.makeSession())?.value
+        #expect(told.withLock { $0 } == ["DELETE https://100.64.0.9:63129/api/v1/pair Bearer HOMELAB-TOKEN"])
+        #expect(connection.pairedComputers.map(\.name) == ["Mac"])
+        #expect(connection.authorization == "Bearer TOKEN")
+
+        // The current one goes too: nothing is paired any more.
+        await connection.leave(session: MockURLProtocol.makeSession())?.value
+        #expect(!connection.isPaired)
+        #expect(connection.authorization == nil)
+    }
+
+    @Test("a revocation (401) unpairs the current computer only; the next one takes over")
+    func revokedHandsOver() async throws {
+        let store = InMemoryCredentialStore(
+            computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
+        let connection = ServerConnection(store: store)
+        try await connection.unlock(reason: "test")
+
+        connection.unpair()
+        #expect(connection.isPaired)
+        #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
+        #expect(connection.pairedComputers.map(\.isActive) == [true])
     }
 }
 
@@ -479,7 +558,7 @@ struct HostFailoverTests {
         let _: Empty = try await client.get("/api/v1/history")
 
         #expect(hosts.withLock { $0 } == ["10.0.0.2", "100.64.0.7"])
-        #expect(try await store.load(reason: "test")?.lastGoodHost == "100.64.0.7")
+        #expect(try await store.load(reason: "test")?.active?.lastGoodHost == "100.64.0.7")
 
         // Next time, the address that answered goes first.
         hosts.withLock { $0 = [] }
@@ -627,10 +706,10 @@ private final class CountingCredentialStore: CredentialStoring, @unchecked Senda
 
     var loadCount: Int { count.withLock { $0 } }
     var exists: Bool { server != nil }
-    func load(reason: String) async throws -> PairedServer? {
+    func load(reason: String) async throws -> PairedComputers? {
         count.withLock { $0 += 1 }
-        return server
+        return server.map { PairedComputers(servers: [$0]) }
     }
-    func save(_ server: PairedServer) throws {}
+    func save(_ computers: PairedComputers) throws {}
     func clear() throws {}
 }

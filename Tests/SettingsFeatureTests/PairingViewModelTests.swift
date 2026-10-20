@@ -41,8 +41,8 @@ private final class PairingMockURLProtocol: URLProtocol, @unchecked Sendable {
 /// A store that refuses to save, as the Keychain does on a device with no passcode.
 private final class NoPasscodeStore: CredentialStoring, @unchecked Sendable {
     var exists: Bool { false }
-    func load(reason: String) async throws -> PairedServer? { nil }
-    func save(_ server: PairedServer) throws { throw CredentialError.passcodeNotSet }
+    func load(reason: String) async throws -> PairedComputers? { nil }
+    func save(_ computers: PairedComputers) throws { throw CredentialError.passcodeNotSet }
     func clear() throws {}
 }
 

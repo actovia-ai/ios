@@ -16,9 +16,9 @@ struct CredentialStoreTests {
         #expect(!store.exists)
         #expect(try await store.load(reason: "test") == nil)
 
-        try store.save(server)
+        try store.save(PairedComputers(servers: [server]))
         #expect(store.exists)
-        #expect(try await store.load(reason: "test") == server)
+        #expect(try await store.load(reason: "test")?.active == server)
 
         try store.clear()
         #expect(!store.exists)

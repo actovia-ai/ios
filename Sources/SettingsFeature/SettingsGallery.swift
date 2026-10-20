@@ -69,8 +69,8 @@ public struct SettingsGalleryView: View {
 }
 
 private struct GalleryCredentialStore: CredentialStoring {
-    func load(reason: String) async throws -> PairedServer? { nil }
-    func save(_ server: PairedServer) throws {}
+    func load(reason: String) async throws -> PairedComputers? { nil }
+    func save(_ computers: PairedComputers) throws {}
     func clear() throws {}
     var exists: Bool { false }
 }

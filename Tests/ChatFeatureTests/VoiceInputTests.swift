@@ -69,10 +69,12 @@ struct TranscriberTests {
 
 /// A Keychain stand-in holding one paired computer.
 private struct PairedStore: CredentialStoring {
-    func load(reason: String) async throws -> PairedServer? {
-        PairedServer(hosts: ["10.0.0.2"], port: 63129, fingerprint: "ab", name: "Mac", deviceId: "d", token: "t0ken")
+    func load(reason: String) async throws -> PairedComputers? {
+        PairedComputers(servers: [
+            PairedServer(hosts: ["10.0.0.2"], port: 63129, fingerprint: "ab", name: "Mac", deviceId: "d", token: "t0ken")
+        ])
     }
-    func save(_ server: PairedServer) throws {}
+    func save(_ computers: PairedComputers) throws {}
     func clear() throws {}
     var exists: Bool { true }
 }

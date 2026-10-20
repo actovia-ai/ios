@@ -1,7 +1,8 @@
 import Foundation
 import Models
 
-/// The paired computer, once Face ID has released it. Held in memory only:
+/// The paired computers, once Face ID has released them, and the one requests go to now (`PairedComputers`;
+/// Settings switches between them). Held in memory only:
 /// `lock()` — called after five minutes in the background — forgets it, and the
 /// next use goes back through the Keychain, and so through Face ID.
 ///
@@ -14,7 +15,9 @@ public final class ServerConnection: @unchecked Sendable {
 
     private let store: CredentialStoring
     private let state = NSLock()
-    private var server: PairedServer?
+    private var computers: PairedComputers?
+    /// The computer requests go to: the current one of `computers`. Read under `state`.
+    private var server: PairedServer? { computers?.active }
     /// The pin to trust while pairing, before there is a stored server.
     private var pendingPin: String?
     private var computerChangeHandlers: [@Sendable () -> Void] = []
@@ -63,11 +66,39 @@ public final class ServerConnection: @unchecked Sendable {
     /// Reads the credential — this is the Face ID prompt.
     public func unlock(reason: String) async throws {
         let loaded = try await store.load(reason: reason)
-        state.withLock { server = loaded }
+        state.withLock { computers = loaded }
     }
 
     public func lock() {
-        state.withLock { server = nil }
+        state.withLock { computers = nil }
+    }
+
+    /// Every paired computer, the current one marked — known once Face ID has released them.
+    public var pairedComputers: [PairedComputer] {
+        state.withLock {
+            guard let computers else { return [] }
+            let active = computers.active?.fingerprint
+            return computers.servers.map {
+                PairedComputer(
+                    fingerprint: $0.fingerprint, name: $0.name, host: $0.orderedHosts.first,
+                    isActive: $0.fingerprint == active)
+            }
+        }
+    }
+
+    /// Talk to another paired computer from now on. What was kept in memory from the one before goes with it
+    /// (`onComputerChange`), and the app's screens start again on the new one.
+    public func switchTo(fingerprint: String) throws {
+        let updated: PairedComputers? = state.withLock {
+            guard var current = computers, current.active?.fingerprint != fingerprint,
+                current.select(fingerprint)
+            else { return nil }
+            computers = current
+            return current
+        }
+        guard let updated else { return }
+        try store.save(updated)
+        computerChanged()
     }
 
     /// Lifts the computer's own lock — a separate thing from this device's token being locked
@@ -107,11 +138,33 @@ public final class ServerConnection: @unchecked Sendable {
     /// Returns the telling, for a test to wait on; `nil` when there is no token to tell with.
     @discardableResult
     public func leave(session: URLSession? = nil) -> Task<Void, Never>? {
-        let token = isUnlocked ? authorization : nil
-        let candidates = baseURLCandidates
-        let urlSession = session ?? self.session
-        unpair()
-        guard let token else { return nil }
+        guard let fingerprint = state.withLock({ server?.fingerprint }) else {
+            unpair()
+            return nil
+        }
+        return forget(fingerprint: fingerprint, session: session)
+    }
+
+    /// Unpairs one computer, the current one or another: forgotten here at once, then told, as `leave` describes.
+    /// Another computer is told over a session of its own that trusts its certificate — the shared one trusts the
+    /// current computer's only. When the current one goes, the next paired computer takes its place.
+    @discardableResult
+    public func forget(fingerprint: String, session: URLSession? = nil) -> Task<Void, Never>? {
+        let (gone, wasActive): (PairedServer?, Bool) = state.withLock {
+            let gone = computers?.servers.first { $0.fingerprint == fingerprint }
+            return (gone, computers?.active?.fingerprint == fingerprint)
+        }
+        let urlSession =
+            session
+            ?? (wasActive
+                ? self.session
+                : URLSession(
+                    configuration: Self.noStoreConfiguration(),
+                    delegate: PinnedSessionDelegate(pin: { fingerprint }), delegateQueue: nil))
+        remove(fingerprint: fingerprint, changed: wasActive)
+        guard let gone else { return nil }
+        let token = "Bearer \(gone.token)"
+        let candidates = gone.orderedHosts.map { gone.baseURLString(host: $0) }
         return Task.detached {
             for base in candidates {
                 guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
@@ -125,11 +178,27 @@ public final class ServerConnection: @unchecked Sendable {
         }
     }
 
-    /// Forget the computer: revoked there (a 401), or unpaired here.
+    /// Forget the current computer: revoked there (a 401), or unpaired here. Another paired computer, if there is
+    /// one, becomes the current one.
     public func unpair() {
-        try? store.clear()
-        lock()
-        computerChanged()
+        guard let fingerprint = state.withLock({ server?.fingerprint }) else {
+            try? store.clear()
+            lock()
+            computerChanged()
+            return
+        }
+        remove(fingerprint: fingerprint, changed: true)
+    }
+
+    private func remove(fingerprint: String, changed: Bool) {
+        let remaining: PairedComputers? = state.withLock {
+            guard var current = computers else { return nil }
+            current.remove(fingerprint)
+            computers = current.isEmpty ? nil : current
+            return computers
+        }
+        if let remaining { try? store.save(remaining) } else { try? store.clear() }
+        if changed { computerChanged() }
     }
 
     /// Runs `handler` whenever the paired computer goes (unpaired, revoked) or another is paired, so what was kept in
@@ -144,12 +213,14 @@ public final class ServerConnection: @unchecked Sendable {
 
     /// Remember which address worked, so it is tried first next time.
     public func noteReachable(host: String) {
-        let updated: PairedServer? = state.withLock {
-            guard var current = server, current.lastGoodHost != host, current.hosts.contains(host)
+        let updated: PairedComputers? = state.withLock {
+            guard var current = server, current.lastGoodHost != host, current.hosts.contains(host),
+                var all = computers
             else { return nil }
             current.lastGoodHost = host
-            server = current
-            return current
+            all.update(current)
+            computers = all
+            return all
         }
         if let updated { try? store.save(updated) }
     }
@@ -205,8 +276,12 @@ public final class ServerConnection: @unchecked Sendable {
             let paired = PairedServer(
                 hosts: link.hosts, port: link.port, fingerprint: link.fingerprint, name: link.name,
                 deviceId: reply.deviceId, token: reply.token, lastGoodHost: host)
-            try store.save(paired)
-            state.withLock { server = paired }
+            // Another computer is added beside those already paired, and becomes the current one. Those are in
+            // memory once Face ID has released them; pairing from the welcome screen has none to keep.
+            var all = state.withLock { computers } ?? PairedComputers()
+            all.upsert(paired)
+            try store.save(all)
+            state.withLock { computers = all }
             computerChanged()
             return
         }

@@ -11,9 +11,9 @@ public enum CredentialError: Error, Equatable, Sendable {
 }
 
 public protocol CredentialStoring: Sendable {
-    /// Reads the credential, prompting Face ID (or the passcode) to do so.
-    func load(reason: String) async throws -> PairedServer?
-    func save(_ server: PairedServer) throws
+    /// Reads the paired computers, prompting Face ID (or the passcode) to do so.
+    func load(reason: String) async throws -> PairedComputers?
+    func save(_ computers: PairedComputers) throws
     func clear() throws
     /// Whether a credential is stored — answered without prompting.
     var exists: Bool { get }
@@ -65,7 +65,7 @@ public final class KeychainCredentialStore: CredentialStoring {
         return status == errSecSuccess || status == errSecInteractionNotAllowed
     }
 
-    public func load(reason: String) async throws -> PairedServer? {
+    public func load(reason: String) async throws -> PairedComputers? {
         let context = LAContext()
         context.localizedReason = reason
         var query = Self.baseQuery()
@@ -79,7 +79,7 @@ public final class KeychainCredentialStore: CredentialStoring {
             switch status {
             case errSecSuccess:
                 guard let data = item as? Data else { return nil }
-                return try JSONDecoder().decode(PairedServer.self, from: data)
+                return try PairedComputers.decode(data)
             case errSecItemNotFound:
                 return nil
             case errSecUserCanceled, errSecAuthFailed:
@@ -90,8 +90,8 @@ public final class KeychainCredentialStore: CredentialStoring {
         }.value
     }
 
-    public func save(_ server: PairedServer) throws {
-        let data = try JSONEncoder().encode(server)
+    public func save(_ computers: PairedComputers) throws {
+        let data = try JSONEncoder().encode(computers)
         SecItemDelete(Self.baseQuery() as CFDictionary)
         let status = SecItemAdd(try Self.addQuery(for: data) as CFDictionary, nil)
         guard status == errSecSuccess else { throw CredentialError.keychain(status) }
@@ -108,12 +108,16 @@ public final class KeychainCredentialStore: CredentialStoring {
 /// For tests, previews and UI tests: same contract, no Keychain, no prompt.
 public final class InMemoryCredentialStore: CredentialStoring, @unchecked Sendable {
     private let lock = NSLock()
-    private var server: PairedServer?
+    private var computers: PairedComputers?
 
-    public init(_ server: PairedServer? = nil) { self.server = server }
+    public init(_ server: PairedServer? = nil) {
+        computers = server.map { PairedComputers(servers: [$0], activeFingerprint: $0.fingerprint) }
+    }
 
-    public var exists: Bool { lock.withLock { server != nil } }
-    public func load(reason: String) async throws -> PairedServer? { lock.withLock { server } }
-    public func save(_ server: PairedServer) throws { lock.withLock { self.server = server } }
-    public func clear() throws { lock.withLock { server = nil } }
+    public init(computers: PairedComputers?) { self.computers = computers }
+
+    public var exists: Bool { lock.withLock { computers != nil } }
+    public func load(reason: String) async throws -> PairedComputers? { lock.withLock { computers } }
+    public func save(_ computers: PairedComputers) throws { lock.withLock { self.computers = computers } }
+    public func clear() throws { lock.withLock { computers = nil } }
 }
