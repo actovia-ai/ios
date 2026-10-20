@@ -155,9 +155,9 @@ struct BuiltinToolsTableTests {
     private static let testsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
     private static let repoRoot = testsDirectory.deletingLastPathComponent().deletingLastPathComponent()
     private static let desktopConstants = repoRoot.deletingLastPathComponent()
-        .appending(path: "exodus/packages/shared/src/constants")
+        .appending(path: "actovia/packages/shared/src/constants")
     private static let desktopToolConfig = repoRoot.deletingLastPathComponent()
-        .appending(path: "exodus/src/renderer/components/settings/settings-form/tool-config.tsx")
+        .appending(path: "actovia/src/renderer/components/settings/settings-form/tool-config.tsx")
 
     private static func fixture() throws -> DesktopTools {
         let data = try Data(contentsOf: testsDirectory.appending(path: "Fixtures/desktop-tools.json"))

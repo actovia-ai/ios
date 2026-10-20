@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reshape exodus-ios like the ChatGPT iOS app (new-chat launch, a card-slide drawer with Recents, inline search, glass composer) and make every user-visible string localizable from the start, in the desktop app's ten languages.
+**Goal:** Reshape actovia-ios like the ChatGPT iOS app (new-chat launch, a card-slide drawer with Recents, inline search, glass composer) and make every user-visible string localizable from the start, in the desktop app's ten languages.
 
 **Architecture:** A small custom `SideDrawer` container (App target) hosts two native `NavigationStack`s, the sidebar behind and the chat as a rounded card in front. `ChatSidebarView` (ChatFeature) owns Recents, long-press delete and a hand-built inline search field backed by `ChatSearchViewModel`. Strings live in String Catalogs in the App target (English source text as keys); `scripts/l10n.py` adds keys, fills translations and audits the catalogs against the Swift sources. A first task moves every endpoint under the desktop's new `/api/v1` prefix, without which the shipped app cannot reach the current desktop server.
 
 **Tech Stack:** Swift 6 (language mode 6), SwiftUI (iOS 27 Liquid Glass APIs), Swift Testing, Tuist 4.208.0, Python 3.9 (stdlib only) for the l10n tool.
 
-**Spec:** `docs/superpowers/specs/2026-09-19-chatgpt-style-shell-and-i18n-design.md` (read it first; this plan argues from it). Two facts found after the spec was written override it and are folded into Task 1 and the tasks below: the desktop backend now mounts every route under `/api/v1` (`GET /api/v1/history` is 200, `GET /api/history` is 404, verified against the running server), and its i18n catalogs live at `~/Code/exodus/exodus/packages/shared/src/i18n/locales` (the `universal-client` folder no longer exists).
+**Spec:** `docs/superpowers/specs/2026-09-19-chatgpt-style-shell-and-i18n-design.md` (read it first; this plan argues from it). Two facts found after the spec was written override it and are folded into Task 1 and the tasks below: the desktop backend now mounts every route under `/api/v1` (`GET /api/v1/history` is 200, `GET /api/history` is 404, verified against the running server), and its i18n catalogs live at `~/Code/actovia/actovia/packages/shared/src/i18n/locales` (the `universal-client` folder no longer exists).
 
 ## Global Constraints
 
@@ -27,14 +27,14 @@
 ## Shared commands
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 UDID=57E4297B-06D3-45D5-8E46-261CCC7DBB3B            # iPhone 17, iOS 27.0 simulator
 tuist generate --no-open                              # after adding or removing files
 # one module's tests (Models | NetworkingKit | ChatFeature | SettingsFeature); a failing run can stall ~10 min
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature \
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature \
   -destination "platform=iOS Simulator,id=$UDID" 2>&1 | grep -E "Test run with|TEST SUCCEEDED|TEST FAILED|error:"
 # the whole app
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App \
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App \
   -destination "platform=iOS Simulator,id=$UDID" 2>&1 | grep -E "BUILD SUCCEEDED|BUILD FAILED|error:"
 ```
 
@@ -46,7 +46,7 @@ Shell variables (`UDID`, `EXCLUDES`, `SCRATCH`, `APP`) do not persist between se
 
 ### Task 1: Address the desktop's versioned API (`/api/v1`)
 
-The desktop moved every route under `/api/v1` on 2026-09-19 (its `CLAUDE.md` names `exodus-ios` as a client that must follow). Against the current server every request of the shipped app is a 404. This task is the fix and a prerequisite for all live verification.
+The desktop moved every route under `/api/v1` on 2026-09-19 (its `CLAUDE.md` names `actovia-ios` as a client that must follow). Against the current server every request of the shipped app is a 404. This task is the fix and a prerequisite for all live verification.
 
 **Files:**
 - Modify: `Sources/ChatFeature/ChatDetailViewModel.swift`, `Sources/ChatFeature/ChatListViewModel.swift`, `Sources/NetworkingKit/ChatStreamManager.swift`, `Sources/SettingsFeature/SettingsViewModel.swift` (path literals and comments that mention `/api/`)
@@ -101,10 +101,10 @@ Expected: four `200` lines. If the desktop app is not running, report that and s
 
 - [ ] **Step 6: Update the README**
 
-In `README.md`, replace every `universal-client` with `exodus`, and in "Connecting to the desktop" replace the run instruction with:
+In `README.md`, replace every `universal-client` with `actovia`, and in "Connecting to the desktop" replace the run instruction with:
 
 ```
-Run the desktop app from `../exodus` (`bun start`); it serves the API on port 60223 under `/api/v1`, the
+Run the desktop app from `../actovia` (`bun start`); it serves the API on port 60223 under `/api/v1`, the
 versioned prefix this app addresses. The default address, `http://localhost:60223`, works from the Simulator
 on the same Mac.
 ```
@@ -148,7 +148,7 @@ Create `scripts/l10n.py` with exactly this content, then `chmod +x scripts/l10n.
 
 ```python
 #!/usr/bin/env python3
-"""Localization tooling for exodus-ios (standard library only, Python 3.9+).
+"""Localization tooling for actovia-ios (standard library only, Python 3.9+).
 
   l10n.py audit [--source-only] [--exclude PATH ...]
       Checks both catalogs and the Swift sources; exit status 1 on any error.
@@ -549,7 +549,7 @@ In `Project.swift`, add `options` to the `Project(...)` initializer (right after
 
 ```swift
 let project = Project(
-    name: "ExodusIos",
+    name: "ActoviaIos",
     options: .options(
         defaultKnownRegions: ["en", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it"],
         developmentRegion: "en"
@@ -559,15 +559,15 @@ let project = Project(
 
 ```swift
                     "NSLocalNetworkUsageDescription":
-                        "Exodus needs local network access to connect to the Exodus service running on your computer."
+                        "Actovia needs local network access to connect to the Actovia service running on your computer."
 ```
 
 - [ ] **Step 3: Create both catalogs**
 
 ```bash
 python3 scripts/l10n.py add NSLocalNetworkUsageDescription --file Resources/App/InfoPlist.xcstrings \
-  --comment "Local-network permission prompt. Exodus is the app's name and stays as is." \
-  --en-value "Exodus needs local network access to connect to the Exodus service running on your computer."
+  --comment "Local-network permission prompt. Actovia is the app's name and stays as is." \
+  --en-value "Actovia needs local network access to connect to the Actovia service running on your computer."
 add() { python3 scripts/l10n.py add "$@"; }
 add "Connection" --comment "Settings section header for the server address."
 add "Server address" --comment "Accessibility label of the server address field in Settings."
@@ -747,14 +747,14 @@ SCRATCH=<the scratchpad directory from your dispatch>
 printf '{"Settings":{"de":"Einstellungen"}}' > "$SCRATCH/smoke.json"
 python3 scripts/l10n.py fill "$SCRATCH/smoke.json"
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
   -destination "platform=iOS Simulator,id=$UDID" 2>&1 | grep -E "BUILD SUCCEEDED|BUILD FAILED|error:"
-APP="$SCRATCH/dd/Build/Products/Debug-iphonesimulator/Exodus.app"
+APP="$SCRATCH/dd/Build/Products/Debug-iphonesimulator/Actovia.app"
 ls "$APP" | grep lproj
 plutil -p "$APP/de.lproj/Localizable.strings"
 plutil -p "$APP/en.lproj/InfoPlist.strings"
 plutil -p "$APP/Info.plist" | grep NSLocalNetwork
-grep -A14 knownRegions ExodusIos.xcodeproj/project.pbxproj | head -16
+grep -A14 knownRegions ActoviaIos.xcodeproj/project.pbxproj | head -16
 git status --short Resources
 ```
 
@@ -762,7 +762,7 @@ Expected: `BUILD SUCCEEDED`; `de.lproj` and `en.lproj` listed; `"Settings" => "E
 
 - [ ] **Step 8: Document the conventions in the README**
 
-Append to `README.md` (before "Security note") a section that states, in plain sentences: strings live in `Resources/App/Localizable.xcstrings` and `InfoPlist.xcstrings` keyed by English text; SwiftUI literals localize automatically and other code uses `String(localized:)` or `LocalizedStringResource("…")`; the shipped languages (the ten listed in Global Constraints; there is no Simplified Chinese, matching the desktop); how to add a string (`python3 scripts/l10n.py add "Text" --comment "…"`), fill translations (`fill`), seed from the desktop's catalogs (`seed-from-desktop ~/Code/exodus/exodus/packages/shared/src/i18n/locales`) and audit (`audit`); the never-list from Global Constraints (no concatenation, no ternary of literals, user data verbatim); and that translations are AI-generated unless copied from the desktop and have not been reviewed by native speakers. Also change the old "then 连接" wording in "Connecting to the desktop" to "then Connection".
+Append to `README.md` (before "Security note") a section that states, in plain sentences: strings live in `Resources/App/Localizable.xcstrings` and `InfoPlist.xcstrings` keyed by English text; SwiftUI literals localize automatically and other code uses `String(localized:)` or `LocalizedStringResource("…")`; the shipped languages (the ten listed in Global Constraints; there is no Simplified Chinese, matching the desktop); how to add a string (`python3 scripts/l10n.py add "Text" --comment "…"`), fill translations (`fill`), seed from the desktop's catalogs (`seed-from-desktop ~/Code/actovia/actovia/packages/shared/src/i18n/locales`) and audit (`audit`); the never-list from Global Constraints (no concatenation, no ternary of literals, user data verbatim); and that translations are AI-generated unless copied from the desktop and have not been reviewed by native speakers. Also change the old "then 连接" wording in "Connecting to the desktop" to "then Connection".
 
 - [ ] **Step 9: Commit**
 
@@ -1955,7 +1955,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
     private let workspaces: Workspaces
 
     /// A brand name: a plain `String`, shown as is and never looked up in the catalog.
-    private static var appName: String { "Exodus" }
+    private static var appName: String { "Actovia" }
 
     public init(
         apiClient: APIClient,
@@ -2194,7 +2194,7 @@ The custom sliding container, the shell that owns the active chat and the drawer
 
 **Files:**
 - Create: `Sources/App/SideDrawer.swift`, `Sources/App/AppShell.swift`, `Sources/App/WorkspaceRow.swift`
-- Modify: `Sources/App/AppWorkspace.swift`, `Sources/App/ExodusApp.swift`, `Sources/ChatFeature/ChatListViewModel.swift` (remove `relativeTime`), `Tests/ChatFeatureTests/ChatListViewModelTests.swift` (remove its test), `Resources/App/Localizable.xcstrings`
+- Modify: `Sources/App/AppWorkspace.swift`, `Sources/App/ActoviaApp.swift`, `Sources/ChatFeature/ChatListViewModel.swift` (remove `relativeTime`), `Tests/ChatFeatureTests/ChatListViewModelTests.swift` (remove its test), `Resources/App/Localizable.xcstrings`
 - Delete: `Sources/App/RootView.swift`, `Sources/ChatFeature/ChatListView.swift`
 
 **Interfaces:**
@@ -2518,7 +2518,7 @@ struct AppShell: View {
 
 - [ ] **Step 5: Point the app at the shell and delete the old root**
 
-`Sources/App/ExodusApp.swift`: the scene body becomes
+`Sources/App/ActoviaApp.swift`: the scene body becomes
 
 ```swift
     var body: some Scene {
@@ -2547,11 +2547,11 @@ Expected audit: `0 error(s)`. Then the `App` build command (`BUILD SUCCEEDED`; f
 
 ```bash
 SCRATCH=<the scratchpad directory from your dispatch>
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
   -destination "platform=iOS Simulator,id=$UDID" 2>&1 | grep -E "BUILD SUCCEEDED|BUILD FAILED|error:"
-APP="$SCRATCH/dd/Build/Products/Debug-iphonesimulator/Exodus.app"
-xcrun simctl terminate $UDID app.yancey.exodus.exodus-ios 2>/dev/null
-xcrun simctl install $UDID "$APP" && xcrun simctl launch $UDID app.yancey.exodus.exodus-ios
+APP="$SCRATCH/dd/Build/Products/Debug-iphonesimulator/Actovia.app"
+xcrun simctl terminate $UDID app.yancey.actovia.actovia-ios 2>/dev/null
+xcrun simctl install $UDID "$APP" && xcrun simctl launch $UDID app.yancey.actovia.actovia-ios
 sleep 5; xcrun simctl io $UDID screenshot "$SCRATCH/task6-launch.png"
 ```
 
@@ -2583,7 +2583,7 @@ A glass composer, a greeting for an empty chat, interactive keyboard dismissal. 
 
 ```bash
 add() { python3 scripts/l10n.py add "$@"; }
-add "Ask Exodus" --comment "Placeholder of the message field. Exodus is the app's name and stays as is."
+add "Ask Actovia" --comment "Placeholder of the message field. Actovia is the app's name and stays as is."
 add "What can I help with?" --comment "Greeting in the middle of an empty new conversation."
 add "Send" --comment "Accessibility label of the send button."
 add "Stop" --comment "Accessibility label of the button that stops the reply in progress."
@@ -2679,7 +2679,7 @@ public struct ChatDetailView: View {
 
     private var composer: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            TextField("Ask Exodus", text: $viewModel.composerText, axis: .vertical)
+            TextField("Ask Actovia", text: $viewModel.composerText, axis: .vertical)
                 .lineLimit(1...5)
                 .padding(.vertical, 8)
                 .accessibilityIdentifier("composerField")
@@ -2741,7 +2741,7 @@ Expected: `0 error(s)` and no `--exclude` any more (every Swift file is now audi
 
 - [ ] **Step 4: Look at it**
 
-Repeat Task 6 Step 7 with the screenshot named `task7-launch.png`. Expected: the greeting "What can I help with?" centered in the card (a new chat has no history), and a glass composer capsule at the bottom with the placeholder "Ask Exodus" and a circular send button (disabled look, since the field is empty).
+Repeat Task 6 Step 7 with the screenshot named `task7-launch.png`. Expected: the greeting "What can I help with?" centered in the card (a new chat has no history), and a glass composer capsule at the bottom with the placeholder "Ask Actovia" and a circular send button (disabled look, since the field is empty).
 
 - [ ] **Step 5: Commit**
 
@@ -2768,7 +2768,7 @@ Fill both catalogs. Reuse the desktop's wording wherever a string is identical, 
 - [ ] **Step 1: Seed from the desktop**
 
 ```bash
-python3 scripts/l10n.py seed-from-desktop ~/Code/exodus/exodus/packages/shared/src/i18n/locales
+python3 scripts/l10n.py seed-from-desktop ~/Code/actovia/actovia/packages/shared/src/i18n/locales
 ```
 
 Expected: about twenty keys seeded (Cancel, Delete, Retry, Save, Settings, Send, Stop, Search, Chat, New chat, Connection, Model, Provider, API Key, AI Providers, Select a model, Refresh model list, and so on), followed by the list of keys left for manual translation. The desktop's own catalogs are the source, so the wording matches the desktop app.
@@ -2800,11 +2800,11 @@ Write `SCRATCH/translations.json` (outside the repo) with an entry for every key
 }
 ```
 
-The keys normally left over, with what each means (the audit is the source of truth for the exact list): `Recents` (sidebar section header), `Clear` (accessibility label of the clear-text button), `No chats yet`, `Error` (alert title), `OK`, `No results`, `Search failed`, `Searching` (spinner label), `Ask Exodus` (message field placeholder; keep the name Exodus), `What can I help with?` (greeting in an empty chat), `Server address` (accessibility label), `Loading models`, `Connect` (toolbar button before the server's settings are loaded), `Used: %@` (tool row; `%@` is the tool name), `Used a tool`, `Can't load chats`, `Pull down or tap Retry to try again.`, `Ollama runs on your Mac and needs no API key.`, `Server address must look like %@` (`%@` is an example address), `Connect to the server and load its settings before saving.`, `Invalid server URL: %@`, `Invalid server URL`, `HTTP %lld` (the same in every language, but it still needs an entry), `The Philharmonic multi-agent workspace hasn't been ported to iOS yet.`, `Coming soon`, `Open sidebar`, `Close sidebar`.
+The keys normally left over, with what each means (the audit is the source of truth for the exact list): `Recents` (sidebar section header), `Clear` (accessibility label of the clear-text button), `No chats yet`, `Error` (alert title), `OK`, `No results`, `Search failed`, `Searching` (spinner label), `Ask Actovia` (message field placeholder; keep the name Actovia), `What can I help with?` (greeting in an empty chat), `Server address` (accessibility label), `Loading models`, `Connect` (toolbar button before the server's settings are loaded), `Used: %@` (tool row; `%@` is the tool name), `Used a tool`, `Can't load chats`, `Pull down or tap Retry to try again.`, `Ollama runs on your Mac and needs no API key.`, `Server address must look like %@` (`%@` is an example address), `Connect to the server and load its settings before saving.`, `Invalid server URL: %@`, `Invalid server URL`, `HTTP %lld` (the same in every language, but it still needs an entry), `The Philharmonic multi-agent workspace hasn't been ported to iOS yet.`, `Coming soon`, `Open sidebar`, `Close sidebar`.
 
 Rules:
 - Mirror the desktop's tone in each language. To find its register, read how the desktop's catalog for that language addresses the user in a sentence containing "you" or "your" (for example in `settings.json`) and match the formality (de du/Sie, fr tu/vous, es tú/usted, it tu/Lei, ko and ja politeness level).
-- Keep every placeholder (`%@`, `%lld`) exactly and use each once. Never translate `Exodus`, `Philharmonic`, `Ollama`, `iOS`, `API`, `HTTP` or URLs.
+- Keep every placeholder (`%@`, `%lld`) exactly and use each once. Never translate `Actovia`, `Philharmonic`, `Ollama`, `iOS`, `API`, `HTTP` or URLs.
 - `zh-Hant` uses Taiwan wording and `zh-HK` uses Hong Kong wording; give both, identical where the wording is the same.
 - Button and label strings are short imperative or noun forms, not sentences. A string must fit a narrow sidebar (about 260 pt): prefer the shorter natural form.
 
@@ -2818,7 +2818,7 @@ Write `SCRATCH/infoplist.json`:
 { "NSLocalNetworkUsageDescription": { "zh-Hant": "…", "zh-HK": "…", "ja": "…", "ko": "…", "fr": "…", "de": "…", "es": "…", "pt-BR": "…", "it": "…" } }
 ```
 
-with the real translation of "Exodus needs local network access to connect to the Exodus service running on your computer." in each language (the `…` above stands for that text, not a value to keep), then `python3 scripts/l10n.py fill "$SCRATCH/infoplist.json" --file Resources/App/InfoPlist.xcstrings`.
+with the real translation of "Actovia needs local network access to connect to the Actovia service running on your computer." in each language (the `…` above stands for that text, not a value to keep), then `python3 scripts/l10n.py fill "$SCRATCH/infoplist.json" --file Resources/App/InfoPlist.xcstrings`.
 
 - [ ] **Step 5: The strict audit and the bundle**
 
@@ -2848,7 +2848,7 @@ Drive the real app in the simulator against the real desktop (read-only), look a
 
 **Files:**
 - Modify (temporarily, reverted before committing): `Project.swift`
-- Create (temporarily, deleted before committing): `UITests/ExodusUITests.swift`
+- Create (temporarily, deleted before committing): `UITests/ActoviaUITests.swift`
 - Modify: `README.md`, plus any source file a defect requires
 
 **Interfaces:**
@@ -2869,24 +2869,24 @@ In `Project.swift`, add to the `targets` array:
 
 ```swift
         .target(
-            name: "ExodusUITests",
+            name: "ActoviaUITests",
             destinations: .iOS,
             product: .uiTests,
-            bundleId: "\(bundleIdRoot).ExodusUITests",
+            bundleId: "\(bundleIdRoot).ActoviaUITests",
             deploymentTargets: deploymentTargets,
             buildableFolders: ["UITests"],
             dependencies: [.target(name: "App")]
         ),
 ```
 
-Create `UITests/ExodusUITests.swift` (replace `SCRATCH_DIR` with the scratchpad directory from your dispatch):
+Create `UITests/ActoviaUITests.swift` (replace `SCRATCH_DIR` with the scratchpad directory from your dispatch):
 
 ```swift
 import XCTest
 
 /// TEMPORARY, never committed. Drives the real app against the desktop server with read-only actions only:
 /// it never deletes a chat, sends a message or presses Save.
-final class ExodusUITests: XCTestCase {
+final class ActoviaUITests: XCTestCase {
     static let outDir = "SCRATCH_DIR/ui"
 
     override func setUp() {
@@ -3013,19 +3013,19 @@ final class ExodusUITests: XCTestCase {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
-  -destination "platform=iOS Simulator,id=$UDID" -only-testing:ExodusUITests 2>&1 \
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme App -derivedDataPath "$SCRATCH/dd" \
+  -destination "platform=iOS Simulator,id=$UDID" -only-testing:ActoviaUITests 2>&1 \
   | grep -E "Test Case.*(passed|failed)|error:|TEST SUCCEEDED|TEST FAILED|Executed"
 ls "$SCRATCH/ui"
 ```
 
-Expected: the six tests run; a failed XCTAssert is a real defect to fix (or a wrong assumption in the test, e.g. the row index in `testSelectingARecentChatOpensIt`, to be corrected and noted). If `App` does not run the UI tests, try `-scheme ExodusUITests`.
+Expected: the six tests run; a failed XCTAssert is a real defect to fix (or a wrong assumption in the test, e.g. the row index in `testSelectingARecentChatOpensIt`, to be corrected and noted). If `App` does not run the UI tests, try `-scheme ActoviaUITests`.
 
 - [ ] **Step 4: Read every screenshot and check it**
 
 Open each PNG in `$SCRATCH/ui/` with the Read tool. Acceptance:
 - `1-new-chat`: circular glass sidebar button left, title "New chat", circular new-chat button right, the greeting centered, a glass composer capsule at the bottom.
-- `2-open`: the sidebar occupies about 78% of the width with the title "Exodus", a magnifier circle, a "Chat" row, a greyed "Philharmonic" row with "Coming soon", a "Recents" section of real chat titles each on ONE line (the 1211-character multi-line titles must not spill), a blue "New chat" pill bottom-left and a gear bottom-right; the chat card is pushed right with a rounded corner and a dim overlay.
+- `2-open`: the sidebar occupies about 78% of the width with the title "Actovia", a magnifier circle, a "Chat" row, a greyed "Philharmonic" row with "Coming soon", a "Recents" section of real chat titles each on ONE line (the 1211-character multi-line titles must not spill), a blue "New chat" pill bottom-left and a gear bottom-right; the chat card is pushed right with a rounded corner and a dim overlay.
 - `3`, `4`: the card is back, nothing of the sidebar shows through.
 - `5-recent-opened`: the chosen chat's transcript and its real title in the top bar.
 - `6`, `7`, `8`: a glass search capsule with a Cancel button and the keyboard; results are a title plus at most two lines of snippet; the bottom bar is gone while searching; after Cancel the Recents list is back.
@@ -3059,10 +3059,10 @@ In `README.md`: change the intro sentence "it lists chats, sends messages…" to
 ```bash
 python3 scripts/l10n.py audit
 for scheme in Models NetworkingKit ChatFeature SettingsFeature; do
-  xcodebuild test -workspace ExodusIos.xcworkspace -scheme $scheme -destination "platform=iOS Simulator,id=$UDID" 2>&1 \
+  xcodebuild test -workspace ActoviaIos.xcworkspace -scheme $scheme -destination "platform=iOS Simulator,id=$UDID" 2>&1 \
     | grep -E "Test run with|TEST SUCCEEDED|TEST FAILED|error:"
 done
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "platform=iOS Simulator,id=$UDID" 2>&1 \
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "platform=iOS Simulator,id=$UDID" 2>&1 \
   | grep -E "BUILD SUCCEEDED|BUILD FAILED|error:"
 grep -rn '"/api/' Sources | grep -v '/api/v1/' && echo "UNVERSIONED PATH" || echo "all paths versioned"
 ```
@@ -3088,7 +3088,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 4. Send a message: it streams, Stop works, and reopening the chat from Recents shows its real title in the top bar.
 5. Search a word you know appears in an old chat: results show the chat title and a snippet around the word; a tap opens that chat; Cancel returns to Recents.
 6. Long-press a throwaway chat and delete it. Delete the chat that is open: the screen switches to a new chat and the drawer stays open.
-7. Languages: in the system Settings, give Exodus a per-app language (try German and Japanese): nothing is cut off. With the phone in Simplified Chinese the app is in English, as on the desktop.
+7. Languages: in the system Settings, give Actovia a per-app language (try German and Japanese): nothing is cut off. With the phone in Simplified Chinese the app is in English, as on the desktop.
 
 ## Not in this plan
 

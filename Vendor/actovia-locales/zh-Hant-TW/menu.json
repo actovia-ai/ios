@@ -1,0 +1,39 @@
+{
+  "file": "檔案",
+  "newChat": "新增對話",
+  "lockNow": "立即鎖定",
+  "settings": "設定…",
+  "edit": "編輯",
+  "find": "尋找",
+  "speech": "語音",
+  "view": "檢視",
+  "window": "視窗",
+  "learnMore": "了解更多",
+  "app": {
+    "about": "關於 {{name}}",
+    "hide": "隱藏 {{name}}",
+    "quit": "結束 {{name}}"
+  },
+  "tray": {
+    "showApp": "顯示應用程式",
+    "hideApp": "隱藏應用程式",
+    "quitActovia": "結束 Actovia"
+  },
+  "notification": {
+    "philharmonicGroupError": "群組「{{title}}」發生錯誤",
+    "philharmonicGroupFinished": "群組「{{title}}」已完成",
+    "agentWaiting": "{{name}} 正在等你"
+  },
+  "attachment": {
+    "saveImageAs": "將影像另存為…",
+    "copyImage": "拷貝影像",
+    "saveAs": "另存新檔…"
+  },
+  "workspaceFile": {
+    "open": "打開",
+    "revealInFinder": "在 Finder 中顯示",
+    "showInExplorer": "在檔案總管中顯示",
+    "showInFolder": "在資料夾中顯示",
+    "quickLook": "快速查看"
+  }
+}

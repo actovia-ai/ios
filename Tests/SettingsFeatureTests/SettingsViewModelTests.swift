@@ -443,7 +443,7 @@ struct SettingsViewModelTests {
         let cases: [(input: String, expected: String)] = [
             ("192.168.1.10:60223", "http://192.168.1.10:60223"),
             ("  http://mac.local:60223/  ", "http://mac.local:60223"),
-            ("https://exodus.example.com", "https://exodus.example.com"),
+            ("https://actovia.example.com", "https://actovia.example.com"),
         ]
         for (input, expected) in cases {
             let (vm, config) = makeViewModel()

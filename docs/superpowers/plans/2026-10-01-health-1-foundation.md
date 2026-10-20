@@ -15,29 +15,29 @@
 ## Global Constraints
 
 - Every iOS target deploys to iOS 27.0; Swift 6 language mode; native frameworks only (no new packages).
-- Two repos: `exodus-ios` (this one) and `../exodus` (desktop). Both are on branch `maintenance` with unrelated uncommitted work — **stage only the files a task names** (`git add <paths>`; never `git add -A`/`.`), and commit with the paths after `--`.
+- Two repos: `actovia-ios` (this one) and `../actovia` (desktop). Both are on branch `maintenance` with unrelated uncommitted work — **stage only the files a task names** (`git add <paths>`; never `git add -A`/`.`), and commit with the paths after `--`.
 - Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Never push.
 - Health data never leaves the phone except as the aggregated snapshot in §4 of the spec; the desktop writes nothing to its database for it and logs no health values.
 - Wire JSON keys are exactly those in the spec §4 (camelCase); nullable fields may be omitted or `null`.
 - Memory sections are `profile | topic | person`; Health suggestions use `profile`.
 - The default step goal is 8,000 (HealthKit has no step goal; activity-summary only gives move/exercise/stand goals — this corrects spec §3's "activity-summary goal" for steps).
 - New user-facing iOS strings use keys `ios:health.<screen>.<element>` and are added with `scripts/l10n.py add`.
-- iOS tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme <Scheme> -destination "platform=iOS Simulator,name=iPhone 17"`; check for a `Test run with N tests` line (a wrong `-only-testing:` name still prints SUCCEEDED). Run `tuist generate --no-open` after adding files or targets.
-- Desktop tests: from `../exodus`, `bunx vitest run <path>`.
+- iOS tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme <Scheme> -destination "platform=iOS Simulator,name=iPhone 17"`; check for a `Test run with N tests` line (a wrong `-only-testing:` name still prints SUCCEEDED). Run `tuist generate --no-open` after adding files or targets.
+- Desktop tests: from `../actovia`, `bunx vitest run <path>`.
 
 ## Review Focus
 
 - A night with Apple Watch **and** iPhone sleep samples overlapping → minutes counted once (from the staged source), not doubled.
 - A user with fewer than 7 days of history → baselines `nil`, recovery `nil`, `tired` decided by the 6.5 h floor alone, no crash on empty arrays.
 - Desktop unreachable / no model configured / model returns prose instead of JSON → home shows offline / needs-model / failed, never a spinner forever.
-- A message typed in Chat that merely *contains* "```exodus-health" later in the text → not mistaken for a health block (only a leading block counts).
+- A message typed in Chat that merely *contains* "```actovia-health" later in the text → not mistaken for a health block (only a leading block counts).
 - Sleep that crosses midnight and a phone in a different time zone than the samples → bedtime/wake rendered in the phone's current calendar time zone, window 18:00→12:00 local.
 
 ---
 
 ## File Structure
 
-**Desktop (`../exodus`)**
+**Desktop (`../actovia`)**
 - Create `packages/shared/src/types/health.ts` — zod schemas + types for snapshot and summary.
 - Modify `packages/shared/package.json` — export `./types/health`.
 - Modify `src/main/lib/ai/memory/manager.ts` — export `callLlm`, `parseJsonFromResponse`.
@@ -68,18 +68,18 @@
 ### Task 1: Desktop — shared health schemas
 
 **Files:**
-- Create: `../exodus/packages/shared/src/types/health.ts`
-- Modify: `../exodus/packages/shared/package.json` (exports map)
-- Test: `../exodus/tests/unit/shared/types/health.test.ts`, fixtures `../exodus/tests/unit/shared/types/health-fixtures.ts`
+- Create: `../actovia/packages/shared/src/types/health.ts`
+- Modify: `../actovia/packages/shared/package.json` (exports map)
+- Test: `../actovia/tests/unit/shared/types/health.test.ts`, fixtures `../actovia/tests/unit/shared/types/health-fixtures.ts`
 
 **Interfaces:**
-- Produces: `healthSnapshotSchema`, `healthSummarySchema`, `odyStateSchema`, types `HealthSnapshot`, `HealthSummary` from `@exodus/shared/types/health`.
+- Produces: `healthSnapshotSchema`, `healthSummarySchema`, `odyStateSchema`, types `HealthSnapshot`, `HealthSummary` from `@actovia/shared/types/health`.
 
 - [ ] **Step 1: Write the failing test**
 
 ```ts
 // tests/unit/shared/types/health-fixtures.ts
-// The spec's §4 examples; exodus-ios's HealthWireTests holds the same JSON,
+// The spec's §4 examples; actovia-ios's HealthWireTests holds the same JSON,
 // so the two sides agree on the wire.
 export const SNAPSHOT = {
   date: '2026-10-01',
@@ -105,7 +105,7 @@ export const SUMMARY = {
 import {
   healthSnapshotSchema,
   healthSummarySchema
-} from '@exodus/shared/types/health'
+} from '@actovia/shared/types/health'
 import { describe, expect, it } from 'vitest'
 
 import { SNAPSHOT, SUMMARY } from './health-fixtures'
@@ -149,15 +149,15 @@ describe('healthSummarySchema', () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run (in `../exodus`): `bunx vitest run tests/unit/shared/types/health.test.ts`
-Expected: FAIL — cannot resolve `@exodus/shared/types/health`.
+Run (in `../actovia`): `bunx vitest run tests/unit/shared/types/health.test.ts`
+Expected: FAIL — cannot resolve `@actovia/shared/types/health`.
 
 - [ ] **Step 3: Write the schemas**
 
 ```ts
 // packages/shared/src/types/health.ts
 // The phone's daily health snapshot (aggregates only — never raw samples) and
-// the report the desktop writes from it. exodus-ios mirrors both in
+// the report the desktop writes from it. actovia-ios mirrors both in
 // Sources/Models/HealthWire.swift.
 import { z } from 'zod'
 
@@ -278,7 +278,7 @@ Expected: PASS, 6 tests.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd ../exodus
+cd ../actovia
 git add packages/shared/src/types/health.ts packages/shared/package.json tests/unit/shared/types/health.test.ts tests/unit/shared/types/health-fixtures.ts
 git commit -m "feat(health): shared schemas for the phone's daily snapshot and report
 
@@ -292,10 +292,10 @@ Note: `packages/shared/package.json` already has unrelated uncommitted edits. Be
 ### Task 2: Desktop — `POST /api/v1/health/summary`
 
 **Files:**
-- Modify: `../exodus/src/main/lib/ai/memory/manager.ts:92` and `:109` (add `export`)
-- Create: `../exodus/src/main/lib/server/routes/health.ts`
-- Modify: `../exodus/src/main/lib/server/app.ts` (import + `v1.route('/health', healthRouter)` after `/memory`)
-- Test: `../exodus/tests/unit/main/lib/server/routes/health.test.ts`
+- Modify: `../actovia/src/main/lib/ai/memory/manager.ts:92` and `:109` (add `export`)
+- Create: `../actovia/src/main/lib/server/routes/health.ts`
+- Modify: `../actovia/src/main/lib/server/app.ts` (import + `v1.route('/health', healthRouter)` after `/memory`)
+- Test: `../actovia/tests/unit/main/lib/server/routes/health.test.ts`
 
 **Interfaces:**
 - Consumes: `healthSnapshotSchema`, `healthSummarySchema` (Task 1); `getModelFromProvider(setting)`; `loadRelevantMemories(question, model, apiKey, sessionId, runId)`.
@@ -305,7 +305,7 @@ Note: `packages/shared/package.json` already has unrelated uncommitted edits. Be
 
 ```ts
 // tests/unit/main/lib/server/routes/health.test.ts
-import { isAppError } from '@exodus/shared/errors/app-error'
+import { isAppError } from '@actovia/shared/errors/app-error'
 import { Hono } from 'hono'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -436,16 +436,16 @@ In `src/main/lib/ai/memory/manager.ts` change `function parseJsonFromResponse(` 
 
 ```ts
 // src/main/lib/server/routes/health.ts
-// exodus-ios's Health workspace: one report a day, written from the phone's
+// actovia-ios's Health workspace: one report a day, written from the phone's
 // aggregated snapshot. Stateless — nothing is stored, and the logs carry
 // timings, never the numbers.
-import { ErrorCode } from '@exodus/shared/constants/error-codes'
-import { AIError } from '@exodus/shared/errors/app-error'
+import { ErrorCode } from '@actovia/shared/constants/error-codes'
+import { AIError } from '@actovia/shared/errors/app-error'
 import {
   healthSnapshotSchema,
   healthSummarySchema,
   type HealthSnapshot
-} from '@exodus/shared/types/health'
+} from '@actovia/shared/types/health'
 import { Hono } from 'hono'
 
 import {
@@ -535,7 +535,7 @@ Expected: no new errors in `health.ts`, `manager.ts`, `app.ts`.
 
 ```bash
 git add src/main/lib/server/routes/health.ts src/main/lib/server/app.ts src/main/lib/ai/memory/manager.ts tests/unit/main/lib/server/routes/health.test.ts
-git commit -m "feat(health): stateless daily-report route for exodus-ios
+git commit -m "feat(health): stateless daily-report route for actovia-ios
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" -- src/main/lib/server/routes/health.ts src/main/lib/server/app.ts src/main/lib/ai/memory/manager.ts tests/unit/main/lib/server/routes/health.test.ts
 ```
@@ -617,9 +617,9 @@ In the `App` target: add `.target(name: "HealthFeature")` and `.target(name: "Od
 
 ```swift
                     "NSHealthShareUsageDescription":
-                        "Exodus reads your sleep, activity, heart and body data to write your daily health report.",
+                        "Actovia reads your sleep, activity, heart and body data to write your daily health report.",
                     "NSHealthUpdateUsageDescription":
-                        "Exodus saves the water you log to Apple Health."
+                        "Actovia saves the water you log to Apple Health."
 ```
 
 and add, as a sibling of `infoPlist:`,
@@ -635,7 +635,7 @@ and add, as a sibling of `infoPlist:`,
 
 ```swift
 // Sources/OdyKit/OdyKit.swift
-/// Ody, the Exodus mascot, as a living SwiftUI character and the scenes it appears in. Plan 2 fills this module;
+/// Ody, the Actovia mascot, as a living SwiftUI character and the scenes it appears in. Plan 2 fills this module;
 /// the body curve and palette come from the desktop's `brand/art.mjs`.
 public enum OdyKit {
     static let version = 1
@@ -697,8 +697,8 @@ Update the `.sensoryFeedback(.selection, trigger: workspace)` comment's last sen
 
 ```bash
 python3 scripts/l10n.py add "ios:app.workspace.health" --comment "Name of the Health workspace in the sidebar." --en-value "Health"
-python3 scripts/l10n.py add NSHealthShareUsageDescription --file Resources/App/InfoPlist.xcstrings --en-value "Exodus reads your sleep, activity, heart and body data to write your daily health report."
-python3 scripts/l10n.py add NSHealthUpdateUsageDescription --file Resources/App/InfoPlist.xcstrings --en-value "Exodus saves the water you log to Apple Health."
+python3 scripts/l10n.py add NSHealthShareUsageDescription --file Resources/App/InfoPlist.xcstrings --en-value "Actovia reads your sleep, activity, heart and body data to write your daily health report."
+python3 scripts/l10n.py add NSHealthUpdateUsageDescription --file Resources/App/InfoPlist.xcstrings --en-value "Actovia saves the water you log to Apple Health."
 ```
 
 Then write `/private/tmp/…/health-l10n-1.json` (any scratch path) with the nine translations of each of the three keys (`zh-Hant`, `zh-HK`, `ja`, `ko`, `fr`, `de`, `es`, `pt-BR`, `it`) — "Health" is `健康`/`健康`/`ヘルスケア`/`건강`/`Santé`/`Health`/`Salud`/`Saúde`/`Salute` — and run `python3 scripts/l10n.py fill <that file>` and `python3 scripts/l10n.py fill <that file> --file Resources/App/InfoPlist.xcstrings` for the two plist keys. Run `python3 scripts/l10n.py audit`; expected exit 0.
@@ -707,9 +707,9 @@ Then write `/private/tmp/…/health-l10n-1.json` (any scratch path) with the nin
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Expected: each test run prints `Test run with 1 test … passed`; the App build succeeds (the entitlement is accepted under automatic signing for the simulator).
@@ -808,7 +808,7 @@ struct HealthWireTests {
 
 - [ ] **Step 2: Run to verify it fails**
 
-Run: `tuist generate --no-open && xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ModelsTests/HealthWireTests`
+Run: `tuist generate --no-open && xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ModelsTests/HealthWireTests`
 Expected: build failure — `HealthSnapshot` not found.
 
 - [ ] **Step 3: Write the types**
@@ -1033,7 +1033,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" -- Sources/Models/Healt
 
 **Interfaces:**
 - Consumes: `HealthWire.encoder()` (Task 4).
-- Produces: `public enum HealthContext { static let infoString = "exodus-health"; static func block(json: String) -> String; static func compose(json: String, question: String) -> String; static func compose<T: Encodable>(_ value: T, question: String) throws -> String; static func split(_ text: String) -> (json: String?, body: String) }`
+- Produces: `public enum HealthContext { static let infoString = "actovia-health"; static func block(json: String) -> String; static func compose(json: String, question: String) -> String; static func compose<T: Encodable>(_ value: T, question: String) throws -> String; static func split(_ text: String) -> (json: String?, body: String) }`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1046,11 +1046,11 @@ import Testing
 struct HealthContextTests {
     @Test func composeIsAFencedBlockThenTheQuestion() {
         let text = HealthContext.compose(json: #"{"steps":1}"#, question: "  Why am I tired?\n")
-        #expect(text == "```exodus-health\n{\"steps\":1}\n```\n\nWhy am I tired?")
+        #expect(text == "```actovia-health\n{\"steps\":1}\n```\n\nWhy am I tired?")
     }
 
     @Test func splitReturnsTheBlockAndTheQuestion() {
-        let parts = HealthContext.split("```exodus-health\n{\"a\":1}\n```\n\nHow did I sleep?")
+        let parts = HealthContext.split("```actovia-health\n{\"a\":1}\n```\n\nHow did I sleep?")
         #expect(parts.json == #"{"a":1}"#)
         #expect(parts.body == "How did I sleep?")
     }
@@ -1063,19 +1063,19 @@ struct HealthContextTests {
     }
 
     @Test func onlyALeadingBlockCounts() {
-        let text = "Look at this:\n```exodus-health\n{}\n```"
+        let text = "Look at this:\n```actovia-health\n{}\n```"
         let parts = HealthContext.split(text)
         #expect(parts.json == nil)
         #expect(parts.body == text)
     }
 
     @Test func anUnclosedBlockIsJustText() {
-        let text = "```exodus-health\n{\"a\":1}"
+        let text = "```actovia-health\n{\"a\":1}"
         #expect(HealthContext.split(text).json == nil)
     }
 
     @Test func aBlockWithNoQuestionHasAnEmptyBody() {
-        let parts = HealthContext.split("```exodus-health\n{}\n```")
+        let parts = HealthContext.split("```actovia-health\n{}\n```")
         #expect(parts.json == "{}")
         #expect(parts.body.isEmpty)
     }
@@ -1083,14 +1083,14 @@ struct HealthContextTests {
     @Test func encodesAValueWithSortedKeys() throws {
         struct V: Encodable { let b = 2, a = 1 }
         let text = try HealthContext.compose(V(), question: "q")
-        #expect(text.hasPrefix("```exodus-health\n{\"a\":1,\"b\":2}\n```"))
+        #expect(text.hasPrefix("```actovia-health\n{\"a\":1,\"b\":2}\n```"))
     }
 }
 ```
 
 - [ ] **Step 2: Run to verify it fails**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ModelsTests/HealthContextTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ModelsTests/HealthContextTests`
 Expected: build failure — `HealthContext` not found.
 
 - [ ] **Step 3: Write it**
@@ -1100,11 +1100,11 @@ Expected: build failure — `HealthContext` not found.
 import Foundation
 
 /// The Health workspace's "ask about this": a question typed there travels to Chat with the day's numbers as a
-/// leading fenced block — ```` ```exodus-health ````, the JSON, ```` ``` ````, a blank line, the question. Plain text, like
+/// leading fenced block — ```` ```actovia-health ````, the JSON, ```` ``` ````, a blank line, the question. Plain text, like
 /// `QuotedText`, so the computer and every provider read it as what it is; the transcript reads it back with `split`
 /// to draw the numbers as a card. Only a block that opens the message counts.
 public enum HealthContext {
-    public static let infoString = "exodus-health"
+    public static let infoString = "actovia-health"
     private static var opening: String { "```" + infoString + "\n" }  // l10n:ignore: markdown syntax
     private static let closing = "\n```"  // l10n:ignore: markdown syntax
 
@@ -1422,7 +1422,7 @@ struct SleepAnalyzerTests {
 
 - [ ] **Step 4: Run to verify they fail**
 
-Run: `tuist generate --no-open && xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/SleepAnalyzerTests`
+Run: `tuist generate --no-open && xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/SleepAnalyzerTests`
 Expected: build failure — `SleepAnalyzer` not found.
 
 - [ ] **Step 5: Write the analyzer**
@@ -1617,7 +1617,7 @@ struct HealthRulesTests {
 
 - [ ] **Step 2: Run to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/HealthRulesTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/HealthRulesTests`
 Expected: build failure — `HealthRules` not found.
 
 - [ ] **Step 3: Write the rules**
@@ -1848,7 +1848,7 @@ struct SnapshotBuilderTests {
 
 - [ ] **Step 2: Run to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/SnapshotBuilderTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/SnapshotBuilderTests`
 Expected: build failure — `SnapshotBuilder` not found.
 
 - [ ] **Step 3: Write the builder**
@@ -2230,7 +2230,7 @@ extension HealthKitSource {
 
 - [ ] **Step 2: Build**
 
-Run: `tuist generate --no-open && xcodebuild build -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "generic/platform=iOS Simulator"`
+Run: `tuist generate --no-open && xcodebuild build -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "generic/platform=iOS Simulator"`
 Expected: BUILD SUCCEEDED. If an API name differs in the iOS 27 SDK (e.g. `HKActivitySummaryQueryDescriptor`, `.stateOfMind(_:)` predicate), look it up with `mcp__plugin_context7_context7__query-docs` for "HealthKit" and use the SDK's spelling; keep the behavior above.
 
 - [ ] **Step 3: Commit**
@@ -2332,7 +2332,7 @@ struct ReportStoreTests {
 
 - [ ] **Step 2: Run to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/ReportStoreTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/ReportStoreTests`
 Expected: build failure — `ReportCache` not found.
 
 - [ ] **Step 3: Write the services**
@@ -2669,7 +2669,7 @@ struct HealthHomeModelTests {
 
 - [ ] **Step 2: Run to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/HealthHomeModelTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:HealthFeatureTests/HealthHomeModelTests`
 Expected: build failure — `HealthHomeModel` not found.
 
 - [ ] **Step 3: Write the model**

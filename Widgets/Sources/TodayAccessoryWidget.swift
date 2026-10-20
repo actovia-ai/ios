@@ -4,7 +4,7 @@ import WidgetUI
 
 struct TodayAccessoryWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.yancey.exodus.today", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "app.yancey.actovia.today", provider: SnapshotProvider()) { entry in
             TodayAccessoryView(entry: entry).containerBackground(for: .widget) { Color.clear }
         }
         .configurationDisplayName(Text("ios:widget.ask.title"))

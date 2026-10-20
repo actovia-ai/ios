@@ -5,7 +5,7 @@ import Testing
 
 @Suite("ServerConfigStore", .serialized)
 struct ServerConfigStoreTests {
-    private static let key = "exodus.serverURL"
+    private static let key = "actovia.serverURL"
 
     /// An isolated `UserDefaults` suite, emptied first (a previous run may have left values behind).
     private func makeDefaults(_ suite: String) -> UserDefaults {
@@ -26,7 +26,7 @@ struct ServerConfigStoreTests {
         #expect(defaults.object(forKey: Self.key) == nil)
     }
 
-    @Test("setting the address persists it under exodus.serverURL, and a second store on the same suite reads it")
+    @Test("setting the address persists it under actovia.serverURL, and a second store on the same suite reads it")
     func settingPersistsUnderTheKey() {
         let suite = "ServerConfigStoreTests.persist"
         let defaults = makeDefaults(suite)

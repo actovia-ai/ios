@@ -1,7 +1,7 @@
 import Foundation
 
 /// The blocks a reply can carry (specs 2026-10-06 and 2026-10-07): a fenced block whose info string names it
-/// (`exodus-ask`, `exodus-confirm`, `exodus-steps`, `exodus-stock`) and whose body is one JSON object. One that
+/// (`actovia-ask`, `actovia-confirm`, `actovia-steps`, `actovia-stock`) and whose body is one JSON object. One that
 /// validates is drawn natively; anything else stays the code block it is. The desktop has the same rules
 /// (`packages/shared/src/types/interactive.ts`), held to the same vectors; lengths are UTF-16 units, as zod counts.
 enum InteractiveBlock: Equatable, Sendable {
@@ -14,11 +14,11 @@ enum InteractiveBlock: Equatable, Sendable {
         case ask, confirm, steps, stock
 
         /// The fence's info string.
-        var language: String { "exodus-" + rawValue }
+        var language: String { "actovia-" + rawValue }
 
         init?(language: String) {
-            guard language.hasPrefix("exodus-") else { return nil }
-            self.init(rawValue: String(language.dropFirst("exodus-".count)))
+            guard language.hasPrefix("actovia-") else { return nil }
+            self.init(rawValue: String(language.dropFirst("actovia-".count)))
         }
 
         /// The two blocks that ask: only they wait for an answer and freeze; the others only show.
@@ -208,7 +208,7 @@ struct InteractiveFence: Equatable, Sendable {
         Self.plainCode(code).elementsEqual(Self.plainCode(source))
     }
 
-    /// A reply's block: its first `exodus-ask` / `exodus-confirm` fence that opens a line at the left margin — not
+    /// A reply's block: its first `actovia-ask` / `actovia-confirm` fence that opens a line at the left margin — not
     /// inside another fence, a list or a quote — and is closed. Only that first one counts: when it does not validate
     /// the reply has none, and a second is code either way. A fence still open (a reply being written) is not one yet.
     /// Read in UTF-16 units, as the desktop's `findInteractiveBlock` reads it, so the two agree on every reply; line

@@ -47,17 +47,17 @@ struct MarkdownReviewFixTests {
         #expect(MarkdownFixtures.plain(content) == plain)
         let links = MarkdownFixtures.runs(content).compactMap(\.link).map(\.absoluteString)
         #expect(!links.isEmpty)
-        #expect(links.allSatisfy { $0.hasPrefix("exodus-cite://") })
+        #expect(links.allSatisfy { $0.hasPrefix("actovia-cite://") })
     }
 
     @Test(
         "rewriteCitations escapes an unescaped ! before the link, and only that",
         arguments: [
-            ("Huge!【1-source】", "Huge\\![1](exodus-cite://1)"),
-            ("!!【1-source】", "!\\![1](exodus-cite://1)"),
-            ("\\!【1-source】", "\\![1](exodus-cite://1)"),
-            ("\\\\!【1-source】", "\\\\\\![1](exodus-cite://1)"),
-            ("【1-source】", "[1](exodus-cite://1)"),
+            ("Huge!【1-source】", "Huge\\![1](actovia-cite://1)"),
+            ("!!【1-source】", "!\\![1](actovia-cite://1)"),
+            ("\\!【1-source】", "\\![1](actovia-cite://1)"),
+            ("\\\\!【1-source】", "\\\\\\![1](actovia-cite://1)"),
+            ("【1-source】", "[1](actovia-cite://1)"),
         ]
     )
     func bangEscape(input: String, expected: String) {

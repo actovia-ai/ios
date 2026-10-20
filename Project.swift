@@ -1,6 +1,6 @@
 import ProjectDescription
 
-private let bundleIdRoot = "app.yancey.exodus.ios"
+private let bundleIdRoot = "app.yancey.actovia.ios"
 private let developmentTeam = "YLF27G9ZMT"
 private let deploymentTargets = DeploymentTargets.iOS("26.0")
 
@@ -20,7 +20,7 @@ private func moduleTarget(
 }
 
 let project = Project(
-    name: "ExodusIos",
+    name: "ActoviaIos",
     options: .options(
         defaultKnownRegions: ["en", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it"],
         developmentRegion: "en"
@@ -60,8 +60,8 @@ let project = Project(
                         "UIImageName": "LaunchLogo"
                     ],
                     // What the app is showing, published as the current activity so a screenshot is titled after
-                    // it (ExodusActivity and screenTitle in Models).
-                    "NSUserActivityTypes": ["app.yancey.exodus.viewing"],
+                    // it (ActoviaActivity and screenTitle in Models).
+                    "NSUserActivityTypes": ["app.yancey.actovia.viewing"],
                     "NSAppTransportSecurity": [
                         "NSAllowsLocalNetworking": true,
                         // Away from home the paired computer is reached over Tailscale by its MagicDNS name. Its
@@ -90,9 +90,9 @@ let project = Project(
                         "Actovia reads your sleep, activity, heart and body data to write your daily health report.",
                     "NSHealthUpdateUsageDescription":
                         "Actovia saves the water you log to Apple Health.",
-                    // exodus:// — the widgets' links (WidgetKitShared.DeepLink).
+                    // actovia:// — the widgets' links (WidgetKitShared.DeepLink).
                     "CFBundleURLTypes": [
-                        ["CFBundleURLName": "app.yancey.exodus.link", "CFBundleURLSchemes": ["exodus"]]
+                        ["CFBundleURLName": "app.yancey.actovia.link", "CFBundleURLSchemes": ["actovia"]]
                     ]
                 ]
             ),
@@ -100,7 +100,7 @@ let project = Project(
             entitlements: .dictionary([
                 "com.apple.developer.healthkit": .boolean(true),
                 "com.apple.developer.healthkit.access": .array([]),
-                "com.apple.security.application-groups": .array([.string("group.app.yancey.exodus")])
+                "com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")])
             ]),
             dependencies: [
                 .target(name: "ChatFeature"),
@@ -110,7 +110,7 @@ let project = Project(
                 .target(name: "OdyKit"),
                 .target(name: "WidgetKitShared"),
                 .target(name: "WidgetUI"),
-                .target(name: "ExodusWidgets"),
+                .target(name: "ActoviaWidgets"),
                 .target(name: "NetworkingKit"),
                 .target(name: "MarkdownKit")
             ],
@@ -124,17 +124,17 @@ let project = Project(
         // The widgets and the Control Center control. Links only the widget modules — never NetworkingKit or the
         // keychain; it reads the App Group snapshot the app writes. The App's string catalog is a member too.
         .target(
-            name: "ExodusWidgets",
+            name: "ActoviaWidgets",
             destinations: .iOS,
             product: .appExtension,
-            productName: "ExodusWidgets",
+            productName: "ActoviaWidgets",
             bundleId: "\(bundleIdRoot).widgets",
             deploymentTargets: deploymentTargets,
             infoPlist: .file(path: "Widgets/Info.plist"),
             resources: ["Resources/App/Localizable.xcstrings"],
             buildableFolders: ["Widgets/Sources"],
             entitlements: .dictionary([
-                "com.apple.security.application-groups": .array([.string("group.app.yancey.exodus")])
+                "com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")])
             ]),
             dependencies: [
                 .target(name: "WidgetKitShared"), .target(name: "WidgetUI"), .target(name: "OdyKit"),

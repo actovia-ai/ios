@@ -61,7 +61,7 @@ class ConvertPlaceholdersTests(unittest.TestCase):
         self.assertEqual(l10n.convert_placeholders("{{n}}%% and 5%"), "%@%% and 5%%")
 
     def test_a_text_without_a_percent_is_unchanged(self):
-        self.assertEqual(l10n.convert_placeholders("Ask Exodus anything."), "Ask Exodus anything.")
+        self.assertEqual(l10n.convert_placeholders("Ask Actovia anything."), "Ask Actovia anything.")
 
     def test_the_converted_text_has_only_the_placeholders_that_were_written(self):
         # What the audit compares across languages: an escaped percent is a literal, not a placeholder.
@@ -86,17 +86,17 @@ class FlattenDesktopLocalesTests(unittest.TestCase):
             root = Path(tmp)
             (root / "en").mkdir()
             (root / "en" / "chat.json").write_text(
-                json.dumps({"composer": {"placeholder": "Ask Exodus"}})
+                json.dumps({"composer": {"placeholder": "Ask Actovia"}})
             )
             (root / "zh-Hant-TW").mkdir()
             (root / "zh-Hant-TW" / "chat.json").write_text(
-                json.dumps({"composer": {"placeholder": "詢問 Exodus"}})
+                json.dumps({"composer": {"placeholder": "詢問 Actovia"}})
             )
             values = l10n.flatten_desktop_locales(root)
-            self.assertEqual(values[("en", "chat:composer.placeholder")], "Ask Exodus")
+            self.assertEqual(values[("en", "chat:composer.placeholder")], "Ask Actovia")
             # zh-Hant-TW maps to the iOS catalog language "zh-Hant" (DESKTOP_LANGUAGE).
             self.assertEqual(
-                values[("zh-Hant", "chat:composer.placeholder")], "詢問 Exodus"
+                values[("zh-Hant", "chat:composer.placeholder")], "詢問 Actovia"
             )
 
     def test_unmapped_desktop_locale_is_skipped(self):
@@ -141,10 +141,10 @@ class CmdSyncTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.locales = self.root / "locales"
         self.texts = {
-            "en": "Ask Exodus", "zh-Hant-TW": "詢問 Exodus", "zh-Hant-HK": "詢問 Exodus",
-            "ja": "Exodusに聞く", "ko": "Exodus에게 물어보기", "fr": "Demander à Exodus",
-            "de": "Exodus fragen", "es": "Preguntar a Exodus",
-            "pt-BR": "Perguntar ao Exodus", "it": "Chiedi a Exodus",
+            "en": "Ask Actovia", "zh-Hant-TW": "詢問 Actovia", "zh-Hant-HK": "詢問 Actovia",
+            "ja": "Actoviaに聞く", "ko": "Actovia에게 물어보기", "fr": "Demander à Actovia",
+            "de": "Actovia fragen", "es": "Preguntar a Actovia",
+            "pt-BR": "Perguntar ao Actovia", "it": "Chiedi a Actovia",
         }
         for desktop_dir in self.texts:
             self.write_chat(desktop_dir)
@@ -156,7 +156,7 @@ class CmdSyncTests(unittest.TestCase):
                 "chat:composer.placeholder": {
                     "extractionState": "manual",
                     "localizations": {
-                        "en": {"stringUnit": {"state": "translated", "value": "Ask Exodus"}},
+                        "en": {"stringUnit": {"state": "translated", "value": "Ask Actovia"}},
                         # A deliberately stale zh-Hant translation — cmd_sync must overwrite this.
                         "zh-Hant": {"stringUnit": {"state": "translated", "value": "STALE"}},
                     },
@@ -196,7 +196,7 @@ class CmdSyncTests(unittest.TestCase):
         code, out = self.run_sync()
         self.assertEqual(code, 0, out)
         zh_hant = self.catalog()["chat:composer.placeholder"]["localizations"]["zh-Hant"]
-        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Exodus")
+        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Actovia")
 
     def test_ios_only_key_is_untouched(self):
         code, out = self.run_sync()
@@ -267,7 +267,7 @@ class CmdSyncTests(unittest.TestCase):
         self.assertEqual(code, 1)
         # chat:composer.placeholder still got the desktop's text, and the file was written.
         zh_hant = self.catalog()["chat:composer.placeholder"]["localizations"]["zh-Hant"]
-        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Exodus")
+        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Actovia")
         self.assertEqual(listed_under(out, MISSING_HEADING), ["chat:removed.key"])
 
     def test_an_ios_key_the_desktop_lacks_is_not_an_error(self):
@@ -278,7 +278,7 @@ class CmdSyncTests(unittest.TestCase):
         self.assertIn("ios:onlyKey", out)
 
     def test_a_shared_key_with_desktop_markup_is_an_error_and_is_not_overwritten(self):
-        for markup in ["Ask <1>Exodus</1>", "Ask <strong>Exodus</strong>", "Ask<br/>Exodus", "<i>Ask</i> Exodus"]:
+        for markup in ["Ask <1>Actovia</1>", "Ask <strong>Actovia</strong>", "Ask<br/>Actovia", "<i>Ask</i> Actovia"]:
             with self.subTest(markup=markup):
                 # The markup is in one language only: any language counts.
                 self.write_chat("fr", {"composer": {"placeholder": markup}})
@@ -311,7 +311,7 @@ class CmdSyncTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_markup_and_missing_errors_are_listed_separately(self):
-        self.write_chat("fr", {"composer": {"placeholder": "Ask <1>Exodus</1>"}})
+        self.write_chat("fr", {"composer": {"placeholder": "Ask <1>Actovia</1>"}})
         self.add_entry("chat:removed.key", {"extractionState": "manual"})
         code, out = self.run_sync()
         self.assertEqual(code, 1)
@@ -477,14 +477,14 @@ class CmdAuditDefaultTests(unittest.TestCase):
 
     def test_a_complete_symbolic_catalog_and_matching_call_site_passes(self):
         strings = {"chat:composer.placeholder": {"extractionState": "manual",
-                   "localizations": {"en": translated("Ask Exodus")}}}
+                   "localizations": {"en": translated("Ask Actovia")}}}
         with fake_repo(strings, swift='Text("chat:composer.placeholder")\n'):
             code, out = run_audit()
             self.assertEqual(code, 0, out)
 
     def test_a_swift_literal_missing_from_the_catalog_fails(self):
         strings = {"chat:composer.placeholder": {"extractionState": "manual",
-                   "localizations": {"en": translated("Ask Exodus")}}}
+                   "localizations": {"en": translated("Ask Actovia")}}}
         with fake_repo(strings, swift='Text("chat:nope")\n'):
             code, out = run_audit()
             self.assertEqual(code, 1)
@@ -670,7 +670,7 @@ class AuditPluralTests(unittest.TestCase):
 
 
 class AuditVendorTests(unittest.TestCase):
-    """A desktop-namespaced key must also be in Vendor/exodus-locales (I1 of the C9 review)."""
+    """A desktop-namespaced key must also be in Vendor/actovia-locales (I1 of the C9 review)."""
 
     STRINGS = {
         "chat:composer.placeholder": {"extractionState": "manual", "localizations": {"en": translated("Ask")}},
@@ -682,8 +682,8 @@ class AuditVendorTests(unittest.TestCase):
 
     def audit_with_vendor(self, chat):
         with fake_repo(self.STRINGS, swift=self.SWIFT) as root:
-            (root / "Vendor/exodus-locales/en").mkdir(parents=True)
-            (root / "Vendor/exodus-locales/en/chat.json").write_text(json.dumps(chat))
+            (root / "Vendor/actovia-locales/en").mkdir(parents=True)
+            (root / "Vendor/actovia-locales/en/chat.json").write_text(json.dumps(chat))
             return run_audit()
 
     def test_every_desktop_key_in_the_vendor_passes(self):
@@ -693,7 +693,7 @@ class AuditVendorTests(unittest.TestCase):
     def test_a_desktop_key_missing_from_the_vendor_fails(self):
         code, out = self.audit_with_vendor({"note_other": "b"})
         self.assertEqual(code, 1)
-        self.assertIn("'chat:composer.placeholder' is a desktop key but not in Vendor/exodus-locales", out)
+        self.assertIn("'chat:composer.placeholder' is a desktop key but not in Vendor/actovia-locales", out)
         self.assertNotIn("'chat:note'", out.split("error:", 1)[-1])
         self.assertNotIn("ios:x' is a desktop key", out)
         self.assertNotIn("chat:brand' is a desktop key", out)

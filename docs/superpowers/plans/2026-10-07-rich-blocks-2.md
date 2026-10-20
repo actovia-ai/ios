@@ -2,17 +2,17 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A reply can carry three more things both apps draw natively — numbered steps with a thumbnail each (`exodus-steps`), a name that opens a Wikipedia summary panel (`[Marie Curie](entity:Marie_Curie)`), and a TradingView mini chart of a symbol (`exodus-stock`) — through the phase-1 fence mechanism, with nothing sent back and nothing fetched on the model's behalf.
+**Goal:** A reply can carry three more things both apps draw natively — numbered steps with a thumbnail each (`actovia-steps`), a name that opens a Wikipedia summary panel (`[Marie Curie](entity:Marie_Curie)`), and a TradingView mini chart of a symbol (`actovia-stock`) — through the phase-1 fence mechanism, with nothing sent back and nothing fetched on the model's behalf.
 
-**Architecture:** Phase 1's scanner grows two kinds: `steps` and `stock` join the reserved languages on both sides (desktop `packages/shared/src/types/interactive.ts`, iOS `InteractiveBlock`), so a reply's first `exodus-*` fence is its block whatever its kind, and the existing dispatch (`InteractiveFence` / `InteractiveBlockView`) draws the new ones. Pictures in steps are only thumbnails the run's own search returned (the desktop's `allowedImageUrls` narrowed to thumbnails; the phone's `SearchGallery.trustedURLs` likewise). An `entity:` link is a new link action in both Markdown renderers (react-markdown's `urlTransform` + the `a` renderer; MarkdownKit's `MarkdownLinkPolicy` + router), opening a popover / sheet fed by one new desktop route, `GET /api/v1/entity/:title`, which reads Wikipedia's REST summary through `fetchPublicHttps()` and caches it a day. The chart is TradingView's own embed URL (verified 2026-10-07 to render alone) in a sandboxed iframe on the desktop and a rule-listed `WKWebView` on the phone — no TradingView script ever runs in our documents. Copy and read-aloud get the block's words instead of its JSON.
+**Architecture:** Phase 1's scanner grows two kinds: `steps` and `stock` join the reserved languages on both sides (desktop `packages/shared/src/types/interactive.ts`, iOS `InteractiveBlock`), so a reply's first `actovia-*` fence is its block whatever its kind, and the existing dispatch (`InteractiveFence` / `InteractiveBlockView`) draws the new ones. Pictures in steps are only thumbnails the run's own search returned (the desktop's `allowedImageUrls` narrowed to thumbnails; the phone's `SearchGallery.trustedURLs` likewise). An `entity:` link is a new link action in both Markdown renderers (react-markdown's `urlTransform` + the `a` renderer; MarkdownKit's `MarkdownLinkPolicy` + router), opening a popover / sheet fed by one new desktop route, `GET /api/v1/entity/:title`, which reads Wikipedia's REST summary through `fetchPublicHttps()` and caches it a day. The chart is TradingView's own embed URL (verified 2026-10-07 to render alone) in a sandboxed iframe on the desktop and a rule-listed `WKWebView` on the phone — no TradingView script ever runs in our documents. Copy and read-aloud get the block's words instead of its JSON.
 
 **Tech Stack:** Desktop: TypeScript, React 19, react-markdown 10 (`defaultUrlTransform`), zod 4, Hono, `@tanstack/react-query`, shadcn `Popover`, i18next, vitest (+ happy-dom), bun. iOS: Swift 6, SwiftUI (iOS 27), WebKit (`WKWebView`, `WKContentRuleList`), swift-markdown (via MarkdownKit), Foundation, Swift Testing.
 
-**Spec:** `docs/superpowers/specs/2026-10-07-rich-blocks-phase-2-design.md` (exodus-ios) — §2 the wire (steps, `entity:` links and the route, stock), §3 the prompt, §4 renderers, §5 testing, §6 the owner's four decisions (all made 2026-10-07). It builds on `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md` and the phase-1 plan `docs/superpowers/plans/2026-10-06-interactive-blocks-1.md`, whose tooling notes (tuist, xcodebuild, the catalog script) still hold.
+**Spec:** `docs/superpowers/specs/2026-10-07-rich-blocks-phase-2-design.md` (actovia-ios) — §2 the wire (steps, `entity:` links and the route, stock), §3 the prompt, §4 renderers, §5 testing, §6 the owner's four decisions (all made 2026-10-07). It builds on `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md` and the phase-1 plan `docs/superpowers/plans/2026-10-06-interactive-blocks-1.md`, whose tooling notes (tuist, xcodebuild, the catalog script) still hold.
 
 ## Decisions (spec gaps, resolved here)
 
-1. **One block per reply, of any kind.** `steps` and `stock` are kinds of the phase-1 block: the first `exodus-*` fence of a turn that validates is its block (`findInteractiveBlock` / `InteractiveFence.first`, unchanged), a second fence of any kind is code. So a reply cannot hold both a questionnaire and a chart — the spec's "one block per message stays the rule for every `exodus-*` fence" (§6 Q4).
+1. **One block per reply, of any kind.** `steps` and `stock` are kinds of the phase-1 block: the first `actovia-*` fence of a turn that validates is its block (`findInteractiveBlock` / `InteractiveFence.first`, unchanged), a second fence of any kind is code. So a reply cannot hold both a questionnaire and a chart — the spec's "one block per message stays the rule for every `actovia-*` fence" (§6 Q4).
 2. **Steps pictures are thumbnails, exactly.** A step's `image` is drawn only when it is, byte for byte after URL normalisation, one of the run's search *thumbnails*: a web result's `thumbnail` (Brave's `thumbnail.src`) or a media result's `thumbnailUrl`. A media result's original `url` — which phase 1's `allowedImageUrls` / `trustedURLs` admit for Markdown images — is **not** admitted here (owner: "原图可能触发原站盗链"). A step whose picture is anything else is drawn without one. Admitted pictures load on sight (they are the run's own thumbnails, as the search gallery loads them), through `RemoteImage` on the desktop and `SearchMediaLoader` on the phone.
 3. **The stock range set is TradingView's:** `1D 1M 3M 12M 60M ALL`, default `1D` (§6 Q2); the model widens it only when the question names a span. Spelled in the schema, the prompt and the Swift enum alike.
 4. **Chart colours are TradingView's own.** Only `colorTheme` (light/dark) and `isTransparent: true` are set. The spec's "the tone's accent as `trendLineColor`" is dropped: the renderer's tone tokens are `oklch()` CSS variables the widget cannot read, and a wrong colour is worse than theirs.
@@ -35,12 +35,12 @@
 
 ## Global Constraints
 
-- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/exodus/exodus-ios`, desktop `/Users/yanceyleo/Code/exodus/exodus`.
+- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/actovia/actovia-ios`, desktop `/Users/yanceyleo/Code/actovia/actovia`.
 - **Commits by explicit path only:** `git add <the files your task names> && git commit -F msg.txt` from that repo's root; never `git add -A`, `git add .`, `git commit -a`, `git stash`, `git reset`, `git restore`, `git checkout -- <file>`, never `--no-verify`. The desktop's pre-commit hook runs `lint-staged` (oxlint + oxfmt on staged `*.{ts,tsx}`, oxfmt on `*.json`) → `bun run typecheck` → `bun run i18n:check`; let it. After each commit, `git show --stat HEAD` must list only your files. Commit messages: one sentence in the repo's voice saying what and why, a blank line, then `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
 - Run `git status --porcelain` at the start of every task. Only `?? .playwright-mcp/` is expected. Anything else in a file you must edit → Decision 19.
 - **The vectors are the contract:** the schema, finder, entity-title and plain-text vectors in Tasks 1 and 6 are the same text in both repos. A change to the wire changes both files and both implementations.
 - Desktop: `bunx oxfmt <dir>` and `bunx oxlint <files>` before committing; typecheck with `bun run typecheck:shared`, `bun run typecheck:node`, `bun run typecheck:web` (each that covers your files); tests with `bunx vitest run <path>`. New `chat`/`lock` keys go into all ten locales (`en, de, es, fr, it, ja, ko, pt-BR, zh-Hant-HK, zh-Hant-TW`) or `i18n:check` fails; insert them textually with the task's script, never by rewriting a JSON file. Test IDs: never a raw `data-testid` string; add to `TEST_IDS` and reference in a test.
-- iOS: Swift 6 language mode, iOS 27.0, Tuist with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run** `PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH tuist generate --no-open` (the toolchain prefix keeps `~/.swiftly` out of the manifest build). Simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/rich2-dd`. Tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme <ChatFeature|MarkdownKit> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd [-only-testing:<ChatFeatureTests|MarkdownKitTests>/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"` — a wrong `-only-testing` name still prints SUCCEEDED, so confirm `Test run with N tests` with N > 0. App build: `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
+- iOS: Swift 6 language mode, iOS 27.0, Tuist with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run** `PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH tuist generate --no-open` (the toolchain prefix keeps `~/.swiftly` out of the manifest build). Simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/rich2-dd`. Tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme <ChatFeature|MarkdownKit> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd [-only-testing:<ChatFeatureTests|MarkdownKitTests>/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"` — a wrong `-only-testing` name still prints SUCCEEDED, so confirm `Test run with N tests` with N > 0. App build: `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
 - iOS strings: keys `ios:chat.block.<element>`, ten languages (`en, de, es, fr, it, ja, ko, pt-BR, zh-HK, zh-Hant`), inserted textually with the task's `add_keys.py`; never `scripts/l10n.py add|fill|save`. `python3 scripts/l10n.py audit 2>&1 | tail -1` prints `0 error(s)` at the end of every iOS task. Views use the key literal (`Text("ios:chat.block.chartBy")`); code uses `String(localized:defaultValue:comment:)` with `defaultValue` equal to the catalog's English. Never a ternary of two string literals in a text initializer; model-written text through `Text(verbatim:)`. No CJK in `Sources/` (tests may hold CJK).
 - No new packages in either repo. iOS: native frameworks only (WebKit is one). Dynamic Type through text styles; Reduce Motion: no animation of ours in the new views.
 - Match the surrounding code: doc comments short and plain, saying *why*; Swift Testing (`@Test`, `#expect`, `#require`); vitest `describe`/`it`.
@@ -58,7 +58,7 @@
 
 ## File Structure
 
-**Desktop (`/Users/yanceyleo/Code/exodus/exodus`)**
+**Desktop (`/Users/yanceyleo/Code/actovia/actovia`)**
 - Modify `packages/shared/src/types/interactive.ts` — kinds `steps`/`stock`, `stepSchema`, `stepsBlockSchema`, `STOCK_RANGES`, `DEFAULT_STOCK_RANGE`, `stockBlockSchema`, the union, `interactiveKind`, `parseInteractiveBlock`.
 - Create `packages/shared/src/utils/entity-link.ts` — `ENTITY_SCHEME`, `ENTITY_TITLE_MAX`, `isWikipediaTitle`, `entityTitle`, `isWikipediaLang`, `wikipediaLang`.
 - Create `packages/shared/src/types/entity.ts` — `EntitySummary`.
@@ -75,7 +75,7 @@
 - Modify `src/renderer/components/chat/message-action.tsx`, `audio-player.tsx` — `withBlockText`; `settings/settings-form/lock-privacy.tsx` — the sentence; `docs/security-hardening.md` — the TradingView note.
 - Create `tests/unit/renderer/components/chat/rich-blocks.test.ts`.
 
-**iOS (`/Users/yanceyleo/Code/exodus/exodus-ios`)**
+**iOS (`/Users/yanceyleo/Code/actovia/actovia-ios`)**
 - Modify `Sources/ChatFeature/Interactive/InteractiveBlock.swift` — `Kind.steps/.stock`, `Steps`, `Stock`, `isValid`, `Kind.isAnswerable`.
 - Create `Sources/ChatFeature/Interactive/InteractivePlainText.swift`, `StockChart.swift`, `StockBlockView.swift`, `StepsBlockView.swift`, `EntitySummary.swift`, `EntitySheet.swift`.
 - Modify `Sources/ChatFeature/Interactive/InteractiveBlockView.swift` — the switch, `fencedBlocks(… pictures:)`; `Sources/ChatFeature/AssistantTurnView.swift` — `asks`, the pictures; `Sources/ChatFeature/CopiedAnswer.swift`, `ReadAloud.swift` — the plain text; `Sources/ChatFeature/ChatDetailView.swift` — the entity action and sheet.
@@ -95,7 +95,7 @@
 
 **Interfaces:**
 - Consumes: phase 1's `text`, `label`, `oneLine`, `findInteractiveBlock`, `fenceRun`, `blank`, `trimTrailingBlanks` in `interactive.ts`.
-- Produces: `INTERACTIVE_LANGUAGES.steps = 'exodus-steps'`, `.stock = 'exodus-stock'`; `StepsBlock { title?: string | null; steps: Array<{ text: string; image?: string | null }> }`; `StockBlock { symbol: string; range?: StockRange | null; note?: string | null }`; `STOCK_RANGES`, `StockRange`, `DEFAULT_STOCK_RANGE`; `InteractiveFence` with `kind: 'steps' | 'stock'` members; `entityTitle(href: string | null | undefined): string | null`; `isWikipediaTitle(title: string): boolean`; `isWikipediaLang(lang: string): boolean`; `wikipediaLang(locale: string): string`; `EntitySummary`; `tradingViewEmbedUrl({ symbol, range, theme, locale }): string`; `tradingViewSymbolPageUrl(symbol): string`; `tradingViewLocale(locale): string`; `STOCK_CHART_HEIGHT = 220`; `blockText(fence: InteractiveFence): string | null`; `withBlockText(markdown: string): string`.
+- Produces: `INTERACTIVE_LANGUAGES.steps = 'actovia-steps'`, `.stock = 'actovia-stock'`; `StepsBlock { title?: string | null; steps: Array<{ text: string; image?: string | null }> }`; `StockBlock { symbol: string; range?: StockRange | null; note?: string | null }`; `STOCK_RANGES`, `StockRange`, `DEFAULT_STOCK_RANGE`; `InteractiveFence` with `kind: 'steps' | 'stock'` members; `entityTitle(href: string | null | undefined): string | null`; `isWikipediaTitle(title: string): boolean`; `isWikipediaLang(lang: string): boolean`; `wikipediaLang(locale: string): string`; `EntitySummary`; `tradingViewEmbedUrl({ symbol, range, theme, locale }): string`; `tradingViewSymbolPageUrl(symbol): string`; `tradingViewLocale(locale): string`; `STOCK_CHART_HEIGHT = 220`; `blockText(fence: InteractiveFence): string | null`; `withBlockText(markdown: string): string`.
 
 - [ ] **Step 1: Add the schema and finder vectors (failing)**
 
@@ -171,10 +171,10 @@ const STOCK_CASES: Array<[string, string, boolean]> = [
 In the `describe('parseInteractiveBlock', …)` block add, after the confirm `it.each`:
 
 ```ts
-  it.each(STEPS_CASES)('exodus-steps: %s → valid: %s', (_name, source, valid) => {
+  it.each(STEPS_CASES)('actovia-steps: %s → valid: %s', (_name, source, valid) => {
     expect(parseInteractiveBlock('steps', source) !== null).toBe(valid)
   })
-  it.each(STOCK_CASES)('exodus-stock: %s → valid: %s', (_name, source, valid) => {
+  it.each(STOCK_CASES)('actovia-stock: %s → valid: %s', (_name, source, valid) => {
     expect(parseInteractiveBlock('stock', source) !== null).toBe(valid)
   })
   it('keeps the parsed blocks', () => {
@@ -193,23 +193,23 @@ In the `describe('parseInteractiveBlock', …)` block add, after the confirm `it
 Change `FIND_CASES`'s type to `Array<[string, string, 'ask' | 'confirm' | 'steps' | 'stock' | null]>` and append:
 
 ```ts
-  ['a steps block', `Here:\n\n\`\`\`exodus-steps\n${STEPS_SOURCE}\n\`\`\``, 'steps'],
-  ['a stock block', `\`\`\`exodus-stock\n${STOCK_SOURCE}\n\`\`\``, 'stock'],
+  ['a steps block', `Here:\n\n\`\`\`actovia-steps\n${STEPS_SOURCE}\n\`\`\``, 'steps'],
+  ['a stock block', `\`\`\`actovia-stock\n${STOCK_SOURCE}\n\`\`\``, 'stock'],
   [
     'a stock block after a questionnaire: the questionnaire',
-    `\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\`\n\n\`\`\`exodus-stock\n${STOCK_SOURCE}\n\`\`\``,
+    `\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\`\n\n\`\`\`actovia-stock\n${STOCK_SOURCE}\n\`\`\``,
     'ask'
   ],
   [
     'a stock block that does not validate, then steps: none',
-    `\`\`\`exodus-stock\n{"symbol":"aapl"}\n\`\`\`\n\n\`\`\`exodus-steps\n${STEPS_SOURCE}\n\`\`\``,
+    `\`\`\`actovia-stock\n{"symbol":"aapl"}\n\`\`\`\n\n\`\`\`actovia-steps\n${STEPS_SOURCE}\n\`\`\``,
     null
   ]
 ```
 
 - [ ] **Step 2: Run the vectors to see them fail**
 
-Run: `cd /Users/yanceyleo/Code/exodus/exodus && bunx vitest run tests/unit/shared/types/interactive.test.ts`
+Run: `cd /Users/yanceyleo/Code/actovia/actovia && bunx vitest run tests/unit/shared/types/interactive.test.ts`
 Expected: FAIL — `parseInteractiveBlock('steps', …)` is a type error / returns null (`steps` is not an `InteractiveKind`).
 
 - [ ] **Step 3: Grow `interactive.ts`**
@@ -218,10 +218,10 @@ Replace `INTERACTIVE_LANGUAGES`:
 
 ```ts
 export const INTERACTIVE_LANGUAGES = {
-  ask: 'exodus-ask',
-  confirm: 'exodus-confirm',
-  steps: 'exodus-steps',
-  stock: 'exodus-stock'
+  ask: 'actovia-ask',
+  confirm: 'actovia-confirm',
+  steps: 'actovia-steps',
+  stock: 'actovia-stock'
 } as const
 ```
 
@@ -320,7 +320,7 @@ export function parseInteractiveBlock(
 }
 ```
 
-Update the file's header comment's first line to: `// The blocks a reply can carry (exodus-ios specs 2026-10-06 and 2026-10-07): a fenced block whose info string names it and whose body is one JSON object — a questionnaire, a confirmation, illustrated steps or a stock chart.` (keep the rest).
+Update the file's header comment's first line to: `// The blocks a reply can carry (actovia-ios specs 2026-10-06 and 2026-10-07): a fenced block whose info string names it and whose body is one JSON object — a questionnaire, a confirmation, illustrated steps or a stock chart.` (keep the rest).
 
 - [ ] **Step 4: Run the vectors**
 
@@ -333,14 +333,14 @@ Create `tests/unit/shared/utils/entity-link.test.ts`:
 
 ```ts
 // An `entity:` link names a Wikipedia article; anything a reply could write
-// that is not one is plain text. exodus-ios's MarkdownLinkPolicyTests.entity
+// that is not one is plain text. actovia-ios's MarkdownLinkPolicyTests.entity
 // holds the same vectors — keep them in step.
 import {
   entityTitle,
   isWikipediaLang,
   isWikipediaTitle,
   wikipediaLang
-} from '@exodus/shared/utils/entity-link'
+} from '@actovia/shared/utils/entity-link'
 import { describe, expect, it } from 'vitest'
 
 const ENTITY_CASES: Array<[string, string, string | null]> = [
@@ -422,9 +422,9 @@ Create `packages/shared/src/utils/entity-link.ts`:
 
 ```ts
 // `[Marie Curie](entity:Marie_Curie)` — a link in a reply that opens a small
-// panel about the person, place or thing (exodus-ios spec 2026-10-07 §2.2).
+// panel about the person, place or thing (actovia-ios spec 2026-10-07 §2.2).
 // The target is a Wikipedia article title, and only something that could be
-// one is a link; anything else is plain text. exodus-ios's
+// one is a link; anything else is plain text. actovia-ios's
 // `MarkdownEntityLink` has the same rule, held to the same vectors.
 
 export const ENTITY_SCHEME = 'entity:'
@@ -510,14 +510,14 @@ Create `tests/unit/shared/utils/stock-chart.test.ts`:
 ```ts
 // The chart is TradingView's own embed URL in a frame: its settings travel in
 // the hash, exactly as the widget's loader script would put them (verified
-// 2026-10-07 to render alone). exodus-ios's StockChartTests holds the same
+// 2026-10-07 to render alone). actovia-ios's StockChartTests holds the same
 // vectors — keep them in step.
 import {
   STOCK_CHART_HEIGHT,
   tradingViewEmbedUrl,
   tradingViewLocale,
   tradingViewSymbolPageUrl
-} from '@exodus/shared/utils/stock-chart'
+} from '@actovia/shared/utils/stock-chart'
 import { describe, expect, it } from 'vitest'
 
 describe('tradingViewEmbedUrl', () => {
@@ -597,7 +597,7 @@ Expected: FAIL — module not found.
 ```ts
 // TradingView's Mini Chart (`mini-symbol-overview`) as the URL its loader
 // script would put in an iframe, built here so no script of theirs runs in
-// our documents (exodus-ios spec 2026-10-07 §2.3). exodus-ios's `StockChart`
+// our documents (actovia-ios spec 2026-10-07 §2.3). actovia-ios's `StockChart`
 // builds the same bytes, held to the same vectors.
 import type { StockRange } from '../types/interactive'
 
@@ -674,9 +674,9 @@ Create `tests/unit/shared/utils/interactive-plain-text.test.ts`:
 
 ```ts
 // Copy and read-aloud take a reply's words: a steps block as its numbered
-// list, a stock block as its symbol and note. exodus-ios's
+// list, a stock block as its symbol and note. actovia-ios's
 // InteractivePlainTextTests holds the same vectors — keep them in step.
-import { withBlockText } from '@exodus/shared/utils/interactive-plain-text'
+import { withBlockText } from '@actovia/shared/utils/interactive-plain-text'
 import { describe, expect, it } from 'vitest'
 
 const STEPS =
@@ -687,41 +687,41 @@ const ASK = '{"title":"T","questions":[{"id":"a","text":"Q?","type":"single","op
 const CASES: Array<[string, string, string]> = [
   [
     'steps become a titled numbered list',
-    `Here is how:\n\n\`\`\`exodus-steps\n${STEPS}\n\`\`\`\n\nGood luck.`,
+    `Here is how:\n\n\`\`\`actovia-steps\n${STEPS}\n\`\`\`\n\nGood luck.`,
     'Here is how:\n\nReplacing the strings\n\n1. Loosen the old string.\n2. Thread the new one.\n\nGood luck.'
   ],
   [
     'steps without a title',
-    `\`\`\`exodus-steps\n{"steps":[{"text":"A"},{"text":"B"}]}\n\`\`\``,
+    `\`\`\`actovia-steps\n{"steps":[{"text":"A"},{"text":"B"}]}\n\`\`\``,
     '1. A\n2. B'
   ],
   [
     'a stock block is its symbol and note',
-    `\`\`\`exodus-stock\n${STOCK}\n\`\`\``,
+    `\`\`\`actovia-stock\n${STOCK}\n\`\`\``,
     'NASDAQ:AAPL — Up 12% since the call.'
   ],
   [
     'a stock block without a note is its symbol',
-    '```exodus-stock\n{"symbol":"NASDAQ:AAPL"}\n```',
+    '```actovia-stock\n{"symbol":"NASDAQ:AAPL"}\n```',
     'NASDAQ:AAPL'
   ],
   [
     'CRLF line ends are made LF',
-    `Intro\r\n\r\n\`\`\`exodus-stock\r\n${STOCK}\r\n\`\`\`\r\n`,
+    `Intro\r\n\r\n\`\`\`actovia-stock\r\n${STOCK}\r\n\`\`\`\r\n`,
     'Intro\n\nNASDAQ:AAPL — Up 12% since the call.\n'
   ],
   [
     'a questionnaire is left as it is',
-    `\`\`\`exodus-ask\n${ASK}\n\`\`\``,
-    `\`\`\`exodus-ask\n${ASK}\n\`\`\``
+    `\`\`\`actovia-ask\n${ASK}\n\`\`\``,
+    `\`\`\`actovia-ask\n${ASK}\n\`\`\``
   ],
   [
     'a second block is code and stays',
-    `\`\`\`exodus-stock\n${STOCK}\n\`\`\`\n\n\`\`\`exodus-steps\n${STEPS}\n\`\`\``,
-    `NASDAQ:AAPL — Up 12% since the call.\n\n\`\`\`exodus-steps\n${STEPS}\n\`\`\``
+    `\`\`\`actovia-stock\n${STOCK}\n\`\`\`\n\n\`\`\`actovia-steps\n${STEPS}\n\`\`\``,
+    `NASDAQ:AAPL — Up 12% since the call.\n\n\`\`\`actovia-steps\n${STEPS}\n\`\`\``
   ],
   ['a reply without a block is untouched', 'Just words.\n\n```js\nlet a = 1\n```', 'Just words.\n\n```js\nlet a = 1\n```'],
-  ['a block that does not validate stays code', '```exodus-stock\n{"symbol":"aapl"}\n```', '```exodus-stock\n{"symbol":"aapl"}\n```']
+  ['a block that does not validate stays code', '```actovia-stock\n{"symbol":"aapl"}\n```', '```actovia-stock\n{"symbol":"aapl"}\n```']
 ]
 
 describe('withBlockText', () => {
@@ -741,7 +741,7 @@ Expected: FAIL — module not found.
 ```ts
 // What leaves the app as words — Copy, read-aloud — of a reply that holds a
 // steps or stock block: the list a reader would say, the symbol and its
-// reading, in place of the fence's JSON (exodus-ios spec 2026-10-07 §4). The
+// reading, in place of the fence's JSON (actovia-ios spec 2026-10-07 §4). The
 // questionnaire and the confirmation are left as they are, as in phase 1.
 import {
   findInteractiveBlock,
@@ -770,7 +770,7 @@ export function blockText(fence: InteractiveFence): string | null {
 }
 
 /**
- * The reply with its block's fence — the lines from ```` ```exodus-… ```` to
+ * The reply with its block's fence — the lines from ```` ```actovia-… ```` to
  * the closing ```` ``` ```` — replaced by the block's words; the reply as it
  * was (line ends made `\n`) when it holds no such block.
  */
@@ -808,13 +808,13 @@ Expected: PASS.
 - [ ] **Step 17: Typecheck, format, lint, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 bun run typecheck:shared && bun run typecheck:web
 bunx oxfmt packages/shared/src/types packages/shared/src/utils tests/unit/shared && bunx oxlint packages/shared/src/types/interactive.ts packages/shared/src/utils/entity-link.ts packages/shared/src/utils/stock-chart.ts packages/shared/src/utils/interactive-plain-text.ts packages/shared/src/types/entity.ts
 bunx vitest run tests/unit/shared
 git add packages/shared/package.json packages/shared/src/types/interactive.ts packages/shared/src/types/entity.ts packages/shared/src/utils/entity-link.ts packages/shared/src/utils/stock-chart.ts packages/shared/src/utils/interactive-plain-text.ts tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/entity-link.test.ts tests/unit/shared/utils/stock-chart.test.ts tests/unit/shared/utils/interactive-plain-text.test.ts
 git commit -F - <<'EOF'
-feat(blocks): two more kinds a reply can carry — illustrated steps (exodus-steps: 2–12 one-line steps, a thumbnail each) and a stock chart (exodus-stock: TradingView's EXCHANGE:TICKER, its own range set, default 1D) — with the entity-link title rule, the chart's embed and symbol-page URLs, and the words Copy and read-aloud get in place of a block's JSON; vectors the phone is held to
+feat(blocks): two more kinds a reply can carry — illustrated steps (actovia-steps: 2–12 one-line steps, a thumbnail each) and a stock chart (actovia-stock: TradingView's EXCHANGE:TICKER, its own range set, default 1D) — with the entity-link title rule, the chart's embed and symbol-page URLs, and the words Copy and read-aloud get in place of a block's JSON; vectors the phone is held to
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 EOF
@@ -850,11 +850,11 @@ In `tests/unit/main/lib/net/safe-fetch.test.ts`, record the request headers in t
       'https://en.wikipedia.org/api/rest_v1/page/summary/X',
       {
         maxBytes: 1024,
-        headers: { 'User-Agent': 'Exodus/1 test', Accept: 'application/json' }
+        headers: { 'User-Agent': 'Actovia/1 test', Accept: 'application/json' }
       }
     )
     expect(requests.at(-1)?.headers).toEqual({
-      'User-Agent': 'Exodus/1 test',
+      'User-Agent': 'Actovia/1 test',
       Accept: 'application/json'
     })
   })
@@ -864,7 +864,7 @@ In `tests/unit/main/lib/net/safe-fetch.test.ts`, record the request headers in t
 
 - [ ] **Step 2: Run it to see it fail**
 
-Run: `cd /Users/yanceyleo/Code/exodus/exodus && bunx vitest run tests/unit/main/lib/net/safe-fetch.test.ts`
+Run: `cd /Users/yanceyleo/Code/actovia/actovia && bunx vitest run tests/unit/main/lib/net/safe-fetch.test.ts`
 Expected: FAIL — `headers` is `undefined` on the recorded request (and a type error on the option).
 
 - [ ] **Step 3: Pass `headers` through `safe-fetch.ts`**
@@ -977,7 +977,7 @@ describe('GET /api/v1/entity/:title', () => {
     expect(url).toBe(
       'https://en.wikipedia.org/api/rest_v1/page/summary/Marie_Curie'
     )
-    expect(options.headers['User-Agent']).toMatch(/^Exodus\//u)
+    expect(options.headers['User-Agent']).toMatch(/^Actovia\//u)
     expect(options.headers.Accept).toBe('application/json')
     expect(options.maxBytes).toBe(512 * 1024)
   })
@@ -1090,16 +1090,16 @@ Expected: FAIL — module not found.
 - [ ] **Step 7: Write `routes/entity.ts`**
 
 ```ts
-import { ErrorCode } from '@exodus/shared/constants/error-codes'
+import { ErrorCode } from '@actovia/shared/constants/error-codes'
 import {
   ServiceError,
   ValidationError
-} from '@exodus/shared/errors/app-error'
-import type { EntitySummary } from '@exodus/shared/types/entity'
+} from '@actovia/shared/errors/app-error'
+import type { EntitySummary } from '@actovia/shared/types/entity'
 import {
   isWikipediaLang,
   isWikipediaTitle
-} from '@exodus/shared/utils/entity-link'
+} from '@actovia/shared/utils/entity-link'
 import { Hono } from 'hono'
 
 import { logger } from '../../logger'
@@ -1108,7 +1108,7 @@ import { Variables } from '../types'
 
 /**
  * `GET /api/v1/entity/:title?lang=xx` — Wikipedia's summary of an article,
- * for the panel a reply's `[name](entity:Title)` link opens (exodus-ios spec
+ * for the panel a reply's `[name](entity:Title)` link opens (actovia-ios spec
  * 2026-10-07 §2.2). Fetched here through `fetchPublicHttps()` (https only,
  * public addresses only, pinned) so a paired phone needs no network but its
  * computer's, and the answer is kept a day. Tried in the app's language
@@ -1123,7 +1123,7 @@ const CACHE_MAX = 500
 const MAX_BYTES = 512 * 1024
 // Wikimedia's API policy asks every client for a User-Agent that names it
 // and says where to find its maker.
-const USER_AGENT = 'Exodus/1 (https://github.com/YanceyOfficial/exodus) entity-panel'
+const USER_AGENT = 'Actovia/1 (https://github.com/YanceyOfficial/actovia) entity-panel'
 
 interface WikipediaSummary {
   title?: string
@@ -1273,7 +1273,7 @@ An article neither language has is a `200` with `extract: null` and `url: null`.
 - [ ] **Step 11: Typecheck, format, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 bun run typecheck:node
 bunx oxfmt src/main/lib/server/routes/entity.ts src/main/lib/net/safe-fetch.ts tests/unit/main/lib/server/routes/entity.test.ts tests/unit/main/lib/net/safe-fetch.test.ts && bunx oxlint src/main/lib/server/routes/entity.ts src/main/lib/net/safe-fetch.ts
 git add src/main/lib/net/safe-fetch.ts src/main/lib/server/routes/entity.ts src/main/lib/server/app.ts tests/unit/main/lib/net/safe-fetch.test.ts tests/unit/main/lib/server/routes/entity.test.ts docs/chat-api.md
@@ -1304,10 +1304,10 @@ In `tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts`:
 
 ```ts
     expect(prompt).toContain(
-      `\`\`\`exodus-steps\n${JSON.stringify(STEPS_EXAMPLE)}\n\`\`\``
+      `\`\`\`actovia-steps\n${JSON.stringify(STEPS_EXAMPLE)}\n\`\`\``
     )
     expect(prompt).toContain(
-      `\`\`\`exodus-stock\n${JSON.stringify(STOCK_EXAMPLE)}\n\`\`\``
+      `\`\`\`actovia-stock\n${JSON.stringify(STOCK_EXAMPLE)}\n\`\`\``
     )
     expect(prompt).toContain('[Marie Curie](entity:Marie_Curie)')
 ```
@@ -1327,7 +1327,7 @@ In `tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts`:
   })
 ```
 - Change 'stays short' to `toBeLessThanOrEqual(70)`.
-- In 'is in no other prompt' add `expect(other).not.toContain('exodus-steps')`, `expect(other).not.toContain('exodus-stock')`, `expect(other).not.toContain('(entity:')`.
+- In 'is in no other prompt' add `expect(other).not.toContain('actovia-steps')`, `expect(other).not.toContain('actovia-stock')`, `expect(other).not.toContain('(entity:')`.
 
 In `tests/unit/main/lib/ai/prompts.test.ts` change the budget line to `expect(getSystemPrompt({}).length).toBeLessThan(13_500)` and its comment's last sentence to: `// …which brought the chat prompt to ~11.2k characters; phase 2 (steps, the entity link, the stock chart) adds ~1.8k.`
 
@@ -1368,23 +1368,23 @@ Replace the section's first line and insert the new half before `Rules`, then am
 export const INTERACTIVE_BLOCKS_PROMPT = `<interactive_blocks>
 Both apps draw four fenced blocks natively inside your reply, and one kind of link; two of the blocks ask, and the user's answer comes back as a message.
 
-\`exodus-ask\` is a questionnaire. Use it when your answer depends on facts only the user has — their situation, preferences, constraints — and a few short choices get them faster than prose. Ask only what changes your answer; what you can reasonably assume, assume and say so. 1–8 questions, 2–8 short options each; "type" is "single" or "multi"; "other": true adds a choice the user types into.
-${FENCE}exodus-ask
+\`actovia-ask\` is a questionnaire. Use it when your answer depends on facts only the user has — their situation, preferences, constraints — and a few short choices get them faster than prose. Ask only what changes your answer; what you can reasonably assume, assume and say so. 1–8 questions, 2–8 short options each; "type" is "single" or "multi"; "other": true adds a choice the user types into.
+${FENCE}actovia-ask
 ${JSON.stringify(ASK_EXAMPLE)}
 ${FENCE}
 
-\`exodus-confirm\` is a confirmation. Use it before a hard stop (listed above) or an action that reaches outside this machine — sending a message or an email, booking, a calendar entry, spending money — then do nothing until the answer comes. Inside your workspace act freely: no confirmation. Say what will happen in "details" (Markdown), briefly.
-${FENCE}exodus-confirm
+\`actovia-confirm\` is a confirmation. Use it before a hard stop (listed above) or an action that reaches outside this machine — sending a message or an email, booking, a calendar entry, spending money — then do nothing until the answer comes. Inside your workspace act freely: no confirmation. Say what will happen in "details" (Markdown), briefly.
+${FENCE}actovia-confirm
 ${JSON.stringify(CONFIRM_EXAMPLE)}
 ${FENCE}
 
-\`exodus-steps\` is a how-to as numbered steps, each a line or two and, where a picture from your web search in this reply fits, that picture. Use it for "how do I…" answers of 3–12 ordered actions. "image" is optional and must be, character for character, a thumbnail URL a search result of this reply carried (a page's thumbnail, or an image result's thumbnail) — never an original image, never a URL you made up; the app drops anything else and draws the step without a picture.
-${FENCE}exodus-steps
+\`actovia-steps\` is a how-to as numbered steps, each a line or two and, where a picture from your web search in this reply fits, that picture. Use it for "how do I…" answers of 3–12 ordered actions. "image" is optional and must be, character for character, a thumbnail URL a search result of this reply carried (a page's thumbnail, or an image result's thumbnail) — never an original image, never a URL you made up; the app drops anything else and draws the step without a picture.
+${FENCE}actovia-steps
 ${JSON.stringify(STEPS_EXAMPLE)}
 ${FENCE}
 
-\`exodus-stock\` is a price chart. Use it when the user asks about a listed company's or an index's price or performance: the app draws TradingView's chart of "symbol" (EXCHANGE:TICKER — NASDAQ:AAPL, NYSE:BRK.B, TSE:7203, NASDAQ:NDX) with your one-line reading as "note". "range" is one of 1D, 1M, 3M, 12M, 60M, ALL; leave it out (1D) unless the question names a span.
-${FENCE}exodus-stock
+\`actovia-stock\` is a price chart. Use it when the user asks about a listed company's or an index's price or performance: the app draws TradingView's chart of "symbol" (EXCHANGE:TICKER — NASDAQ:AAPL, NYSE:BRK.B, TSE:7203, NASDAQ:NDX) with your one-line reading as "note". "range" is one of 1D, 1M, 3M, 12M, 60M, ALL; leave it out (1D) unless the question names a span.
+${FENCE}actovia-stock
 ${JSON.stringify(STOCK_EXAMPLE)}
 ${FENCE}
 
@@ -1394,12 +1394,12 @@ Rules
 - At most one block per reply, of any kind, after what you write, on lines of its own; never inside another code block, a list, a quote or a table.
 - The JSON is one object with only these keys. Limits: title 200 characters, question 200, option 80, note 120 (questionnaire and confirmation) or 300 (stock), submit/approve/reject 40, details 1000, step 300, 2–12 steps, symbol 40; question ids are lowercase letters, digits, "_" or "-", each used once.
 - Write the block's words in the user's language (an entity title stays the article's own).
-- A user message whose text opens with ${FENCE}exodus-answer answers the questionnaire or confirmation you asked: act on it, do not ask again. "—" is a question left blank; carry on with what you have. A rejected confirmation means do not do it.
+- A user message whose text opens with ${FENCE}actovia-answer answers the questionnaire or confirmation you asked: act on it, do not ask again. "—" is a question left blank; carry on with what you have. A rejected confirmation means do not do it.
 - Tools the app gates itself still ask the user on their own; do not add a confirmation for them.
 </interactive_blocks>`
 ```
 
-Update the file's header comment: `// The chat's section on the blocks both apps draw (exodus-ios specs 2026-10-06 §3 and 2026-10-07 §3): …`.
+Update the file's header comment: `// The chat's section on the blocks both apps draw (actovia-ios specs 2026-10-06 §3 and 2026-10-07 §3): …`.
 
 - [ ] **Step 4: Run the prompt tests and the budget**
 
@@ -1409,7 +1409,7 @@ Expected: PASS. If the budget fails, shorten the new prose (not the examples) un
 - [ ] **Step 5: Format, typecheck, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 bunx oxfmt src/main/lib/ai/interactive-blocks-prompt.ts tests/unit/main/lib/ai && bun run typecheck:node
 git add src/main/lib/ai/interactive-blocks-prompt.ts tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts tests/unit/main/lib/ai/prompts.test.ts
 git commit -F - <<'EOF'
@@ -1514,7 +1514,7 @@ for locale in LOCALES:
 print("done")
 ```
 
-Run: `mkdir -p /tmp/rich2 && cd /Users/yanceyleo/Code/exodus/exodus && python3 /tmp/rich2/desktop_strings.py && bunx oxfmt packages/shared/src/i18n/locales && bun run i18n:check`
+Run: `mkdir -p /tmp/rich2 && cd /Users/yanceyleo/Code/actovia/actovia && python3 /tmp/rich2/desktop_strings.py && bunx oxfmt packages/shared/src/i18n/locales && bun run i18n:check`
 Expected: `done`, then `i18n:check OK`. (`git diff --stat` shows the twenty locale files and nothing else.)
 
 - [ ] **Step 2: Test IDs**
@@ -1548,10 +1548,10 @@ Create `tests/unit/renderer/components/chat/rich-blocks.test.ts`:
 // fences: steps with only the run's own search thumbnails as pictures, the
 // chart as TradingView's embed in a sandboxed frame that falls back to a card
 // when it cannot load. Copy takes the block's words.
-import { TEST_IDS } from '@exodus/shared/constants/test-ids'
-import type { ChatMessage, SendMessageOptions, TurnBlock } from '@exodus/shared/types/chat'
-import type { WebSearchResult } from '@exodus/shared/types/web-search'
-import { tradingViewEmbedUrl, tradingViewSymbolPageUrl } from '@exodus/shared/utils/stock-chart'
+import { TEST_IDS } from '@actovia/shared/constants/test-ids'
+import type { ChatMessage, SendMessageOptions, TurnBlock } from '@actovia/shared/types/chat'
+import type { WebSearchResult } from '@actovia/shared/types/web-search'
+import { tradingViewEmbedUrl, tradingViewSymbolPageUrl } from '@actovia/shared/utils/stock-chart'
 import { Provider as JotaiProvider } from 'jotai'
 import { act, createElement, type ReactElement } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -1662,7 +1662,7 @@ const allById = (id: string) => Array.from(host.querySelectorAll<HTMLElement>(`[
 
 describe('illustrated steps in a reply', () => {
   it('are drawn as a numbered list in place of the code, with the title', async () => {
-    await show(createElement(Turn, { body: `How to:\n\n${fence('exodus-steps', STEPS)}`, results: RESULTS }))
+    await show(createElement(Turn, { body: `How to:\n\n${fence('actovia-steps', STEPS)}`, results: RESULTS }))
     expect(byId(TEST_IDS.chat.richBlocks.steps)).not.toBeNull()
     expect(host.querySelector('pre')).toBeNull()
     expect(allById(TEST_IDS.chat.richBlocks.step)).toHaveLength(4)
@@ -1671,7 +1671,7 @@ describe('illustrated steps in a reply', () => {
   })
 
   it("draws a picture only when it is one of the run's search thumbnails", async () => {
-    await show(createElement(Turn, { body: fence('exodus-steps', STEPS), results: RESULTS }))
+    await show(createElement(Turn, { body: fence('actovia-steps', STEPS), results: RESULTS }))
     const pictures = allById(TEST_IDS.chat.richBlocks.stepImage)
     expect(pictures).toHaveLength(1)
     expect(pictures[0].querySelector('img')?.getAttribute('src')).toBe('https://imgs.search.brave.com/peg.jpg')
@@ -1684,13 +1684,13 @@ describe('illustrated steps in a reply', () => {
   })
 
   it('draws no pictures when the run searched nothing', async () => {
-    await show(createElement(Turn, { body: fence('exodus-steps', STEPS) }))
+    await show(createElement(Turn, { body: fence('actovia-steps', STEPS) }))
     expect(allById(TEST_IDS.chat.richBlocks.step)).toHaveLength(4)
     expect(allById(TEST_IDS.chat.richBlocks.stepImage)).toHaveLength(0)
   })
 
   it('a second block in the reply stays code', async () => {
-    await show(createElement(Turn, { body: `${fence('exodus-steps', STEPS)}\n\n${fence('exodus-stock', STOCK)}` }))
+    await show(createElement(Turn, { body: `${fence('actovia-steps', STEPS)}\n\n${fence('actovia-stock', STOCK)}` }))
     expect(byId(TEST_IDS.chat.richBlocks.steps)).not.toBeNull()
     expect(byId(TEST_IDS.chat.richBlocks.stock)).toBeNull()
     expect(host.querySelector('pre')).not.toBeNull()
@@ -1699,7 +1699,7 @@ describe('illustrated steps in a reply', () => {
 
 describe('a stock chart in a reply', () => {
   it("is TradingView's embed in a sandboxed frame, with the note and the symbol's page under it", async () => {
-    await show(createElement(Turn, { body: fence('exodus-stock', STOCK) }))
+    await show(createElement(Turn, { body: fence('actovia-stock', STOCK) }))
     const frame = byId(TEST_IDS.chat.richBlocks.stockFrame)
     expect(frame?.getAttribute('src')).toBe(
       tradingViewEmbedUrl({ symbol: 'NASDAQ:AAPL', range: '12M', theme: 'light', locale: 'en' })
@@ -1715,12 +1715,12 @@ describe('a stock chart in a reply', () => {
   })
 
   it('takes 1D when the block names no range', async () => {
-    await show(createElement(Turn, { body: fence('exodus-stock', { symbol: 'NYSE:BRK.B' }) }))
+    await show(createElement(Turn, { body: fence('actovia-stock', { symbol: 'NYSE:BRK.B' }) }))
     expect(byId(TEST_IDS.chat.richBlocks.stockFrame)?.getAttribute('src')).toContain('%22dateRange%22%3A%221D%22')
   })
 
   it('falls back to a card when the frame fails', async () => {
-    await show(createElement(Turn, { body: fence('exodus-stock', STOCK) }))
+    await show(createElement(Turn, { body: fence('actovia-stock', STOCK) }))
     await act(async () => {
       byId(TEST_IDS.chat.richBlocks.stockFrame)?.dispatchEvent(new Event('error'))
     })
@@ -1736,7 +1736,7 @@ describe('a stock chart in a reply', () => {
   it('falls back when the frame says nothing for ten seconds', async () => {
     vi.useFakeTimers()
     try {
-      await show(createElement(Turn, { body: fence('exodus-stock', STOCK) }))
+      await show(createElement(Turn, { body: fence('actovia-stock', STOCK) }))
       await act(async () => {
         vi.advanceTimersByTime(10_001)
       })
@@ -1747,7 +1747,7 @@ describe('a stock chart in a reply', () => {
   })
 
   it('a symbol the widget would not take stays code', async () => {
-    await show(createElement(Turn, { body: fence('exodus-stock', { symbol: 'nasdaq:aapl' }) }))
+    await show(createElement(Turn, { body: fence('actovia-stock', { symbol: 'nasdaq:aapl' }) }))
     expect(byId(TEST_IDS.chat.richBlocks.stock)).toBeNull()
     expect(host.querySelector('pre')).not.toBeNull()
   })
@@ -1755,14 +1755,14 @@ describe('a stock chart in a reply', () => {
 
 describe('copy and read aloud take the block’s words', () => {
   it("Copy writes the stock block's symbol and note, not its JSON", async () => {
-    const content = `Here:\n\n${fence('exodus-stock', STOCK)}`
+    const content = `Here:\n\n${fence('actovia-stock', STOCK)}`
     await show(createElement(MessageAction, { content }))
     const row = byId(TEST_IDS.chat.messageAction)
     await act(async () => row?.querySelector('button')?.click())
     expect(handleCopy).toHaveBeenCalledTimes(1)
     const copied = handleCopy.mock.calls[0]![0] as string
     expect(copied).toContain('NASDAQ:AAPL — Up 12% since the call.')
-    expect(copied).not.toContain('exodus-stock')
+    expect(copied).not.toContain('actovia-stock')
   })
 })
 ```
@@ -1828,8 +1828,8 @@ and wrap the section one level deeper: `<AllowedImageUrlsContext.Provider value=
 - [ ] **Step 6: `steps-block.tsx`**
 
 ```tsx
-import { TEST_IDS } from '@exodus/shared/constants/test-ids'
-import type { StepsBlock as StepsBlockData } from '@exodus/shared/types/interactive'
+import { TEST_IDS } from '@actovia/shared/constants/test-ids'
+import type { StepsBlock as StepsBlockData } from '@actovia/shared/types/interactive'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -1840,7 +1840,7 @@ import {
 } from '@/components/markdown/remote-image'
 
 /**
- * A reply's illustrated steps (`exodus-steps`): a numbered list, each step
+ * A reply's illustrated steps (`actovia-steps`): a numbered list, each step
  * its text and, when its picture is one of the run's search thumbnails, that
  * picture — loaded on sight by `RemoteImage`, which admits the same URLs. A
  * picture that is anything else (an original, a URL the run never saw) is
@@ -1897,16 +1897,16 @@ export function StepsBlock({ block }: { block: StepsBlockData }) {
 - [ ] **Step 7: `stock-block.tsx`**
 
 ```tsx
-import { TEST_IDS } from '@exodus/shared/constants/test-ids'
+import { TEST_IDS } from '@actovia/shared/constants/test-ids'
 import {
   DEFAULT_STOCK_RANGE,
   type StockBlock as StockBlockData
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import {
   STOCK_CHART_HEIGHT,
   tradingViewEmbedUrl,
   tradingViewSymbolPageUrl
-} from '@exodus/shared/utils/stock-chart'
+} from '@actovia/shared/utils/stock-chart'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -1915,7 +1915,7 @@ import { useTranslation } from 'react-i18next'
 export const STOCK_FRAME_TIMEOUT_MS = 10_000
 
 /**
- * A reply's stock chart (`exodus-stock`): TradingView's Mini Chart as its
+ * A reply's stock chart (`actovia-stock`): TradingView's Mini Chart as its
  * own embed URL in a sandboxed frame — no script of theirs in our document;
  * the frame cannot navigate us or open windows — the model's note under it,
  * and "Chart by TradingView" with the symbol's page. The frame is not lazy:
@@ -2002,7 +2002,7 @@ import {
   trimTrailingBlanks,
   type InteractiveFence as FenceData,
   type InteractiveKind
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 ```
 
 Import the two new components (`./steps-block`, `./stock-block`) and `type { Answered }` from `./interactive-context`. Replace the component's tail (from `const answerable = turn.answerable` to the end) with:
@@ -2054,13 +2054,13 @@ Expected: PASS but for `copy and read aloud…` (Task 5 wires `withBlockText`); 
 - [ ] **Step 10: Typecheck, format, lint, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 bun run typecheck:web && bun run typecheck:shared
 bunx oxfmt src/renderer/components/chat/interactive src/renderer/components/markdown packages/shared/src/constants tests/unit/renderer/components/chat && bunx oxlint src/renderer/components/chat/interactive src/renderer/components/markdown
 bunx vitest run tests/unit/renderer/components/chat tests/unit/shared/constants
 git add packages/shared/src/i18n/locales/*/chat.json packages/shared/src/i18n/locales/*/lock.json packages/shared/src/constants/test-ids.ts src/renderer/components/markdown/remote-image.tsx src/renderer/components/markdown/markdown.tsx src/renderer/components/chat/interactive/interactive-fence.tsx src/renderer/components/chat/interactive/steps-block.tsx src/renderer/components/chat/interactive/stock-block.tsx tests/unit/renderer/components/chat/rich-blocks.test.ts
 git commit -F - <<'EOF'
-feat(chat): illustrated steps and a stock chart drawn in a reply — exodus-steps as a numbered card whose pictures are only the run's own search thumbnails (an original is dropped, never fetched), exodus-stock as TradingView's embed in a sandboxed frame with the note and the symbol's page, a card in its place when the frame fails; the strings in ten languages
+feat(chat): illustrated steps and a stock chart drawn in a reply — actovia-steps as a numbered card whose pictures are only the run's own search thumbnails (an original is dropped, never fetched), actovia-stock as TradingView's embed in a sandboxed frame with the note and the symbol's page, a card in its place when the frame fails; the strings in ten languages
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 EOF
@@ -2076,7 +2076,7 @@ Expected: 20 locale files + 7 source/test files. (`tests/unit/shared/constants` 
 - Test: `tests/unit/renderer/components/chat/rich-blocks.test.ts` (extend), `tests/unit/shared/constants` (the linkage test, now green)
 
 **Interfaces:**
-- Consumes: `entityTitle`, `wikipediaLang` (Task 1), `EntitySummary` (Task 1), the route (Task 2), `withBlockText` (Task 1), `TEST_IDS.chat.richBlocks.entityLink|entityPanel`, `chat:richBlocks.*`, `lock:privacy.thirdParty` (Task 4), `fetcher` (`@exodus/shared/utils/http`), `useQuery`, `Popover*` (`@/components/ui/popover`), `defaultUrlTransform` (react-markdown).
+- Consumes: `entityTitle`, `wikipediaLang` (Task 1), `EntitySummary` (Task 1), the route (Task 2), `withBlockText` (Task 1), `TEST_IDS.chat.richBlocks.entityLink|entityPanel`, `chat:richBlocks.*`, `lock:privacy.thirdParty` (Task 4), `fetcher` (`@actovia/shared/utils/http`), `useQuery`, `Popover*` (`@/components/ui/popover`), `defaultUrlTransform` (react-markdown).
 - Produces: `markdownUrlTransform(url): string`; `EntityLink({ title, children })`; `EntityPanel({ title })` (exported for its test); `getEntitySummary(title, lang): Promise<EntitySummary>`.
 
 - [ ] **Step 1: Extend the tests (failing)**
@@ -2084,7 +2084,7 @@ Expected: 20 locale files + 7 source/test files. (`tests/unit/shared/constants` 
 In `rich-blocks.test.ts`, add after the imports:
 
 ```ts
-import type { EntitySummary } from '@exodus/shared/types/entity'
+import type { EntitySummary } from '@actovia/shared/types/entity'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const getEntitySummary = vi.fn<(title: string, lang: string) => Promise<EntitySummary>>()
@@ -2187,8 +2187,8 @@ Expected: FAIL — `entity-link` module not found; the Copy test still red.
 - [ ] **Step 3: `entity-service.ts`**
 
 ```ts
-import type { EntitySummary } from '@exodus/shared/types/entity'
-import { fetcher } from '@exodus/shared/utils/http'
+import type { EntitySummary } from '@actovia/shared/types/entity'
+import { fetcher } from '@actovia/shared/utils/http'
 
 /** Wikipedia's summary of `title` in `lang` (then English), through the computer's `GET /api/v1/entity/:title`. */
 export const getEntitySummary = (title: string, lang: string) =>
@@ -2200,8 +2200,8 @@ export const getEntitySummary = (title: string, lang: string) =>
 - [ ] **Step 4: `entity-link.tsx`**
 
 ```tsx
-import { TEST_IDS } from '@exodus/shared/constants/test-ids'
-import { entityTitle, wikipediaLang } from '@exodus/shared/utils/entity-link'
+import { TEST_IDS } from '@actovia/shared/constants/test-ids'
+import { entityTitle, wikipediaLang } from '@actovia/shared/utils/entity-link'
 import { useQuery } from '@tanstack/react-query'
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -2312,7 +2312,7 @@ export function EntityPanel({ title }: { title: string }) {
 
 - [ ] **Step 5: `markdown.tsx` — the transform and the `a` renderer**
 
-Import `entityTitle` from `@exodus/shared/utils/entity-link` and `EntityLink, markdownUrlTransform` from `../chat/interactive/entity-link`. In `MarkdownBlock`, give `ReactMarkdown` `urlTransform={markdownUrlTransform}`. Replace the `a` renderer's body:
+Import `entityTitle` from `@actovia/shared/utils/entity-link` and `EntityLink, markdownUrlTransform` from `../chat/interactive/entity-link`. In `MarkdownBlock`, give `ReactMarkdown` `urlTransform={markdownUrlTransform}`. Replace the `a` renderer's body:
 
 ```tsx
       a({ className, children, node, href, ...rest }: any) {
@@ -2345,7 +2345,7 @@ Import `entityTitle` from `@exodus/shared/utils/entity-link` and `EntityLink, ma
 
 - [ ] **Step 6: Copy and read-aloud take the block's words**
 
-`message-action.tsx`: import `withBlockText` from `@exodus/shared/utils/interactive-plain-text`; in `copyText`'s memo call `withReferences(withBlockText(content), citationSources ?? [], …)`. `audio-player.tsx`: import it too; `textToSpeech(withBlockText(content))`.
+`message-action.tsx`: import `withBlockText` from `@actovia/shared/utils/interactive-plain-text`; in `copyText`'s memo call `withReferences(withBlockText(content), citationSources ?? [], …)`. `audio-player.tsx`: import it too; `textToSpeech(withBlockText(content))`.
 
 - [ ] **Step 7: The privacy line and the security note**
 
@@ -2355,7 +2355,7 @@ In `lock-privacy.tsx`, as the first child of `<SettingsSection title={t('lock:pr
       <p className="text-muted-foreground text-sm">{t('lock:privacy.thirdParty')}</p>
 ```
 
-In `docs/security-hardening.md`, at the TradingView note (~line 286), add a sentence: `A reply's stock chart (\`exodus-stock\`) is the widget's own embed URL in a sandboxed iframe (\`allow-scripts allow-same-origin\`, \`referrerpolicy=no-referrer\`), built in the renderer from a validated symbol — no TradingView script runs in our document; \`frame-src\` already admits \`https://*.tradingview-widget.com\`.`
+In `docs/security-hardening.md`, at the TradingView note (~line 286), add a sentence: `A reply's stock chart (\`actovia-stock\`) is the widget's own embed URL in a sandboxed iframe (\`allow-scripts allow-same-origin\`, \`referrerpolicy=no-referrer\`), built in the renderer from a validated symbol — no TradingView script runs in our document; \`frame-src\` already admits \`https://*.tradingview-widget.com\`.`
 
 - [ ] **Step 8: Run everything that could have moved**
 
@@ -2365,7 +2365,7 @@ Expected: PASS — `rich-blocks.test.ts` whole (the Copy test included), `intera
 - [ ] **Step 9: Typecheck, format, lint, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 bun run typecheck:web
 bunx oxfmt src/renderer/components/chat src/renderer/components/markdown src/renderer/components/settings/settings-form src/renderer/services tests/unit/renderer/components/chat && bunx oxlint src/renderer/components/chat/interactive/entity-link.tsx src/renderer/services/entity-service.ts src/renderer/components/markdown/markdown.tsx
 git add src/renderer/services/entity-service.ts src/renderer/components/chat/interactive/entity-link.tsx src/renderer/components/markdown/markdown.tsx src/renderer/components/chat/message-action.tsx src/renderer/components/chat/audio-player.tsx src/renderer/components/settings/settings-form/lock-privacy.tsx docs/security-hardening.md tests/unit/renderer/components/chat/rich-blocks.test.ts
@@ -2458,21 +2458,21 @@ private let stockCases: [(String, String, Bool)] =
 Append to `findCases`:
 
 ```swift
-    ("a steps block", "Here:\n\n```exodus-steps\n\(stepsSource)\n```", .steps),
-    ("a stock block", "```exodus-stock\n\(stockSource)\n```", .stock),
-    ("a stock block after a questionnaire: the questionnaire", "```exodus-ask\n\(askSource)\n```\n\n```exodus-stock\n\(stockSource)\n```", .ask),
-    ("a stock block that does not validate, then steps: none", "```exodus-stock\n{\"symbol\":\"aapl\"}\n```\n\n```exodus-steps\n\(stepsSource)\n```", nil),
+    ("a steps block", "Here:\n\n```actovia-steps\n\(stepsSource)\n```", .steps),
+    ("a stock block", "```actovia-stock\n\(stockSource)\n```", .stock),
+    ("a stock block after a questionnaire: the questionnaire", "```actovia-ask\n\(askSource)\n```\n\n```actovia-stock\n\(stockSource)\n```", .ask),
+    ("a stock block that does not validate, then steps: none", "```actovia-stock\n{\"symbol\":\"aapl\"}\n```\n\n```actovia-steps\n\(stepsSource)\n```", nil),
 ```
 
 In `InteractiveBlockTests` add, after `askLimits`:
 
 ```swift
-    @Test("exodus-steps", arguments: stepsCases)
+    @Test("actovia-steps", arguments: stepsCases)
     func stepsLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.steps, source: source) != nil) == valid, "\(name)")
     }
 
-    @Test("exodus-stock", arguments: stockCases)
+    @Test("actovia-stock", arguments: stockCases)
     func stockLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.stock, source: source) != nil) == valid, "\(name)")
     }
@@ -2496,7 +2496,7 @@ In `InteractiveBlockTests` add, after `askLimits`:
 
 - [ ] **Step 2: Run them to see them fail**
 
-Run: `cd /Users/yanceyleo/Code/exodus/exodus-ios && xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:ChatFeatureTests/InteractiveBlockTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `cd /Users/yanceyleo/Code/actovia/actovia-ios && xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:ChatFeatureTests/InteractiveBlockTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: a build error — `.steps` is not a member of `Kind`.
 
 - [ ] **Step 3: Grow `InteractiveBlock.swift`**
@@ -2505,7 +2505,7 @@ Replace the enum's head through `Confirm` with:
 
 ```swift
 /// The blocks a reply can carry (specs 2026-10-06 and 2026-10-07): a fenced block whose info string names it
-/// (`exodus-ask`, `exodus-confirm`, `exodus-steps`, `exodus-stock`) and whose body is one JSON object. One that
+/// (`actovia-ask`, `actovia-confirm`, `actovia-steps`, `actovia-stock`) and whose body is one JSON object. One that
 /// validates is drawn natively; anything else stays the code block it is. The desktop has the same rules
 /// (`packages/shared/src/types/interactive.ts`), held to the same vectors; lengths are UTF-16 units, as zod counts.
 enum InteractiveBlock: Equatable, Sendable {
@@ -2518,11 +2518,11 @@ enum InteractiveBlock: Equatable, Sendable {
         case ask, confirm, steps, stock
 
         /// The fence's info string.
-        var language: String { "exodus-" + rawValue }
+        var language: String { "actovia-" + rawValue }
 
         init?(language: String) {
-            guard language.hasPrefix("exodus-") else { return nil }
-            self.init(rawValue: String(language.dropFirst("exodus-".count)))
+            guard language.hasPrefix("actovia-") else { return nil }
+            self.init(rawValue: String(language.dropFirst("actovia-".count)))
         }
 
         /// The two blocks that ask: only they wait for an answer and freeze; the others only show.
@@ -2652,17 +2652,17 @@ private let stock = #"{"symbol":"NASDAQ:AAPL","range":"1D","note":"Up 12% since 
 private let ask = #"{"title":"T","questions":[{"id":"a","text":"Q?","type":"single","options":["x","y"]}]}"#
 
 private let cases: [(String, String, String)] = [
-    ("steps become a titled numbered list", "Here is how:\n\n```exodus-steps\n\(steps)\n```\n\nGood luck.",
+    ("steps become a titled numbered list", "Here is how:\n\n```actovia-steps\n\(steps)\n```\n\nGood luck.",
      "Here is how:\n\nReplacing the strings\n\n1. Loosen the old string.\n2. Thread the new one.\n\nGood luck."),
-    ("steps without a title", "```exodus-steps\n{\"steps\":[{\"text\":\"A\"},{\"text\":\"B\"}]}\n```", "1. A\n2. B"),
-    ("a stock block is its symbol and note", "```exodus-stock\n\(stock)\n```", "NASDAQ:AAPL — Up 12% since the call."),
-    ("a stock block without a note is its symbol", "```exodus-stock\n{\"symbol\":\"NASDAQ:AAPL\"}\n```", "NASDAQ:AAPL"),
-    ("CRLF line ends are made LF", "Intro\r\n\r\n```exodus-stock\r\n\(stock)\r\n```\r\n", "Intro\n\nNASDAQ:AAPL — Up 12% since the call.\n"),
-    ("a questionnaire is left as it is", "```exodus-ask\n\(ask)\n```", "```exodus-ask\n\(ask)\n```"),
-    ("a second block is code and stays", "```exodus-stock\n\(stock)\n```\n\n```exodus-steps\n\(steps)\n```",
-     "NASDAQ:AAPL — Up 12% since the call.\n\n```exodus-steps\n\(steps)\n```"),
+    ("steps without a title", "```actovia-steps\n{\"steps\":[{\"text\":\"A\"},{\"text\":\"B\"}]}\n```", "1. A\n2. B"),
+    ("a stock block is its symbol and note", "```actovia-stock\n\(stock)\n```", "NASDAQ:AAPL — Up 12% since the call."),
+    ("a stock block without a note is its symbol", "```actovia-stock\n{\"symbol\":\"NASDAQ:AAPL\"}\n```", "NASDAQ:AAPL"),
+    ("CRLF line ends are made LF", "Intro\r\n\r\n```actovia-stock\r\n\(stock)\r\n```\r\n", "Intro\n\nNASDAQ:AAPL — Up 12% since the call.\n"),
+    ("a questionnaire is left as it is", "```actovia-ask\n\(ask)\n```", "```actovia-ask\n\(ask)\n```"),
+    ("a second block is code and stays", "```actovia-stock\n\(stock)\n```\n\n```actovia-steps\n\(steps)\n```",
+     "NASDAQ:AAPL — Up 12% since the call.\n\n```actovia-steps\n\(steps)\n```"),
     ("a reply without a block is untouched", "Just words.\n\n```js\nlet a = 1\n```", "Just words.\n\n```js\nlet a = 1\n```"),
-    ("a block that does not validate stays code", "```exodus-stock\n{\"symbol\":\"aapl\"}\n```", "```exodus-stock\n{\"symbol\":\"aapl\"}\n```"),
+    ("a block that does not validate stays code", "```actovia-stock\n{\"symbol\":\"aapl\"}\n```", "```actovia-stock\n{\"symbol\":\"aapl\"}\n```"),
 ]
 
 @Suite("InteractivePlainText: Copy and read-aloud get a block's words")
@@ -2674,9 +2674,9 @@ struct InteractivePlainTextTests {
 
     @Test("read-aloud speaks the words, not the JSON")
     func speech() {
-        let prose = SpeechText.prose("Here:\n\n```exodus-stock\n\(stock)\n```")
+        let prose = SpeechText.prose("Here:\n\n```actovia-stock\n\(stock)\n```")
         #expect(prose.contains("NASDAQ:AAPL — Up 12% since the call."))
-        #expect(!prose.contains("exodus-stock"))
+        #expect(!prose.contains("actovia-stock"))
     }
 }
 ```
@@ -2711,7 +2711,7 @@ enum InteractivePlainText {
         }
     }
 
-    /// The reply with its block's fence — the lines from ```` ```exodus-… ```` to the closing ```` ``` ```` — replaced by
+    /// The reply with its block's fence — the lines from ```` ```actovia-… ```` to the closing ```` ``` ```` — replaced by
     /// the block's words; the reply as it was (line ends made `\n`) when it holds no such block.
     static func replacingBlock(in markdown: String) -> String {
         let normalized = JSText.string(JSText.unixLines(markdown))
@@ -2799,7 +2799,7 @@ struct StockChartTests {
         #expect(!StockChart.allowsNavigation(to: URL(string: "https://www.tradingview.com/symbols/NASDAQ-AAPL/")))
         #expect(!StockChart.allowsNavigation(to: URL(string: "https://example.com")))
         #expect(!StockChart.allowsNavigation(to: URL(string: "http://www.tradingview-widget.com/")))
-        #expect(!StockChart.allowsNavigation(to: URL(string: "exodus://pair?c=1")))
+        #expect(!StockChart.allowsNavigation(to: URL(string: "actovia://pair?c=1")))
         #expect(!StockChart.allowsNavigation(to: nil))
     }
 
@@ -2816,7 +2816,7 @@ struct StockChartTests {
     @Test("the content rules compile")
     func rules() async throws {
         let rules = try await WKContentRuleListStore.default().compileContentRuleList(
-            forIdentifier: "exodus-stock-chart-test", encodedContentRuleList: StockChart.contentRules)
+            forIdentifier: "actovia-stock-chart-test", encodedContentRuleList: StockChart.contentRules)
         #expect(rules != nil)
     }
 }
@@ -2927,12 +2927,12 @@ Expected: `Test run with 24 tests … passed`. If `rules()` fails to compile the
 - [ ] **Step 13: Run the suites touched, audit, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+cd /Users/yanceyleo/Code/actovia/actovia-ios
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 git add Sources/ChatFeature/Interactive/InteractiveBlock.swift Sources/ChatFeature/Interactive/InteractivePlainText.swift Sources/ChatFeature/Interactive/StockChart.swift Sources/ChatFeature/ReadAloud.swift Sources/ChatFeature/CopiedAnswer.swift Tests/ChatFeatureTests/InteractiveBlockTests.swift Tests/ChatFeatureTests/InteractivePlainTextTests.swift Tests/ChatFeatureTests/StockChartTests.swift
 git commit -F - <<'EOF'
-feat(chat): the block scanner learns illustrated steps (exodus-steps) and a stock chart (exodus-stock), held to the desktop's vectors; Copy and read-aloud get a block's words instead of its JSON; TradingView's embed URL built byte for byte as the desktop builds it, with what the chart's web view may load and where it may go
+feat(chat): the block scanner learns illustrated steps (actovia-steps) and a stock chart (actovia-stock), held to the desktop's vectors; Copy and read-aloud get a block's words instead of its JSON; TradingView's embed URL built byte for byte as the desktop builds it, with what the chart's web view may load and where it may go
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 EOF
@@ -3007,7 +3007,7 @@ In `Tests/MarkdownKitTests/MarkdownSafetyTests.swift`, inside `MarkdownLinkPolic
 
 - [ ] **Step 2: Run them to see them fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:MarkdownKitTests/MarkdownLinkPolicyTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:MarkdownKitTests/MarkdownLinkPolicyTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: a build error — `.entity` is not a member.
 
 - [ ] **Step 3: `MarkdownLinks.swift`**
@@ -3140,13 +3140,13 @@ public struct MarkdownEntityAction: Sendable {
 
 - [ ] **Step 5: Run the MarkdownKit suite**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
-Expected: the whole suite passes (the policy vectors, the router, and every earlier safety test — `exodus://`, `javascript:` and the rest still `.discard`).
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`
+Expected: the whole suite passes (the policy vectors, the router, and every earlier safety test — `actovia://`, `javascript:` and the rest still `.discard`).
 
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git add Sources/MarkdownKit/MarkdownLinks.swift Sources/MarkdownKit/MarkdownStyledText.swift Sources/MarkdownKit/MarkdownView.swift Sources/MarkdownKit/MarkdownDocumentView.swift Sources/MarkdownKit/MarkdownAttributedText.swift Tests/MarkdownKitTests/MarkdownSafetyTests.swift
 git commit -F - <<'EOF'
 feat(markdown): an entity: link is a link action of its own — the article title it names (the desktop's rule, the same vectors) reaches the host through markdownEntityTap instead of being dropped as an unknown scheme; nothing else about which links leave the app changes
@@ -3192,7 +3192,7 @@ KEYS = [
 ]
 ```
 
-Run: `cd /Users/yanceyleo/Code/exodus/exodus-ios && python3 /tmp/rich2/add_keys.py Resources/App/Localizable.xcstrings && python3 scripts/l10n.py audit 2>&1 | tail -1`
+Run: `cd /Users/yanceyleo/Code/actovia/actovia-ios && python3 /tmp/rich2/add_keys.py Resources/App/Localizable.xcstrings && python3 scripts/l10n.py audit 2>&1 | tail -1`
 Expected: `added 7 keys …`, then `0 error(s)` (warnings about keys not referenced yet are fine until Steps 5–6).
 
 - [ ] **Step 2: The pictures' tests (failing)**
@@ -3290,7 +3290,7 @@ struct StepsPictures: Equatable, Sendable {
     }
 }
 
-/// A reply's illustrated steps (`exodus-steps`): a numbered card, each step its text and, when its picture is one of
+/// A reply's illustrated steps (`actovia-steps`): a numbered card, each step its text and, when its picture is one of
 /// the run's search thumbnails, that picture, loaded on sight as the gallery loads its thumbnails. A picture that is
 /// anything else is dropped — never fetched, never a tap-to-load (spec 2026-10-07 §2.1).
 struct StepsBlockView: View {
@@ -3376,7 +3376,7 @@ enum StockChartPhase: Equatable {
     case loading, loaded, failed
 }
 
-/// A reply's stock chart (`exodus-stock`): TradingView's Mini Chart as its own embed URL in a web view that may load
+/// A reply's stock chart (`actovia-stock`): TradingView's Mini Chart as its own embed URL in a web view that may load
 /// nothing but TradingView's hosts and go nowhere else — a tap on the chart opens the symbol's page in the browser —
 /// the model's note under it, and "Chart by TradingView" with the page's link (the disclosure the phone has, having
 /// no privacy page). When the chart cannot load, the symbol and the note stand in its place.
@@ -3490,7 +3490,7 @@ struct StockChartWebView: UIViewRepresentable {
                 var rules = Self.compiledRules
                 if rules == nil {
                     rules = try? await WKContentRuleListStore.default().compileContentRuleList(
-                        forIdentifier: "exodus-stock-chart", encodedContentRuleList: StockChart.contentRules)
+                        forIdentifier: "actovia-stock-chart", encodedContentRuleList: StockChart.contentRules)
                     Self.compiledRules = rules
                 }
                 guard let self, !Task.isCancelled, let webView = self.webView else { return }
@@ -3568,7 +3568,7 @@ struct StockChartWebView: UIViewRepresentable {
     /// The turn holds a block still waiting for its answer, so whether one may be sent changes how it looks. Read only
     /// when `canAnswer` changed (a turn starting or ending), never per streamed frame. Steps and a chart never wait.
     nonisolated var asks: Bool {
-        answered == nil && (turn.body.contains("```exodus-ask") || turn.body.contains("```exodus-confirm"))  // l10n:ignore: markdown syntax
+        answered == nil && (turn.body.contains("```actovia-ask") || turn.body.contains("```actovia-confirm"))  // l10n:ignore: markdown syntax
     }
 ```
 
@@ -3591,19 +3591,19 @@ In `Tests/ChatFeatureTests/InteractiveRenderingTests.swift` add to its suite (us
     func stepsAndStock() {
         let steps = #"{"steps":[{"text":"A"},{"text":"B"}]}"#
         let stock = #"{"symbol":"NASDAQ:AAPL"}"#
-        #expect(drawnCount(["How to:\n\n```exodus-steps\n\(steps)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n\(stock)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n\(stock)\n```\n\n```exodus-steps\n\(steps)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n{\"symbol\":\"aapl\"}\n```"]) == 0)
+        #expect(drawnCount(["How to:\n\n```actovia-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n\(stock)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n\(stock)\n```\n\n```actovia-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n{\"symbol\":\"aapl\"}\n```"]) == 0)
     }
 ```
 
 - [ ] **Step 8: Build, test, audit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: the whole suite passes (`StepsPicturesTests`, the new rendering test, everything before); `0 error(s)`; the audit no longer warns about `openOnTradingView`, `chartBy`, `chartUnavailable` (the entity keys stay unreferenced until Task 9).
@@ -3613,7 +3613,7 @@ Expected: the whole suite passes (`StepsPicturesTests`, the new rendering test, 
 ```bash
 git add Resources/App/Localizable.xcstrings Sources/ChatFeature/Interactive/StepsBlockView.swift Sources/ChatFeature/Interactive/StockBlockView.swift Sources/ChatFeature/Interactive/InteractiveBlockView.swift Sources/ChatFeature/AssistantTurnView.swift Tests/ChatFeatureTests/StepsPicturesTests.swift Tests/ChatFeatureTests/InteractiveRenderingTests.swift
 git commit -F - <<'EOF'
-feat(chat): illustrated steps and a stock chart drawn in an answer — exodus-steps as a numbered card whose pictures are only the run's own search thumbnails (an original is dropped, never fetched), exodus-stock as TradingView's embed in a web view that loads nothing but TradingView's hosts and goes nowhere else, the note and the symbol's page under it, the symbol and note in its place when it fails; seven strings in ten languages
+feat(chat): illustrated steps and a stock chart drawn in an answer — actovia-steps as a numbered card whose pictures are only the run's own search thumbnails (an original is dropped, never fetched), actovia-stock as TradingView's embed in a web view that loads nothing but TradingView's hosts and goes nowhere else, the note and the symbol's page under it, the symbol and note in its place when it fails; seven strings in ten languages
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 EOF
@@ -3943,10 +3943,10 @@ and at file scope: `struct EntityRequest: Identifiable { let title: String; var 
 - [ ] **Step 6: Run the tests, build the app, audit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:ChatFeatureTests/EntitySummaryTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd -only-testing:ChatFeatureTests/EntitySummaryTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `Test run with 13 tests … passed`; `BUILD SUCCEEDED`; `0 error(s)` with no warning left about `ios:chat.block.*`.
@@ -3996,7 +3996,7 @@ Replace `namedSections` in `Tests/ChatFeatureTests/MessageGalleryInteractiveTest
         let index = try #require(MessageGalleryFixtures.namedSection("steps"))
         let segments = MessageGalleryFixtures.segments(MessageGalleryFixtures.runs[index].json)
         let turn = try #require(
-            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```exodus-steps") { turn } else { nil } }.first)
+            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```actovia-steps") { turn } else { nil } }.first)
         let placed = try #require(InteractiveRendering.placed(in: [turn.body]))
         guard case .steps(let block) = placed.fence.block else { return #expect(Bool(false)) }
         let pictures = StepsPictures(sources: turn.sources, media: turn.foot.searchMedia)
@@ -4008,10 +4008,10 @@ Replace `namedSections` in `Tests/ChatFeatureTests/MessageGalleryInteractiveTest
         let index = try #require(MessageGalleryFixtures.namedSection("stock"))
         let segments = MessageGalleryFixtures.segments(MessageGalleryFixtures.runs[index].json)
         let turn = try #require(
-            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```exodus-stock") { turn } else { nil } }.first)
+            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```actovia-stock") { turn } else { nil } }.first)
         let copied = CopiedAnswer.text(of: turn)
         #expect(copied.contains("NASDAQ:AAPL \u{2014} "))
-        #expect(!copied.contains("exodus-stock"))
+        #expect(!copied.contains("actovia-stock"))
     }
 ```
 
@@ -4045,7 +4045,7 @@ Append three runs to `interactiveRuns`:
             title: "A stock chart with the model's reading",
             json: interactiveRun(
                 id: "ib6", question: "How's Apple doing today?",
-                reply: "Quiet so far:\n\n```exodus-stock\n\(stockSource)\n```")),
+                reply: "Quiet so far:\n\n```actovia-stock\n\(stockSource)\n```")),
 ```
 
 Replace `namedSection` with:
@@ -4090,7 +4090,7 @@ Add the steps run's builder after `answeredRun()`:
             ],
             [
                 "id": "ib4sb", "runId": "ib4s", "role": "assistant",
-                "content": [["type": "text", "text": "Four steps, one string at a time so the neck's tension never drops【1-source】:\n\n```exodus-steps\n\(stepsSource)\n```"]],
+                "content": [["type": "text", "text": "Four steps, one string at a time so the neck's tension never drops【1-source】:\n\n```actovia-steps\n\(stepsSource)\n```"]],
                 "stopReason": "stop", "timestamp": 1500,
             ],
         ]
@@ -4104,7 +4104,7 @@ Add the steps run's builder after `answeredRun()`:
 - [ ] **Step 4: Run the gallery tests and the suite**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: the whole suite passes.
 
@@ -4117,11 +4117,11 @@ Write `/tmp/rich2/shots.sh`:
 # Light, dark and AX screenshots of the phase-2 gallery runs. Run from the repo root after an App build into /tmp/rich2-dd.
 set -euo pipefail
 SIM=992425B7-F06B-4CE5-9288-95C71C2F1D44
-APP=app.yancey.exodus.exodus-ios
+APP=app.yancey.actovia.actovia-ios
 OUT=.superpowers/rich2
 mkdir -p "$OUT"
 xcrun simctl bootstatus "$SIM" -b >/dev/null 2>&1 || true
-xcrun simctl install "$SIM" /tmp/rich2-dd/Build/Products/Debug-iphonesimulator/Exodus.app
+xcrun simctl install "$SIM" /tmp/rich2-dd/Build/Products/Debug-iphonesimulator/Actovia.app
 shoot() {
   local name=$1; shift
   xcrun simctl terminate "$SIM" "$APP" 2>/dev/null || true
@@ -4140,7 +4140,7 @@ xcrun simctl ui "$SIM" content_size large
 echo done
 ```
 
-Run: `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" && bash /tmp/rich2/shots.sh`, then look at each PNG in `.superpowers/rich2/` (it is git-ignored). Check: the steps card numbers 1–4 with two pictures and the fourth step without one; the entity run's two names dotted/tinted as links; the stock card with the chart (the simulator has the network) or, offline, the symbol and note in its place, and the footer "Chart by TradingView · Open on TradingView"; nothing clipped at the AX size. Fix what is wrong before committing.
+Run: `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/rich2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" && bash /tmp/rich2/shots.sh`, then look at each PNG in `.superpowers/rich2/` (it is git-ignored). Check: the steps card numbers 1–4 with two pictures and the fourth step without one; the entity run's two names dotted/tinted as links; the stock card with the chart (the simulator has the network) or, offline, the symbol and note in its place, and the footer "Chart by TradingView · Open on TradingView"; nothing clipped at the AX size. Fix what is wrong before committing.
 
 - [ ] **Step 6: The device checklist**
 

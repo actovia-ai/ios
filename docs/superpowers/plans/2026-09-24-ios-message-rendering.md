@@ -6,7 +6,7 @@
 block with tail healing, collapsed thinking timeline, compact tool cards, citation chips, action bar.
 
 **Spec:** `docs/superpowers/specs/2026-09-24-ios-message-rendering-design.md` (engine decision and hedge in §4).
-**Read first, per task:** the desktop sources named in each task (repo `~/Code/exodus/exodus`, read-only) and their
+**Read first, per task:** the desktop sources named in each task (repo `~/Code/actovia/actovia`, read-only) and their
 tests — they are the parity fixtures.
 
 ## Global Constraints
@@ -21,7 +21,7 @@ tests — they are the parity fixtures.
   `String(localized:defaultValue:comment:)` (hostless test targets have no catalog); all 10 languages authored in the same
   change via `python3 scripts/l10n.py add … --en-value …` + `fill`; **`python3 scripts/l10n.py audit` must exit 0** at the
   end of every task.
-- **Build gate:** `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination 'generic/platform=iOS Simulator'
+- **Build gate:** `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination 'generic/platform=iOS Simulator'
   -derivedDataPath <scratchpad>/DerivedData CODE_SIGNING_ALLOWED=NO` must succeed; tests: `xcodebuild test` for the
   touched test schemes on an iOS 27.0 simulator (`xcrun simctl list devices available`; boot one, shut it down after) —
   if the simulator cannot run for an environment reason, say so and fall back to `swiftc -parse` + the build.
@@ -95,7 +95,7 @@ Read: desktop `src/renderer/lib/markdown-blocks.ts`, `markdown-plugins.ts`, `mar
   list(ordered/unordered, start, items with optional task checkbox and nested blocks), blockquote, codeBlock(language?,
   text), table(alignments, header, rows), thematicBreak, image, htmlBlock as plain text. Inline content as
   `AttributedString` (strong/emphasis/strikethrough/inline code/link runs; soft break → space, hard break → newline;
-  citation links carry `exodus-cite://N`). No math or highlighting yet.
+  citation links carry `actovia-cite://N`). No math or highlighting yet.
 - [ ] `MarkdownStreamModel` (`@MainActor @Observable`): `update(text:)` — reuse settled blocks whose source text is
   unchanged, re-parse only the tail; `isStreaming` heals the last block; a finished/history document is parsed whole once.
 - [ ] Tests (Swift Testing, many, table-driven where sensible): every preprocessor rule incl. the desktop's own cases,
@@ -111,7 +111,7 @@ Read: desktop `src/renderer/lib/markdown-blocks.ts`, `markdown-plugins.ts`, `mar
   task checkboxes (SF Symbols); blockquote with a leading bar; code block in a rounded mono surface with language label
   and a copy button (`UIPasteboard`), horizontal scroll for long lines; table as `Grid` inside a horizontal `ScrollView`
   with alignment and a header row; thematic break; image via `AsyncImage` capped to the content width; links open with
-  `openURL`, `exodus-cite://N` renders as a small chip (tappable → callback); Dynamic Type; light/dark via semantic
+  `openURL`, `actovia-cite://N` renders as a small chip (tappable → callback); Dynamic Type; light/dark via semantic
   colours; `.textSelection(.enabled)` per block.
 - [ ] DEBUG-only gallery: in the App target, `#if DEBUG` launch argument `-MarkdownGallery` shows a scrolling screen of
   fixture documents (headings/lists/quote/code/table/task list/links/images/strike vs `19~32°C`/`$200 - $300`/citation

@@ -6,7 +6,7 @@ enum StockChartPhase: Equatable {
     case loading, loaded, failed
 }
 
-/// A reply's stock chart (`exodus-stock`): TradingView's Mini Chart as its own embed URL in a web view that may load
+/// A reply's stock chart (`actovia-stock`): TradingView's Mini Chart as its own embed URL in a web view that may load
 /// nothing but TradingView's hosts and go nowhere else — a tap on the chart opens the symbol's page in the browser —
 /// the model's note under it, and "Chart by TradingView" with the page's link (the disclosure the phone has, having
 /// no privacy page). When the chart cannot load, the symbol and the note stand in its place.
@@ -120,7 +120,7 @@ struct StockChartWebView: UIViewRepresentable {
                 var rules = Self.compiledRules
                 if rules == nil {
                     rules = try? await WKContentRuleListStore.default().compileContentRuleList(
-                        forIdentifier: "exodus-stock-chart", encodedContentRuleList: StockChart.contentRules)
+                        forIdentifier: "actovia-stock-chart", encodedContentRuleList: StockChart.contentRules)
                     Self.compiledRules = rules
                 }
                 guard let self, !Task.isCancelled, let webView = self.webView else { return }

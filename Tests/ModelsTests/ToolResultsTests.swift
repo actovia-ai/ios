@@ -11,9 +11,9 @@ struct FileToolResultTests {
     @Test("read_file's details decode with the desktop's fields; unknown keys are ignored")
     func readFile() throws {
         let file = try #require(ReadFileResult(json: json(F.readmeShort)))
-        #expect(file.path == "/Users/me/Code/exodus/README.md")
+        #expect(file.path == "/Users/me/Code/actovia/README.md")
         #expect(file.size == 612)
-        #expect(file.content.hasPrefix("# Exodus\n\nA desktop AI chat app"))
+        #expect(file.content.hasPrefix("# Actovia\n\nA desktop AI chat app"))
         #expect(ReadFileResult(json: json(#"{"path":"/a","content":"x","extra":{"n":1}}"#))?.size == nil)
         #expect(ReadFileResult(json: json(#"{"path":"/a"}"#)) == nil)
         #expect(ReadFileArguments(json: json(#"{"path":"/a","encoding":"base64"}"#))?.encoding == "base64")

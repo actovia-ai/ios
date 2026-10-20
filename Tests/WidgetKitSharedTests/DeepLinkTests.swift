@@ -3,7 +3,7 @@ import Testing
 
 @testable import WidgetKitShared
 
-@Suite("DeepLink: the widgets' exodus:// links")
+@Suite("DeepLink: the widgets' actovia:// links")
 struct DeepLinkTests {
     @Test("every link reads back as itself", arguments: [
         DeepLink.newChat(prompt: nil), .newChat(prompt: "Plan my day"), .chat(id: "3f2a-9c"), .health(ask: nil),
@@ -18,25 +18,25 @@ struct DeepLinkTests {
 
     @Test("the links are the documented ones")
     func shapes() {
-        #expect(DeepLink.newChat(prompt: nil).url.absoluteString == "exodus://chat/new")
-        #expect(DeepLink.chat(id: "abc").url.absoluteString == "exodus://chat/abc")
-        #expect(DeepLink.health(ask: nil).url.absoluteString == "exodus://health")
-        #expect(DeepLink.newChat(prompt: nil, opening: .camera).url.absoluteString == "exodus://chat/new?open=camera")
-        #expect(DeepLink.newChat(prompt: nil, opening: .voice).url.absoluteString == "exodus://chat/new?open=voice")
+        #expect(DeepLink.newChat(prompt: nil).url.absoluteString == "actovia://chat/new")
+        #expect(DeepLink.chat(id: "abc").url.absoluteString == "actovia://chat/abc")
+        #expect(DeepLink.health(ask: nil).url.absoluteString == "actovia://health")
+        #expect(DeepLink.newChat(prompt: nil, opening: .camera).url.absoluteString == "actovia://chat/new?open=camera")
+        #expect(DeepLink.newChat(prompt: nil, opening: .voice).url.absoluteString == "actovia://chat/new?open=voice")
     }
 
     @Test("an opening the app does not know is not a link; an empty one is none")
     func openings() throws {
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?open=dance"))) == nil)
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?open="))) == .newChat(prompt: nil))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/new?open=dance"))) == nil)
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/new?open="))) == .newChat(prompt: nil))
         #expect(
-            DeepLink(url: try #require(URL(string: "exodus://chat/new?prompt=hi&open=camera")))
+            DeepLink(url: try #require(URL(string: "actovia://chat/new?prompt=hi&open=camera")))
                 == .newChat(prompt: "hi", opening: .camera))
     }
 
     @Test("anything else is not a link", arguments: [
-        "https://chat/new", "exodus://", "exodus://chat", "exodus://chat/", "exodus://settings",
-        "exodus://chat/a/b", "exodus://health/x",
+        "https://chat/new", "actovia://", "actovia://chat", "actovia://chat/", "actovia://settings",
+        "actovia://chat/a/b", "actovia://health/x",
     ])
     func rejects(string: String) throws {
         #expect(DeepLink(url: try #require(URL(string: string))) == nil)
@@ -44,7 +44,7 @@ struct DeepLinkTests {
 
     @Test("an empty prompt is no prompt; one over 500 characters is not a link")
     func prompts() throws {
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?prompt="))) == .newChat(prompt: nil))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/new?prompt="))) == .newChat(prompt: nil))
         let long = DeepLink.newChat(prompt: String(repeating: "a", count: 501)).url
         #expect(DeepLink(url: long) == nil)
     }
@@ -58,9 +58,9 @@ struct DeepLinkTests {
 
     /// The id goes into `/api/v1/chat/<id>/…`: a dot segment or a slash would reach another endpoint.
     @Test("a chat id is 1–64 letters, digits, `-` or `_`", arguments: [
-        "exodus://chat/..", "exodus://chat/.", "exodus://chat/a%2Fb", "exodus://chat/a%2F..", "exodus://chat/%20",
-        "exodus://chat/a.b", "exodus://chat/a%3Fb", "exodus://chat/%C3%BC",
-        "exodus://chat/" + String(repeating: "a", count: 65),
+        "actovia://chat/..", "actovia://chat/.", "actovia://chat/a%2Fb", "actovia://chat/a%2F..", "actovia://chat/%20",
+        "actovia://chat/a.b", "actovia://chat/a%3Fb", "actovia://chat/%C3%BC",
+        "actovia://chat/" + String(repeating: "a", count: 65),
     ])
     func rejectsIds(string: String) throws {
         #expect(DeepLink(url: try #require(URL(string: string))) == nil)
@@ -69,11 +69,11 @@ struct DeepLinkTests {
     @Test("ids at the edges")
     func acceptsIds() throws {
         let longest = String(repeating: "a", count: 64)
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/" + longest))) == .chat(id: longest))
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/0b6f1f7e-2c1d-4a53-9a55-1f0c3e0e9a11")))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/" + longest))) == .chat(id: longest))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/0b6f1f7e-2c1d-4a53-9a55-1f0c3e0e9a11")))
             == .chat(id: "0b6f1f7e-2c1d-4a53-9a55-1f0c3e0e9a11"))
         // `new` is the new-chat link, never a chat called "new".
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new"))) == .newChat(prompt: nil))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/new"))) == .newChat(prompt: nil))
         #expect(!DeepLink.isAcceptableChatId(""))
         #expect(!DeepLink.isAcceptableChatId("a/b"))
         #expect(!DeepLink.isAcceptableChatId(".."))

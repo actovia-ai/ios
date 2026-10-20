@@ -5,11 +5,11 @@ import Testing
 struct HealthContextTests {
     @Test func composeIsAFencedBlockThenTheQuestion() {
         let text = HealthContext.compose(json: #"{"steps":1}"#, question: "  Why am I tired?\n")
-        #expect(text == "```exodus-health\n{\"steps\":1}\n```\n\nWhy am I tired?")
+        #expect(text == "```actovia-health\n{\"steps\":1}\n```\n\nWhy am I tired?")
     }
 
     @Test func splitReturnsTheBlockAndTheQuestion() {
-        let parts = HealthContext.split("```exodus-health\n{\"a\":1}\n```\n\nHow did I sleep?")
+        let parts = HealthContext.split("```actovia-health\n{\"a\":1}\n```\n\nHow did I sleep?")
         #expect(parts.json == #"{"a":1}"#)
         #expect(parts.body == "How did I sleep?")
     }
@@ -22,19 +22,19 @@ struct HealthContextTests {
     }
 
     @Test func onlyALeadingBlockCounts() {
-        let text = "Look at this:\n```exodus-health\n{}\n```"
+        let text = "Look at this:\n```actovia-health\n{}\n```"
         let parts = HealthContext.split(text)
         #expect(parts.json == nil)
         #expect(parts.body == text)
     }
 
     @Test func anUnclosedBlockIsJustText() {
-        let text = "```exodus-health\n{\"a\":1}"
+        let text = "```actovia-health\n{\"a\":1}"
         #expect(HealthContext.split(text).json == nil)
     }
 
     @Test func aBlockWithNoQuestionHasAnEmptyBody() {
-        let parts = HealthContext.split("```exodus-health\n{}\n```")
+        let parts = HealthContext.split("```actovia-health\n{}\n```")
         #expect(parts.json == "{}")
         #expect(parts.body.isEmpty)
     }
@@ -42,6 +42,6 @@ struct HealthContextTests {
     @Test func encodesAValueWithSortedKeys() throws {
         struct V: Encodable { let b = 2, a = 1 }
         let text = try HealthContext.compose(V(), question: "q")
-        #expect(text.hasPrefix("```exodus-health\n{\"a\":1,\"b\":2}\n```"))
+        #expect(text.hasPrefix("```actovia-health\n{\"a\":1,\"b\":2}\n```"))
     }
 }

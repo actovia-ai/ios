@@ -1,11 +1,11 @@
 import Foundation
 
 /// The Health workspace's "ask about this": a question typed there travels to Chat with the day's numbers as a
-/// leading fenced block — ```` ```exodus-health ````, the JSON, ```` ``` ````, a blank line, the question. Plain text, like
+/// leading fenced block — ```` ```actovia-health ````, the JSON, ```` ``` ````, a blank line, the question. Plain text, like
 /// `QuotedText`, so the computer and every provider read it as what it is; the transcript reads it back with `split`
 /// to draw the numbers as a card. Only a block that opens the message counts.
 public enum HealthContext {
-    public static let infoString = "exodus-health"
+    public static let infoString = "actovia-health"
     private static var opening: String { "```" + infoString + "\n" }  // l10n:ignore: markdown syntax
     private static let closing = "\n```"  // l10n:ignore: markdown syntax
 

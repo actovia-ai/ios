@@ -1,7 +1,7 @@
 # Health workspace — design
 
 Date: 2026-10-01 · Status: approved in brainstorming, awaiting spec review
-Repos: `exodus-ios` (most of the work) and `exodus` (one desktop route)
+Repos: `actovia-ios` (most of the work) and `actovia` (one desktop route)
 Prototypes: `.superpowers/brainstorm/83696-1790821334/content/` (`home-layout.html`, `ody-states-v2.html`, `interactions-v2.html`)
 
 ## 1. Goal
@@ -32,7 +32,7 @@ It is also the first place the app gets **livelier**: Ody becomes a code-driven 
 ## 2. Architecture
 
 ```
-iPhone                                                    Desktop (exodus)
+iPhone                                                    Desktop (actovia)
 ┌──────────────────────── HealthFeature ───────────────┐  ┌──────────────────────────┐
 │ HealthDataSource (protocol) ── HealthKitSource        │  │ routes/health.ts         │
 │        │ fake in tests                                │  │  POST /summary           │

@@ -9,7 +9,7 @@
 
 ## Global Constraints
 
-The shared brief `ios-B-global.md` (session scratchpad) applies: no commits except a `Vendor/exodus-locales` subtree
+The shared brief `ios-B-global.md` (session scratchpad) applies: no commits except a `Vendor/actovia-locales` subtree
 sync (owner-allowed), catalog keys in 10 languages, audit exit 0, Swift 6 strict concurrency, own scratch simulator
 (never "iPhone 17"/"iPhone 17e"), Debug + Release builds, mutation checks. Plus: decoding off the render path; the
 `AssistantTurnView` Equatable contract holds; undecodable details → generic card + `LogReporter`.

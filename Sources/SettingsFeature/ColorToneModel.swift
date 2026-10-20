@@ -14,7 +14,7 @@ public final class ColorToneModel {
     public private(set) var tone: ColorTone
 
     private let defaults: UserDefaults
-    private static let defaultsKey = "exodus.colorTone"
+    private static let defaultsKey = "actovia.colorTone"
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

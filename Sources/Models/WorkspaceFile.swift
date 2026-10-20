@@ -1,6 +1,6 @@
 import Foundation
 
-/// A file the chat's tools wrote into its workspace, as `GET /api/v1/workspace/:chatId/file?path=…` serves it (exodus
+/// A file the chat's tools wrote into its workspace, as `GET /api/v1/workspace/:chatId/file?path=…` serves it (actovia
 /// `routes/workspace.ts`): text only, at most 1 MB; a larger or binary file is refused with 413 / 415.
 public struct WorkspaceFile: Decodable, Equatable, Sendable {
     public enum Kind: String, Decodable, Sendable {

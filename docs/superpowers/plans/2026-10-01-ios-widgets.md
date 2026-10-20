@@ -2,18 +2,18 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Home Screen (small, medium), Lock Screen (circular, rectangular) widgets and a Control Center / Action button control that open a conversation with Exodus, with a light touch of today's health, drawn in the Health hero's night sky.
+**Goal:** Home Screen (small, medium), Lock Screen (circular, rectangular) widgets and a Control Center / Action button control that open a conversation with Actovia, with a light touch of today's health, drawn in the Health hero's night sky.
 
-**Architecture:** The app writes a small `WidgetSnapshot` JSON (3 recent chat titles, today's health glance) into an App Group container and asks WidgetKit to reload; the extension only reads and renders it — no network, no credentials. Taps open `exodus://` deep links that `AppShell` routes. Pure logic (snapshot, store, links, presentation rules) lives in `WidgetKitShared`; the SwiftUI widget views live in `WidgetUI`, so the app's DEBUG gallery can draw them too.
+**Architecture:** The app writes a small `WidgetSnapshot` JSON (3 recent chat titles, today's health glance) into an App Group container and asks WidgetKit to reload; the extension only reads and renders it — no network, no credentials. Taps open `actovia://` deep links that `AppShell` routes. Pure logic (snapshot, store, links, presentation rules) lives in `WidgetKitShared`; the SwiftUI widget views live in `WidgetUI`, so the app's DEBUG gallery can draw them too.
 
 **Tech Stack:** Swift 6, SwiftUI, WidgetKit, AppIntents (`ControlWidgetButton`, `OpenURLIntent`), Tuist 4 (buildable folders), Swift Testing, iOS 27.
 
-**Spec:** `docs/superpowers/specs/2026-10-01-ios-widgets-design.md` (amended in Task 1: the health suggestion opens Health's ask box, `exodus://health?ask=…`).
+**Spec:** `docs/superpowers/specs/2026-10-01-ios-widgets-design.md` (amended in Task 1: the health suggestion opens Health's ask box, `actovia://health?ask=…`).
 
 ## Global Constraints
 
 - Deployment target iOS 27.0; Swift 6 language mode; no third-party dependencies.
-- App Group: `group.app.yancey.exodus`. URL scheme: `exodus`. Extension bundle id: `app.yancey.exodus.exodus-ios.widgets`.
+- App Group: `group.app.yancey.actovia`. URL scheme: `actovia`. Extension bundle id: `app.yancey.actovia.actovia-ios.widgets`.
 - The extension links only `WidgetKitShared`, `WidgetUI`, `OdyKit` — never `NetworkingKit`, never the keychain.
 - Snapshot file `widget.json`, written atomically with `.completeFileProtectionUntilFirstUserAuthentication`; titles and summary numbers only, never message content; at most 3 recent chats.
 - A pre-filled question is never sent automatically.
@@ -28,7 +28,7 @@
 
 1. **Snapshot from a newer app version or half-written file** — the widget shows the empty state, never crashes (Task 1 test: `version: 99` and truncated JSON decode to empty).
 2. **Health glance from yesterday after midnight** — at 00:30 the widget hides the health line instead of showing last night's numbers as today's (Task 3 test: entry on the next day hides health).
-3. **A link arriving while the unlock / pairing gate is up** — it is kept and applied once `AppShell` appears, not dropped (Task 5: `ExodusApp` holds `pendingLink` and passes it in; test on `PendingLink.take()`).
+3. **A link arriving while the unlock / pairing gate is up** — it is kept and applied once `AppShell` appears, not dropped (Task 5: `ActoviaApp` holds `pendingLink` and passes it in; test on `PendingLink.take()`).
 4. **Prompt with spaces, `&`, `#`, CJK or emoji** — round-trips through the link intact (Task 2 test).
 5. **Unpairing** — recent chat titles from the old computer disappear from the Home Screen (Task 4 test: `cleared()` empties recents and health; wiring through `onComputerChange`).
 
@@ -42,15 +42,15 @@
 | `Sources/WidgetKitShared/SnapshotStore.swift` | Read/write `widget.json` in a directory (App Group container in production) |
 | `Sources/WidgetKitShared/DeepLink.swift` | `DeepLink` enum, `url`, `init?(url:)` |
 | `Sources/WidgetKitShared/WidgetPresentation.swift` | Greeting period, ink (light/dark text on the sky), visible health for a date, hourly entry dates |
-| `Sources/WidgetKitShared/AskExodusIntent.swift` | `AppIntent` that opens `exodus://chat/new` (used by the control; linked by app and extension) |
+| `Sources/WidgetKitShared/AskActoviaIntent.swift` | `AppIntent` that opens `actovia://chat/new` (used by the control; linked by app and extension) |
 | `Tests/WidgetKitSharedTests/*.swift` | Unit tests for the above |
 | `Sources/WidgetUI/*.swift` | `WidgetSky`, `AskSmallView`, `AskMediumView`, `AskCircularView`, `TodayRectangularView` |
-| `Widgets/Sources/*.swift` | Extension: `ExodusWidgetBundle`, `SnapshotProvider`, `AskWidget`, `TodayAccessoryWidget`, `AskControl` |
+| `Widgets/Sources/*.swift` | Extension: `ActoviaWidgetBundle`, `SnapshotProvider`, `AskWidget`, `TodayAccessoryWidget`, `AskControl` |
 | `Widgets/Info.plist` | `NSExtension` → `com.apple.widgetkit-extension` |
 | `Sources/App/WidgetSnapshotWriter.swift` | App side: applies changes to the store, reloads timelines when the snapshot changed |
 | `Sources/App/WidgetGallery.swift` | DEBUG `-WidgetGallery` page drawing every family on fixtures |
 | `Project.swift` | New targets, App Group entitlements, URL scheme |
-| `Sources/App/ExodusApp.swift`, `Sources/App/AppShell.swift` | `.onOpenURL`, pending link, routing |
+| `Sources/App/ActoviaApp.swift`, `Sources/App/AppShell.swift` | `.onOpenURL`, pending link, routing |
 | `Sources/ChatFeature/ChatSidebarView.swift`, `ChatDetailView.swift`, `ChatDetailViewModel.swift` | Recents callback; `initialDraft` pre-fill |
 | `Sources/HealthFeature/UI/HealthRootView.swift`, `HealthHomeView.swift`, `AskComposer.swift`, `Report/HealthHomeModel.swift` | `widgetGlance`, glance callback, `initialAsk` pre-fill |
 
@@ -71,11 +71,11 @@
   - `public struct HealthGlance: Codable, Equatable, Sendable { public var day: String; public var sleepMinutes: Int?; public var steps: Int?; public var stepGoal: Int?; public var headline: String?; public var suggestion: String?; public var mood: WidgetMood }`
   - `public enum WidgetMood: String, Codable, Sendable { case sleepy, happy, neutral }`
   - `public struct SnapshotStore: Sendable { public init(directory: URL); public static func appGroup() -> SnapshotStore?; public var fileURL: URL; public func load() -> WidgetSnapshot; public func save(_: WidgetSnapshot) throws }`
-  - `public enum WidgetGroup { public static let identifier = "group.app.yancey.exodus" }`
+  - `public enum WidgetGroup { public static let identifier = "group.app.yancey.actovia" }`
 
 - [ ] **Step 1: Amend the spec**
 
-In `docs/superpowers/specs/2026-10-01-ios-widgets-design.md`, §2.4 table: replace the `exodus://chat/new?prompt=<text>` row's text with "Same, composer pre-filled; never sent automatically." and add a row `exodus://health?ask=<text>` → "Health workspace, its ask box pre-filled; today's data attached as Health's ask attaches it (per consent); never sent automatically." In §3.2 replace `(→ chat/new?prompt=…&health=1)` with `(→ health?ask=…)`. Add under the header: `Amended 2026-10-01 (plan): the health suggestion opens Health's ask box, which already attaches the day and never auto-sends.`
+In `docs/superpowers/specs/2026-10-01-ios-widgets-design.md`, §2.4 table: replace the `actovia://chat/new?prompt=<text>` row's text with "Same, composer pre-filled; never sent automatically." and add a row `actovia://health?ask=<text>` → "Health workspace, its ask box pre-filled; today's data attached as Health's ask attaches it (per consent); never sent automatically." In §3.2 replace `(→ chat/new?prompt=…&health=1)` with `(→ health?ask=…)`. Add under the header: `Amended 2026-10-01 (plan): the health suggestion opens Health's ask box, which already attaches the day and never auto-sends.`
 
 - [ ] **Step 2: Add targets to `Project.swift`**
 
@@ -162,7 +162,7 @@ struct WidgetSnapshotTests {
 
 - [ ] **Step 4: Run to verify it fails**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme WidgetKitShared -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/md-dd 2>&1 | grep -E "error:|Test run with"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme WidgetKitShared -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/md-dd 2>&1 | grep -E "error:|Test run with"`
 Expected: build error, `cannot find 'WidgetSnapshot' in scope`. (If the scheme has no test action, use `-scheme WidgetKitSharedTests`.)
 
 - [ ] **Step 5: Implement**
@@ -174,7 +174,7 @@ import Foundation
 
 /// The App Group the app and its widgets share.
 public enum WidgetGroup {
-    public static let identifier = "group.app.yancey.exodus"
+    public static let identifier = "group.app.yancey.actovia"
 }
 
 /// Ody's face on a widget, decided by the app from the day.
@@ -336,7 +336,7 @@ Same command as Step 4. Expected: `Test run with 4 tests in 1 suite passed`.
 - Test: `Tests/WidgetKitSharedTests/DeepLinkTests.swift`
 
 **Interfaces:**
-- Produces: `public enum DeepLink: Equatable, Sendable { case newChat(prompt: String?); case chat(id: String); case health(ask: String?); public static let scheme = "exodus"; public static let maxPrompt = 500; public var url: URL; public init?(url: URL) }`
+- Produces: `public enum DeepLink: Equatable, Sendable { case newChat(prompt: String?); case chat(id: String); case health(ask: String?); public static let scheme = "actovia"; public static let maxPrompt = 500; public var url: URL; public init?(url: URL) }`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -346,7 +346,7 @@ import Testing
 
 @testable import WidgetKitShared
 
-@Suite("DeepLink: the widgets' exodus:// links")
+@Suite("DeepLink: the widgets' actovia:// links")
 struct DeepLinkTests {
     @Test("every link reads back as itself", arguments: [
         DeepLink.newChat(prompt: nil), .newChat(prompt: "Plan my day"), .chat(id: "3f2a-9c"), .health(ask: nil),
@@ -359,14 +359,14 @@ struct DeepLinkTests {
 
     @Test("the links are the documented ones")
     func shapes() {
-        #expect(DeepLink.newChat(prompt: nil).url.absoluteString == "exodus://chat/new")
-        #expect(DeepLink.chat(id: "abc").url.absoluteString == "exodus://chat/abc")
-        #expect(DeepLink.health(ask: nil).url.absoluteString == "exodus://health")
+        #expect(DeepLink.newChat(prompt: nil).url.absoluteString == "actovia://chat/new")
+        #expect(DeepLink.chat(id: "abc").url.absoluteString == "actovia://chat/abc")
+        #expect(DeepLink.health(ask: nil).url.absoluteString == "actovia://health")
     }
 
     @Test("anything else is not a link", arguments: [
-        "https://chat/new", "exodus://", "exodus://chat", "exodus://chat/", "exodus://settings",
-        "exodus://chat/a/b", "exodus://health/x",
+        "https://chat/new", "actovia://", "actovia://chat", "actovia://chat/", "actovia://settings",
+        "actovia://chat/a/b", "actovia://health/x",
     ])
     func rejects(string: String) throws {
         #expect(DeepLink(url: try #require(URL(string: string))) == nil)
@@ -374,7 +374,7 @@ struct DeepLinkTests {
 
     @Test("an empty prompt is no prompt; one over 500 characters is not a link")
     func prompts() throws {
-        #expect(DeepLink(url: try #require(URL(string: "exodus://chat/new?prompt="))) == .newChat(prompt: nil))
+        #expect(DeepLink(url: try #require(URL(string: "actovia://chat/new?prompt="))) == .newChat(prompt: nil))
         let long = DeepLink.newChat(prompt: String(repeating: "a", count: 501)).url
         #expect(DeepLink(url: long) == nil)
     }
@@ -397,7 +397,7 @@ public enum DeepLink: Equatable, Sendable {
     /// Health, its ask box pre-filled when there is a question.
     case health(ask: String?)
 
-    public static let scheme = "exodus"
+    public static let scheme = "actovia"
     public static let maxPrompt = 500
 
     public var url: URL {
@@ -455,7 +455,7 @@ Note for the implementer: `URLComponents.queryItems` percent-encodes `&` and `=`
 - [ ] **Step 5: Commit**
 
 ```bash
-.superpowers/sdd/commit-mine.sh "feat(widgets): exodus:// links — a new chat, a chat, Health — and nothing else" \
+.superpowers/sdd/commit-mine.sh "feat(widgets): actovia:// links — a new chat, a chat, Health — and nothing else" \
   Sources/WidgetKitShared/DeepLink.swift Tests/WidgetKitSharedTests/DeepLinkTests.swift
 ```
 
@@ -585,7 +585,7 @@ public enum WidgetPresentation {
 **Files:**
 - Modify: `Project.swift` (App entitlements: App Group; Info.plist `CFBundleURLTypes`)
 - Create: `Sources/App/WidgetSnapshotWriter.swift`
-- Modify: `Sources/ChatFeature/ChatSidebarView.swift` (recents callback), `Sources/App/AppShell.swift`, `Sources/App/ExodusApp.swift`
+- Modify: `Sources/ChatFeature/ChatSidebarView.swift` (recents callback), `Sources/App/AppShell.swift`, `Sources/App/ActoviaApp.swift`
 - Modify: `Sources/HealthFeature/Report/HealthHomeModel.swift` (+ `widgetGlance`), `Sources/HealthFeature/UI/HealthRootView.swift` (glance callback), `Project.swift` (HealthFeature depends on WidgetKitShared)
 - Test: `Tests/WidgetKitSharedTests/WidgetSnapshotWriterRulesTests.swift`, `Tests/HealthFeatureTests/WidgetGlanceTests.swift`
 
@@ -749,7 +749,7 @@ final class WidgetSnapshotWriter {
 }
 ```
 
-Add a test for the writer in `Tests/AppTests/WidgetSnapshotWriterTests.swift` (the `AppTests` target depends on `App`; use `@testable import Exodus` — check the module name the existing AppTests import):
+Add a test for the writer in `Tests/AppTests/WidgetSnapshotWriterTests.swift` (the `AppTests` target depends on `App`; use `@testable import Actovia` — check the module name the existing AppTests import):
 
 ```swift
 @MainActor
@@ -770,14 +770,14 @@ func writer() throws {
 
 - [ ] **Step 6: Wire it**
 
-1. `Project.swift`, App target: add to `entitlements` `"com.apple.security.application-groups": .array([.string("group.app.yancey.exodus")])`; add to `infoPlist` `"CFBundleURLTypes": [["CFBundleURLName": "app.yancey.exodus.link", "CFBundleURLSchemes": ["exodus"]]]`. `tuist generate --no-open`.
+1. `Project.swift`, App target: add to `entitlements` `"com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")])`; add to `infoPlist` `"CFBundleURLTypes": [["CFBundleURLName": "app.yancey.actovia.link", "CFBundleURLSchemes": ["actovia"]]]`. `tuist generate --no-open`.
 2. `ChatSidebarView`: add `onRecentsChange: @escaping ([ChatSummary]) -> Void = { _ in }` to its init (store it), and on its body `.onChange(of: list.chats, initial: true) { onRecentsChange(list.chats) }` (`list` is its `ChatListViewModel`; `chats` is `[ChatSummary]`, `Equatable`).
-3. `ExodusApp`: create one `@State private var widgetWriter = WidgetSnapshotWriter()` and pass it to `AppShell(…, widgetWriter:)`; where `ServerConnection` is set up, register `connection.onComputerChange { Task { @MainActor in widgetWriter.computerChanged() } }` (capture the writer instance, not `self`).
+3. `ActoviaApp`: create one `@State private var widgetWriter = WidgetSnapshotWriter()` and pass it to `AppShell(…, widgetWriter:)`; where `ServerConnection` is set up, register `connection.onComputerChange { Task { @MainActor in widgetWriter.computerChanged() } }` (capture the writer instance, not `self`).
 4. `AppShell`: new `let widgetWriter: WidgetSnapshotWriter`; pass `onRecentsChange: { widgetWriter.recentsChanged($0) }` to `ChatSidebarView` and `onGlanceChange: { widgetWriter.healthChanged($0) }` to `HealthRootView`.
 
 - [ ] **Step 7: Run tests** — WidgetKitShared, HealthFeature, App test schemes; and build the App.
 
-- [ ] **Step 8: Commit** (ChatSidebarView, ExodusApp, AppShell, HealthHomeModel, HealthRootView: check each `git diff`; foreign hunks → `--patch` with only yours)
+- [ ] **Step 8: Commit** (ChatSidebarView, ActoviaApp, AppShell, HealthHomeModel, HealthRootView: check each `git diff`; foreign hunks → `--patch` with only yours)
 
 ```bash
 .superpowers/sdd/commit-mine.sh "feat(widgets): the app keeps the widgets' snapshot — recents, today's glance, nothing after unpairing" \
@@ -791,7 +791,7 @@ func writer() throws {
 ### Task 5: Deep-link routing in the app
 
 **Files:**
-- Modify: `Sources/App/ExodusApp.swift`, `Sources/App/AppShell.swift`
+- Modify: `Sources/App/ActoviaApp.swift`, `Sources/App/AppShell.swift`
 - Modify: `Sources/ChatFeature/ChatDetailView.swift`, `Sources/ChatFeature/ChatDetailViewModel.swift` (pre-fill)
 - Modify: `Sources/HealthFeature/UI/HealthRootView.swift`, `HealthHomeView.swift`, `AskComposer.swift` (pre-fill)
 - Create: `Sources/WidgetKitShared/PendingLink.swift`
@@ -820,9 +820,9 @@ struct PendingLinkTests {
     @Test("the latest valid link is kept until taken, once; an invalid one changes nothing")
     func waits() throws {
         let pending = PendingLink()
-        pending.offer(try #require(URL(string: "exodus://chat/new")))
-        pending.offer(try #require(URL(string: "exodus://health")))
-        pending.offer(try #require(URL(string: "exodus://nowhere")))
+        pending.offer(try #require(URL(string: "actovia://chat/new")))
+        pending.offer(try #require(URL(string: "actovia://health")))
+        pending.offer(try #require(URL(string: "actovia://nowhere")))
         #expect(pending.take() == .health(ask: nil))
         #expect(pending.take() == nil)
     }
@@ -890,9 +890,9 @@ public final class PendingLink {
 
 `AskComposer`: add `initialText: String? = nil` to `init`; `_text = State(initialValue: initialText ?? "")`; when `initialText` is non-nil also set `focused = true` in `.onAppear`. `HealthHomeView` and `HealthRootView` pass `initialAsk` through; `HealthRootView` calls `onInitialAskUsed()` in `.onAppear` when `initialAsk != nil`, so a second visit does not refill it.
 
-- [ ] **Step 5: Route in `AppShell` and `ExodusApp`**
+- [ ] **Step 5: Route in `AppShell` and `ActoviaApp`**
 
-`ExodusApp`: `@State private var pendingLink = PendingLink()`; on the root `WindowGroup` content `.onOpenURL { pendingLink.offer($0) }`; pass `pendingLink` to `AppShell`.
+`ActoviaApp`: `@State private var pendingLink = PendingLink()`; on the root `WindowGroup` content `.onOpenURL { pendingLink.offer($0) }`; pass `pendingLink` to `AppShell`.
 
 `AppShell`: new `let pendingLink: PendingLink`; new state `@State private var draft: (chatId: String, text: String)?` and `@State private var healthAsk: String?`. Add:
 
@@ -924,12 +924,12 @@ Pass `initialDraft: draft?.chatId == activeChat.id ? draft?.text : nil` to `Chat
 
 Unknown chat id: verify by hand that `ChatDetailView` with an id the server does not know shows its existing "couldn't load" state; if it shows nothing, instead `startNewChat()` when the history load returns 404 — note it in the commit if so.
 
-- [ ] **Step 6: Run tests and build.** Then on the simulator: `xcrun simctl openurl D8A2BE45-88F3-46AE-8693-B147F2815724 "exodus://chat/new?prompt=Plan%20my%20day"` (composer pre-filled, nothing sent), `exodus://health?ask=Why%20do%20I%20feel%20tired%20today%3F` (Health, ask box filled, attach chip on when consent), `exodus://chat/new` (fresh chat, keyboard up). Screenshot each to `.superpowers/widget-link-*.png` and read them.
+- [ ] **Step 6: Run tests and build.** Then on the simulator: `xcrun simctl openurl D8A2BE45-88F3-46AE-8693-B147F2815724 "actovia://chat/new?prompt=Plan%20my%20day"` (composer pre-filled, nothing sent), `actovia://health?ask=Why%20do%20I%20feel%20tired%20today%3F` (Health, ask box filled, attach chip on when consent), `actovia://chat/new` (fresh chat, keyboard up). Screenshot each to `.superpowers/widget-link-*.png` and read them.
 
-- [ ] **Step 7: Commit** (patches for files with foreign hunks: ChatDetailView, ChatDetailViewModel, ExodusApp)
+- [ ] **Step 7: Commit** (patches for files with foreign hunks: ChatDetailView, ChatDetailViewModel, ActoviaApp)
 
 ```bash
-.superpowers/sdd/commit-mine.sh "feat(widgets): exodus:// links open a new chat (pre-filled, never sent), a chat, or Health's ask box" …
+.superpowers/sdd/commit-mine.sh "feat(widgets): actovia:// links open a new chat (pre-filled, never sent), a chat, or Health's ask box" …
 ```
 
 ---
@@ -955,13 +955,13 @@ Add with `python3 scripts/l10n.py add KEY --en-value "…" --comment "…"` then
 | `ios:widget.greeting.afternoon` | Good afternoon |
 | `ios:widget.greeting.evening` | Good evening |
 | `ios:widget.greeting.question` | Want to talk? |
-| `ios:widget.ask.placeholder` | Ask Exodus… |
-| `ios:widget.ask.title` | Ask Exodus |
+| `ios:widget.ask.placeholder` | Ask Actovia… |
+| `ios:widget.ask.title` | Ask Actovia |
 | `ios:widget.recent.title` | Recent |
 | `ios:widget.recent.empty` | No chats yet |
 | `ios:widget.chip.planDay` | Plan my day |
 | `ios:widget.health.line` | %1$@ · %2$@ steps (sleep duration, step count) |
-| `ios:widget.ask.description` | Start a conversation with Exodus. |
+| `ios:widget.ask.description` | Start a conversation with Actovia. |
 | `ios:widget.today.description` | Today in a line, and a way to ask. |
 
 Run `python3 scripts/l10n.py audit` → 0 errors.
@@ -1061,7 +1061,7 @@ public struct AskSmallView: View {
     }
 }
 
-/// "Ask Exodus…" with the marigold send glyph.
+/// "Ask Actovia…" with the marigold send glyph.
 struct AskCapsule: View {
     let ink: Color
 
@@ -1148,7 +1148,7 @@ public struct AskCircularView: View {
     }
 }
 
-/// Lock Screen, rectangular: the note's headline and today's numbers → Health; without today's note, "Ask Exodus".
+/// Lock Screen, rectangular: the note's headline and today's numbers → Health; without today's note, "Ask Actovia".
 public struct TodayRectangularView: View {
     let snapshot: WidgetSnapshot
     let date: Date
@@ -1202,12 +1202,12 @@ public struct TodayRectangularView: View {
 
 **Files:**
 - Modify: `Project.swift` (extension target; App embeds it)
-- Create: `Widgets/Info.plist`, `Widgets/Sources/ExodusWidgetBundle.swift`, `Widgets/Sources/SnapshotProvider.swift`, `Widgets/Sources/AskWidget.swift`, `Widgets/Sources/TodayAccessoryWidget.swift`, `Widgets/Sources/AskControl.swift`
-- Create: `Sources/WidgetKitShared/AskExodusIntent.swift`
+- Create: `Widgets/Info.plist`, `Widgets/Sources/ActoviaWidgetBundle.swift`, `Widgets/Sources/SnapshotProvider.swift`, `Widgets/Sources/AskWidget.swift`, `Widgets/Sources/TodayAccessoryWidget.swift`, `Widgets/Sources/AskControl.swift`
+- Create: `Sources/WidgetKitShared/AskActoviaIntent.swift`
 
 **Interfaces:**
 - Consumes: everything above.
-- Produces: `struct SnapshotEntry: TimelineEntry { let date: Date; let snapshot: WidgetSnapshot }`; `public struct AskExodusIntent: AppIntent` (title "Ask Exodus", `openAppWhenRun = true`, performs `OpenURLIntent(DeepLink.newChat(prompt: nil).url)`).
+- Produces: `struct SnapshotEntry: TimelineEntry { let date: Date; let snapshot: WidgetSnapshot }`; `public struct AskActoviaIntent: AppIntent` (title "Ask Actovia", `openAppWhenRun = true`, performs `OpenURLIntent(DeepLink.newChat(prompt: nil).url)`).
 
 - [ ] **Step 1: Target**
 
@@ -1215,17 +1215,17 @@ In `Project.swift` add:
 
 ```swift
         .target(
-            name: "ExodusWidgets",
+            name: "ActoviaWidgets",
             destinations: .iOS,
             product: .appExtension,
-            productName: "ExodusWidgets",
+            productName: "ActoviaWidgets",
             bundleId: "\(bundleIdRoot).widgets",
             deploymentTargets: deploymentTargets,
             infoPlist: .file(path: "Widgets/Info.plist"),
             buildableFolders: ["Widgets/Sources"],
             resources: ["Resources/App/Localizable.xcstrings"],
             entitlements: .dictionary([
-                "com.apple.security.application-groups": .array([.string("group.app.yancey.exodus")])
+                "com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")])
             ]),
             dependencies: [
                 .target(name: "WidgetKitShared"), .target(name: "WidgetUI"), .target(name: "OdyKit"),
@@ -1235,7 +1235,7 @@ In `Project.swift` add:
         ),
 ```
 
-and `.target(name: "ExodusWidgets")` in the App's dependencies (Tuist embeds an app extension dependency). The catalog is the App's own file, also a member of the extension through `resources:` — one catalog, so the strings cannot drift. If Tuist rejects `resources:` next to `buildableFolders:`, stop and report it to the controller rather than copying the catalog. `tuist generate --no-open`.
+and `.target(name: "ActoviaWidgets")` in the App's dependencies (Tuist embeds an app extension dependency). The catalog is the App's own file, also a member of the extension through `resources:` — one catalog, so the strings cannot drift. If Tuist rejects `resources:` next to `buildableFolders:`, stop and report it to the controller rather than copying the catalog. `tuist generate --no-open`.
 
 `Widgets/Info.plist`:
 
@@ -1244,7 +1244,7 @@ and `.target(name: "ExodusWidgets")` in the App's dependencies (Tuist embeds an 
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleDisplayName</key><string>Exodus</string>
+    <key>CFBundleDisplayName</key><string>Actovia</string>
     <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>NSExtension</key>
@@ -1259,15 +1259,15 @@ and `.target(name: "ExodusWidgets")` in the App's dependencies (Tuist embeds an 
 
 - [ ] **Step 2: The intent**
 
-`Sources/WidgetKitShared/AskExodusIntent.swift`:
+`Sources/WidgetKitShared/AskActoviaIntent.swift`:
 
 ```swift
 import AppIntents
 import Foundation
 
 /// Control Center and the Action button: open the app on a new chat.
-public struct AskExodusIntent: AppIntent {
-    public static let title: LocalizedStringResource = LocalizedStringResource("ios:widget.ask.title", defaultValue: "Ask Exodus")
+public struct AskActoviaIntent: AppIntent {
+    public static let title: LocalizedStringResource = LocalizedStringResource("ios:widget.ask.title", defaultValue: "Ask Actovia")
     public static let openAppWhenRun = true
 
     public init() {}
@@ -1317,7 +1317,7 @@ import WidgetUI
 
 struct AskWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.yancey.exodus.ask", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "app.yancey.actovia.ask", provider: SnapshotProvider()) { entry in
             AskWidgetView(entry: entry)
         }
         .configurationDisplayName(Text("ios:widget.ask.title"))
@@ -1357,7 +1357,7 @@ import WidgetUI
 
 struct TodayAccessoryWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.yancey.exodus.today", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "app.yancey.actovia.today", provider: SnapshotProvider()) { entry in
             TodayAccessoryView(entry: entry).containerBackground(for: .widget) { Color.clear }
         }
         .configurationDisplayName(Text("ios:widget.ask.title"))
@@ -1388,8 +1388,8 @@ import WidgetKitShared
 
 struct AskControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "app.yancey.exodus.ask-control") {
-            ControlWidgetButton(action: AskExodusIntent()) {
+        StaticControlConfiguration(kind: "app.yancey.actovia.ask-control") {
+            ControlWidgetButton(action: AskActoviaIntent()) {
                 Label("ios:widget.ask.title", systemImage: "bubble.left.and.text.bubble.right")
             }
         }
@@ -1400,14 +1400,14 @@ struct AskControl: ControlWidget {
 
 (Ody's outline is not an SF Symbol; a control's icon must be a symbol. Use `bubble.left.and.text.bubble.right`; a custom symbol of Ody is a later polish, not v1.)
 
-`Widgets/Sources/ExodusWidgetBundle.swift`:
+`Widgets/Sources/ActoviaWidgetBundle.swift`:
 
 ```swift
 import SwiftUI
 import WidgetKit
 
 @main
-struct ExodusWidgetBundle: WidgetBundle {
+struct ActoviaWidgetBundle: WidgetBundle {
     var body: some Widget {
         AskWidget()
         TodayAccessoryWidget()
@@ -1422,7 +1422,7 @@ struct ExodusWidgetBundle: WidgetBundle {
 
 ```bash
 .superpowers/sdd/commit-mine.sh "feat(widgets): the widget extension — Ask on the Home Screen, today on the Lock Screen, Ask in Control Center" \
-  [--patch project.patch] Widgets Sources/WidgetKitShared/AskExodusIntent.swift
+  [--patch project.patch] Widgets Sources/WidgetKitShared/AskActoviaIntent.swift
 ```
 
 ---
@@ -1431,7 +1431,7 @@ struct ExodusWidgetBundle: WidgetBundle {
 
 **Files:**
 - Create: `Sources/App/WidgetGallery.swift`
-- Modify: `Sources/App/ExodusApp.swift` (launch the gallery on `-WidgetGallery`, like `HealthGallery`)
+- Modify: `Sources/App/ActoviaApp.swift` (launch the gallery on `-WidgetGallery`, like `HealthGallery`)
 - Create: `docs/widgets-device-checklist.md`
 
 - [ ] **Step 1: Gallery**
@@ -1441,11 +1441,11 @@ struct ExodusWidgetBundle: WidgetBundle {
 - [ ] **Step 2: Screenshots**
 
 Build and install, then for light, dark, and `content_size extra-extra-extra-large`:
-`xcrun simctl launch D8A2BE45-88F3-46AE-8693-B147F2815724 app.yancey.exodus.exodus-ios -WidgetGallery`, screenshot to `.superpowers/widget-gallery-{light,dark,ax}.png`. Read each. Check: text readable on every sky (dark ink at noon, white at 23:00), nothing clipped in medium at AX sizes (titles truncate, never overlap), Ody not covering the greeting.
+`xcrun simctl launch D8A2BE45-88F3-46AE-8693-B147F2815724 app.yancey.actovia.actovia-ios -WidgetGallery`, screenshot to `.superpowers/widget-gallery-{light,dark,ax}.png`. Read each. Check: text readable on every sky (dark ink at noon, white at 23:00), nothing clipped in medium at AX sizes (titles truncate, never overlap), Ody not covering the greeting.
 
 - [ ] **Step 3: Real widgets on the simulator**
 
-With the app installed, add the widgets on the simulator Home Screen (long-press → Edit → Add Widget → Exodus) — if this cannot be automated, say so in the report and rely on the gallery plus `xcrun simctl openurl` checks from Task 5. Confirm the widget appears in the gallery list (the extension is embedded and registered): `xcrun simctl spawn D8A2BE45-88F3-46AE-8693-B147F2815724 log show --last 2m --predicate 'subsystem == "com.apple.chronod"' | grep -i exodus | head`.
+With the app installed, add the widgets on the simulator Home Screen (long-press → Edit → Add Widget → Actovia) — if this cannot be automated, say so in the report and rely on the gallery plus `xcrun simctl openurl` checks from Task 5. Confirm the widget appears in the gallery list (the extension is embedded and registered): `xcrun simctl spawn D8A2BE45-88F3-46AE-8693-B147F2815724 log show --last 2m --predicate 'subsystem == "com.apple.chronod"' | grep -i actovia | head`.
 
 - [ ] **Step 4: Device checklist**
 
@@ -1457,5 +1457,5 @@ With the app installed, add the widgets on the simulator Home Screen (long-press
 
 ```bash
 .superpowers/sdd/commit-mine.sh "feat(widgets): a DEBUG gallery of every widget, and the device checklist" \
-  [--patch exodusapp.patch] Sources/App/WidgetGallery.swift docs/widgets-device-checklist.md
+  [--patch actoviaapp.patch] Sources/App/WidgetGallery.swift docs/widgets-device-checklist.md
 ```

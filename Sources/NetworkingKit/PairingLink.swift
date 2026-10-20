@@ -4,7 +4,7 @@ import Foundation
 /// that lets this device in, and the fingerprint of the only certificate to
 /// trust. Built by `buildPairingLink` in the desktop's `src/main/lib/lan/pairing.ts`.
 ///
-///     exodus://pair?h=192.168.1.10,mac.local&p=63129&c=<code>&f=<fingerprint>&n=<name>
+///     actovia://pair?h=192.168.1.10,mac.local&p=63129&c=<code>&f=<fingerprint>&n=<name>
 public struct PairingLink: Equatable, Sendable {
     /// Addresses to try, in order: the computer's LAN IPs, then its `.local` name.
     public let hosts: [String]
@@ -18,7 +18,7 @@ public struct PairingLink: Equatable, Sendable {
     public init?(string: String) {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let components = URLComponents(string: trimmed),
-              components.scheme == "exodus", components.host == "pair"
+              components.scheme == "actovia", components.host == "pair"
         else { return nil }
 
         // The desktop encodes with URLSearchParams, where a space is `+`;

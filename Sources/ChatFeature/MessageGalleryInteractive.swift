@@ -20,12 +20,12 @@ extension MessageGalleryFixtures {
             title: "A questionnaire in the answer",
             json: interactiveRun(
                 id: "ib1", question: "My legs itch after every shower. What can I do?",
-                reply: "That's common when the air is dry. A few details first, so I can be specific:\n\n```exodus-ask\n\(askSource)\n```")),
+                reply: "That's common when the air is dry. A few details first, so I can be specific:\n\n```actovia-ask\n\(askSource)\n```")),
         Run(
             title: "A confirmation before an action",
             json: interactiveRun(
                 id: "ib2", question: "Put the Kyoto trip in my calendar.",
-                reply: "Here's what I'd add:\n\n```exodus-confirm\n\(confirmSource)\n```")),
+                reply: "Here's what I'd add:\n\n```actovia-confirm\n\(confirmSource)\n```")),
         Run(title: "Answered: the block frozen, the answer as a card", json: answeredRun()),
         Run(title: "Illustrated steps, pictured from the run's own search", json: stepsRun()),
         Run(
@@ -38,7 +38,7 @@ extension MessageGalleryFixtures {
             title: "A stock chart with the model's reading",
             json: interactiveRun(
                 id: "ib6", question: "How's Apple doing today?",
-                reply: "Quiet so far:\n\n```exodus-stock\n\(stockSource)\n```")),
+                reply: "Quiet so far:\n\n```actovia-stock\n\(stockSource)\n```")),
     ]
 
     /// The interactive runs' names, in their order at the end of `runs`.
@@ -89,7 +89,7 @@ extension MessageGalleryFixtures {
         ]
         return interactiveRun(
             id: "ib3", question: "My legs itch after every shower. What can I do?",
-            reply: "A few details first, so I can be specific:\n\n```exodus-ask\n\(askSource)\n```", then: rest)
+            reply: "A few details first, so I can be specific:\n\n```actovia-ask\n\(askSource)\n```", then: rest)
     }
 
     /// A search whose results carry the thumbnails the steps use — a page's thumbnail and an image result's — and an
@@ -116,7 +116,7 @@ extension MessageGalleryFixtures {
             ],
             [
                 "id": "ib4sb", "runId": "ib4s", "role": "assistant",
-                "content": [["type": "text", "text": "Four steps, one string at a time so the neck's tension never drops\u{3010}1-source\u{3011}:\n\n```exodus-steps\n\(stepsSource)\n```"]],
+                "content": [["type": "text", "text": "Four steps, one string at a time so the neck's tension never drops\u{3010}1-source\u{3011}:\n\n```actovia-steps\n\(stepsSource)\n```"]],
                 "stopReason": "stop", "timestamp": 1500,
             ],
         ]

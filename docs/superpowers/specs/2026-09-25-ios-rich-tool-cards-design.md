@@ -1,4 +1,4 @@
-# exodus-ios: rich tool cards — design
+# actovia-ios: rich tool cards — design
 
 Status: approved in conversation on 2026-09-25 after the owner reviewed the DEBUG "Card prototypes" page on device
 ("其他我看原型没啥问题, 细节等做完继续调"). Principle: the desktop is the hub; iOS matches the chat interaction and is a
@@ -29,7 +29,7 @@ entries from the sheet.
 
 - Colour: the chosen colour tone (iOS-native mapping) for accents, charts, routes and pins.
 - Strings: catalog keys; reuse the desktop's `chat:` keys (`memoryStrip.*`, `usedMemories.*`, `imageGeneration.*`,
-  weather, deep research) after a `Vendor/exodus-locales` subtree sync; `ios:chat.card.*` only for phone-only copy.
+  weather, deep research) after a `Vendor/actovia-locales` subtree sync; `ios:chat.card.*` only for phone-only copy.
 - Render cost: settled turns never re-render while a later turn streams (the existing `AssistantTurnView` Equatable
   contract); card views take value types, decoding happens once per message.
 - Network: images and screenshots come from the desktop through the paired session (token, pinned TLS); nothing is

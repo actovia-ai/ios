@@ -23,7 +23,7 @@ struct MessageGalleryInteractiveTests {
         let index = try #require(MessageGalleryFixtures.namedSection("steps"))
         let segments = MessageGalleryFixtures.segments(MessageGalleryFixtures.runs[index].json)
         let turn = try #require(
-            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```exodus-steps") { turn } else { nil } }.first)
+            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```actovia-steps") { turn } else { nil } }.first)
         let placed = try #require(InteractiveRendering.placed(in: [turn.body]))
         guard case .steps(let block) = placed.fence.block else { return #expect(Bool(false)) }
         let pictures = StepsPictures(sources: turn.sources, media: turn.foot.searchMedia)
@@ -35,10 +35,10 @@ struct MessageGalleryInteractiveTests {
         let index = try #require(MessageGalleryFixtures.namedSection("stock"))
         let segments = MessageGalleryFixtures.segments(MessageGalleryFixtures.runs[index].json)
         let turn = try #require(
-            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```exodus-stock") { turn } else { nil } }.first)
+            segments.compactMap { if case .assistantTurn(let turn) = $0, turn.body.contains("```actovia-stock") { turn } else { nil } }.first)
         let copied = CopiedAnswer.text(of: turn)
         #expect(copied.contains("NASDAQ:AAPL \u{2014} "))
-        #expect(!copied.contains("exodus-stock"))
+        #expect(!copied.contains("actovia-stock"))
     }
 
     @Test("the answered run's answer names the run of its questionnaire, so the block is drawn frozen")
@@ -47,7 +47,7 @@ struct MessageGalleryInteractiveTests {
         let segments = MessageGalleryFixtures.segments(MessageGalleryFixtures.runs[index].json)
         let asking = try #require(
             segments.compactMap { segment -> AssistantTurn? in
-                if case .assistantTurn(let turn) = segment, turn.body.contains("```exodus-ask") { turn } else { nil }
+                if case .assistantTurn(let turn) = segment, turn.body.contains("```actovia-ask") { turn } else { nil }
             }.first)
         let answer = try #require(
             segments.compactMap { segment -> InteractiveAnswer.Head? in

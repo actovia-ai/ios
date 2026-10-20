@@ -46,7 +46,7 @@ private let reply = """
     data: {"type":"message_update","message":{"id":"a2","role":"assistant","content":"Done."}}\n\n\
     data: {"type":"done","messages":[{"id":"u2","role":"user","content":"ok"},{"id":"a2","role":"assistant","content":"Done."}]}\n\n
     """
-private let answer = "```exodus-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"u1\",\"title\":\"Go?\"}\n```\n\n**Go?** Approved"
+private let answer = "```actovia-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"u1\",\"title\":\"Go?\"}\n```\n\n**Go?** Approved"
 
 extension URLRequest {
     fileprivate func bodyData() -> Data {
@@ -110,7 +110,7 @@ struct ChatDetailViewModelAnswerTests {
         #expect(await model.sendText(answer))
         #expect(posts.bodies.count == 1)
         let body = try #require(posts.bodies.first)
-        #expect(body.contains("exodus-answer"))
+        #expect(body.contains("actovia-answer"))
         #expect(body.contains("Approved"))
         #expect(model.composerText == "half-typed")
     }

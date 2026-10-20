@@ -1,17 +1,17 @@
-# exodus-ios: Chat + Settings MVP Design
+# actovia-ios: Chat + Settings MVP Design
 
 Status: approved for implementation
 Date: 2026-09-18
 
 ## 1. Context
 
-`universal-client` (sibling repo, `../universal-client`) is Exodus: an Electron desktop app whose
+`universal-client` (sibling repo, `../universal-client`) is Actovia: an Electron desktop app whose
 entire business logic runs behind a Hono HTTP server on `localhost:60223`, inside the same
 process as the Electron main process. The renderer (React) talks to that server exclusively over
 HTTP/SSE — never Electron IPC for app data. Because the backend is a normal HTTP server, it is
 trivially reachable from any other client, including a phone on the same network.
 
-`exodus-ios` is a pure frontend for that same backend. It ships no server, no database, no auth —
+`actovia-ios` is a pure frontend for that same backend. It ships no server, no database, no auth —
 it is a Swift/SwiftUI client that calls the same REST/SSE contract the React renderer already
 uses. Authentication is explicitly out of scope (the desktop app has none either — trust is
 currently "same machine" / "same network").
@@ -118,7 +118,7 @@ structured-concurrency APIs throughout instead of Combine/`ObservableObject`.
 Hand-rolled `URLSession`-based client — no third-party dependency. Considered and rejected:
 Combine (Apple's own direction has moved to async/await + Observation; adds ceremony with no
 benefit here), and pulling in an SSE/HTTP library (the protocol is bespoke — `ChatSseEvent`'s
-event names and payload shapes are Exodus-specific, so a generic library still needs a hand-written
+event names and payload shapes are Actovia-specific, so a generic library still needs a hand-written
 parser on top; not worth the dependency).
 
 - **`APIClient`**: `func send<T: Decodable>(_ endpoint: Endpoint) async throws -> T`. Builds the
@@ -219,7 +219,7 @@ that one flag.
 Recorded so the current design doesn't foreclose it, not because any of this is being built in
 this phase.
 
-- Desktop already has a Computer Use V0 substrate (`src/main/lib/computer/`): an `exodus-input`
+- Desktop already has a Computer Use V0 substrate (`src/main/lib/computer/`): an `actovia-input`
   Swift helper for screenshots/CGEvent input, a perceive→act loop, and a `/api/computer-use` route
   already bound as a calling-tool. A phone-triggered "make the Mac do X" flow has a real backend to
   target later — it doesn't need to be invented from scratch.

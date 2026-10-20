@@ -17,19 +17,19 @@ private let en = InteractiveAnswer.Labels(
     other: "Other", addition: "Also", note: "Note", approved: "Approved", rejected: "Rejected")
 
 private let answerCJK =
-    #"```exodus-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
     + #"**哪里最痒？** 小腿\#n**什么时候最痒？** 洗澡后, 晚上\#n**补充:** 用的是丝塔芙润肤乳"#
 private let answerOther =
-    #"```exodus-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
     + #"**哪里最痒？** 其他: 脚踝 和脚背\#n**什么时候最痒？** —"#
 private let answerCommas =
-    #"```exodus-answer\#n{"block":"ask","ref":"r-2","title":"Pick a plan"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"r-2","title":"Pick a plan"}\#n```\#n\#n"#
     + #"**Which sizes?** Small, cheap, Large, roomy, Other"#
 private let answerApprove =
-    #"```exodus-answer\#n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\#n```\#n\#n"#
     + #"**要我把这份行程写进日历吗？** 同意\#n**备注:** 第三天换成京都"#
 private let answerReject =
-    #"```exodus-answer\#n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \"Q3/Q4\" report?"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \"Q3/Q4\" report?"}\#n```\#n\#n"#
     + #"**Send "Q3/Q4" report?** Rejected"#
 
 private struct NotABlock: Error {}
@@ -87,7 +87,7 @@ struct InteractiveAnswerTests {
         #expect(
             InteractiveAnswer.split(answerReject).head
                 == .init(block: .confirm, decision: .reject, ref: "c2", title: #"Send "Q3/Q4" report?"#))
-        let alone = InteractiveAnswer.split("```exodus-answer\n{\"block\":\"confirm\",\"ref\":\"r\"}\n```")
+        let alone = InteractiveAnswer.split("```actovia-answer\n{\"block\":\"confirm\",\"ref\":\"r\"}\n```")
         #expect(alone.head == .init(block: .confirm, decision: nil, ref: "r", title: nil))
         #expect(alone.body == "")
     }
@@ -96,12 +96,12 @@ struct InteractiveAnswerTests {
         "what is not an answer is returned whole",
         arguments: [
             "hello",
-            "```exodus-answer\n{oops}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"poll\",\"ref\":\"r\"}\n```\n\nhi",
+            "```actovia-answer\n{oops}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"poll\",\"ref\":\"r\"}\n```\n\nhi",
             // A block that only shows has no answer, as the desktop's `answerHead` says.
-            "```exodus-answer\n{\"block\":\"stock\",\"ref\":\"r\"}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"ask\"}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}",
+            "```actovia-answer\n{\"block\":\"stock\",\"ref\":\"r\"}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"ask\"}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"ask\",\"ref\":\"r\"}",
         ])
     func notAnAnswer(_ text: String) {
         let split = InteractiveAnswer.split(text)
@@ -150,7 +150,7 @@ struct InteractiveAnswerTests {
             block, ref: "x/1", approved: true, note: " a \u{2028}\r\n\u{a0} b\r c\u{85}d ", labels: en)
         #expect(
             text
-                == "```exodus-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"x/1\","
+                == "```actovia-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"x/1\","
                 + "\"title\":\"Say \\\"hi\\\" a/b c\\\\d\\ne\\t\\u0001\u{7f}\u{2028}\u{e9}\"}\n```\n\n"
                 + "**Say \"hi\" a/b c\\d\ne\t\u{1}\u{7f}\u{2028}\u{e9}** Approved\n**Note:** a b c\u{85}d")
         #expect(InteractiveAnswer.split(text).head?.title == block.title)

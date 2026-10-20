@@ -3,7 +3,7 @@ import UIKit
 
 extension NSAttributedString.Key {
     /// On a list item's marker and the tabs around it: Copy takes it as the marker and one space.
-    static let markdownListMarker = NSAttributedString.Key("app.exodus.markdown.listMarker")
+    static let markdownListMarker = NSAttributedString.Key("app.actovia.markdown.listMarker")
 }
 
 /// Settled text blocks side by side stand in one text view, so a selection runs from one into the next and Select

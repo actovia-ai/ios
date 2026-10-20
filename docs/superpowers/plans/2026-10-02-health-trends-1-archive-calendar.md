@@ -14,13 +14,13 @@
 
 ## Global Constraints
 
-- Repo `/Users/yanceyleo/Code/exodus/exodus-ios`, branch `maintenance`. Read `.superpowers/sdd/constraints.md` once; where it differs from this list (its simulator line), this list wins.
-- **Commits only through the helper**, from the repo root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>`. Never run plain `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore` or `git checkout -- <file>`: the tree holds the user's uncommitted edits (e.g. `Resources/App/Localizable.xcstrings`, `Sources/App/ExodusApp.swift`) and a pre-staged foreign file (`Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json`) that must stay staged and out of your commits. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, STOP and report BLOCKED.
+- Repo `/Users/yanceyleo/Code/actovia/actovia-ios`, branch `maintenance`. Read `.superpowers/sdd/constraints.md` once; where it differs from this list (its simulator line), this list wins.
+- **Commits only through the helper**, from the repo root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>`. Never run plain `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore` or `git checkout -- <file>`: the tree holds the user's uncommitted edits (e.g. `Resources/App/Localizable.xcstrings`, `Sources/App/ActoviaApp.swift`) and a pre-staged foreign file (`Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json`) that must stay staged and out of your commits. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, STOP and report BLOCKED.
 - **Never rewrite a file that has foreign edits**; change it with targeted edits only. Run `git diff --stat` at the start and end of every task and compare: only the files your task names may have changed. A file this plan replaces whole is one whose `git diff --stat -- <file>` is empty before you start.
 - Never push.
-- Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders: a new file under an existing `Sources/<Module>` or `Tests/<Target>` folder is picked up without editing `Project.swift`. If `ExodusIos.xcworkspace` is missing, run `tuist generate --no-open` once; run it again after any `Project.swift` edit (none is planned).
+- Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders: a new file under an existing `Sources/<Module>` or `Tests/<Target>` folder is picked up without editing `Project.swift`. If `ActoviaIos.xcworkspace` is missing, run `tuist generate --no-open` once; run it again after any `Project.swift` edit (none is planned).
 - Native frameworks only; no new packages.
-- Builds and tests: simulator `D8A2BE45-88F3-46AE-8693-B147F2815724` (iPhone 17e, iOS 27) with `-derivedDataPath /tmp/trends-dd`. Tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd [-only-testing:HealthFeatureTests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0.
+- Builds and tests: simulator `D8A2BE45-88F3-46AE-8693-B147F2815724` (iPhone 17e, iOS 27) with `-derivedDataPath /tmp/trends-dd`. Tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd [-only-testing:HealthFeatureTests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0.
 - `python3 scripts/l10n.py audit` reports `0 error(s)` at the end of every task (warnings about unreferenced keys are fine until the task that uses them).
 - **Health data never leaves the phone in phase 1.** No new network call. The archive lives in `Application Support/Health/archive/YYYY/MM/DD.json`, each file written with `.completeFileProtection`, the folder and each file `isExcludedFromBackup` (App Review: no health data in iCloud). The only way a day's numbers leave is the existing ask box, when the user sends a question.
 - Weeks are ISO 8601: Monday to Sunday and week 1 holds the year's first Thursday, whatever the region's first weekday. "Flat" is a change under 3 % either way. The sleep target is 7 h (420 min) by default; the step goal 8,000 by default.
@@ -324,7 +324,7 @@ struct TrendMathTests {
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/TrendMathTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/TrendMathTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build errors `cannot find 'Period' in scope`, `cannot find 'DayRecord' in scope`.
 
 - [ ] **Step 3: Write `DayRecord.swift`**
@@ -763,7 +763,7 @@ struct HealthArchiveTests {
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/HealthArchiveTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/HealthArchiveTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build errors `cannot find 'HealthArchive' in scope`, `cannot find 'ArchivedDay' in scope`.
 
 - [ ] **Step 3: Write `HealthArchive.swift`**
@@ -1077,7 +1077,7 @@ struct DayRecordTests: Sendable {
 
 - [ ] **Step 3: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DayRecordTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DayRecordTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build errors — `value of type 'SnapshotBuilder' has no member 'snapshot'`, `cannot find 'DayRecordStore' in scope`, `type 'SleepAnalyzer' has no member 'nights'`.
 
 - [ ] **Step 4: Add `SleepAnalyzer.nights` (append to `SleepAnalyzer.swift`)**
@@ -1520,7 +1520,7 @@ Create `/tmp/trends-l10n/translations.json`:
 - [ ] **Step 3: Apply to the working catalog and to a copy of the committed one**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat                                   # note the catalog's foreign edits before you start
 git show HEAD:Resources/App/Localizable.xcstrings > /tmp/trends-l10n/head.xcstrings
 cp /tmp/trends-l10n/head.xcstrings /tmp/trends-l10n/mine.xcstrings
@@ -1799,7 +1799,7 @@ Append inside `struct HealthHomeModelTests` in `Tests/HealthFeatureTests/HealthH
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/TrendsModelTests -only-testing:HealthFeatureTests/TrendTextTests -only-testing:HealthFeatureTests/HealthHomeModelTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/TrendsModelTests -only-testing:HealthFeatureTests/TrendTextTests -only-testing:HealthFeatureTests/HealthHomeModelTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build errors `cannot find 'TrendsModel' in scope`, `cannot find 'TrendScope' in scope`, `value of type 'HealthHomeModel' has no member 'week'`.
 
 - [ ] **Step 3: Write `CalendarGrid.swift`**
@@ -2352,7 +2352,7 @@ struct DaySheetTests {
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DaySheetTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DaySheetTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build errors `cannot find 'DayNumbers' in scope`, `extra argument 'eyebrow' in call`, `type 'CategoryValue' has no member 'steps'`.
 
 - [ ] **Step 3: Extract `CategoryValue.steps` (targeted edit in `CategoryStyle.swift`)**
@@ -2755,7 +2755,7 @@ struct DayCellTextTests {
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DayCellTextTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd -only-testing:HealthFeatureTests/DayCellTextTests 2>&1 | grep -E "error:|Test run with|TEST (SUCCEEDED|FAILED)"`
 Expected: build error `cannot find 'DayCellText' in scope`.
 
 - [ ] **Step 3: Write `DayCellView.swift`**
@@ -3313,8 +3313,8 @@ with
 - [ ] **Step 8: Run the tests and build the app**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 ```
 Expected: all Health tests pass (incl. `DayCellTextTests` 2); `** BUILD SUCCEEDED **`. (The page is reachable from Task 8's card and Task 9's gallery; it is looked at there.)
 
@@ -3513,10 +3513,10 @@ Edit 4 — after `private static let menuText = …` add:
 - [ ] **Step 4: Build, run the Health tests, and look at it**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-xcrun simctl install D8A2BE45-88F3-46AE-8693-B147F2815724 /tmp/trends-dd/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch D8A2BE45-88F3-46AE-8693-B147F2815724 app.yancey.exodus.exodus-ios -HealthGallery ready -HealthGalleryAnchor center
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcrun simctl install D8A2BE45-88F3-46AE-8693-B147F2815724 /tmp/trends-dd/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch D8A2BE45-88F3-46AE-8693-B147F2815724 app.yancey.actovia.actovia-ios -HealthGallery ready -HealthGalleryAnchor center
 mkdir -p .superpowers/trends && xcrun simctl io D8A2BE45-88F3-46AE-8693-B147F2815724 screenshot .superpowers/trends/home-week.png
 ```
 Expected: tests pass; build succeeds; read `.superpowers/trends/home-week.png` — the "This week" card sits under the note: title and "Calendar ›", seven coloured cells Mon–Sun (today outlined in marigold, days to come pale), "Avg. sleep" and "Daily steps" with arrows. Fix what differs before committing.
@@ -3653,7 +3653,7 @@ Write `/tmp/trends-shots.sh`:
 # Light, dark and AX screenshots of every phase-1 gallery state. Run from the repo root.
 set -euo pipefail
 SIM=D8A2BE45-88F3-46AE-8693-B147F2815724
-APP=app.yancey.exodus.exodus-ios
+APP=app.yancey.actovia.actovia-ios
 OUT=.superpowers/trends
 mkdir -p "$OUT"
 shoot() {
@@ -3678,8 +3678,8 @@ echo done
 ```
 
 ```bash
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-xcrun simctl install D8A2BE45-88F3-46AE-8693-B147F2815724 /tmp/trends-dd/Build/Products/Debug-iphonesimulator/Exodus.app
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcrun simctl install D8A2BE45-88F3-46AE-8693-B147F2815724 /tmp/trends-dd/Build/Products/Debug-iphonesimulator/Actovia.app
 bash /tmp/trends-shots.sh
 ```
 
@@ -3740,7 +3740,7 @@ with
 - [ ] **Step 6: Final checks and commit**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=D8A2BE45-88F3-46AE-8693-B147F2815724" -derivedDataPath /tmp/trends-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1     # 0 error(s); none of the 38 new keys is unreferenced any more
 grep -c "ios:health.calendar\|ios:health.day\|ios:health.week\|ios:health.archive" <(python3 scripts/l10n.py audit 2>&1 | grep "not referenced") || true   # 0
 git diff --stat

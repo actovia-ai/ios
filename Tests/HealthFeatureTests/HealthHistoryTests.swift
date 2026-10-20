@@ -45,7 +45,7 @@ struct HealthHistoryTests: Sendable {
         #expect(h.days.last?.date == "2026-10-01")
         #expect(h.days.last?.values["steps"] == 5000)
         let text = try HealthContext.compose(h, question: "q")
-        #expect(text.hasPrefix("```exodus-health\n{\"category\":\"activity\""))
+        #expect(text.hasPrefix("```actovia-health\n{\"category\":\"activity\""))
     }
 
     func at(_ d: Date, _ minutes: Int) -> Date { d.addingTimeInterval(Double(minutes) * 60) }

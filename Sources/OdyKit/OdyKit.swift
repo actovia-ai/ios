@@ -29,5 +29,5 @@ public enum OdyPalette {
 /// Names shared by gesture recognizers across modules. A pan named `claimsHorizontal` owns horizontal drags that
 /// begin on it; the app's drawer waits for such a pan to fail before it takes a swipe.
 public enum OdyGestures {
-    public static let claimsHorizontal = "exodus.claims-horizontal"
+    public static let claimsHorizontal = "actovia.claims-horizontal"
 }

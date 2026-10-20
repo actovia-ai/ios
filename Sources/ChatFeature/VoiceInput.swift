@@ -150,7 +150,7 @@ enum Transcriber {
     /// Nil when the server address is not a URL.
     static func request(
         audio: Data, filename: String = "voice.m4a", mimeType: String = "audio/mp4", serverConfig: ServerConfigStore,
-        boundary: String = "exodus-\(UUID().uuidString)"
+        boundary: String = "actovia-\(UUID().uuidString)"
     ) -> URLRequest? {
         guard let base = URL(string: serverConfig.baseURLString) else { return nil }
         var request = URLRequest(url: base.appendingPathComponent(path))

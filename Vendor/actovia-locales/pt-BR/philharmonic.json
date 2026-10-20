@@ -1,0 +1,445 @@
+{
+  "container": {
+    "toast": {
+      "groupDeleted": "Grupo excluído",
+      "deleteGroupFailed": "Não foi possível excluir o grupo"
+    },
+    "tabs": {
+      "costs": "Custos",
+      "schedule": "Agenda"
+    },
+    "noGroupSelected": {
+      "title": "Nenhum grupo selecionado",
+      "description": "Escolha um grupo à esquerda ou inicie um novo para conversar com sua equipe virtual.",
+      "createButton": "Criar um grupo"
+    },
+    "newGroupDefaultTitle": "Novo grupo"
+  },
+  "schedule": {
+    "tab": {
+      "upcomingTrigger": "Próximas",
+      "recurringTrigger": "Recorrentes"
+    },
+    "unknownGroup": "Grupo desconhecido",
+    "scheduleTaskButton": "Agendar tarefa",
+    "upcomingList": {
+      "empty": "Nenhuma tarefa única próxima. Agende uma para vê-la aqui."
+    },
+    "recurringList": {
+      "empty": "Ainda não há tarefas recorrentes.",
+      "lastRun": "última {{time}}",
+      "nextRun": "próxima {{time}}"
+    },
+    "taskCard": {
+      "status": {
+        "pending": "Pendente",
+        "running": "Em execução",
+        "completed": "Concluída",
+        "failed": "Falhou",
+        "cancelled": "Cancelada",
+        "waiting_for_user": "Aguardando"
+      },
+      "priority": {
+        "low": "Baixa",
+        "medium": "Média",
+        "high": "Alta",
+        "urgent": "Urgente"
+      },
+      "cancelAria": "Cancelar tarefa agendada"
+    },
+    "toast": {
+      "loadUpcomingFailed": "Não foi possível carregar as próximas tarefas",
+      "loadRecurringFailed": "Não foi possível carregar as tarefas recorrentes",
+      "taskCancelled": "Tarefa cancelada",
+      "cancelTaskFailed": "Não foi possível cancelar a tarefa",
+      "taskScheduled": "Tarefa agendada",
+      "scheduleTaskFailed": "Não foi possível agendar a tarefa"
+    },
+    "form": {
+      "title": "Agendar uma tarefa",
+      "description": "Executa dentro de um grupo existente, uma vez ou em uma agenda recorrente.",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descrição",
+      "groupLabel": "Grupo",
+      "groupPlaceholder": "Escolha um grupo",
+      "onceButton": "Única",
+      "recurringButton": "Recorrente",
+      "pickDateButton": "Escolher uma data",
+      "submitting": "Agendando…",
+      "cronPresets": {
+        "dailyNine": "Todos os dias às 9h",
+        "mondayNine": "Toda segunda-feira às 9h",
+        "custom": "Personalizado"
+      }
+    }
+  },
+  "chat": {
+    "attachmentPreview": {
+      "removeAria": "Remover {{name}}"
+    },
+    "folder": {
+      "none": "Sem pasta",
+      "recent": "Recentes",
+      "new": "Novo projeto…",
+      "namePlaceholder": "Nome do projeto e Enter",
+      "open": "Abrir pasta…",
+      "worktree": "Worktree",
+      "failed": "Não foi possível alterar a pasta",
+      "listFailed": "Não foi possível carregar os projetos recentes",
+      "refused": "Esta pasta não pode ser usada",
+      "missing": "{{name}} — pasta ausente; escolha-a novamente em Abrir pasta…"
+    },
+    "uploader": {
+      "attachAria": "Anexar imagens",
+      "s3FallbackTitle": "Falha no upload para o S3; usando dados incorporados",
+      "attachFailedTitle": "Não foi possível anexar os arquivos"
+    },
+    "composer": {
+      "placeholder": "Envie uma mensagem para sua equipe…",
+      "stopAria": "Parar",
+      "sendAria": "Enviar"
+    },
+    "planCard": {
+      "elapsed": {
+        "lessThanMin": "<1 min",
+        "minutes": "{{count}} min",
+        "hoursMinutes": "{{hours}}h {{minutes}}m"
+      },
+      "status": {
+        "active": "ativo",
+        "done": "concluído",
+        "aborted": "abortado",
+        "draft": "rascunho"
+      },
+      "stepStatusAria": {
+        "pending": "Pendente",
+        "running": "Em execução",
+        "done": "Concluído",
+        "skipped": "Ignorado",
+        "failed": "Falhou"
+      }
+    },
+    "roles": {
+      "pm": "PM",
+      "employeeFallback": "Funcionário"
+    },
+    "membersPanel": {
+      "heading": "Membros",
+      "coordinatorsLabel": "Coordenadores",
+      "unassignedLabel": "Sem atribuição",
+      "idleCount": "{{count}} ociosos",
+      "busyCount": "{{count}} ocupados",
+      "idle": "ocioso",
+      "noTeam": "Sem equipe",
+      "pmIdleActivity": "Estratégia · ocioso",
+      "emptyState": {
+        "title": "Ainda não há colegas de equipe",
+        "description": "O PM recrutará colegas de equipe conforme necessário."
+      },
+      "quota": {
+        "fiveHour": "5 h {{percent}}%",
+        "sevenDay": "semana {{percent}}%",
+        "other": "{{name}} {{percent}}%",
+        "limited": "limite atingido · reinicia {{time}}"
+      }
+    },
+    "conversationList": {
+      "configNav": {
+        "workforce": "Força de Trabalho",
+        "dashboard": "Painel"
+      },
+      "searchPlaceholder": "Pesquisar grupos",
+      "newGroupMenuItem": "Novo grupo",
+      "emptyState": {
+        "title": "Ainda não há grupos",
+        "description": "Crie um para conversar com sua equipe virtual.",
+        "createButton": "+ Novo grupo"
+      },
+      "searchNoMatch": "Nenhum grupo corresponde a “{{query}}”",
+      "noMessagesYetPreview": "Novo grupo · ainda sem mensagens",
+      "deleteDialog": {
+        "title": "Excluir este grupo?",
+        "description": "<0>{{title}}</0> e todas as suas mensagens, tarefas e execuções serão removidas permanentemente."
+      }
+    },
+    "dateLabels": {
+      "today": "Hoje",
+      "yesterday": "Ontem"
+    },
+    "groupChat": {
+      "renameTitle": "Clique para renomear",
+      "errorTitle": "O grupo encontrou um erro",
+      "memberCount_one": "{{count}} membro",
+      "memberCount_other": "{{count}} membros",
+      "toggleMembersAria": "Alternar membros",
+      "emptyState": {
+        "title": "Entregue algo à sua equipe",
+        "description": "Descreva o que você precisa. O PM vai analisar, recrutar e delegar para funcionários virtuais, depois reportar aqui."
+      },
+      "askUser": {
+        "replyPlaceholder": "Responder ao PM…",
+        "sendButton": "Enviar"
+      }
+    },
+    "decision": {
+      "toggle": "Processo de decisão",
+      "delegations": "Delegado: {{count}}",
+      "waits": "Esperas: {{count}}",
+      "loading": "Carregando…",
+      "unavailable": "O registro desta rodada não está disponível.",
+      "triggerUser": "Você escreveu",
+      "triggerScheduled": "Agendado",
+      "reports": "Leu relatórios de",
+      "thinking": "Pensando",
+      "delegate": "Passou uma etapa para {{who}}",
+      "refused": "Não iniciado — a cota de {{name}} acabou",
+      "wait": "Esperou pela cota de {{name}} — {{reason}}",
+      "plan": "Etapas planejadas: {{count}}",
+      "updateStep": "Marcou uma etapa como {{status}}",
+      "appendStep": "Adicionou uma etapa",
+      "recruit": "Contratou {{name}}",
+      "report": "Escreveu um relatório",
+      "askUser": "Perguntou a você",
+      "search": "Pesquisou na base de conhecimento",
+      "otherTool": "Chamou {{tool}}",
+      "failed": "falhou",
+      "details": "Argumentos e resultado",
+      "usage": "{{input}} de entrada · {{output}} de saída · ${{cost}}",
+      "error": "Parado: {{message}}",
+      "interrupted": "Você parou esta rodada",
+      "formerEmployee": "ex-funcionário",
+      "waitRefused": "Não esperou — {{reason}}",
+      "wakeAt": "retomada às {{time}}",
+      "cliDefault": "padrão da CLI",
+      "status": {
+        "pending": "pendente",
+        "running": "em andamento",
+        "done": "concluída",
+        "skipped": "ignorada",
+        "failed": "com falha"
+      }
+    }
+  },
+  "employees": {
+    "avatar": {
+      "alt": "avatar"
+    },
+    "picker": {
+      "reroll": "Sortear novamente"
+    },
+    "editor": {
+      "header": {
+        "label": "Funcionário",
+        "newFallback": "Novo funcionário"
+      },
+      "avatarAria": "Editar avatar",
+      "fields": {
+        "name": "Nome",
+        "team": "Equipe",
+        "teamPlaceholder": "Selecione uma equipe",
+        "teamHelp": "Todo funcionário pertence a uma equipe — o prompt de sistema da equipe é aplicado a todos os seus membros.",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Uma linha sobre o que este funcionário faz.",
+        "systemPrompt": "Prompt de sistema",
+        "systemPromptPlaceholder": "Aplicado sobre o prompt da equipe.",
+        "skills": "Habilidades",
+        "noSkills": "Ainda não há habilidades instaladas.",
+        "mcpServers": "Servidores MCP",
+        "noMcpServers": "Ainda não há servidores MCP configurados.",
+        "mcpServersHelp": "Se nenhum for selecionado, o funcionário poderá usar todos os servidores disponíveis.",
+        "memory": "Memória (somente leitura)",
+        "noMemory": "Ainda não há memória acumulada"
+      }
+    },
+    "runtime": {
+      "label": "Executa em",
+      "actovia": "Actovia"
+    },
+    "model": {
+      "label": "Modelo",
+      "default": "Padrão (o modelo do app)",
+      "cliDefault": "O padrão da CLI",
+      "cliHint": "Como a CLI o nomeia: opus, sonnet, haiku ou um ID de modelo completo."
+    },
+    "permission": {
+      "label": "Permissões",
+      "hint": "O que pode fazer sem perguntar a você. Para todo o resto, sempre pergunta.",
+      "default": "Perguntar antes de alterações",
+      "acceptEdits": "Editar arquivos livremente, perguntar antes de comandos",
+      "auto": "Auto (a CLI decide o que é seguro)",
+      "codex": {
+        "default": "Perguntar antes de cada comando e alteração de arquivo",
+        "acceptEdits": "Trabalhar livremente dentro da pasta; perguntar para ir além",
+        "auto": "Nunca perguntar; só dentro da pasta, sem rede",
+        "hint": "O Codex sempre trabalha em um sandbox limitado à pasta do grupo."
+      }
+    },
+    "systemPrompt": {
+      "cliLabel": "Instruções adicionadas a cada tarefa"
+    }
+  },
+  "teams": {
+    "editor": {
+      "header": {
+        "label": "Equipe",
+        "newFallback": "Nova equipe"
+      },
+      "fields": {
+        "name": "Nome",
+        "icon": "Ícone (emoji, opcional)",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Breve resumo do que esta equipe faz.",
+        "systemPrompt": "Prompt de sistema",
+        "systemPromptPlaceholder": "Instruções compartilhadas adicionadas ao prompt de todos os membros desta equipe."
+      }
+    }
+  },
+  "costAnalysis": {
+    "header": {
+      "title": "Painel"
+    },
+    "periodToggle": {
+      "sevenDays": "7d",
+      "thirtyDays": "30d",
+      "all": "Tudo"
+    },
+    "loading": "Carregando dados de uso…",
+    "kpi": {
+      "totalCost": "Custo total",
+      "totalCostHint_one": "Entre {{count}} funcionário",
+      "totalCostHint_other": "Entre {{count}} funcionários",
+      "tokens": "Tokens",
+      "tokensHint": "Total processado",
+      "employees": "Funcionários",
+      "employeesHint": "Com uso registrado",
+      "conversations": "Conversas",
+      "conversationsHint": "Com atividade"
+    },
+    "chart": {
+      "costLabel": "Custo",
+      "sectionTitle": "Custo ao longo do tempo"
+    },
+    "agentCostList": {
+      "title": "Custo por funcionário",
+      "empty": "Ainda não há dados de uso de funcionários",
+      "tokens": "{{tokens}} tokens"
+    },
+    "conversationCostList": {
+      "title": "Custo por conversa",
+      "empty": "Ainda não há dados de uso de conversas"
+    }
+  },
+  "workforce": {
+    "header": {
+      "title": "Força de Trabalho",
+      "employeeCount_one": "{{count}} funcionário",
+      "employeeCount_other": "{{count}} funcionários",
+      "teamCount_one": "{{count}} equipe",
+      "teamCount_other": "{{count}} equipes",
+      "addTeamButton": "Equipe",
+      "addEmployeeButton": "Funcionário",
+      "createTeamFirstTitle": "Crie uma equipe primeiro"
+    },
+    "emptyState": {
+      "title": "Comece com uma equipe",
+      "description": "Todo funcionário pertence a uma equipe que contribui com um prompt de sistema compartilhado. Crie uma equipe primeiro e depois adicione os funcionários que pertencem a ela.",
+      "createButton": "+ Nova equipe"
+    },
+    "teamSection": {
+      "editTeam": "Editar equipe",
+      "addEmployeeHere": "Adicionar funcionário aqui",
+      "deleteTeam": "Excluir equipe",
+      "unassignedFallback": "Sem equipe",
+      "addEmployeeButton": "Adicionar funcionário"
+    },
+    "newEmployeeDefaultName": "Novo Funcionário",
+    "newTeamDefaultName": "Nova Equipe",
+    "deleteEmployeeDialog": {
+      "title": "Excluir este funcionário?",
+      "description": "<0>{{name}}</0> será removido permanentemente, junto com sua memória acumulada."
+    },
+    "deleteTeamDialog": {
+      "title": "Excluir esta equipe?",
+      "description": "<0>{{name}}</0> será removida. Os membros existentes mantêm seus registros, mas perdem essa afiliação de equipe."
+    },
+    "toast": {
+      "created": "\"{{name}}\" criado(a)",
+      "deleted": "\"{{name}}\" excluído(a)",
+      "saveEmployeeFailed": "Não foi possível salvar o funcionário",
+      "deleteEmployeeFailed": "Não foi possível excluir o funcionário",
+      "saveTeamFailed": "Não foi possível salvar a equipe",
+      "deleteTeamFailed": "Não foi possível excluir a equipe"
+    }
+  },
+  "agents": {
+    "settings": {
+      "intro": "Agentes de programação são funcionários do Philharmonic executados por uma CLI que você instalou e na qual fez login. O Actovia a inicia na pasta de um grupo, mostra o que ela faz e para por você sempre que ela perguntar algo.",
+      "clisTitle": "Neste Mac",
+      "runTitle": "Como eles rodam",
+      "projectsDir": {
+        "label": "Pasta de projetos",
+        "description": "Novos projetos são criados aqui, e cada projeto guarda aqui suas notas e logs, mesmo quando o trabalho acontece em uma pasta que você abriu.",
+        "choose": "Escolher…"
+      },
+      "maxRunning": {
+        "label": "Agentes ao mesmo tempo",
+        "description": "As demais etapas esperam por uma vaga livre. Cada uma usa seu computador e seu plano."
+      },
+      "keepAlive": {
+        "label": "Manter um agente pronto (minutos)",
+        "description": "Após uma etapa, o processo espera esse tempo para que a próxima comece de imediato. 0 o encerra na hora."
+      },
+      "worktrees": {
+        "label": "Worktrees separados",
+        "description": "Quando dois agentes trabalham ao mesmo tempo no mesmo repositório git, cada um recebe seu próprio worktree e branch. Mesclar fica por sua conta."
+      },
+      "safety": "Os agentes de programação rodam com as próprias permissões, na pasta que você indica. O Actovia nunca responde às perguntas deles nem aprova as ações deles por você."
+    },
+    "cli": {
+      "check": "Verificar",
+      "notFound": "Não encontrado neste Mac",
+      "state": {
+        "ready": "Pronto",
+        "notInstalled": "Não instalado",
+        "broken": "Com defeito",
+        "tooOld": "Muito antigo",
+        "loggedOut": "Sem login"
+      },
+      "hint": {
+        "install": "Instale-o e depois toque em Verificar.",
+        "reinstall": "O iniciador está lá, mas o programa que ele abre não está — reinstale-o.",
+        "update": "Atualize para a versão mais recente e depois toque em Verificar.",
+        "login": "Execute-o uma vez no Terminal, faça login e depois toque em Verificar."
+      }
+    },
+    "notify": {
+      "waitingTitle": "{{name}} está esperando por você"
+    },
+    "card": {
+      "state": {
+        "queued": "Aguardando uma vaga livre",
+        "working": "Trabalhando",
+        "waiting": "Aguardando você",
+        "done": "Concluído",
+        "stopped": "Parado",
+        "failed": "Falhou"
+      },
+      "moreSteps_one": "{{count}} etapa anterior",
+      "moreSteps_other": "{{count}} etapas anteriores",
+      "wantsTo": "{{name}} quer usar {{tool}}",
+      "reasonPlaceholder": "Diga o motivo (opcional, enviado se você negar)",
+      "allow": "Permitir",
+      "deny": "Negar",
+      "other": "Outro…",
+      "secretPlaceholder": "Segredo: enviado ao agente, não salvo",
+      "submit": "Responder",
+      "answerFailed": "Sua resposta não chegou",
+      "stop": "Parar",
+      "continueInTerminal": "Continuar no Terminal",
+      "terminalFailed": "Não foi possível abrir o Terminal",
+      "stopFailed": "Não foi possível parar",
+      "folderFailed": "Não foi possível abrir a pasta",
+      "inTerminal": "Continuado no Terminal — o Actovia retoma na próxima etapa."
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "source": "exodus desktop: packages/shared/src/constants/tool-names.ts (TOOL_NAMES, LEGACY_TOOL_NAMES), constants/tools.ts (TOOL_REGISTRY, TOOL_GROUPS), src/renderer/components/settings/settings-form/tool-config.tsx (TOOL_CONFIG)",
+  "source": "actovia desktop: packages/shared/src/constants/tool-names.ts (TOOL_NAMES, LEGACY_TOOL_NAMES), constants/tools.ts (TOOL_REGISTRY, TOOL_GROUPS), src/renderer/components/settings/settings-form/tool-config.tsx (TOOL_CONFIG)",
   "toolNames": [
     "call_mcp_tool",
     "computer_use",

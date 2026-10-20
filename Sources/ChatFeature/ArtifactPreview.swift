@@ -11,7 +11,7 @@ extension EnvironmentValues {
 }
 
 /// The computer's artifact sandbox, read through the paired session: its page and assets
-/// (`GET /api/v1/artifacts/sandbox/*`, exodus `routes/artifact-sandbox.ts`) and an artifact's code when its row came
+/// (`GET /api/v1/artifacts/sandbox/*`, actovia `routes/artifact-sandbox.ts`) and an artifact's code when its row came
 /// without it (`GET /api/v1/artifacts/:chatId/:artifactId`). The token and the certificate pin stay in `APIClient`;
 /// the page never sees either.
 struct ArtifactSandboxSource: Sendable {
@@ -43,13 +43,13 @@ struct ArtifactSandboxSource: Sendable {
 
 // MARK: - The scheme
 
-/// The page's own origin, `exodus-artifact://sandbox` — the desktop's iframe uses the same one. Every request to it
-/// is one file of the computer's sandbox build: `exodus-artifact://sandbox/<path>` is
+/// The page's own origin, `actovia-artifact://sandbox` — the desktop's iframe uses the same one. Every request to it
+/// is one file of the computer's sandbox build: `actovia-artifact://sandbox/<path>` is
 /// `/api/v1/artifacts/sandbox/<path>`, so the page's relative asset URLs resolve exactly as they do on the desktop.
 enum ArtifactSandboxRoute {
-    static let scheme = "exodus-artifact"
+    static let scheme = "actovia-artifact"
     static let host = "sandbox"
-    /// The sandbox entry inside the renderer build (exodus `vite.renderer.config.mts`).
+    /// The sandbox entry inside the renderer build (actovia `vite.renderer.config.mts`).
     static let page = "src/renderer/sub-apps/artifacts/index.html"
     static let apiPrefix = "/api/v1/artifacts/sandbox/"
 
@@ -147,7 +147,7 @@ struct ArtifactSandboxCache: Sendable {
     private func typeURL(_ key: String) -> URL { directory.appending(path: key + ".type", directoryHint: .notDirectory) }
 }
 
-/// Serves `exodus-artifact://sandbox/…` from the computer, one request per file, through `ArtifactSandboxSource` —
+/// Serves `actovia-artifact://sandbox/…` from the computer, one request per file, through `ArtifactSandboxSource` —
 /// a built asset from `ArtifactSandboxCache` once it has been read. A failure of the page itself is reported (before
 /// WebKit hears of it), so the preview can say why it fell back.
 @MainActor
@@ -392,8 +392,8 @@ struct ArtifactWebView: UIViewRepresentable {
 
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
-        static let world = WKContentWorld.world(name: "exodus-artifact-bridge")
-        static let handlerName = "exodusArtifact"
+        static let world = WKContentWorld.world(name: "actovia-artifact-bridge")
+        static let handlerName = "actoviaArtifact"
 
         /// Listens for what the sandbox posts to its parent (here, itself) and passes on the four messages the
         /// preview acts on: their type, an error's message as text, a size's height as a number.
@@ -404,7 +404,7 @@ struct ArtifactWebView: UIViewRepresentable {
               if (!data || typeof data.type !== 'string') return;
               if (data.type !== 'artifact-sandbox-ready' && data.type !== 'artifact-sandbox-rendered'
                 && data.type !== 'artifact-sandbox-error' && data.type !== 'artifact-sandbox-size') return;
-              window.webkit.messageHandlers.exodusArtifact.postMessage({
+              window.webkit.messageHandlers.actoviaArtifact.postMessage({
                 type: data.type,
                 message: typeof data.message === 'string' ? data.message.slice(0, 2000) : null,
                 height: typeof data.height === 'number' && isFinite(data.height) ? data.height : null
@@ -418,7 +418,7 @@ struct ArtifactWebView: UIViewRepresentable {
         static let offlineRules = """
             [
               {"trigger": {"url-filter": ".*"}, "action": {"type": "block"}},
-              {"trigger": {"url-filter": "^exodus-artifact://sandbox/"}, "action": {"type": "ignore-previous-rules"}},
+              {"trigger": {"url-filter": "^actovia-artifact://sandbox/"}, "action": {"type": "ignore-previous-rules"}},
               {"trigger": {"url-filter": "^data:"}, "action": {"type": "ignore-previous-rules"}},
               {"trigger": {"url-filter": "^blob:"}, "action": {"type": "ignore-previous-rules"}},
               {"trigger": {"url-filter": "^about:"}, "action": {"type": "ignore-previous-rules"}}
@@ -446,7 +446,7 @@ struct ArtifactWebView: UIViewRepresentable {
                 var rules = Self.compiledRules
                 if rules == nil {
                     rules = try? await WKContentRuleListStore.default().compileContentRuleList(
-                        forIdentifier: "exodus-artifact-offline", encodedContentRuleList: Self.offlineRules)
+                        forIdentifier: "actovia-artifact-offline", encodedContentRuleList: Self.offlineRules)
                     Self.compiledRules = rules
                 }
                 guard let self, !Task.isCancelled, let webView = self.webView else { return }

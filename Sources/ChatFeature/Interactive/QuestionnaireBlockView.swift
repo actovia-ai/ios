@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A reply's questionnaire (`exodus-ask`) as a card in the answer: its title, the questions numbered, each choice a
+/// A reply's questionnaire (`actovia-ask`) as a card in the answer: its title, the questions numbered, each choice a
 /// 44 pt row, "Other…" opening a line to type on, the closing note and Submit. Submit sends the answers as the user's
 /// next message (`InteractiveAnswer`); once the transcript holds that message the card is frozen with its picks.
 struct QuestionnaireBlockView: View {

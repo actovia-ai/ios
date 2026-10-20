@@ -1,7 +1,7 @@
 # Health trends, archive, period reports and habits — design
 
 Date: 2026-10-02 · Status: approved in brainstorming, awaiting spec review
-Repos: `exodus-ios` (almost all of it) and `exodus` (one stateless route)
+Repos: `actovia-ios` (almost all of it) and `actovia` (one stateless route)
 Prototype: `.superpowers/brainstorm/36445-1790902464/content/health-calendar-proto.html` (interactive; cell style **C**)
 
 ## 1. Goal

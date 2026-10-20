@@ -13,7 +13,7 @@ struct ServerConnectionTests {
         deviceId: "dev-1", token: "TOKEN")
 
     private let link = PairingLink(
-        string: "exodus://pair?h=10.0.0.2%2Cmac.local&p=63129&c=CODE&f=PIN&n=Mac")!
+        string: "actovia://pair?h=10.0.0.2%2Cmac.local&p=63129&c=CODE&f=PIN&n=Mac")!
 
     @Test("unpaired, it contributes nothing — the app uses the manual address")
     func unpaired() {
@@ -337,7 +337,7 @@ struct PairedAPIClientTests {
 
 /// The computer's own lock (a separate feature from `UnlockGate`'s: that one guards this
 /// device's own token, this one is the computer refusing all `/api/*` access — see
-/// exodus's `src/main/lib/server/middlewares/lock-gate.ts`). A paired, already-unlocked
+/// actovia's `src/main/lib/server/middlewares/lock-gate.ts`). A paired, already-unlocked
 /// client answers it by calling the computer's `POST /api/v1/lock/unlock` and retrying —
 /// no fresh Face ID, because holding a valid token already proves who this device is.
 @Suite("APIClient: the paired computer's own lock", .serialized)

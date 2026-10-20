@@ -52,7 +52,7 @@ enum InteractiveRendering {
     /// Nil when the answer holds no block, or when the fence closes in a later text block (after a tool card, say):
     /// MarkdownKit draws each text block alone, so there the fence is code that runs to its block's end.
     static func placed(in texts: [String]) -> Placed? {
-        guard texts.contains(where: { $0.contains("```exodus-") }) else { return nil }
+        guard texts.contains(where: { $0.contains("```actovia-") }) else { return nil }
         let lines = texts.map { JSText.unixLines($0).split(separator: JSText.lf, omittingEmptySubsequences: false) }
         let joined = JSText.string(Array(lines.map { Array($0.joined(separator: [JSText.lf])) }
             .joined(separator: [JSText.lf, JSText.lf])))

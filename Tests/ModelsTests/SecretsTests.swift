@@ -3,7 +3,7 @@ import Testing
 
 @testable import Models
 
-/// Fixtures copied from exodus `tests/unit/main/lib/secrets/mask.test.ts`, `tests/unit/shared/utils/base-url.test.ts`,
+/// Fixtures copied from actovia `tests/unit/main/lib/secrets/mask.test.ts`, `tests/unit/shared/utils/base-url.test.ts`,
 /// `tests/unit/renderer/lib/secrets.test.ts` and `tests/unit/main/lib/server/routes/chat-approval.test.ts`.
 @Suite("Secrets: the desktop's masks and rules")
 struct SecretsTests {
@@ -43,7 +43,7 @@ struct SecretsTests {
         #expect(SecretMask.lastFour(of: nil) == nil)
     }
 
-    /// All 19 cases of exodus `tests/unit/shared/utils/base-url.test.ts` at desktop HEAD `8fc87f53`.
+    /// All 19 cases of actovia `tests/unit/shared/utils/base-url.test.ts` at desktop HEAD `8fc87f53`.
     @Test(
         "normalizeBaseURL matches the desktop's normalizeBaseUrl, case for case",
         arguments: [

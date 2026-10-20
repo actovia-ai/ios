@@ -11,7 +11,7 @@ private func loader(_ result: @escaping @Sendable (String) throws -> WorkspaceFi
 }
 
 private let rules = WorkspaceFile(
-    path: "/Users/me/.exodus/workspace/c1/investment-rules.md", name: "investment-rules.md", size: 31,
+    path: "/Users/me/.actovia/workspace/c1/investment-rules.md", name: "investment-rules.md", size: 31,
     kind: .markdown, content: "# Rules\n\n- Buy low.\n- Sell high.\n")
 
 @Suite("The file sheet: what the View button shows")

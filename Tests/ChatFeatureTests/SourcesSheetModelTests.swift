@@ -147,8 +147,8 @@ struct SourcesSheetRowTests {
         let links = [
             ("https://ok.example/a", true), ("HTTP://ok.example/a", true), ("mailto:a@b.example", true),
             ("javascript:alert(1)", false), ("tel:+15551234", false), ("sms:+15551234", false),
-            ("shortcuts://run-shortcut?name=x", false), ("file:///etc/passwd", false), ("exodus://pair?c=1", false),
-            ("exodus-cite://2", false), ("/relative/path", false), ("no scheme.example", false), ("", false)
+            ("shortcuts://run-shortcut?name=x", false), ("file:///etc/passwd", false), ("actovia://pair?c=1", false),
+            ("actovia-cite://2", false), ("/relative/path", false), ("no scheme.example", false), ("", false)
         ]
         let sources = links.enumerated().map { source($0.offset + 1, $0.element.0, title: "T\($0.offset)") }
         let model = SourcesSheetModel(turn: turn(sources: sources))

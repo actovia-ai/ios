@@ -9,15 +9,15 @@ enum ToolResultFixtures {
     }
 
     static let readmeShort = #"""
-        {"path":"/Users/me/Code/exodus/README.md","size":612,"content":"# Exodus\n\nA desktop AI chat app with a phone remote.\n\n## Getting started\n\n```bash\nbun install\nbun run start\n```\n\n- Configure a provider in Settings\n- Pair your iPhone from Settings → Devices\n\nSee docs/ for the design specs."}
+        {"path":"/Users/me/Code/actovia/README.md","size":612,"content":"# Actovia\n\nA desktop AI chat app with a phone remote.\n\n## Getting started\n\n```bash\nbun install\nbun run start\n```\n\n- Configure a provider in Settings\n- Pair your iPhone from Settings → Devices\n\nSee docs/ for the design specs."}
         """#
 
     static let writeArguments = #"""
-        {"path":"/Users/me/.exodus/workspace/c1/notes/trip-plan.md","content":"# Kyoto, 3 days\n\n## Day 1\n- Fushimi Inari at 7:00, before the crowds\n- Lunch near Tofuku-ji\n- Gion in the evening\n\n## Day 2\n- Arashiyama bamboo grove\n- Tenryu-ji garden\n\n## Day 3\n- Nishiki Market\n- Train to Osaka at 16:00"}
+        {"path":"/Users/me/.actovia/workspace/c1/notes/trip-plan.md","content":"# Kyoto, 3 days\n\n## Day 1\n- Fushimi Inari at 7:00, before the crowds\n- Lunch near Tofuku-ji\n- Gion in the evening\n\n## Day 2\n- Arashiyama bamboo grove\n- Tenryu-ji garden\n\n## Day 3\n- Nishiki Market\n- Train to Osaka at 16:00"}
         """#
 
     static let writeDetails = #"""
-        {"path":"/Users/me/.exodus/workspace/c1/notes/trip-plan.md","bytes":284,"appended":false}
+        {"path":"/Users/me/.actovia/workspace/c1/notes/trip-plan.md","bytes":284,"appended":false}
         """#
 
     static let appendDetails = #"""

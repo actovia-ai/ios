@@ -1,7 +1,7 @@
 # Interactive blocks — questionnaire and confirmation (phase 1)
 
 Date: 2026-10-06 · Status: implemented (phase 1, both repos, 2026-10-06); amended after the whole-branch reviews — see the notes marked *(amended)*
-Repos: `exodus` (desktop: prompt, block parsing, renderer) and `exodus-ios` (renderer)
+Repos: `actovia` (desktop: prompt, block parsing, renderer) and `actovia-ios` (renderer)
 References: ChatGPT's in-chat questionnaire (user's screenshots 2026-10-03), `src/renderer/components/ui/questionnaire.tsx` (the user's shadcn Questionnaire), https://elements.ai-sdk.dev/components/confirmation
 
 ## 1. Goal
@@ -12,10 +12,10 @@ When the model needs the user's choice or go-ahead, it asks with a native contro
 
 | Decided by the user | Recommended and accepted |
 |---|---|
-| Phase 1 is questionnaire + confirmation; illustrated steps, entity panels and TradingView stocks are phase 2 | One mechanism for every block: a fenced code block with a reserved language, JSON inside, rendered natively by both clients (the `exodus-health` pattern) |
-| The answer travels back as **plain text** every provider reads | A leading `exodus-answer` fence lets the clients draw the answer as a compact card; the text after it is the same words, so nothing is lost on a client that does not know the fence |
+| Phase 1 is questionnaire + confirmation; illustrated steps, entity panels and TradingView stocks are phase 2 | One mechanism for every block: a fenced code block with a reserved language, JSON inside, rendered natively by both clients (the `actovia-health` pattern) |
+| The answer travels back as **plain text** every provider reads | A leading `actovia-answer` fence lets the clients draw the answer as a compact card; the text after it is the same words, so nothing is lost on a client that does not know the fence |
 | Even a choice or a confirmation must leave room to type | Every questionnaire has a free-text line per question ("Other…" when a question allows it) and one closing "Anything else?" field; every confirmation has a note field |
-| Desktop uses the user's `questionnaire.tsx`; iOS follows Exodus's own design language | iOS draws the block as a grouped form inside the answer, Dynamic Type and VoiceOver complete |
+| Desktop uses the user's `questionnaire.tsx`; iOS follows Actovia's own design language | iOS draws the block as a grouped form inside the answer, Dynamic Type and VoiceOver complete |
 
 ### Non-goals
 - No change to tool approvals (`approval_required` / `decideApproval`): a confirmation block is the *model* asking before it acts, by its own judgement; tool approvals stay the kernel's gate.
@@ -26,9 +26,9 @@ When the model needs the user's choice or go-ahead, it asks with a native contro
 
 ### 2.1 Blocks the model emits (assistant → clients)
 
-A fenced block whose info string is the block's name and whose body is one JSON object. The clients render a known block natively; an unknown `exodus-*` block, or one whose JSON fails validation, renders as the ordinary code block it is (the reader still sees the content).
+A fenced block whose info string is the block's name and whose body is one JSON object. The clients render a known block natively; an unknown `actovia-*` block, or one whose JSON fails validation, renders as the ordinary code block it is (the reader still sees the content).
 
-**Questionnaire — `exodus-ask`**
+**Questionnaire — `actovia-ask`**
 ```json
 {
   "title": "我想先确认一下你的具体情况",
@@ -46,7 +46,7 @@ A fenced block whose info string is the block's name and whose body is one JSON 
 - Limits are validated by zod (desktop) and by the Swift decoder (iOS); a block over the limits is not a block. Lengths count UTF-16 units on both sides.
 - *(amended)* `title`, every question `text` and every option are one line (no `\n`/`\r`), and question texts are distinct within a block — the answer is read back one line per question, so a newline or a repeated question would misread the picks.
 
-**Confirmation — `exodus-confirm`**
+**Confirmation — `actovia-confirm`**
 ```json
 {
   "title": "要我把这份行程写进日历吗？",
@@ -62,10 +62,10 @@ A message may hold at most one interactive block; a second is rendered as code. 
 
 ### 2.2 The answer (clients → model)
 
-The user's answer is a **plain-text user message**: a leading `exodus-answer` fence with a small JSON (`{"block":"ask"|"confirm","ref":"<message id>"}`), a blank line, then the answer as prose, like `quoted-text.ts` and `health-context.ts`:
+The user's answer is a **plain-text user message**: a leading `actovia-answer` fence with a small JSON (`{"block":"ask"|"confirm","ref":"<message id>"}`), a blank line, then the answer as prose, like `quoted-text.ts` and `health-context.ts`:
 
 ```
-```exodus-answer
+```actovia-answer
 {"block":"ask","ref":"a9f2…"}
 ```
 
@@ -76,28 +76,28 @@ The user's answer is a **plain-text user message**: a leading `exodus-answer` fe
 
 - Questionnaire: one line per question, `**<question>** <choices joined by ", ">`; "Other…" with text becomes `其他: <text>`; an unanswered question is listed as `—`; the closing note line only when typed.
 - Confirmation: `**<title>** 同意` / `拒绝` (the client's localized "Approved"/"Rejected" words, not the button labels), then `**备注:** <note>` when typed.
-- The desktop's chat route and the system prompt learn the fence so the model reads it as an answer to its block (the prompt says: "a user message opening with ```exodus-answer answers the questionnaire or confirmation you asked; act on it, do not ask again").
+- The desktop's chat route and the system prompt learn the fence so the model reads it as an answer to its block (the prompt says: "a user message opening with ```actovia-answer answers the questionnaire or confirmation you asked; act on it, do not ask again").
 - Both clients draw a user message that opens with the fence as an **answer card** (the title, then the lines, muted) instead of a bubble of raw Markdown; `splitAnswer` mirrors `splitHealth`.
 
 ### 2.3 Rendering a block that has been answered
 
-A block is **frozen** once the chat holds a later user message whose `exodus-answer` `ref` names the block's message id: choices shown read-only with the picks, the submit button gone (desktop: `disabled` state; iOS: `.disabled` + a checkmark line "Answered"). The ref is matched client-side from the messages already loaded; nothing is stored. While a reply streams, a block renders only after its fence is closed (no half-parsed forms).
+A block is **frozen** once the chat holds a later user message whose `actovia-answer` `ref` names the block's message id: choices shown read-only with the picks, the submit button gone (desktop: `disabled` state; iOS: `.disabled` + a checkmark line "Answered"). The ref is matched client-side from the messages already loaded; nothing is stored. While a reply streams, a block renders only after its fence is closed (no half-parsed forms).
 
 ## 3. The prompt (desktop)
 
-`src/main/lib/ai/prompts` (wherever the chat's system prompt is built) gains one section, `interactive blocks`, present only for providers that run the chat (not Health or period reports): when the answer depends on facts only the user has, ask with an `exodus-ask` block — at most once per reply, 1–8 questions, short options; *(amended)* before a hard stop (the prompt's existing `<hard_stops>` list) or an action that reaches outside this machine (sending, booking, a calendar entry, money), ask with `exodus-confirm` first — inside the workspace the model acts freely, as the existing tool rules say, so ordinary file writes need no confirmation (the first draft said "writing files", which contradicted those rules); never emit either block inside another fence, a list or a table; write them in the user's language. Include both JSON examples. The section is ~40 lines; it is read by every chat turn, so it stays short.
+`src/main/lib/ai/prompts` (wherever the chat's system prompt is built) gains one section, `interactive blocks`, present only for providers that run the chat (not Health or period reports): when the answer depends on facts only the user has, ask with an `actovia-ask` block — at most once per reply, 1–8 questions, short options; *(amended)* before a hard stop (the prompt's existing `<hard_stops>` list) or an action that reaches outside this machine (sending, booking, a calendar entry, money), ask with `actovia-confirm` first — inside the workspace the model acts freely, as the existing tool rules say, so ordinary file writes need no confirmation (the first draft said "writing files", which contradicted those rules); never emit either block inside another fence, a list or a table; write them in the user's language. Include both JSON examples. The section is ~40 lines; it is read by every chat turn, so it stays short.
 
 ## 4. Desktop renderer
 
-- `markdown.tsx` `code()` sees `language-exodus-ask` / `language-exodus-confirm` and hands the fence body to `InteractiveBlock` (new `src/renderer/components/chat/interactive/`): parse → validate (zod in `packages/shared/src/types/interactive.ts`, shared with the route) → render `QuestionnaireBlock` (built on `ui/questionnaire.tsx`: `QuestionnaireItem`/`Choices`/`Choice`/`Input`/`Submit`) or `ConfirmationBlock` (two buttons + note textarea, states pending / approved / rejected like ai-sdk's Confirmation).
+- `markdown.tsx` `code()` sees `language-actovia-ask` / `language-actovia-confirm` and hands the fence body to `InteractiveBlock` (new `src/renderer/components/chat/interactive/`): parse → validate (zod in `packages/shared/src/types/interactive.ts`, shared with the route) → render `QuestionnaireBlock` (built on `ui/questionnaire.tsx`: `QuestionnaireItem`/`Choices`/`Choice`/`Input`/`Submit`) or `ConfirmationBlock` (two buttons + note textarea, states pending / approved / rejected like ai-sdk's Confirmation).
 - Submit builds the answer text (`packages/shared/src/utils/interactive-answer.ts`: `composeAnswer`, `splitAnswer`) and sends it through the composer's send path (`useChat.sendMessage` with the text; attachments none), so it streams like a typed message; the composer's own draft is untouched.
-- The user bubble (`user-bubble.tsx`) draws an `exodus-answer` message as the answer card.
+- The user bubble (`user-bubble.tsx`) draws an `actovia-answer` message as the answer card.
 - A block in a message that is not the chat's last run still works (the answer is a new message at the end); frozen state per §2.3.
 
 ## 5. iOS renderer
 
-- MarkdownKit's `.codeBlock(language:code:)` with `exodus-ask` / `exodus-confirm` → `InteractiveBlockView` (new `Sources/ChatFeature/Interactive/`): `QuestionnaireBlockView` (a card: title, numbered questions, radio/checkbox rows as 44 pt buttons with the tone's accent, "Other…" with a `TextField`, the closing note `TextField`, a prominent Submit) and `ConfirmationBlockView` (title, details as Markdown, note field, Approve (prominent, tone) / Reject (bordered)). Submission calls the chat's `sendMessage` path with the composed text (`InteractiveAnswer.compose`, mirror of the desktop's, held to the same test vectors).
-- `UserBubble` draws an `exodus-answer` message as the answer card (`InteractiveAnswer.split`).
+- MarkdownKit's `.codeBlock(language:code:)` with `actovia-ask` / `actovia-confirm` → `InteractiveBlockView` (new `Sources/ChatFeature/Interactive/`): `QuestionnaireBlockView` (a card: title, numbered questions, radio/checkbox rows as 44 pt buttons with the tone's accent, "Other…" with a `TextField`, the closing note `TextField`, a prominent Submit) and `ConfirmationBlockView` (title, details as Markdown, note field, Approve (prominent, tone) / Reject (bordered)). Submission calls the chat's `sendMessage` path with the composed text (`InteractiveAnswer.compose`, mirror of the desktop's, held to the same test vectors).
+- `UserBubble` draws an `actovia-answer` message as the answer card (`InteractiveAnswer.split`).
 - Dynamic Type: rows wrap; at accessibility sizes buttons stack. VoiceOver: each option a toggle button with its state; Submit announces "Sent". Reduce Motion: no animated freeze.
 - Haptic: `.selection` on an option, `.success` on submit (via `.sensoryFeedback`).
 
@@ -119,4 +119,4 @@ A block is **frozen** once the chat holds a later user message whose `exodus-ans
 - Prompt: a vitest that the system prompt contains the section only for chat.
 
 ## 8. Phase 2 (later spec)
-Illustrated steps (`exodus-cards`, images from search results), entity panels (`[name](entity:…)` → Wikipedia summary through a desktop route), TradingView mini charts (`exodus-stock`, desktop iframe / iOS web view).
+Illustrated steps (`actovia-cards`, images from search results), entity panels (`[name](entity:…)` → Wikipedia summary through a desktop route), TradingView mini charts (`actovia-stock`, desktop iframe / iOS web view).

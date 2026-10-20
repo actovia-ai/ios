@@ -13,7 +13,7 @@ import PackageDescription
 #endif
 
 let package = Package(
-    name: "ExodusIos",
+    name: "ActoviaIos",
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-markdown.git", exact: "0.9.0"),
         // highlight.js in JavaScriptCore, SwiftUI-first: the same tokenizer the desktop uses,

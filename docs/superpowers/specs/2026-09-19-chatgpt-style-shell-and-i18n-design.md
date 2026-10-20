@@ -1,4 +1,4 @@
-# exodus-ios: ChatGPT-style shell + i18n Design
+# actovia-ios: ChatGPT-style shell + i18n Design
 
 Status: design approved by the user in conversation and spec reviewed (2026-09-19); implementation plan written
 Date: 2026-09-19
@@ -21,9 +21,9 @@ chat list and pushes a chat on top of it. This change does two things at once:
 This spec supersedes two MVP non-goals: cross-chat search (now built) and locale support (now
 built, following the phone's language; still no in-app switch).
 
-**Prerequisite found while planning.** On 2026-09-19 the desktop repo (now `~/Code/exodus/exodus`;
+**Prerequisite found while planning.** On 2026-09-19 the desktop repo (now `~/Code/actovia/actovia`;
 the `universal-client` folder is gone) mounted every route under a versioned `/api/v1` prefix and
-named `exodus-ios` as a client that must follow. Against the current server the shipped app's
+named `actovia-ios` as a client that must follow. Against the current server the shipped app's
 unversioned paths are all 404. The implementation plan's first task moves every endpoint to
 `/api/v1/...`; every path in this spec means the `/api/v1` form, and the older documents under
 `docs/superpowers/` predate it.
@@ -62,7 +62,7 @@ Dependency direction is unchanged: App → features → NetworkingKit → Models
 | App | `Sources/App/SideDrawer.swift` | New. Generic sliding container (§5). |
 | App | `Sources/App/AppShell.swift` | New. Replaces `RootView.swift` (deleted) (§6). |
 | App | `Sources/App/AppWorkspace.swift` | Drop `rawValue` as display text; `title: LocalizedStringResource`. |
-| App | `Sources/App/ExodusApp.swift` | Root view becomes `AppShell`. |
+| App | `Sources/App/ActoviaApp.swift` | Root view becomes `AppShell`. |
 | App | `Resources/App/Localizable.xcstrings`, `InfoPlist.xcstrings` | New (§10). |
 | App | `Project.swift` | Known regions and development region; English permission string. |
 | ChatFeature | `ChatSidebarView.swift` | New. Replaces `ChatListView.swift` (deleted) (§7). |
@@ -177,7 +177,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
 Its own `NavigationStack` and `List(.plain)`. The workspace rows are a slot filled by the shell
 (the enum lives in App): Chat (selected) and Philharmonic (disabled, "Coming soon").
 
-**Normal mode.** Large title "Exodus"; a circular magnifier button top-trailing; the workspace
+**Normal mode.** Large title "Actovia"; a circular magnifier button top-trailing; the workspace
 section; a "Recents" section with one row per chat, title only, the active chat highlighted. Rows
 have a long-press `contextMenu` with a destructive "Delete" (no swipe actions). Bottom bar: a
 prominent glass "New chat" pill (leading) and a glass gear button (trailing) via `ToolbarSpacer`.
@@ -249,7 +249,7 @@ Retry.
   the sidebar or search shows its real title; the localized fallback is "New chat" for an empty
   transcript and "Chat" otherwise. Every title shown is collapsed to one line. This closes the MVP
   follow-up "real chat title in the detail screen".
-- **Composer**: a `safeAreaBar(edge: .bottom)` glass capsule with a `TextField("Ask Exodus")`
+- **Composer**: a `safeAreaBar(edge: .bottom)` glass capsule with a `TextField("Ask Actovia")`
   (1 to 5 lines) and a circular prominent glass button that is Send (`arrow.up`, disabled when
   `!canSend`) or, while a turn is in flight, Stop (`stop.fill`). The transcript uses
   `.scrollDismissesKeyboard(.interactively)`.
@@ -274,13 +274,13 @@ the app, so `Bundle.main` is the right bundle for all of them and no `bundle:` a
 - User data (chat titles, snippets, server text) is never a key: use a `String` variable or
   `Text(verbatim:)`.
 - No `rawValue` as display text. Enums expose `title: LocalizedStringResource`.
-- Brand names ("Exodus", "Philharmonic") are marked `shouldTranslate: false`.
+- Brand names ("Actovia", "Philharmonic") are marked `shouldTranslate: false`.
 - Ambiguous strings ("Chat" the workspace vs. "Chat" the fallback title) carry a `comment`.
 - Text produced inside Models/NetworkingKit/view models (client-generated errors such as "Invalid
   server URL") uses `String(localized:)`. Server-provided error text is shown verbatim.
 - Dates and numbers use system formatters, which follow the locale.
 
-**Languages** (the desktop's set, `packages/shared/src/i18n/locales.ts` in the desktop repo `exodus`):
+**Languages** (the desktop's set, `packages/shared/src/i18n/locales.ts` in the desktop repo `actovia`):
 
 | Catalog language | Source of wording |
 | --- | --- |

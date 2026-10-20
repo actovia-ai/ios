@@ -1,7 +1,7 @@
 # iOS composer tools — design
 
 Date: 2026-10-02 · Status: approved in chat, awaiting spec review
-Repos: `exodus-ios` only (the desktop route already accepts everything below)
+Repos: `actovia-ios` only (the desktop route already accepts everything below)
 Desktop reference: `src/renderer/components/composer-tools.tsx` (`ComposerToolsButton`, `ActiveToolPills`), `file-preview.tsx`
 
 ## 1. Goal

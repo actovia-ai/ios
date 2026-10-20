@@ -39,7 +39,7 @@ struct ProtoFileCardsSection: View {
 
             ProtoInReply(state: "read_file · done, short", header: "Worked for 4 sec") {
                 Self.card(
-                    "read_file", arguments: .object(["path": .string("/Users/me/Code/exodus/README.md")]),
+                    "read_file", arguments: .object(["path": .string("/Users/me/Code/actovia/README.md")]),
                     details: ProtoFixtures.readmeShort)
             }
             ProtoInReply(state: "read_file · 300 lines, preview expands in place") {
@@ -64,7 +64,7 @@ struct ProtoFileCardsSection: View {
                 Self.card(
                     "write_file",
                     arguments: .object([
-                        "path": .string("/etc/hosts"), "content": .string("127.0.0.1 exodus.local"), "append": .bool(true),
+                        "path": .string("/etc/hosts"), "content": .string("127.0.0.1 actovia.local"), "append": .bool(true),
                     ]),
                     error: "Failed to write file \"/etc/hosts\": EACCES: permission denied, open '/etc/hosts'")
             }
@@ -92,7 +92,7 @@ struct ProtoFileCardsSection: View {
 
     private static let files = WorkspaceFileLoader { path in
         try await Task.sleep(for: .milliseconds(400))
-        guard path.contains("/.exodus/workspace/") else {
+        guard path.contains("/.actovia/workspace/") else {
             throw HTTPError(statusCode: 403, code: "OUTSIDE_WORKSPACE", message: "The file is not in this chat's workspace.")
         }
         var content = "# Kyoto, 3 days"

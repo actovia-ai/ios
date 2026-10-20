@@ -1,0 +1,39 @@
+{
+  "file": "File",
+  "newChat": "Nuova chat",
+  "lockNow": "Blocca ora",
+  "settings": "Impostazioni…",
+  "edit": "Modifica",
+  "find": "Trova",
+  "speech": "Voce",
+  "view": "Visualizza",
+  "window": "Finestra",
+  "learnMore": "Scopri di più",
+  "app": {
+    "about": "Informazioni su {{name}}",
+    "hide": "Nascondi {{name}}",
+    "quit": "Esci da {{name}}"
+  },
+  "tray": {
+    "showApp": "Mostra app",
+    "hideApp": "Nascondi app",
+    "quitActovia": "Esci da Actovia"
+  },
+  "notification": {
+    "philharmonicGroupError": "Il gruppo \"{{title}}\" ha riscontrato un errore",
+    "philharmonicGroupFinished": "Il gruppo \"{{title}}\" ha terminato",
+    "agentWaiting": "{{name}} ti sta aspettando"
+  },
+  "attachment": {
+    "saveImageAs": "Salva immagine come…",
+    "copyImage": "Copia immagine",
+    "saveAs": "Salva come…"
+  },
+  "workspaceFile": {
+    "open": "Apri",
+    "revealInFinder": "Mostra nel Finder",
+    "showInExplorer": "Mostra in Esplora file",
+    "showInFolder": "Mostra nella cartella",
+    "quickLook": "Anteprima rapida"
+  }
+}

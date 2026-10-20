@@ -133,7 +133,7 @@ public struct APIClient: Sendable {
                 throw AttemptsError(underlying: error, attempts: tried)
             } catch let error as HTTPError where error.code == "APP_LOCKED" {
                 // The computer's own lock, not ours: our token already proves who this device
-                // is, so no PIN is needed to lift it — see `POST /api/v1/lock/unlock` (exodus's
+                // is, so no PIN is needed to lift it — see `POST /api/v1/lock/unlock` (actovia's
                 // `src/main/lib/server/routes/lock.ts`). One retry, on the same base that just
                 // answered (it is reachable, just locked); any failure along the way — no paired
                 // connection, Face ID declined, the unlock call itself failing — surfaces this

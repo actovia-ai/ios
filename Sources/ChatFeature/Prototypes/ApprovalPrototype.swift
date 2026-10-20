@@ -29,7 +29,7 @@ struct ProtoApprovalSection: View {
             .required(
                 request(
                     "command", "c2", tool: "terminal",
-                    summary: "security find-generic-password -s \"Exodus Safe Storage\" -w && cat ~/.aws/credentials | grep aws_secret_access_key")))
+                    summary: "security find-generic-password -s \"Actovia Safe Storage\" -w && cat ~/.aws/credentials | grep aws_secret_access_key")))
         store.apply(.required(request("elsewhere", "c3", tool: "read_file", summary: "~/Projects/api/.env.production")))
         store.apply(
             .required(

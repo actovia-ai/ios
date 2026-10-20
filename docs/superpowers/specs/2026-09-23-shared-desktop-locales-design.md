@@ -1,10 +1,10 @@
-# exodus-ios: shared desktop locales — design
+# actovia-ios: shared desktop locales — design
 
 Status: design approved by the user in conversation (2026-09-23); spec written, not yet reviewed
 
 ## 1. Context and goal
 
-Today, exodus (desktop) and exodus-ios each own their translations independently. The one bridge
+Today, actovia (desktop) and actovia-ios each own their translations independently. The one bridge
 is `scripts/l10n.py seed-from-desktop LOCALES_DIR`: given a local checkout of the desktop repo, it
 copies the desktop's translation of any iOS catalog key whose **English text is byte-for-byte equal**
 to one of the desktop's own English strings (`cmd_seed` in `scripts/l10n.py`). This is a real,
@@ -25,16 +25,16 @@ re-run the script, and manually re-translate anything the fragile match missed.
 
 **Goal:** eliminate the duplicate authoring for shared vocabulary, keep the sync reliable
 (a wording change on the desktop should either update the iOS translation or announce itself
-loudly, never silently drift), and bring templated strings in scope. Not a redesign of exodus's own
+loudly, never silently drift), and bring templated strings in scope. Not a redesign of actovia's own
 i18n (already solid — `bun run i18n:check`, `catalog-audit.ts`) or of iOS's App Shell / anything
 this spec doesn't name.
 
 ## 2. Non-goals
 
-- Any change to exodus (desktop). Everything here reads exodus's git history; nothing in exodus's
+- Any change to actovia (desktop). Everything here reads actovia's git history; nothing in actovia's
   own code or CI needs to change for this to work.
 - A new hosting/publishing pipeline (no S3, no package registry, no third repo). See §3.
-- Automating iOS-only strings ("Allow Exodus to use the camera…", the drawer's accessibility
+- Automating iOS-only strings ("Allow Actovia to use the camera…", the drawer's accessibility
   labels) — they have no desktop counterpart and stay independently authored, exactly as today.
 - An in-app language switcher, RTL, or adding `zh-Hans` as a real (non-fallback) locale — all
   already explicit non-goals of the 2026-09-19 i18n design and unaffected by this one.
@@ -43,11 +43,11 @@ this spec doesn't name.
 
 ## 3. Delivery: `git subtree`, not a new repo
 
-`packages/shared/src/i18n/locales` (exodus) is vendored into exodus-ios via `git subtree`, e.g.:
+`packages/shared/src/i18n/locales` (actovia) is vendored into actovia-ios via `git subtree`, e.g.:
 
 ```
-git subtree add --prefix Vendor/exodus-locales \
-  git@github.com:exodus-ai-org/exodus.git master \
+git subtree add --prefix Vendor/actovia-locales \
+  git@github.com:actovia-ai-org/actovia.git master \
   --squash -- packages/shared/src/i18n/locales
 ```
 
@@ -59,22 +59,22 @@ once rather than re-deriving it each pull).
 
 Re-pulled on demand (`git subtree pull ...`) whenever a developer wants fresh strings — no network
 dependency at sync-script run time beyond what `git subtree pull` itself needs, no new
-infrastructure, and **exodus needs zero code changes**: this only ever reads exodus's existing git
+infrastructure, and **actovia needs zero code changes**: this only ever reads actovia's existing git
 history at the one path it already treats as the real source.
 
-Alternatives considered: a new dedicated `exodus-locales` repo (decouples the pair, but adds a third
-repo and a second sync direction — exodus would need to push *into* it — for no benefit given
-there are exactly two consumers); exodus's CI publishing the locale JSON as a release asset /
+Alternatives considered: a new dedicated `actovia-locales` repo (decouples the pair, but adds a third
+repo and a second sync direction — actovia would need to push *into* it — for no benefit given
+there are exactly two consumers); actovia's CI publishing the locale JSON as a release asset /
 static URL (adds a publish step and a version-pinning question — *which* published version does a
 given iOS commit target — that subtree's git history already answers for free).
 
-## 4. Key format: adopt exodus's own, verbatim
+## 4. Key format: adopt actovia's own, verbatim
 
 iOS's ~70 existing keys are the English source text (`"Search"`, `"Cancel"`) — idiomatic Apple
 String Catalog style, and what lets `Text("Search")` localize with no extra call. This design
-replaces that with exodus's own `<namespace>:<dotted.path>` convention exactly
+replaces that with actovia's own `<namespace>:<dotted.path>` convention exactly
 (`chat:composer.placeholder`, `menu:newChat`) — the same key format already used throughout
-exodus's own `t()` calls (CLAUDE.md: "dot-nested, component-scoped"). A human reading either
+actovia's own `t()` calls (CLAUDE.md: "dot-nested, component-scoped"). A human reading either
 codebase for the same string sees the same key.
 
 This is the one call in this design that costs the most: every existing iOS call site
@@ -97,10 +97,10 @@ first task, before any real migration work.
 
 `{{name}}` → `%@`, never `%lld`/`%ld` for a numeric param. Two reasons: Foundation's positional
 specifiers must agree on *type* across every locale's translation of a key, and there is no
-type information in exodus's own JSON catalogs to convert from (a `{{count}}` is just a JS value
+type information in actovia's own JSON catalogs to convert from (a `{{count}}` is just a JS value
 i18next stringifies) — inferring it would mean parsing every call site's TypeScript, out of
 proportion to what this buys. Instead, every interpolated argument becomes a `String` at the
-call site, same discipline exodus's own `useFormat()` already enforces ("never build a sentence by
+call site, same discipline actovia's own `useFormat()` already enforces ("never build a sentence by
 splicing a hand-formatted date/number into raw English word order"): a count is formatted via
 `Int.formatted()` or the locale's own `NumberFormatter`, a date via `Date.FormatStyle`, *then*
 interpolated. This is a convention the plan documents and the audit script (§6) can check for
@@ -115,11 +115,11 @@ this), but the desktop's param names always map to the same argument index.
 ## 6. Tooling: extend `scripts/l10n.py`, don't replace it
 
 `seed-from-desktop` (English-text matching) is replaced by `sync-from-desktop`, reading the vendored
-subtree at a fixed, known path (`Vendor/exodus-locales`, no `--locales-dir` argument needed once
+subtree at a fixed, known path (`Vendor/actovia-locales`, no `--locales-dir` argument needed once
 vendored — simpler than today's invocation) and:
 
 1. Flattens every `packages/shared/src/i18n/locales/<locale>/<namespace>.json` into
-   `<namespace>:<dotted.path>` → text, exactly mirroring how exodus's own `t()` resolves a key.
+   `<namespace>:<dotted.path>` → text, exactly mirroring how actovia's own `t()` resolves a key.
 2. For a key that exists in **both** catalogs: the desktop is authoritative. Converts `{{param}}`
    → `%@` per §5 and writes/overwrites the iOS catalog entry for every shipped language (this *does*
    overwrite, unlike today's `seed-from-desktop` — staleness is the bug being fixed, so a changed

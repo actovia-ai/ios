@@ -333,10 +333,10 @@ struct ImageFormingField: View {
 enum ImageFormingShader {
     private final class Marker {}
 
-    /// Tuist builds ChatFeature's `.metal` into the `ExodusIos_ChatFeature` resource bundle, copied into the app. Looked
+    /// Tuist builds ChatFeature's `.metal` into the `ActoviaIos_ChatFeature` resource bundle, copied into the app. Looked
     /// up by hand (not `Bundle.module`, which traps when the bundle is missing): no bundle, no shader, a plain wash.
     static let library: ShaderLibrary? = {
-        let name = "ExodusIos_ChatFeature.bundle"
+        let name = "ActoviaIos_ChatFeature.bundle"
         for base in [Bundle.main.resourceURL, Bundle(for: Marker.self).resourceURL] {
             guard let url = base?.appendingPathComponent(name), let bundle = Bundle(url: url),
                 bundle.url(forResource: "default", withExtension: "metallib") != nil

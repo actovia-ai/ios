@@ -2,18 +2,18 @@
 
 Date: 2026-10-01 · Status: approved in brainstorming, awaiting spec review
 Amended 2026-10-01 (plan): the health suggestion opens Health's ask box, which already attaches the day and never auto-sends.
-Repo: `exodus-ios` only (no desktop change)
+Repo: `actovia-ios` only (no desktop change)
 Prototypes: `.superpowers/brainstorm/39692-1790855953/content/` (`widget-direction.html`, `lockscreen-control.html`)
 
 ## 1. Goal
 
-Widgets whose main job is **getting into a conversation with Exodus** from the Home Screen, Lock Screen, Control Center and the Action button, with a light touch of **today's health** (one line of numbers, Ody's mood, a health-derived suggested question).
+Widgets whose main job is **getting into a conversation with Actovia** from the Home Screen, Lock Screen, Control Center and the Action button, with a light touch of **today's health** (one line of numbers, Ody's mood, a health-derived suggested question).
 
 ### What the user said vs. what we assumed
 
 | Decided by the user | Assumed / recommended and accepted |
 |---|---|
-| Mainly "Ask Exodus" (B), plus a little of the Health glance (A) | Ody is the face of every widget |
+| Mainly "Ask Actovia" (B), plus a little of the Health glance (A) | Ody is the face of every widget |
 | Home small + medium, Lock Screen, Control Center / Action button control | No large widget (not enough content to fill it) |
 | Medium shows the 3 most recent chats (titles on the Home Screen are fine) | Titles are `privacySensitive` (redacted when locked / StandBy) |
 | Visual direction **A · Night sky** (the Health hero's sky, Ody standing in it) | Sky follows the clock via `DaySky`; ink flips dark by day |
@@ -30,9 +30,9 @@ Widgets whose main job is **getting into a conversation with Exodus** from the H
 
 ### 2.1 Targets and modules
 - **`WidgetKitShared`** (new framework, pure Swift, depends on nothing but Foundation): `WidgetSnapshot`, `SnapshotStore`, `DeepLink`, and the pure presentation rules (`WidgetPresentation`: greeting period, Ody mood, ink, staleness). Linked by the app and the extension. Tests: `WidgetKitSharedTests`.
-- **`ExodusWidgets`** (new app extension, `bundleId: app.yancey.exodus.exodus-ios.widgets`): a `WidgetBundle` with `AskWidget` (`.systemSmall`, `.systemMedium`), `TodayAccessoryWidget` (`.accessoryCircular` → Ask, `.accessoryRectangular` → today), and `AskControl` (`ControlWidgetButton`). Depends on `WidgetKitShared` and `OdyKit` (Ody figure and `DaySky`) only.
-- **App Group** `group.app.yancey.exodus` on both the app and the extension (entitlements in `Project.swift`).
-- **URL scheme** `exodus` registered in the app's Info.plist.
+- **`ActoviaWidgets`** (new app extension, `bundleId: app.yancey.actovia.actovia-ios.widgets`): a `WidgetBundle` with `AskWidget` (`.systemSmall`, `.systemMedium`), `TodayAccessoryWidget` (`.accessoryCircular` → Ask, `.accessoryRectangular` → today), and `AskControl` (`ControlWidgetButton`). Depends on `WidgetKitShared` and `OdyKit` (Ody figure and `DaySky`) only.
+- **App Group** `group.app.yancey.actovia` on both the app and the extension (entitlements in `Project.swift`).
+- **URL scheme** `actovia` registered in the app's Info.plist.
 
 ### 2.2 Snapshot
 ```swift
@@ -69,11 +69,11 @@ Each write that changes the snapshot calls `WidgetCenter.shared.reloadAllTimelin
 ### 2.4 Deep links
 | Link | App does |
 |---|---|
-| `exodus://chat/new` | Chat workspace, fresh empty chat, composer focused |
-| `exodus://chat/new?prompt=<text>` | Same, composer pre-filled; never sent automatically. |
-| `exodus://health?ask=<text>` | Health workspace, its ask box pre-filled; today's data attached as Health's ask attaches it (per consent); never sent automatically. |
-| `exodus://chat/<id>` | Opens that chat; an unknown id opens a chat that shows the server's error, and the drawer still lists the rest |
-| `exodus://health` | Health workspace |
+| `actovia://chat/new` | Chat workspace, fresh empty chat, composer focused |
+| `actovia://chat/new?prompt=<text>` | Same, composer pre-filled; never sent automatically. |
+| `actovia://health?ask=<text>` | Health workspace, its ask box pre-filled; today's data attached as Health's ask attaches it (per consent); never sent automatically. |
+| `actovia://chat/<id>` | Opens that chat; an unknown id opens a chat that shows the server's error, and the drawer still lists the rest |
+| `actovia://health` | Health workspace |
 
 `DeepLink` builds and parses these; anything else (unknown host/path, prompt over 500 characters, empty id) parses to `nil` and the app ignores it. Handled by `.onOpenURL` in `AppShell`; links arriving while the unlock or pairing gate is up wait until it is passed.
 
@@ -88,7 +88,7 @@ Each write that changes the snapshot calls `WidgetCenter.shared.reloadAllTimelin
 - Top line (when today's health exists): `☾ 5:52 · 1,251 steps`; otherwise the greeting moves up.
 - Greeting by period: morning (5–12), afternoon (12–18), evening (18–5) + "Want to talk?".
 - Ody on the right, static, expression from `mood`.
-- Bottom: "Ask Exodus…" capsule with a marigold send glyph. Whole widget → `chat/new`.
+- Bottom: "Ask Actovia…" capsule with a marigold send glyph. Whole widget → `chat/new`.
 
 ### 3.2 Home medium
 - Left column: health line; the health suggestion chip (→ `health?ask=…`); one general chip (→ `chat/new?prompt=…`, a fixed localized "Plan my day"); the Ask capsule (→ `chat/new`).
@@ -97,10 +97,10 @@ Each write that changes the snapshot calls `WidgetCenter.shared.reloadAllTimelin
 
 ### 3.3 Lock Screen
 - **Circular**: Ody outline (`widgetAccentable`) → `chat/new`.
-- **Rectangular**: line 1 the note's headline, line 2 sleep + steps / goal → `health`. Without today's note: "Ask Exodus" → `chat/new`.
+- **Rectangular**: line 1 the note's headline, line 2 sleep + steps / goal → `health`. Without today's note: "Ask Actovia" → `chat/new`.
 
 ### 3.4 Control
-- `AskControl`: `ControlWidgetButton` with an `OpenIntent` that opens `exodus://chat/new`; label "Ask Exodus", the SF Symbol `bubble.left.and.text.bubble.right` (a control needs a symbol; a custom Ody symbol is later polish). Usable in Control Center and on the Action button.
+- `AskControl`: `ControlWidgetButton` with an `OpenIntent` that opens `actovia://chat/new`; label "Ask Actovia", the SF Symbol `bubble.left.and.text.bubble.right` (a control needs a symbol; a custom Ody symbol is later polish). Usable in Control Center and on the Action button.
 
 ### 3.5 Rendering modes, empty state, privacy
 - Full colour: night sky. Accented / clear Home Screen modes: no sky, Ody outline and text only (`widgetRenderingMode`).
@@ -115,6 +115,6 @@ Each write that changes the snapshot calls `WidgetCenter.shared.reloadAllTimelin
 
 ## 5. Testing and verification
 - **`WidgetKitSharedTests`**: snapshot round trip and tolerant decode; store write/read, missing and corrupt file; every `DeepLink` round trip and rejections (unknown path, long prompt, empty id); timeline entries per hour, ink flip at dusk and dawn, stale health hidden; mood rules.
-- **App tests**: the writer writes/clears on chat list change, report, consent withdrawn, unpair; unchanged snapshot not rewritten; `AppShell` deep-link routing (new, pre-filled not sent, `exodus://health?ask=…` opens Health's ask box pre-filled and never sent, unknown id → the chat shows the server's error, waits behind the gates).
+- **App tests**: the writer writes/clears on chat list change, report, consent withdrawn, unpair; unchanged snapshot not rewritten; `AppShell` deep-link routing (new, pre-filled not sent, `actovia://health?ask=…` opens Health's ask box pre-filled and never sent, unknown id → the chat shows the server's error, waits behind the gates).
 - **Simulator**: a DEBUG `-WidgetGallery` page rendering every family on fixture snapshots at 07:00, 12:00, 18:30, 23:00, the empty state, dark mode and AX5; screenshots to `.superpowers/widget-*.png`. Then the real widgets on the simulator Home Screen, tapping each link.
 - **Device (user)**: add to Home and Lock Screen; chat or refresh Health and see the widget update; Control Center and Action button open a new chat.

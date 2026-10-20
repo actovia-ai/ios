@@ -25,7 +25,7 @@ struct MarkdownLanguageNameTests {
     func caseAndUnknown() {
         #expect(MarkdownLanguageName.display("TypeScript") == "TypeScript")
         #expect(MarkdownLanguageName.display(" CSS ") == "CSS")
-        #expect(MarkdownLanguageName.display("exodus-ask") == "Exodus-ask")
+        #expect(MarkdownLanguageName.display("actovia-ask") == "Actovia-ask")
         #expect(MarkdownLanguageName.display("foo") == "Foo")
         #expect(MarkdownLanguageName.display("") == "")
     }
@@ -80,7 +80,7 @@ struct CodeHighlightingTests {
 
     @Test("an unknown language falls back to plain (nil), never to an error")
     func unknownLanguage() async {
-        let text = await CodeHighlighter.shared.attributed(code: "hello world", language: "exodus-ask", scheme: .light)
+        let text = await CodeHighlighter.shared.attributed(code: "hello world", language: "actovia-ask", scheme: .light)
         #expect(text == nil)
     }
 }

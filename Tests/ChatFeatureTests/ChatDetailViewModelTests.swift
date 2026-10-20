@@ -1011,7 +1011,7 @@ struct ChatDetailViewModelTests {
         serve(history: "[]", reply: helloReply, recorder: recorder)
         let vm = Harness().makeViewModel(chatId: "from-health")
         await vm.loadHistory()
-        let text = "```exodus-health\n{\"steps\":1}\n```\n\nWhy am I tired?"
+        let text = "```actovia-health\n{\"steps\":1}\n```\n\nWhy am I tired?"
         await vm.sendInitial(text)
         await vm.sendInitial(text)
         #expect(recorder.lines.filter { $0 == "POST /api/v1/chat" }.count == 1)
@@ -1019,7 +1019,7 @@ struct ChatDetailViewModelTests {
         let body = try recorder.onlyJSONBody(forPOST: "/api/v1/chat")
         let sent = try #require(body["message"] ?? (body["messages"] as? [Any])?.last)
         let json = String(decoding: try JSONSerialization.data(withJSONObject: sent), as: UTF8.self)
-        #expect(json.contains("exodus-health"))
+        #expect(json.contains("actovia-health"))
         #expect(json.contains("Why am I tired?"))
     }
 

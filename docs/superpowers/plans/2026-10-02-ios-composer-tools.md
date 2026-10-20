@@ -8,11 +8,11 @@
 
 **Tech Stack:** Swift 6, SwiftUI (iOS 27: `Menu`, `photosPicker`, `fullScreenCover`, `glassEffect`, `.buttonStyle(.glass)`, `ViewThatFits`, `sensoryFeedback`), PhotosUI, UIKit `UIImagePickerController` through `UIViewControllerRepresentable`, ImageIO + UniformTypeIdentifiers, AVFoundation (camera permission), Swift Testing.
 
-**Spec:** `docs/superpowers/specs/2026-10-02-ios-composer-tools-design.md` (all of it). Desktop reference: `exodus/src/renderer/components/composer-tools.tsx` (`ComposerToolsButton`, `ActiveToolPills`, `useAdvancedToolToggle`, `useAvailableEffortLevels`), `file-preview.tsx` (`FilePreview`), `src/renderer/hooks/use-chat.ts:197-233` (how `content` is built), `src/main/lib/server/schemas/chat.ts:35-95` (`userContentSchema`, `postRequestBodySchema`: `advancedTools: z.array(z.enum(AdvancedTools))`, `reasoningEffort: EffortLevelSchema.optional()`).
+**Spec:** `docs/superpowers/specs/2026-10-02-ios-composer-tools-design.md` (all of it). Desktop reference: `actovia/src/renderer/components/composer-tools.tsx` (`ComposerToolsButton`, `ActiveToolPills`, `useAdvancedToolToggle`, `useAvailableEffortLevels`), `file-preview.tsx` (`FilePreview`), `src/renderer/hooks/use-chat.ts:197-233` (how `content` is built), `src/main/lib/server/schemas/chat.ts:35-95` (`userContentSchema`, `postRequestBodySchema`: `advancedTools: z.array(z.enum(AdvancedTools))`, `reasoningEffort: EffortLevelSchema.optional()`).
 
 ## Decisions (spec gaps, resolved here)
 
-1. **Strings are new `ios:chat.composer.*` keys.** The spec says to reuse the desktop's `chat:composerTools.*`, `common:composer.reasoning*` and `chat:advancedTools.deepResearch`, but none of them is in the iOS catalog (`Resources/App/Localizable.xcstrings`), and a desktop key must also stay in sync with `Vendor/exodus-locales`. So every label gets an `ios:` key (20 keys, Task 4), with the desktop's own translations wherever it has them (`Vendor/exodus-locales/*/chat.json`, `common.json`). Existing keys reused as they are: `common:action.add` (the `+`'s VoiceOver label, as the desktop's `t('action.add')`), `common:action.cancel`, `common:action.close`, `ios:settings.pairing.cameraDeniedTitle` ("Camera access is off") and `ios:settings.pairing.openSystemSettings` ("Open Settings").
+1. **Strings are new `ios:chat.composer.*` keys.** The spec says to reuse the desktop's `chat:composerTools.*`, `common:composer.reasoning*` and `chat:advancedTools.deepResearch`, but none of them is in the iOS catalog (`Resources/App/Localizable.xcstrings`), and a desktop key must also stay in sync with `Vendor/actovia-locales`. So every label gets an `ios:` key (20 keys, Task 4), with the desktop's own translations wherever it has them (`Vendor/actovia-locales/*/chat.json`, `common.json`). Existing keys reused as they are: `common:action.add` (the `+`'s VoiceOver label, as the desktop's `t('action.add')`), `common:action.cancel`, `common:action.close`, `ios:settings.pairing.cameraDeniedTitle` ("Camera access is off") and `ios:settings.pairing.openSystemSettings` ("Open Settings").
 2. **"Deep Research", title case** (the spec, and the app's existing `ios:chat.message.tool.deepResearch`), not the desktop's "Deep research". The levels read Off, Low, Medium, High, Extra high, Max (the desktop's).
 3. **Reasoning levels offered:** `off` first, then the levels in the desktop's order (`off low medium high xhigh max`) that the model's `modelSnapshot.reasoningLevels` lists. Unknown names are ignored. A model that lists nothing, or only `off`, hides the entry. (The desktop filters its list by `supported.includes`, which shows `off` only when listed; its own snapshots always list `off` — `resolve-model.ts:32-50` — so the result is the same.)
 4. **Settings unreachable:** a failed read keeps the levels and MCP tools last read; the entries are hidden only while nothing has been read (spec §7: "no levels known"). Deep Research is offered whenever `ComposerTools` exists.
@@ -28,19 +28,19 @@
 14. **How the view model reads the session's choices:** `ChatDetailView` reads `ComposerTools` from the environment and hands it to its view model (`viewModel.composerTools = composerTools`) at the top of its existing `.task`, before `onAppear` and `sendInitial`. `startTurn` reads `composerTools?.turnOptions` when the turn starts, so Regenerate uses the choices of that moment.
 15. **`TurnOptions` and `ReasoningEffort` live in Models**, so NetworkingKit can encode them; `reasoningEffort` is left out of the body when off (a nil optional is not encoded), `advancedTools` is `["Deep Research"]` or `[]`.
 16. **Haptics:** one `.selection` tick whenever the session's choices change (menu or pill), via `.sensoryFeedback` on the `+`. Picking pictures has none (the system picker closing is the feedback).
-17. **Gallery:** `-MessageGallery -MessageGalleryComposer <empty|pictures|full|reasoning|research|mcp>` shows the real composer pieces over the message gallery (new `ComposerGallery.swift`; `MessageGallery.swift` gets a three-line hunk; `ExodusApp.swift` is not touched).
+17. **Gallery:** `-MessageGallery -MessageGalleryComposer <empty|pictures|full|reasoning|research|mcp>` shows the real composer pieces over the message gallery (new `ComposerGallery.swift`; `MessageGallery.swift` gets a three-line hunk; `ActoviaApp.swift` is not touched).
 18. **Committing edits to files that hold the user's work:** through `dual_edit.py` (see Shared tooling): each edit is an exact (old, new) pair whose `old` exists both in the committed file and in the working file, so the commit is HEAD + our edits and nothing of the user's. `ChatStreamManager`'s body edit is anchored on lines that both versions share, so it does not depend on the user's uncommitted protocol-2 `Body`.
 
 ## Global Constraints
 
-- Repo `/Users/yanceyleo/Code/exodus/exodus-ios`, branch `maintenance`. Read `.superpowers/sdd/constraints.md` once; where it differs from this list (its simulator line, `git add -p`), this list wins.
+- Repo `/Users/yanceyleo/Code/actovia/actovia-ios`, branch `maintenance`. Read `.superpowers/sdd/constraints.md` once; where it differs from this list (its simulator line, `git add -p`), this list wins.
 - **Commits only through the helper**, from the repo root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>`. Never run `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore` or `git checkout -- <file>`. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, STOP and report BLOCKED (do not repair history).
-- **These files hold the user's uncommitted edits:** `Sources/ChatFeature/ChatDetailView.swift`, `Sources/ChatFeature/ChatDetailViewModel.swift`, `Sources/NetworkingKit/ChatStreamManager.swift`, `Sources/ChatFeature/MessageGallery.swift`, `Resources/App/Localizable.xcstrings` (all edited by this plan), and `Sources/App/ExodusApp.swift`, `Sources/Models/ChatMessage.swift`, `Tests/ChatFeatureTests/ChatDetailViewModelTests.swift`, `Tests/NetworkingKitTests/ChatStreamManagerTests.swift` (never touched by this plan — new test files instead). Never rewrite such a file whole and never hand-edit it: the four Swift files change only through `/tmp/composer/dual_edit.py`, the catalog only through `/tmp/composer/add_keys.py`. `Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json` is pre-staged by someone else and must stay staged and out of every commit.
+- **These files hold the user's uncommitted edits:** `Sources/ChatFeature/ChatDetailView.swift`, `Sources/ChatFeature/ChatDetailViewModel.swift`, `Sources/NetworkingKit/ChatStreamManager.swift`, `Sources/ChatFeature/MessageGallery.swift`, `Resources/App/Localizable.xcstrings` (all edited by this plan), and `Sources/App/ActoviaApp.swift`, `Sources/Models/ChatMessage.swift`, `Tests/ChatFeatureTests/ChatDetailViewModelTests.swift`, `Tests/NetworkingKitTests/ChatStreamManagerTests.swift` (never touched by this plan — new test files instead). Never rewrite such a file whole and never hand-edit it: the four Swift files change only through `/tmp/composer/dual_edit.py`, the catalog only through `/tmp/composer/add_keys.py`. `Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json` is pre-staged by someone else and must stay staged and out of every commit.
 - Run `git diff --stat` at the start and end of every task and compare: only the files your task names may have changed. A file committed whole (a `<path>` argument to the helper) must be one you created, or one whose `git diff --stat -- <file>` was empty before you started.
 - Never push.
-- Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run `tuist generate --no-open` before building**: a new Swift file under `Sources/ChatFeature` is otherwise compiled into the `ExodusIos_ChatFeature` resource target and cannot see the module's types. Run it again after the `Project.swift` edit (Task 4).
+- Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run `tuist generate --no-open` before building**: a new Swift file under `Sources/ChatFeature` is otherwise compiled into the `ActoviaIos_ChatFeature` resource target and cannot see the module's types. Run it again after the `Project.swift` edit (Task 4).
 - Native frameworks only (PhotosUI, UIKit, ImageIO, UniformTypeIdentifiers, AVFoundation); no new packages.
-- Builds and tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44` (iPhone 18 Pro Max, iOS 27), `-derivedDataPath /tmp/composer-dd`. Tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme <ChatFeature|NetworkingKit|Models> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd [-only-testing:<Target>Tests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
+- Builds and tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44` (iPhone 18 Pro Max, iOS 27), `-derivedDataPath /tmp/composer-dd`. Tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme <ChatFeature|NetworkingKit|Models> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd [-only-testing:<Target>Tests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
 - `python3 scripts/l10n.py audit 2>&1 | tail -1` prints `0 error(s)` at the end of every task (warnings about keys not referenced yet are fine until Task 6). Never run `scripts/l10n.py add`, `fill` or `save`: they rewrite the whole catalog and would drag the user's edits into a commit.
 - Strings: new keys are `ios:chat.composer.<element>`, all ten languages (en, zh-Hant, zh-HK, ja, ko, fr, de, es, pt-BR, it) from Task 4. Views use the key literal (`Text("ios:chat.composer.photoLibrary")`); code uses `String(localized: "…", defaultValue: "<exact English>", comment: "…")` whose `defaultValue` equals the catalog's English exactly. Never concatenate a sentence; never pass a ternary of two string literals to a text initializer; user data and numbers go through `Text(verbatim:)`.
 - Wire values, verbatim: `advancedTools` holds `"Deep Research"` (desktop `AdvancedTools.DeepResearch`); `reasoningEffort` is one of `off low medium high xhigh max` (desktop `EffortLevelSchema`) and is left out when `off`; an image block is `{"type":"image","mimeType":…,"data":"data:<mime>;base64,…"}`.
@@ -281,10 +281,10 @@ struct ChatRequestOptionsTests {
 - [ ] **Step 2: Run them to see them fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat                    # note the user's files before you start
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ModelsTests/TurnOptionsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ModelsTests/TurnOptionsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'TurnOptions' in scope` (and `ReasoningEffort`), `TEST FAILED`.
 
@@ -326,7 +326,7 @@ public struct TurnOptions: Equatable, Sendable {
 - [ ] **Step 4: Run the Models tests**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ModelsTests/TurnOptionsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ModelsTests/TurnOptionsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `Test run with 4 tests passed`, `TEST SUCCEEDED`.
 
@@ -405,12 +405,12 @@ Expected: the user's protocol-2 lines plus ours; in the working file the call no
 - [ ] **Step 7: Run the NetworkingKit tests (new and existing)**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `TEST SUCCEEDED`, no `✘`; `-only-testing:NetworkingKitTests/ChatRequestOptionsTests` alone reports 4 tests. Also run the ChatFeature suite once (the existing `ChatDetailViewModelTests.sendMessageSendsTheQuestion` pins the body keys `["id", "message", "advancedTools", "protocol"]`, which must still hold because `reasoningEffort` is left out when off):
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ChatDetailViewModelTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ChatDetailViewModelTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `TEST SUCCEEDED`.
 
@@ -644,7 +644,7 @@ struct ComposerContentTests {
 ```bash
 git diff --stat
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerPictureTests -only-testing:ChatFeatureTests/ComposerAttachmentsTests -only-testing:ChatFeatureTests/ComposerContentTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerPictureTests -only-testing:ChatFeatureTests/ComposerAttachmentsTests -only-testing:ChatFeatureTests/ComposerContentTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'ComposerPicture' in scope`, `TEST FAILED`.
 
@@ -780,7 +780,7 @@ enum ComposerContent {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerPictureTests -only-testing:ChatFeatureTests/ComposerAttachmentsTests -only-testing:ChatFeatureTests/ComposerContentTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerPictureTests -only-testing:ChatFeatureTests/ComposerAttachmentsTests -only-testing:ChatFeatureTests/ComposerContentTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `Test run with 16 tests passed`, `TEST SUCCEEDED`.
 
@@ -960,7 +960,7 @@ struct ComposerToolsTests {
 ```bash
 git diff --stat
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'ComposerTools' in scope`, `TEST FAILED`.
 
@@ -1070,7 +1070,7 @@ extension ComposerToolsSource {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `Test run with 12 tests passed`, `TEST SUCCEEDED`.
 
@@ -1120,7 +1120,7 @@ git show --stat HEAD
 | `ios:chat.composer.turnOff` | Turns it off. |
 | `ios:chat.composer.unreadableOne` | A picture couldn’t be read and was left out. |
 | `ios:chat.composer.unreadableSome` | %lld pictures couldn’t be read and were left out. |
-| `ios:chat.composer.cameraDeniedMessage` | Allow Exodus to use the camera in Settings to take a photo for this chat. |
+| `ios:chat.composer.cameraDeniedMessage` | Allow Actovia to use the camera in Settings to take a photo for this chat. |
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1171,7 +1171,7 @@ struct ComposerTextTests {
 git diff --stat                                        # note the catalog's foreign edits before you start
 git diff --stat -- Resources/App/InfoPlist.xcstrings Project.swift   # must print nothing: both are committed whole
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'ComposerText' in scope`, `TEST FAILED`.
 
@@ -1237,8 +1237,8 @@ KEYS = [
      {"en": "A picture couldn’t be read and was left out.", "de": "Ein Bild konnte nicht gelesen werden und wurde weggelassen.", "es": "No se pudo leer una imagen y se ha omitido.", "fr": "Une image n’a pas pu être lue et a été ignorée.", "it": "Non è stato possibile leggere un’immagine, che è stata esclusa.", "ja": "読み込めない画像が1枚あったため、除外しました。", "ko": "사진 1장을 읽을 수 없어 제외했습니다.", "pt-BR": "Não foi possível ler uma imagem, e ela foi deixada de fora.", "zh-HK": "有 1 張相片無法讀取，已略過。", "zh-Hant": "有 1 張照片無法讀取，已略過。"}),
     ("ios:chat.composer.unreadableSome", "Banner over the composer: several pictures just picked could not be read, so they were not added. %lld is how many (2 or more).",
      {"en": "%lld pictures couldn’t be read and were left out.", "de": "%lld Bilder konnten nicht gelesen werden und wurden weggelassen.", "es": "No se pudieron leer %lld imágenes y se han omitido.", "fr": "%lld images n’ont pas pu être lues et ont été ignorées.", "it": "Non è stato possibile leggere %lld immagini, che sono state escluse.", "ja": "読み込めない画像が%lld枚あったため、除外しました。", "ko": "사진 %lld장을 읽을 수 없어 제외했습니다.", "pt-BR": "Não foi possível ler %lld imagens, e elas foram deixadas de fora.", "zh-HK": "有 %lld 張相片無法讀取，已略過。", "zh-Hant": "有 %lld 張照片無法讀取，已略過。"}),
-    ("ios:chat.composer.cameraDeniedMessage", "Alert when Take Photo is chosen but camera access was refused. Exodus is the app's name and stays as is.",
-     {"en": "Allow Exodus to use the camera in Settings to take a photo for this chat.", "de": "Erlauben Sie Exodus in den Einstellungen den Kamerazugriff, um ein Foto für diesen Chat aufzunehmen.", "es": "Permite que Exodus use la cámara en Ajustes para hacer una foto para este chat.", "fr": "Autorisez Exodus à utiliser l’appareil photo dans les Réglages pour prendre une photo pour cette discussion.", "it": "Consenti a Exodus di usare la fotocamera nelle Impostazioni per scattare una foto per questa chat.", "ja": "このチャット用に写真を撮るには、「設定」で Exodus にカメラの使用を許可してください。", "ko": "이 채팅에 사진을 찍으려면 설정에서 Exodus의 카메라 사용을 허용하세요.", "pt-BR": "Permita que o Exodus use a câmera nos Ajustes para tirar uma foto para este chat.", "zh-HK": "請在「設定」中允許 Exodus 使用相機，以便為這個對話影相。", "zh-Hant": "請在「設定」中允許 Exodus 使用相機，以便為這個聊天拍照。"}),
+    ("ios:chat.composer.cameraDeniedMessage", "Alert when Take Photo is chosen but camera access was refused. Actovia is the app's name and stays as is.",
+     {"en": "Allow Actovia to use the camera in Settings to take a photo for this chat.", "de": "Erlauben Sie Actovia in den Einstellungen den Kamerazugriff, um ein Foto für diesen Chat aufzunehmen.", "es": "Permite que Actovia use la cámara en Ajustes para hacer una foto para este chat.", "fr": "Autorisez Actovia à utiliser l’appareil photo dans les Réglages pour prendre une photo pour cette discussion.", "it": "Consenti a Actovia di usare la fotocamera nelle Impostazioni per scattare una foto per questa chat.", "ja": "このチャット用に写真を撮るには、「設定」で Actovia にカメラの使用を許可してください。", "ko": "이 채팅에 사진을 찍으려면 설정에서 Actovia의 카메라 사용을 허용하세요.", "pt-BR": "Permita que o Actovia use a câmera nos Ajustes para tirar uma foto para este chat.", "zh-HK": "請在「設定」中允許 Actovia 使用相機，以便為這個對話影相。", "zh-Hant": "請在「設定」中允許 Actovia 使用相機，以便為這個聊天拍照。"}),
 ]
 
 
@@ -1274,7 +1274,7 @@ print("added", len(KEYS), "keys to", path)
 - [ ] **Step 4: Apply it to the working catalog and to a copy of the committed one, and verify**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git show HEAD:Resources/App/Localizable.xcstrings > /tmp/composer/head.xcstrings
 cp /tmp/composer/head.xcstrings /tmp/composer/mine.xcstrings
 python3 /tmp/composer/add_keys.py /tmp/composer/mine.xcstrings
@@ -1364,7 +1364,7 @@ enum ComposerText {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `Test run with 5 tests passed`; audit `0 error(s)` (the 11 keys only views use show as "not referenced" warnings until Task 6).
@@ -1374,13 +1374,13 @@ Expected: `Test run with 5 tests passed`; audit `0 error(s)` (the 11 keys only v
 In `Project.swift` (`:62-63`), replace
 
 ```swift
-                        "Exodus uses the camera to scan the pairing code shown on your computer.",
+                        "Actovia uses the camera to scan the pairing code shown on your computer.",
 ```
 
 with
 
 ```swift
-                        "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
+                        "Actovia uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
 ```
 
 Then set the localized text (the file is clean; this load-and-save keeps Xcode's formatting — it round-trips byte for byte):
@@ -1391,18 +1391,18 @@ import json
 path = 'Resources/App/InfoPlist.xcstrings'
 catalog = json.load(open(path, encoding='utf-8'))
 entry = catalog['strings']['NSCameraUsageDescription']
-entry['comment'] = "Camera permission prompt: scanning the pairing code, and taking photos for a chat. Exodus is the app's name and stays as is."
+entry['comment'] = "Camera permission prompt: scanning the pairing code, and taking photos for a chat. Actovia is the app's name and stays as is."
 text = {
-    'en': "Exodus uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
-    'de': "Exodus verwendet die Kamera, um den auf Ihrem Computer angezeigten Kopplungscode zu scannen und Fotos aufzunehmen, die Sie einem Chat hinzufügen.",
-    'es': "Exodus usa la cámara para escanear el código de vinculación que aparece en tu ordenador y para hacer fotos que añades a un chat.",
-    'fr': "Exodus utilise l’appareil photo pour scanner le code de jumelage affiché sur votre ordinateur et pour prendre les photos que vous ajoutez à une discussion.",
-    'it': "Exodus usa la fotocamera per scansionare il codice di abbinamento mostrato sul tuo computer e per scattare le foto che aggiungi a una chat.",
-    'ja': "Exodus はコンピュータに表示されたペアリングコードのスキャンと、チャットに追加する写真の撮影にカメラを使用します。",
-    'ko': "Exodus는 컴퓨터에 표시된 페어링 코드를 스캔하고 채팅에 추가할 사진을 찍기 위해 카메라를 사용합니다.",
-    'pt-BR': "O Exodus usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat.",
-    'zh-HK': "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。",
-    'zh-Hant': "Exodus 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入聊天的照片。",
+    'en': "Actovia uses the camera to scan the pairing code shown on your computer, and to take photos you add to a chat.",
+    'de': "Actovia verwendet die Kamera, um den auf Ihrem Computer angezeigten Kopplungscode zu scannen und Fotos aufzunehmen, die Sie einem Chat hinzufügen.",
+    'es': "Actovia usa la cámara para escanear el código de vinculación que aparece en tu ordenador y para hacer fotos que añades a un chat.",
+    'fr': "Actovia utilise l’appareil photo pour scanner le code de jumelage affiché sur votre ordinateur et pour prendre les photos que vous ajoutez à une discussion.",
+    'it': "Actovia usa la fotocamera per scansionare il codice di abbinamento mostrato sul tuo computer e per scattare le foto che aggiungi a una chat.",
+    'ja': "Actovia はコンピュータに表示されたペアリングコードのスキャンと、チャットに追加する写真の撮影にカメラを使用します。",
+    'ko': "Actovia는 컴퓨터에 표시된 페어링 코드를 스캔하고 채팅에 추가할 사진을 찍기 위해 카메라를 사용합니다.",
+    'pt-BR': "O Actovia usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat.",
+    'zh-HK': "Actovia 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入對話的相片。",
+    'zh-Hant': "Actovia 使用相機掃描電腦上顯示的配對碼，以及拍攝你加入聊天的照片。",
 }
 assert set(entry['localizations']) == set(text)
 for lang, value in text.items():
@@ -1412,8 +1412,8 @@ open(path, 'w', encoding='utf-8').write(
 PY
 git diff --stat -- Resources/App/InfoPlist.xcstrings Project.swift      # InfoPlist ~11 lines, Project.swift 1 line
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-plutil -p /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Exodus.app/Info.plist | grep NSCameraUsageDescription
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+plutil -p /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Actovia.app/Info.plist | grep NSCameraUsageDescription
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `** BUILD SUCCEEDED **`; the plist line shows the new English; `0 error(s)`.
@@ -1685,7 +1685,7 @@ struct ComposerSendTests {
 ```bash
 git diff --stat
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerSendTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerSendTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: value of type 'ChatDetailViewModel' has no member 'attachments'` (and `composerTools`, `addPictures`, `removePicture`), `TEST FAILED`.
 
@@ -1783,8 +1783,8 @@ python3 /tmp/composer/dual_edit.py apply /tmp/composer/vm_edits.py
 - [ ] **Step 5: Run the new tests and the whole ChatFeature suite**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerSendTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerSendTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `Test run with 10 tests passed`; then the whole suite `TEST SUCCEEDED` with no `✘`.
 
@@ -1879,7 +1879,7 @@ struct ComposerToolsViewsTests {
 ```bash
 git diff --stat
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsViewsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsViewsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'CameraAccess' in scope` (and `ComposerToolPills`, `McpToolsSheet`), `TEST FAILED`.
 
@@ -2288,8 +2288,8 @@ struct McpToolsSheet: View {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsViewsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd -only-testing:ChatFeatureTests/ComposerToolsViewsTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 python3 scripts/l10n.py audit 2>&1 | grep "ios:chat.composer" || echo "every composer key is referenced"
 ```
@@ -2454,8 +2454,8 @@ Before `    private func setSidebar(open: Bool) {` (`:213`) insert:
 - [ ] **Step 3: Build the app and run the ChatFeature suite**
 
 ```bash
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `** BUILD SUCCEEDED **`; `TEST SUCCEEDED` with no `✘`; `0 error(s)`.
@@ -2465,8 +2465,8 @@ Expected: `** BUILD SUCCEEDED **`; `TEST SUCCEEDED` with no `✘`; `0 error(s)`.
 With the desktop app running on this Mac (the Simulator reaches it at the manual address `http://localhost:60223`):
 
 ```bash
-xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch 992425B7-F06B-4CE5-9288-95C71C2F1D44 app.yancey.exodus.exodus-ios
+xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch 992425B7-F06B-4CE5-9288-95C71C2F1D44 app.yancey.actovia.actovia-ios
 ```
 Check: the `+` sits left of the field, as far from the composer's edge as Send on the right; it opens Photo Library (no Take Photo on the Simulator), Reasoning with the model's levels and the chosen one beside it, Deep Research, and MCP Tools with its count when the desktop has MCP servers on; choosing High shows "Reasoning: High" over the field and tints the `+`; turning Deep Research on replaces it with "Deep Research"; Photo Library → two pictures → two squares with ✕; Send with nothing typed sends them and the question shows its pictures above the bubble. If the desktop is not running, Task 8's gallery covers the visuals; note that here.
 
@@ -2649,7 +2649,7 @@ Write `/tmp/composer/shots.sh`:
 # Light, dark, AX and one tone's screenshots of the composer's gallery states. Run from the repo root.
 set -euo pipefail
 SIM=992425B7-F06B-4CE5-9288-95C71C2F1D44
-APP=app.yancey.exodus.exodus-ios
+APP=app.yancey.actovia.actovia-ios
 OUT=.superpowers/composer
 mkdir -p "$OUT"
 shoot() {
@@ -2672,13 +2672,13 @@ echo done
 ```
 
 ```bash
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Exodus.app
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/composer-dd/Build/Products/Debug-iphonesimulator/Actovia.app
 bash /tmp/composer/shots.sh
 ```
 
 Expected: `** BUILD SUCCEEDED **`, `done`. Read every PNG in `.superpowers/composer/` and check against spec §2, §3 and §6:
-- `empty`: a glass `+` circle left of "Ask Exodus", as far from the composer's left edge as Send is from the right; not tinted.
+- `empty`: a glass `+` circle left of "Ask Actovia", as far from the composer's left edge as Send is from the right; not tinted.
 - `pictures`: three 56 pt rounded squares above the field, orange/indigo/pink in that order, each with a dark ✕ disc at its top-right corner, not clipped.
 - `full`: ten squares scrolling sideways (the row runs off the right edge), then the "Reasoning: High" pill, then the field; the `+` tinted.
 - `reasoning`: the pill alone, ink-coloured on a light tone fill, brain glyph, ✕; `tone-reasoning`: the same in violet.
@@ -2703,7 +2703,7 @@ What the Simulator cannot show (it has no camera, and its Photos holds a handful
       both come back.
 - [ ] `+` → Take Photo, first time: the system asks for the camera, and its text mentions taking photos for a chat.
       Allow → the camera opens; take a photo → "Use Photo" → a square appears. Cancel leaves nothing.
-- [ ] Refuse camera access (or turn it off in Settings › Exodus), then Take Photo: "Camera access is off" with Open
+- [ ] Refuse camera access (or turn it off in Settings › Actovia), then Take Photo: "Camera access is off" with Open
       Settings, which opens the app's page in Settings.
 - [ ] Send a pictures-only message (nothing typed): Send is enabled; the question shows its pictures above an absent
       bubble; the answer describes them. On the desktop the same chat shows the pictures on the question.
@@ -2732,9 +2732,9 @@ What the Simulator cannot show (it has no camera, and its Photos holds a handful
 - [ ] **Step 5: Final checks and commit**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/composer-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1          # 0 error(s)
 git diff --stat
 python3 /tmp/composer/dual_edit.py patch /tmp/composer/gallery_edits.py /tmp/composer/gallery.patch   # PATCH-OK

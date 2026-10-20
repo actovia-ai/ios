@@ -2,7 +2,7 @@ import Foundation
 
 /// The App Group the app and its widgets share.
 public enum WidgetGroup {
-    public static let identifier = "group.app.yancey.exodus"
+    public static let identifier = "group.app.yancey.actovia"
 }
 
 /// Ody's face on a widget, decided by the app from the day.

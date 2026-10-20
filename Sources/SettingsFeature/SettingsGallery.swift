@@ -111,10 +111,10 @@ private final class GalleryURLProtocol: URLProtocol, @unchecked Sendable {
 
     private static let memoryJSON = #"""
         [{"id":"m1","section":"profile","key":"Setup","summary":"MacBook Pro, iPhone 17 Pro, works in Swift and TypeScript",
-          "details":["Runs Exodus on the Mac","Prefers dark mode"],"isActive":true,"updatedAt":"2026-09-23T10:00:00.000Z"},
+          "details":["Runs Actovia on the Mac","Prefers dark mode"],"isActive":true,"updatedAt":"2026-09-23T10:00:00.000Z"},
          {"id":"m2","section":"topic","key":"Classical Music","summary":"Listens to Bach and Arvo Pärt while working",
           "details":["Owns the Glenn Gould Goldberg recordings"],"isActive":true},
-         {"id":"m3","section":"topic","key":"Exodus iOS","summary":"","details":[],"isActive":true},
+         {"id":"m3","section":"topic","key":"Actovia iOS","summary":"","details":[],"isActive":true},
          {"id":"m4","section":"person","key":"Ada","summary":"Sister; lives in Lisbon","details":[],"isActive":true},
          {"id":"m5","section":"topic","key":"Marathon training","summary":"Paused after a knee injury",
           "details":[],"isActive":false}]
@@ -228,7 +228,7 @@ private final class GalleryURLProtocol: URLProtocol, @unchecked Sendable {
         case ("POST", "/api/v1/backup/now"):
             Thread.sleep(forTimeInterval: 3)
             if failing { return (500, failure) }
-            return (200, #"{"filePath":"/Users/me/.exodus/backups/2026-09-24.tar.gz"}"#)
+            return (200, #"{"filePath":"/Users/me/.actovia/backups/2026-09-24.tar.gz"}"#)
         case (_, let other) where other.hasPrefix("/api/v1/skills/") || other.hasPrefix("/api/v1/mcp/"):
             return (200, #"{"success":true}"#)
         default:

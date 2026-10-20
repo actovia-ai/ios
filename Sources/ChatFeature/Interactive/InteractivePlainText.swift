@@ -20,7 +20,7 @@ enum InteractivePlainText {
         }
     }
 
-    /// The reply with its block's fence — the lines from ```` ```exodus-… ```` to the closing ```` ``` ```` — replaced by
+    /// The reply with its block's fence — the lines from ```` ```actovia-… ```` to the closing ```` ``` ```` — replaced by
     /// the block's words; the reply as it was (line ends made `\n`) when it holds no such block.
     static func replacingBlock(in markdown: String) -> String {
         let normalized = JSText.string(JSText.unixLines(markdown))

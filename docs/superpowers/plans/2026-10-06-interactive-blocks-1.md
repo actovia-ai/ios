@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** When the model needs the user's choice or go-ahead it asks with a native control inside its reply — a questionnaire (`exodus-ask`) or a confirmation (`exodus-confirm`), each with room to type — on the desktop and on the phone, and the user's answer goes back as a plain-text message (a leading `exodus-answer` fence, then the answer in words) that both clients draw as a compact card and that freezes the block it answers.
+**Goal:** When the model needs the user's choice or go-ahead it asks with a native control inside its reply — a questionnaire (`actovia-ask`) or a confirmation (`actovia-confirm`), each with room to type — on the desktop and on the phone, and the user's answer goes back as a plain-text message (a leading `actovia-answer` fence, then the answer in words) that both clients draw as a compact card and that freezes the block it answers.
 
-**Architecture:** One mechanism for both blocks: a fenced code block whose info string names it and whose body is one JSON object. Pure, tested rules come first and exist twice, held to the same vectors: the desktop's `packages/shared/src/types/interactive.ts` (zod limits, `findInteractiveBlock`) and `packages/shared/src/utils/interactive-answer.ts` (`composeAskAnswer`, `composeConfirmAnswer`, `splitAnswer`, `readPicks`), and exodus-ios's `InteractiveBlock` / `InteractiveFence` / `InteractiveAnswer` in `Sources/ChatFeature/Interactive/`. The desktop's chat system prompt gains one short section; its renderer draws a turn's block from `<pre>` in `markdown.tsx` through two React contexts (the turn's block, the chat's answers + send), the questionnaire on the user's shadcn `Questionnaire`; the user bubble draws an answer as a card. The phone's MarkdownKit gains a host hook for fenced blocks (`markdownFencedBlocks`), set per turn by `AssistantTurnView`; the block views send through a new `ChatDetailViewModel.sendText(_:)` that bypasses the composer; `UserBubble` draws the answer card. Nothing is stored: a block is frozen when the chat holds a later user message whose answer fence names the block's run.
+**Architecture:** One mechanism for both blocks: a fenced code block whose info string names it and whose body is one JSON object. Pure, tested rules come first and exist twice, held to the same vectors: the desktop's `packages/shared/src/types/interactive.ts` (zod limits, `findInteractiveBlock`) and `packages/shared/src/utils/interactive-answer.ts` (`composeAskAnswer`, `composeConfirmAnswer`, `splitAnswer`, `readPicks`), and actovia-ios's `InteractiveBlock` / `InteractiveFence` / `InteractiveAnswer` in `Sources/ChatFeature/Interactive/`. The desktop's chat system prompt gains one short section; its renderer draws a turn's block from `<pre>` in `markdown.tsx` through two React contexts (the turn's block, the chat's answers + send), the questionnaire on the user's shadcn `Questionnaire`; the user bubble draws an answer as a card. The phone's MarkdownKit gains a host hook for fenced blocks (`markdownFencedBlocks`), set per turn by `AssistantTurnView`; the block views send through a new `ChatDetailViewModel.sendText(_:)` that bypasses the composer; `UserBubble` draws the answer card. Nothing is stored: a block is frozen when the chat holds a later user message whose answer fence names the block's run.
 
 **Tech Stack:** Desktop: TypeScript, React 19, react-markdown, zod 4, `@shadcn/react` Questionnaire (via the user's `ui/questionnaire.tsx`), i18next, vitest (+ happy-dom), bun. iOS: Swift 6, SwiftUI (iOS 27: `sensoryFeedback`, `AnyLayout`, `AccessibilityNotification`), swift-markdown (via MarkdownKit), Foundation, Swift Testing.
 
-**Spec:** `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md` (exodus-ios) — §2 the wire (blocks, answer, frozen state), §3 the prompt, §4 the desktop renderer, §5 the iOS renderer, §6 edge cases, §7 testing. Phase 2 (§8) is out of scope. Style and tooling follow `docs/superpowers/plans/2026-10-02-health-trends-2-period-reports.md`.
+**Spec:** `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md` (actovia-ios) — §2 the wire (blocks, answer, frozen state), §3 the prompt, §4 the desktop renderer, §5 the iOS renderer, §6 edge cases, §7 testing. Phase 2 (§8) is out of scope. Style and tooling follow `docs/superpowers/plans/2026-10-02-health-trends-2-period-reports.md`.
 
 ## Decisions (spec gaps, resolved here)
 
@@ -16,29 +16,29 @@
 2. **The answer fence carries `title` (both blocks) and `decision` (`approve`/`reject`, confirmation only)** besides `block` and `ref`. The card needs the block's title (the questionnaire's title is not in its lines, and the block's message may sit on a history page not loaded yet), and a frozen confirmation needs its decision without reading localized words. Keys are written in sorted order — `block`, `decision`, `ref`, `title` — so `JSON.stringify` and Swift's `JSONEncoder(.sortedKeys, .withoutEscapingSlashes)` write the same bytes.
 3. **The answer's words** come from `AnswerLabels { other, addition, note, approved, rejected }` in the answering client's language (desktop `chat:interactive.answer.*` + `interactive.approved/rejected`; iOS `ios:chat.block.answer.*` + `approved/rejected`). Questionnaire: `**<question>** <picks>` with picks **in the options' order** (not tap order) joined by `", "`; Other with text → `<other>: <text>`, Other picked with nothing typed → the word alone; nothing picked → `—`; the closing line `**<addition>:** <note>` only when typed. Confirmation: `**<title>** <approved|rejected>`, then `**<note>:** <note>` when typed. Typed text is made one line (`\s*[\r\n]+\s*` → one space, trimmed).
 4. **Block limits** (zod and the Swift decoder, the same vectors): the questionnaire's `title` is **required** (1–200; the spec's example always has one); optional labels may be absent, `null` or `""` (treated as absent; `null` counts as absent so the two decoders agree); unknown keys are ignored; option texts must be **distinct** within a question (the Questionnaire primitive keys choices by value); lengths are **UTF-16 units** on both sides (zod counts JavaScript string length).
-5. **Which fence is the block:** only the first `exodus-ask` / `exodus-confirm` fence of a **turn** (all its text blocks, joined as `body`) counts, and only when it opens a line at the left margin (` ``` ` + name, trailing spaces allowed), is outside any other fence (backtick or tilde, CommonMark lengths), and is closed by its own line of ` ``` `. If that first fence does not validate, the turn has no block; a second fence is code either way. A fence still open (a reply streaming) is code until it closes.
+5. **Which fence is the block:** only the first `actovia-ask` / `actovia-confirm` fence of a **turn** (all its text blocks, joined as `body`) counts, and only when it opens a line at the left margin (` ``` ` + name, trailing spaces allowed), is outside any other fence (backtick or tilde, CommonMark lengths), and is closed by its own line of ` ``` `. If that first fence does not validate, the turn has no block; a second fence is code either way. A fence still open (a reply streaming) is code until it closes.
 6. **Frozen picks** are read back from the answer's lines without labels (`readPicks` / `InteractiveAnswer.picks`): for each question, the line that starts with `**<question>** `, then options matched greedily, longest first, separated by `", "`; anything left over is an Other answer. So a block answered on the phone in Japanese freezes correctly on a desktop in English.
 7. **Desktop questionnaire = the primitive's stepper:** one question at a time with Previous / Skip / Next and Submit on the last; our own progress line ("Question 1 of 2", `item` controlled — the primitive's `Progress` text is English-only); a blank answer is **Skip** (the primitive's validation rule; spec §6 "submit with blanks" holds through Skip, Skip on the last question submits); the closing note is a textarea shown on the last step, outside the items. A frozen questionnaire is a static summary (the primitive hides disabled items).
 8. **A failed send:** both clients add the user's message before the stream answers, so the block freezes on the answer even when the send fails; the retry is the run's error line and Regenerate, which re-sends the last user message (the answer). This replaces spec §6's "the answer stays in the block's fields".
 9. **The desktop chat route is unchanged:** the fence reaches the model as the user's text; only the system prompt teaches it. The prompt section lives in a new file (`src/main/lib/ai/interactive-blocks-prompt.ts`) and is inserted into `getSystemPrompt` before `<response_format>`; the confirmation is also how the existing hard stops ask. Deep Research (`deepResearchBootPrompt`), titles and Health have their own prompts and never get it.
 10. **iOS MarkdownKit hook:** MarkdownKit cannot depend on ChatFeature, so it gains `MarkdownFencedBlocks` (languages + a `@MainActor @Sendable` draw closure returning `AnyView?`) as an environment value read only by code blocks; `AssistantTurnView` sets it per turn. `AssistantTurnView`'s equality adds `answered` and compares `canAnswer` only when the turn holds an unanswered block (checked when `canAnswer` changes — a turn starting or ending — never per streamed frame). A compared answer's column (`CompareViews`) is given no answer path: its block is drawn but cannot be sent until one answer is kept.
 11. **iOS send path:** `ChatDetailViewModel.sendText(_:)` (+ `canAnswer`, the composer's rule without its text) starts a turn with the given text; the composer's text, quote and pictures stay untouched.
-12. **Desktop code header:** `markdown.tsx`'s language label regex becomes `/language-([\w-]+)/`, so an `exodus-ask` fence that falls back to code is labelled `exodus-ask`, not `exodus`.
+12. **Desktop code header:** `markdown.tsx`'s language label regex becomes `/language-([\w-]+)/`, so an `actovia-ask` fence that falls back to code is labelled `actovia-ask`, not `actovia`.
 13. **Haptics:** `.selection` on each option tap, `.success` on Submit/Approve/Reject (`.sensoryFeedback`); the chat screen's existing light send tap also plays (it is the send's).
 14. **Gallery fixtures are English**; the gallery gains `-MessageGallerySection ask|confirm|answered` (names, so the screenshot script does not depend on how many runs come before).
 15. **The user's uncommitted Questionnaire:** `src/renderer/components/ui/questionnaire.tsx` (untracked), `ui/button.tsx` and the `@shadcn/react` / `cn` dependencies in `package.json` / `bun.lock` are the user's work in progress. Task 3 imports `@/components/ui/questionnaire` and never edits, stages or commits those files; the desktop commits therefore build only together with them (the pre-commit typecheck runs on the working tree, where they exist).
 
 ## Global Constraints
 
-- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/exodus/exodus-ios`, desktop `/Users/yanceyleo/Code/exodus/exodus`. Read `exodus-ios/.superpowers/sdd/constraints.md` once; where it differs from this list (simulator, `git add -p`), this list wins.
-- **Commits only through each repo's helper**, from that repo's root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>` (iOS: `/Users/yanceyleo/Code/exodus/exodus-ios/.superpowers/sdd/commit-mine.sh`; desktop: `/Users/yanceyleo/Code/exodus/exodus/.superpowers/sdd/commit-mine.sh`, whose commit runs the desktop's pre-commit hook: `lint-staged` (`oxlint` + `oxfmt` on staged `*.{ts,tsx}`, `oxfmt` on staged `*.json`) → `bun run typecheck` → `bun run i18n:check`). Never run `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore`, `git checkout -- <file>`, and never `--no-verify`. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, or if the hook fails on files that are not yours, STOP and report BLOCKED (do not repair history, do not touch the user's files).
+- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/actovia/actovia-ios`, desktop `/Users/yanceyleo/Code/actovia/actovia`. Read `actovia-ios/.superpowers/sdd/constraints.md` once; where it differs from this list (simulator, `git add -p`), this list wins.
+- **Commits only through each repo's helper**, from that repo's root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>` (iOS: `/Users/yanceyleo/Code/actovia/actovia-ios/.superpowers/sdd/commit-mine.sh`; desktop: `/Users/yanceyleo/Code/actovia/actovia/.superpowers/sdd/commit-mine.sh`, whose commit runs the desktop's pre-commit hook: `lint-staged` (`oxlint` + `oxfmt` on staged `*.{ts,tsx}`, `oxfmt` on staged `*.json`) → `bun run typecheck` → `bun run i18n:check`). Never run `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore`, `git checkout -- <file>`, and never `--no-verify`. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, or if the hook fails on files that are not yours, STOP and report BLOCKED (do not repair history, do not touch the user's files).
 - **The desktop formatter and the user's edits:** `lint-staged` formats the staged (HEAD-side) version of every committed file and then puts the user's unstaged edits back; when it has to change a patched file, the user's dirty file can come back garbled. So **every `--patch` you commit on the desktop must already be formatted**: `/tmp/blocks/dual_edit.py fmt EDITS.py` (and `desktop_strings.py check`) runs `bunx oxfmt` on the HEAD-side result and must print `FORMAT-OK`; if it prints a diff, change the `new` text in `EDITS.py` to the `+` lines it shows and run it again. Files you create or that were clean: `bunx oxlint <files> && bunx oxfmt <files>` before committing, so the hook changes nothing.
 - **Both trees hold the user's uncommitted work.** Files this plan edits that were dirty on 2026-10-06 (edit them ONLY through `/tmp/blocks/dual_edit.py`, `/tmp/blocks/desktop_strings.py` or `/tmp/blocks/add_keys.py`, and commit their patch): desktop `src/main/lib/ai/prompts.ts`, `src/renderer/components/chat.tsx`, `packages/shared/src/i18n/locales/{de,en,es,fr,it,ja,ko,pt-BR,zh-Hant-HK,zh-Hant-TW}/chat.json`; iOS `Sources/ChatFeature/ChatDetailViewModel.swift`, `Sources/ChatFeature/ChatDetailView.swift`, `Sources/ChatFeature/MessageGallery.swift`, `Resources/App/Localizable.xcstrings`. Never touched: every other dirty path (desktop ~176, iOS ~77), the user's `src/renderer/components/ui/questionnaire.tsx`, `ui/button.tsx`, `package.json`, `bun.lock` (Decision 15), and iOS `Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json`, pre-staged by someone else (must stay staged and out of every commit). Every other file this plan edits was clean on 2026-10-06 (iOS HEAD `70bbf09`, desktop HEAD `e7927e05`). Run `git diff --stat` at the start and end of every task: only the files your task names may change. **Before editing any other file, run `git diff --stat -- <file>`; if it is no longer empty, edit it only through `/tmp/blocks/dual_edit.py` and commit its patch.**
 - **Tool approvals are untouched:** no task edits `approval_required`, `decideApproval`, `run-approvals.tsx`, `RunApprovals*.swift` or anything that reads them. A confirmation block is the model asking; a tool approval stays the kernel's gate.
 - **The vectors are the contract:** the test vectors in Task 1 and Task 5 are the same text in both repos (copied verbatim). A change to the wire changes both files and both implementations.
 - iOS: Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run `tuist generate --no-open` before building.**
-- iOS builds/tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/blocks-dd`. Tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme <ChatFeature|MarkdownKit> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd [-only-testing:<ChatFeatureTests|MarkdownKitTests>/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
-- Desktop tests: from `/Users/yanceyleo/Code/exodus/exodus`, `bunx vitest run <path>`. Typecheck before a desktop commit: `bun run typecheck:shared`, `bun run typecheck:node`, `bun run typecheck:web` (each that covers your files).
+- iOS builds/tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/blocks-dd`. Tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme <ChatFeature|MarkdownKit> -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd [-only-testing:<ChatFeatureTests|MarkdownKitTests>/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
+- Desktop tests: from `/Users/yanceyleo/Code/actovia/actovia`, `bunx vitest run <path>`. Typecheck before a desktop commit: `bun run typecheck:shared`, `bun run typecheck:node`, `bun run typecheck:web` (each that covers your files).
 - iOS strings: new keys `ios:chat.block.<element>`, all ten languages (en, zh-Hant, zh-HK, ja, ko, fr, de, es, pt-BR, it), inserted **textually** with `/tmp/blocks/add_keys.py` (Task 6). Never run `scripts/l10n.py add`, `fill` or `save`. `python3 scripts/l10n.py audit 2>&1 | tail -1` prints `0 error(s)` at the end of every iOS task (warnings for keys not referenced yet are fine until Task 8). Views use the key literal (`Text("ios:chat.block.answered")`); code uses `String(localized: "…", defaultValue: "<exact English>", comment: "…")` whose `defaultValue` equals the catalog's English exactly. Never concatenate a sentence; **never pass a ternary of two string literals to a text initializer** (use an `if`/`else` `@ViewBuilder`); user data and model-written text go through `Text(verbatim:)`. No CJK in `Sources/` (the audit rejects it; tests may hold CJK).
 - Desktop strings: the `chat` namespace's new `interactive` object, all ten locales (`i18n:check` fails on a missing translation), inserted textually with `/tmp/blocks/desktop_strings.py` (Task 3). Components read them with `useTranslation('chat')`.
 - No new packages in either repo (the desktop uses the user's own `@shadcn/react` through `ui/questionnaire.tsx`). iOS: native frameworks only. Haptics only through `.sensoryFeedback`. Dynamic Type: text styles, `AnyLayout` switching at `dynamicTypeSize.isAccessibilitySize`. Reduce Motion: no animation on freezing.
@@ -51,7 +51,7 @@
 - Options with emoji or CJK near the limits: the desktop and the phone must agree on what is a block (UTF-16 counting) and write byte-identical answers, or a block valid on one client is code on the other and a frozen block cannot find its picks. Tests: the "40 emoji / 41 emoji" limit vectors and the five answer vectors (Tasks 1 and 5).
 - Pressing Submit / Approve while a reply is still streaming, or on the phone before the history has loaded: nothing may be sent. Tests: `interactive-blocks.test.ts › confirmation … nothing while a reply streams` (Task 3) and `ChatDetailViewModelAnswerTests.waitsForHistoryAndForTheTurnInFlight` (Task 6).
 - A chat answered on the phone in Japanese and reopened on a desktop in English (or the reverse): the block must still show frozen with the right picks, since the labels differ. Tests: `interactive-answer.test.ts › readPicks › reads the picks back without knowing the language they were written in` (Task 1) and `InteractiveAnswerTests.picksWithoutLabels` (Task 5).
-- A user who types or pastes a message that merely starts with ` ```exodus-answer ` but is malformed (bad JSON, unknown block): it must render as an ordinary message, not crash or vanish. Tests: `splitAnswer` vectors "not JSON", "an unknown block" (Tasks 1, 5) and `answer-card.test.ts › a malformed answer fence is an ordinary message` (Task 4).
+- A user who types or pastes a message that merely starts with ` ```actovia-answer ` but is malformed (bad JSON, unknown block): it must render as an ordinary message, not crash or vanish. Tests: `splitAnswer` vectors "not JSON", "an unknown block" (Tasks 1, 5) and `answer-card.test.ts › a malformed answer fence is an ordinary message` (Task 4).
 
 ---
 
@@ -159,7 +159,7 @@ Workflow: write `EDITS.py` with the task's (old, new) pairs → `check` (prints 
 
 ## File Structure
 
-**Desktop (`/Users/yanceyleo/Code/exodus/exodus`)**
+**Desktop (`/Users/yanceyleo/Code/actovia/actovia`)**
 - Create `packages/shared/src/types/interactive.ts` — block schemas (zod), `interactiveKind`, `parseInteractiveBlock`, `findInteractiveBlock`.
 - Create `packages/shared/src/utils/interactive-answer.ts` — `composeAskAnswer`, `composeConfirmAnswer`, `splitAnswer`, `readPicks`, `AnswerLabels`.
 - Create `tests/unit/shared/types/interactive.test.ts`, `tests/unit/shared/utils/interactive-answer.test.ts` — the vectors.
@@ -176,7 +176,7 @@ Workflow: write `EDITS.py` with the task's (old, new) pairs → `check` (prints 
 - Modify `src/renderer/components/chat/user-bubble.tsx` — the answer card.
 - Create `tests/unit/renderer/components/chat/interactive-blocks.test.ts`, `answer-card.test.ts`.
 
-**iOS (`/Users/yanceyleo/Code/exodus/exodus-ios`)**
+**iOS (`/Users/yanceyleo/Code/actovia/actovia-ios`)**
 - Create `Sources/ChatFeature/Interactive/InteractiveBlock.swift` — `InteractiveBlock` (decoder + limits), `InteractiveFence` (`first(in:)`, `matches`).
 - Create `Sources/ChatFeature/Interactive/InteractiveAnswer.swift` — `composeAsk`, `composeConfirm`, `split`, `picks`, `Labels`, `Head`.
 - Create `Sources/ChatFeature/Interactive/InteractiveText.swift` — the localized words, `Labels.current`.
@@ -202,13 +202,13 @@ Workflow: write `EDITS.py` with the task's (old, new) pairs → `check` (prints 
 
 **Interfaces:**
 - Consumes: `zod` (already a dependency).
-- Produces (`@exodus/shared/types/interactive`): `INTERACTIVE_LANGUAGES` (`{ ask: 'exodus-ask', confirm: 'exodus-confirm' }`), `type InteractiveKind = 'ask' | 'confirm'`, `askQuestionSchema`, `askBlockSchema`, `confirmBlockSchema`, types `AskQuestion`, `AskBlock`, `ConfirmBlock`, `InteractiveFence = { kind: 'ask'; block: AskBlock; source: string } | { kind: 'confirm'; block: ConfirmBlock; source: string }`, `interactiveKind(language: string): InteractiveKind | null`, `parseInteractiveBlock(kind: InteractiveKind, source: string): InteractiveFence | null`, `findInteractiveBlock(markdown: string): InteractiveFence | null`.
-- Produces (`@exodus/shared/utils/interactive-answer`): `ANSWER_INFO_STRING`, `BLANK_ANSWER` (`'—'`), `interface AnswerLabels { other; addition; note; approved; rejected: string }`, `interface AnswerHead { block: InteractiveKind; ref: string; title?: string; decision?: 'approve' | 'reject' }`, `interface QuestionResponse { options: readonly string[]; other: string | null }`, `composeAskAnswer(block: AskBlock, ref: string, responses: Readonly<Record<string, QuestionResponse | undefined>>, note: string, labels: AnswerLabels): string`, `composeConfirmAnswer(block: ConfirmBlock, ref: string, approved: boolean, note: string, labels: AnswerLabels): string`, `splitAnswer(text: string): { answer: AnswerHead | null; body: string }`, `readPicks(block: AskBlock, body: string): Record<string, { options: string[]; other: boolean }>`.
+- Produces (`@actovia/shared/types/interactive`): `INTERACTIVE_LANGUAGES` (`{ ask: 'actovia-ask', confirm: 'actovia-confirm' }`), `type InteractiveKind = 'ask' | 'confirm'`, `askQuestionSchema`, `askBlockSchema`, `confirmBlockSchema`, types `AskQuestion`, `AskBlock`, `ConfirmBlock`, `InteractiveFence = { kind: 'ask'; block: AskBlock; source: string } | { kind: 'confirm'; block: ConfirmBlock; source: string }`, `interactiveKind(language: string): InteractiveKind | null`, `parseInteractiveBlock(kind: InteractiveKind, source: string): InteractiveFence | null`, `findInteractiveBlock(markdown: string): InteractiveFence | null`.
+- Produces (`@actovia/shared/utils/interactive-answer`): `ANSWER_INFO_STRING`, `BLANK_ANSWER` (`'—'`), `interface AnswerLabels { other; addition; note; approved; rejected: string }`, `interface AnswerHead { block: InteractiveKind; ref: string; title?: string; decision?: 'approve' | 'reject' }`, `interface QuestionResponse { options: readonly string[]; other: string | null }`, `composeAskAnswer(block: AskBlock, ref: string, responses: Readonly<Record<string, QuestionResponse | undefined>>, note: string, labels: AnswerLabels): string`, `composeConfirmAnswer(block: ConfirmBlock, ref: string, approved: boolean, note: string, labels: AnswerLabels): string`, `splitAnswer(text: string): { answer: AnswerHead | null; body: string }`, `readPicks(block: AskBlock, body: string): Record<string, { options: string[]; other: boolean }>`.
 
 - [ ] **Step 1: Check the paths are new**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 ls packages/shared/src/types/interactive.ts packages/shared/src/utils/interactive-answer.ts 2>&1 | grep -c "No such file"   # 2
 git diff --stat                                                                                                          # note the user's paths; they stay as they are
 ```
@@ -219,12 +219,12 @@ Create `tests/unit/shared/types/interactive.test.ts`:
 
 ````ts
 // The two blocks a reply can ask with, their limits, and which fence of a
-// reply is its block. exodus-ios's InteractiveBlockTests holds the same
+// reply is its block. actovia-ios's InteractiveBlockTests holds the same
 // vectors — keep them in step.
 import {
   findInteractiveBlock,
   parseInteractiveBlock
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import { describe, expect, it } from 'vitest'
 
 const ASK_SOURCE =
@@ -284,12 +284,12 @@ const CONFIRM_CASES: Array<[string, string, boolean]> = [
 ]
 
 describe('parseInteractiveBlock', () => {
-  it.each(ASK_CASES)('exodus-ask: %s → valid: %s', (_name, source, valid) => {
+  it.each(ASK_CASES)('actovia-ask: %s → valid: %s', (_name, source, valid) => {
     expect(parseInteractiveBlock('ask', source) !== null).toBe(valid)
   })
 
   it.each(CONFIRM_CASES)(
-    'exodus-confirm: %s → valid: %s',
+    'actovia-confirm: %s → valid: %s',
     (_name, source, valid) => {
       expect(parseInteractiveBlock('confirm', source) !== null).toBe(valid)
     }
@@ -308,16 +308,16 @@ describe('parseInteractiveBlock', () => {
 })
 
 const FIND_CASES: Array<[string, string, 'ask' | 'confirm' | null]> = [
-  ['a questionnaire after a paragraph', `Intro\n\n\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\`\n\nAfter`, 'ask'],
-  ['a fence still open (a reply streaming)', `Intro\n\n\`\`\`exodus-ask\n${ASK_SOURCE}`, null],
-  ['two blocks: only the first counts', `\`\`\`exodus-confirm\n${CONFIRM_SOURCE}\n\`\`\`\n\n\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\``, 'confirm'],
-  ['a first block that does not validate: none', `\`\`\`exodus-ask\n{oops}\n\`\`\`\n\n\`\`\`exodus-confirm\n${CONFIRM_SOURCE}\n\`\`\``, null],
-  ['inside a longer backtick fence', `\`\`\`\`md\n\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\`\n\`\`\`\``, null],
-  ['inside a tilde fence', `~~~\n\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\`\n~~~`, null],
-  ['indented under a list item', `- item\n\n  \`\`\`exodus-ask\n  ${ASK_SOURCE}\n  \`\`\``, null],
-  ['after an ordinary code block', `\`\`\`js\nlet a = 1\n\`\`\`\n\n\`\`\`exodus-confirm\n${CONFIRM_SOURCE}\n\`\`\``, 'confirm'],
-  ['trailing spaces after the name', `\`\`\`exodus-confirm  \n${CONFIRM_SOURCE}\n\`\`\``, 'confirm'],
-  ['another name', `\`\`\`exodus-answer\n{"block":"ask","ref":"r"}\n\`\`\``, null]
+  ['a questionnaire after a paragraph', `Intro\n\n\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\`\n\nAfter`, 'ask'],
+  ['a fence still open (a reply streaming)', `Intro\n\n\`\`\`actovia-ask\n${ASK_SOURCE}`, null],
+  ['two blocks: only the first counts', `\`\`\`actovia-confirm\n${CONFIRM_SOURCE}\n\`\`\`\n\n\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\``, 'confirm'],
+  ['a first block that does not validate: none', `\`\`\`actovia-ask\n{oops}\n\`\`\`\n\n\`\`\`actovia-confirm\n${CONFIRM_SOURCE}\n\`\`\``, null],
+  ['inside a longer backtick fence', `\`\`\`\`md\n\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\`\n\`\`\`\``, null],
+  ['inside a tilde fence', `~~~\n\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\`\n~~~`, null],
+  ['indented under a list item', `- item\n\n  \`\`\`actovia-ask\n  ${ASK_SOURCE}\n  \`\`\``, null],
+  ['after an ordinary code block', `\`\`\`js\nlet a = 1\n\`\`\`\n\n\`\`\`actovia-confirm\n${CONFIRM_SOURCE}\n\`\`\``, 'confirm'],
+  ['trailing spaces after the name', `\`\`\`actovia-confirm  \n${CONFIRM_SOURCE}\n\`\`\``, 'confirm'],
+  ['another name', `\`\`\`actovia-answer\n{"block":"ask","ref":"r"}\n\`\`\``, null]
 ]
 
 describe('findInteractiveBlock', () => {
@@ -326,7 +326,7 @@ describe('findInteractiveBlock', () => {
   })
 
   it("gives the block's fence text, to know its code block by", () => {
-    const markdown = `Intro\n\n\`\`\`exodus-ask\n${ASK_SOURCE}\n\`\`\`\n`
+    const markdown = `Intro\n\n\`\`\`actovia-ask\n${ASK_SOURCE}\n\`\`\`\n`
     expect(findInteractiveBlock(markdown)?.source).toBe(ASK_SOURCE)
   })
 })
@@ -336,19 +336,19 @@ Create `tests/unit/shared/utils/interactive-answer.test.ts`:
 
 ````ts
 // A block's answer as the user's next message, read back as a card and as the
-// picks that freeze the block. exodus-ios's InteractiveAnswerTests holds the
+// picks that freeze the block. actovia-ios's InteractiveAnswerTests holds the
 // same vectors — keep them in step.
 import {
   askBlockSchema,
   confirmBlockSchema
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import {
   composeAskAnswer,
   composeConfirmAnswer,
   readPicks,
   splitAnswer,
   type AnswerLabels
-} from '@exodus/shared/utils/interactive-answer'
+} from '@actovia/shared/utils/interactive-answer'
 import { describe, expect, it } from 'vitest'
 
 const ASK_SOURCE =
@@ -375,19 +375,19 @@ const EN: AnswerLabels = {
 }
 
 const ANSWER_CJK =
-  '```exodus-answer\n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\n```\n\n' +
+  '```actovia-answer\n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\n```\n\n' +
   '**哪里最痒？** 小腿\n**什么时候最痒？** 洗澡后, 晚上\n**补充:** 用的是丝塔芙润肤乳'
 const ANSWER_OTHER =
-  '```exodus-answer\n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\n```\n\n' +
+  '```actovia-answer\n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\n```\n\n' +
   '**哪里最痒？** 其他: 脚踝 和脚背\n**什么时候最痒？** —'
 const ANSWER_COMMAS =
-  '```exodus-answer\n{"block":"ask","ref":"r-2","title":"Pick a plan"}\n```\n\n' +
+  '```actovia-answer\n{"block":"ask","ref":"r-2","title":"Pick a plan"}\n```\n\n' +
   '**Which sizes?** Small, cheap, Large, roomy, Other'
 const ANSWER_APPROVE =
-  '```exodus-answer\n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\n```\n\n' +
+  '```actovia-answer\n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\n```\n\n' +
   '**要我把这份行程写进日历吗？** 同意\n**备注:** 第三天换成京都'
 const ANSWER_REJECT =
-  '```exodus-answer\n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \\"Q3/Q4\\" report?"}\n```\n\n' +
+  '```actovia-answer\n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \\"Q3/Q4\\" report?"}\n```\n\n' +
   '**Send "Q3/Q4" report?** Rejected'
 
 const ask = (source: string) => askBlockSchema.parse(JSON.parse(source))
@@ -461,16 +461,16 @@ describe('splitAnswer', () => {
 
   it('reads a fence with nothing after it', () => {
     expect(
-      splitAnswer('```exodus-answer\n{"block":"confirm","ref":"r"}\n```')
+      splitAnswer('```actovia-answer\n{"block":"confirm","ref":"r"}\n```')
     ).toEqual({ answer: { block: 'confirm', ref: 'r' }, body: '' })
   })
 
   it.each([
     ['an ordinary message', 'hello'],
-    ['not JSON', '```exodus-answer\n{oops}\n```\n\nhi'],
-    ['an unknown block', '```exodus-answer\n{"block":"poll","ref":"r"}\n```\n\nhi'],
-    ['no ref', '```exodus-answer\n{"block":"ask"}\n```\n\nhi'],
-    ['a fence never closed', '```exodus-answer\n{"block":"ask","ref":"r"}']
+    ['not JSON', '```actovia-answer\n{oops}\n```\n\nhi'],
+    ['an unknown block', '```actovia-answer\n{"block":"poll","ref":"r"}\n```\n\nhi'],
+    ['no ref', '```actovia-answer\n{"block":"ask"}\n```\n\nhi'],
+    ['a fence never closed', '```actovia-answer\n{"block":"ask","ref":"r"}']
   ])('%s is not an answer', (_name, text) => {
     expect(splitAnswer(text)).toEqual({ answer: null, body: text })
   })
@@ -520,21 +520,21 @@ describe('readPicks', () => {
 - [ ] **Step 3: Run them to see them fail**
 
 Run: `bunx vitest run tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/interactive-answer.test.ts`
-Expected: FAIL — `Failed to resolve import "@exodus/shared/types/interactive"`.
+Expected: FAIL — `Failed to resolve import "@actovia/shared/types/interactive"`.
 
 - [ ] **Step 4: Write `packages/shared/src/types/interactive.ts`**
 
 ```ts
-// The questionnaire and the confirmation a reply can ask with (exodus-ios spec
+// The questionnaire and the confirmation a reply can ask with (actovia-ios spec
 // 2026-10-06): a fenced block whose info string names it and whose body is one
 // JSON object. One that validates is drawn as a control; anything else stays
-// the code block it is. exodus-ios has the same rules (`InteractiveBlock`),
+// the code block it is. actovia-ios has the same rules (`InteractiveBlock`),
 // held to the same vectors; lengths are UTF-16 units there too.
 import { z } from 'zod'
 
 export const INTERACTIVE_LANGUAGES = {
-  ask: 'exodus-ask',
-  confirm: 'exodus-confirm'
+  ask: 'actovia-ask',
+  confirm: 'actovia-confirm'
 } as const
 
 export type InteractiveKind = keyof typeof INTERACTIVE_LANGUAGES
@@ -626,7 +626,7 @@ function fenceRun(
 }
 
 /**
- * A reply's block: its first `exodus-ask` / `exodus-confirm` fence that opens a
+ * A reply's block: its first `actovia-ask` / `actovia-confirm` fence that opens a
  * line at the left margin — not inside another fence, a list or a quote — and
  * is closed. Only that first one counts: when it does not validate the reply
  * has none, and a second is code either way. A fence still open (a reply
@@ -673,12 +673,12 @@ export function findInteractiveBlock(
 
 ````ts
 // A questionnaire's or a confirmation's answer, as the user's next message: a
-// leading ```exodus-answer fence naming the block it answers, a blank line,
+// leading ```actovia-answer fence naming the block it answers, a blank line,
 // then the answer in plain words — a line a question. Plain text, like a quote
 // (`quoted-text.ts`) or a Health question (`health-context.ts`), so every
 // provider reads it as what it is; the clients read it back with
 // `splitAnswer` to draw it as a card and to freeze the block it names.
-// exodus-ios has the same rules (`InteractiveAnswer`), held to the same
+// actovia-ios has the same rules (`InteractiveAnswer`), held to the same
 // vectors.
 import type {
   AskBlock,
@@ -686,7 +686,7 @@ import type {
   InteractiveKind
 } from '../types/interactive'
 
-export const ANSWER_INFO_STRING = 'exodus-answer'
+export const ANSWER_INFO_STRING = 'actovia-answer'
 /** An unanswered question's line. */
 export const BLANK_ANSWER = '—'
 
@@ -725,7 +725,7 @@ function oneLine(text: string): string {
 }
 
 function fence(head: AnswerHead): string {
-  // The keys in sorted order, as exodus-ios's encoder writes them.
+  // The keys in sorted order, as actovia-ios's encoder writes them.
   const json = JSON.stringify({
     block: head.block,
     ...(head.decision ? { decision: head.decision } : {}),
@@ -882,7 +882,7 @@ Expected: PASS — every case of both files.
 - [ ] **Step 7: Lint, format, typecheck, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="packages/shared/src/types/interactive.ts packages/shared/src/utils/interactive-answer.ts tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/interactive-answer.test.ts"
 bunx oxlint $F && bunx oxfmt $F
 bunx vitest run tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/interactive-answer.test.ts
@@ -915,7 +915,7 @@ Create `tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts`:
 import {
   askBlockSchema,
   confirmBlockSchema
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('electron', () => ({ app: { getPath: () => '/tmp' } }))
@@ -956,12 +956,12 @@ describe('the interactive blocks section', () => {
     const prompt = getSystemPrompt({})
     expect(prompt).toContain(INTERACTIVE_BLOCKS_PROMPT)
     expect(prompt).toContain(
-      `\`\`\`exodus-ask\n${JSON.stringify(ASK_EXAMPLE)}\n\`\`\``
+      `\`\`\`actovia-ask\n${JSON.stringify(ASK_EXAMPLE)}\n\`\`\``
     )
     expect(prompt).toContain(
-      `\`\`\`exodus-confirm\n${JSON.stringify(CONFIRM_EXAMPLE)}\n\`\`\``
+      `\`\`\`actovia-confirm\n${JSON.stringify(CONFIRM_EXAMPLE)}\n\`\`\``
     )
-    expect(prompt).toContain('```exodus-answer')
+    expect(prompt).toContain('```actovia-answer')
     // Before the response format, after the citations.
     expect(prompt.indexOf('<interactive_blocks>')).toBeGreaterThan(
       prompt.indexOf('</citation_rules>')
@@ -988,8 +988,8 @@ describe('the interactive blocks section', () => {
       HEALTH_SUMMARY_SYSTEM,
       HEALTH_PERIOD_REPORT_SYSTEM
     ]) {
-      expect(other).not.toContain('exodus-ask')
-      expect(other).not.toContain('exodus-confirm')
+      expect(other).not.toContain('actovia-ask')
+      expect(other).not.toContain('actovia-confirm')
     }
   })
 })
@@ -1003,7 +1003,7 @@ Expected: FAIL — `Failed to resolve import "@main/lib/ai/interactive-blocks-pr
 - [ ] **Step 3: Write `src/main/lib/ai/interactive-blocks-prompt.ts`**
 
 ```ts
-// The chat's section on interactive blocks (exodus-ios spec 2026-10-06 §3):
+// The chat's section on interactive blocks (actovia-ios spec 2026-10-06 §3):
 // the two fenced blocks both apps draw as controls, and the answer that comes
 // back. Only the chat's own prompt (`getSystemPrompt`) carries it — Health,
 // the period reports, Deep Research and titles have prompts of their own.
@@ -1045,13 +1045,13 @@ const FENCE = '```'
 export const INTERACTIVE_BLOCKS_PROMPT = `<interactive_blocks>
 Both apps draw two fenced blocks as controls inside your reply; the user's answer comes back as a message.
 
-\`exodus-ask\` is a questionnaire. Use it when your answer depends on facts only the user has — their situation, preferences, constraints — and a few short choices get them faster than prose. Ask only what changes your answer; what you can reasonably assume, assume and say so. 1–8 questions, 2–8 short options each; "type" is "single" or "multi"; "other": true adds a choice the user types into.
-${FENCE}exodus-ask
+\`actovia-ask\` is a questionnaire. Use it when your answer depends on facts only the user has — their situation, preferences, constraints — and a few short choices get them faster than prose. Ask only what changes your answer; what you can reasonably assume, assume and say so. 1–8 questions, 2–8 short options each; "type" is "single" or "multi"; "other": true adds a choice the user types into.
+${FENCE}actovia-ask
 ${JSON.stringify(ASK_EXAMPLE)}
 ${FENCE}
 
-\`exodus-confirm\` is a confirmation. Use it before an action that changes something outside this chat — writing or deleting files, sending a message or an email, booking, adding to a calendar, spending money, and every hard stop above — then do nothing until the answer comes. Say what will happen in "details" (Markdown), briefly.
-${FENCE}exodus-confirm
+\`actovia-confirm\` is a confirmation. Use it before an action that changes something outside this chat — writing or deleting files, sending a message or an email, booking, adding to a calendar, spending money, and every hard stop above — then do nothing until the answer comes. Say what will happen in "details" (Markdown), briefly.
+${FENCE}actovia-confirm
 ${JSON.stringify(CONFIRM_EXAMPLE)}
 ${FENCE}
 
@@ -1059,7 +1059,7 @@ Rules
 - At most one block per reply, after what you write, on lines of its own; never inside another code block, a list, a quote or a table.
 - The JSON is one object with only these keys. Limits: title 200 characters, question 200, option 80, note 120, submit/approve/reject 40, details 1000; question ids are lowercase letters, digits, "_" or "-", each used once.
 - Write the block's words in the user's language.
-- A user message that opens with ${FENCE}exodus-answer answers the questionnaire or confirmation you asked: act on it, do not ask again. "—" is a question left blank; carry on with what you have. A rejected confirmation means do not do it.
+- A user message that opens with ${FENCE}actovia-answer answers the questionnaire or confirmation you asked: act on it, do not ask again. "—" is a question left blank; carry on with what you have. A rejected confirmation means do not do it.
 - Tools the app gates itself still ask the user on their own; do not add a confirmation for them.
 </interactive_blocks>`
 ```
@@ -1083,7 +1083,7 @@ EDITS = [
 ```
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 python3 /tmp/blocks/dual_edit.py check /tmp/blocks/prompts_edits.py    # OK … 2 edit(s)
 python3 /tmp/blocks/dual_edit.py fmt /tmp/blocks/prompts_edits.py      # FORMAT-OK (else: copy oxfmt's + lines into the `new` texts, re-run)
 python3 /tmp/blocks/dual_edit.py apply /tmp/blocks/prompts_edits.py    # applied
@@ -1097,12 +1097,12 @@ Expected: PASS (the existing prompt tests unchanged).
 - [ ] **Step 6: Lint, format, typecheck, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="src/main/lib/ai/interactive-blocks-prompt.ts tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts"
 bunx oxlint $F src/main/lib/ai/prompts.ts && bunx oxfmt $F
 bun run typecheck:node
 python3 /tmp/blocks/dual_edit.py patch /tmp/blocks/prompts_edits.py /tmp/blocks/prompts.patch   # PATCH-OK
-.superpowers/sdd/commit-mine.sh "feat(chat): the chat's prompt teaches the questionnaire and the confirmation blocks — when to ask with each, their limits, and that an exodus-answer message is the answer" \
+.superpowers/sdd/commit-mine.sh "feat(chat): the chat's prompt teaches the questionnaire and the confirmation blocks — when to ask with each, their limits, and that an actovia-answer message is the answer" \
   --patch /tmp/blocks/prompts.patch $F
 git show --stat HEAD                   # the two new files and prompts.ts
 git diff -- src/main/lib/ai/prompts.ts # only the user's own edits remain
@@ -1130,7 +1130,7 @@ git diff -- src/main/lib/ai/prompts.ts # only the user's own edits remain
 - [ ] **Step 1: Check the clean files are still clean**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 git diff --stat -- src/renderer/components/markdown.tsx src/renderer/components/chat/assistant-turn-segment.tsx   # must print nothing
 git status --short src/renderer/components/ui/questionnaire.tsx   # ?? — the user's; import it, never stage it
 ```
@@ -1149,16 +1149,16 @@ import type {
   ChatMessage,
   ChatStatus,
   SendMessageOptions
-} from '@exodus/shared/types/chat'
+} from '@actovia/shared/types/chat'
 import {
   askBlockSchema,
   confirmBlockSchema
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import {
   composeAskAnswer,
   composeConfirmAnswer,
   type AnswerLabels
-} from '@exodus/shared/utils/interactive-answer'
+} from '@actovia/shared/utils/interactive-answer'
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -1258,7 +1258,7 @@ const button = (label: string) =>
 
 describe('a questionnaire in a reply', () => {
   it("is drawn in place of its code, and Submit sends the composed answer", async () => {
-    await show(`Before I answer:\n\n${fence('exodus-ask', ASK)}`)
+    await show(`Before I answer:\n\n${fence('actovia-ask', ASK)}`)
     expect(block()?.getAttribute('data-interactive')).toBe('ask')
     expect(block()?.getAttribute('data-state')).toBe('open')
     expect(host.querySelector('pre')).toBeNull()
@@ -1289,7 +1289,7 @@ describe('a questionnaire in a reply', () => {
       '',
       LABELS
     )
-    await show(fence('exodus-ask', ASK), { messages: [userMessage('u2', answer)] })
+    await show(fence('actovia-ask', ASK), { messages: [userMessage('u2', answer)] })
     expect(block()?.getAttribute('data-state')).toBe('answered')
     expect(host.querySelector('button[type="submit"]')).toBeNull()
     expect(
@@ -1301,7 +1301,7 @@ describe('a questionnaire in a reply', () => {
 
 describe('a confirmation in a reply', () => {
   it('Approve sends the decision and the note', async () => {
-    await show(fence('exodus-confirm', CONFIRM))
+    await show(fence('actovia-confirm', CONFIRM))
     expect(block()?.getAttribute('data-state')).toBe('open')
     expect(host.querySelector('strong')?.textContent).toBe('Ann')
 
@@ -1322,7 +1322,7 @@ describe('a confirmation in a reply', () => {
   })
 
   it('sends nothing while a reply streams', async () => {
-    await show(fence('exodus-confirm', CONFIRM), { status: 'streaming' })
+    await show(fence('actovia-confirm', CONFIRM), { status: 'streaming' })
     expect(button('interactive.approve')?.disabled).toBe(true)
     expect(button('interactive.reject')?.disabled).toBe(true)
     await act(async () => button('interactive.approve')?.click())
@@ -1331,7 +1331,7 @@ describe('a confirmation in a reply', () => {
 
   it('shows the decision once answered, without its buttons', async () => {
     const answer = composeConfirmAnswer(CONFIRM_BLOCK, 'run-1', false, '', LABELS)
-    await show(fence('exodus-confirm', CONFIRM), {
+    await show(fence('actovia-confirm', CONFIRM), {
       messages: [userMessage('u2', answer)]
     })
     expect(block()?.getAttribute('data-state')).toBe('reject')
@@ -1342,25 +1342,25 @@ describe('a confirmation in a reply', () => {
 
 describe('what stays code', () => {
   it('a block over the limits', async () => {
-    await show(fence('exodus-ask', { ...ASK, questions: [] }))
+    await show(fence('actovia-ask', { ...ASK, questions: [] }))
     expect(block()).toBeNull()
     expect(host.querySelector('pre')).not.toBeNull()
   })
 
   it('a second block in the reply', async () => {
-    await show(`${fence('exodus-confirm', CONFIRM)}\n\n${fence('exodus-ask', ASK)}`)
+    await show(`${fence('actovia-confirm', CONFIRM)}\n\n${fence('actovia-ask', ASK)}`)
     expect(host.querySelectorAll('[data-interactive]')).toHaveLength(1)
     expect(block()?.getAttribute('data-interactive')).toBe('confirm')
     expect(host.querySelectorAll('pre')).toHaveLength(1)
   })
 
   it('a fence still being written', async () => {
-    await show('```exodus-ask\n{"title":"Where')
+    await show('```actovia-ask\n{"title":"Where')
     expect(block()).toBeNull()
   })
 
   it('a block outside a turn (a user message, a tool description)', async () => {
-    await show(fence('exodus-ask', ASK), {}, false)
+    await show(fence('actovia-ask', ASK), {}, false)
     expect(block()).toBeNull()
     expect(host.querySelector('pre')).not.toBeNull()
   })
@@ -1541,7 +1541,7 @@ else:
 ```
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 python3 /tmp/blocks/desktop_strings.py check     # OK 10 locales; FORMAT-OK
 python3 /tmp/blocks/desktop_strings.py apply     # applied × 10
 bun run i18n:check | tail -1                     # i18n:check OK
@@ -1550,7 +1550,7 @@ bun run i18n:check | tail -1                     # i18n:check OK
 - [ ] **Step 5: Write `src/renderer/components/chat/interactive/answer-labels.ts`**
 
 ```ts
-import type { AnswerLabels } from '@exodus/shared/utils/interactive-answer'
+import type { AnswerLabels } from '@actovia/shared/utils/interactive-answer'
 import type { TFunction } from 'i18next'
 
 /** The words this client writes an answer with, in the user's language. */
@@ -1576,15 +1576,15 @@ import type {
   ChatMessage,
   ChatStatus,
   SendMessageOptions
-} from '@exodus/shared/types/chat'
+} from '@actovia/shared/types/chat'
 import {
   findInteractiveBlock,
   type InteractiveFence
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import {
   splitAnswer,
   type AnswerHead
-} from '@exodus/shared/utils/interactive-answer'
+} from '@actovia/shared/utils/interactive-answer'
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
 
 /** A block's answer as the chat holds it: the fence's head and the lines after it. */
@@ -1678,18 +1678,18 @@ export function useInteractiveTurn(runId: string, body: string): InteractiveTurn
 - [ ] **Step 7: Write `src/renderer/components/chat/interactive/questionnaire-block.tsx`**
 
 ```tsx
-// A reply's questionnaire (`exodus-ask`) on the user's shadcn Questionnaire:
+// A reply's questionnaire (`actovia-ask`) on the user's shadcn Questionnaire:
 // one question at a time with Previous / Skip / Next, Submit on the last with
 // the closing note above it. A blank is a Skip. Submit sends the answers as
 // the user's next message (`composeAskAnswer`); once the chat holds that
 // message the block is frozen, a summary of the picks it carried
 // (`readPicks`) — the primitive hides an item it would disable.
-import type { AskBlock, AskQuestion } from '@exodus/shared/types/interactive'
+import type { AskBlock, AskQuestion } from '@actovia/shared/types/interactive'
 import {
   composeAskAnswer,
   readPicks,
   type QuestionResponse
-} from '@exodus/shared/utils/interactive-answer'
+} from '@actovia/shared/utils/interactive-answer'
 import { CheckIcon } from 'lucide-react'
 import { type FormEvent, type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -1724,7 +1724,7 @@ export interface BlockProps<B> {
 }
 
 /** The value of a question's "Other…" choice. */
-const OTHER = '__exodus_other__'
+const OTHER = '__actovia_other__'
 
 const CARD = 'bg-card text-card-foreground rounded-2xl border p-4'
 
@@ -1958,12 +1958,12 @@ function Pick({ picked, children }: { picked: boolean; children: ReactNode }) {
 - [ ] **Step 8: Write `src/renderer/components/chat/interactive/confirmation-block.tsx`**
 
 ```tsx
-// A reply's confirmation (`exodus-confirm`): what will happen, a note, and
+// A reply's confirmation (`actovia-confirm`): what will happen, a note, and
 // Approve / Reject — pending until the chat holds the answer, then the
 // decision (ai-sdk's Confirmation states). The details are Markdown, drawn
 // with react-markdown directly: `markdown.tsx` draws this block.
-import type { ConfirmBlock } from '@exodus/shared/types/interactive'
-import { composeConfirmAnswer } from '@exodus/shared/utils/interactive-answer'
+import type { ConfirmBlock } from '@actovia/shared/types/interactive'
+import { composeConfirmAnswer } from '@actovia/shared/utils/interactive-answer'
 import { CheckIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -2059,14 +2059,14 @@ export function ConfirmationBlock({
 
 ```tsx
 // Where a reply's fenced code becomes its block. `markdown.tsx` hands every
-// `<pre>` whose code is an `exodus-ask` / `exodus-confirm` fence to
+// `<pre>` whose code is an `actovia-ask` / `actovia-confirm` fence to
 // `InteractiveFence`, with the `<pre>` as its fallback: drawn as the control
 // only when it is the turn's block (`useInteractiveTurn`) inside a chat;
 // outside a turn, invalid, second or still being written, it stays code.
 import {
   interactiveKind,
   type InteractiveKind
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import { type ReactNode, useContext } from 'react'
 
 import { ErrorBoundary } from '@/components/card-error-boundary'
@@ -2160,7 +2160,7 @@ In `code()`, replace
 with
 
 ```tsx
-        // `[\w-]`: a fence named `exodus-ask` is labelled that, not `exodus`.
+        // `[\w-]`: a fence named `actovia-ask` is labelled that, not `actovia`.
         const match = /language-([\w-]+)/.exec(className || 'javascript')
 ```
 
@@ -2273,7 +2273,7 @@ EDITS = [
 ```
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 python3 /tmp/blocks/dual_edit.py check /tmp/blocks/chat_edits.py   # OK … 3 edit(s)
 python3 /tmp/blocks/dual_edit.py fmt /tmp/blocks/chat_edits.py     # FORMAT-OK (else adopt oxfmt's + lines, re-run)
 python3 /tmp/blocks/dual_edit.py apply /tmp/blocks/chat_edits.py
@@ -2287,7 +2287,7 @@ Expected: PASS. If the questionnaire's Submit case fails only because happy-dom 
 - [ ] **Step 14: Lint, format, typecheck**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="src/renderer/components/chat/interactive/interactive-context.tsx src/renderer/components/chat/interactive/interactive-fence.tsx src/renderer/components/chat/interactive/questionnaire-block.tsx src/renderer/components/chat/interactive/confirmation-block.tsx src/renderer/components/chat/interactive/answer-labels.ts src/renderer/components/markdown.tsx src/renderer/components/chat/assistant-turn-segment.tsx tests/unit/renderer/components/chat/interactive-blocks.test.ts"
 bunx oxlint $F src/renderer/components/chat.tsx && bunx oxfmt $F
 bun run typecheck:web && bun run i18n:check | tail -1
@@ -2296,12 +2296,12 @@ bunx vitest run tests/unit/renderer/components/chat/interactive-blocks.test.ts
 
 - [ ] **Step 15: See it in the app**
 
-`bun run dev`, open a chat, send: "Reply with exactly this and nothing else:" followed by a line break and the fence `exodus-ask` with `{"title":"Pick","questions":[{"id":"a","text":"Which?","type":"single","options":["One","Two"],"other":true},{"id":"b","text":"And?","type":"multi","options":["X","Y"]}]}`. Expect the card with "Question 1 of 2", Previous/Skip/Next, the note on step 2, Submit; Submit adds your answer (still drawn as raw Markdown until Task 4) and the questionnaire turns into the summary with your picks and "Answered". Then a confirmation the same way (Approve / Reject, note, Markdown details). Stop the dev server.
+`bun run dev`, open a chat, send: "Reply with exactly this and nothing else:" followed by a line break and the fence `actovia-ask` with `{"title":"Pick","questions":[{"id":"a","text":"Which?","type":"single","options":["One","Two"],"other":true},{"id":"b","text":"And?","type":"multi","options":["X","Y"]}]}`. Expect the card with "Question 1 of 2", Previous/Skip/Next, the note on step 2, Submit; Submit adds your answer (still drawn as raw Markdown until Task 4) and the questionnaire turns into the summary with your picks and "Answered". Then a confirmation the same way (Approve / Reject, note, Markdown details). Stop the dev server.
 
 - [ ] **Step 16: Commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 python3 /tmp/blocks/desktop_strings.py patch /tmp/blocks/strings.patch                       # PATCH-OK
 python3 /tmp/blocks/dual_edit.py patch /tmp/blocks/chat_edits.py /tmp/blocks/chat.patch       # PATCH-OK
 .superpowers/sdd/commit-mine.sh "feat(chat): a reply's questionnaire and confirmation are drawn as controls — the questionnaire on the shadcn Questionnaire, Approve/Reject with a note — sent through the chat's send, frozen once the chat holds the answer" \
@@ -2325,7 +2325,7 @@ git diff --stat -- src/renderer/components/chat.tsx packages/shared/src/i18n/loc
 - [ ] **Step 1: Check the file is clean**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 git diff --stat -- src/renderer/components/chat/user-bubble.tsx   # must print nothing
 ```
 
@@ -2341,12 +2341,12 @@ Create `tests/unit/renderer/components/chat/answer-card.test.ts`:
 import {
   askBlockSchema,
   confirmBlockSchema
-} from '@exodus/shared/types/interactive'
+} from '@actovia/shared/types/interactive'
 import {
   composeAskAnswer,
   composeConfirmAnswer,
   type AnswerLabels
-} from '@exodus/shared/utils/interactive-answer'
+} from '@actovia/shared/utils/interactive-answer'
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -2405,7 +2405,7 @@ describe('an answer in the user bubble', () => {
       Array.from(host.querySelectorAll('strong')).map((s) => s.textContent)
     ).toEqual(['Where?', 'Also:'])
     expect(host.textContent).toContain('Legs')
-    expect(host.textContent).not.toContain('exodus-answer')
+    expect(host.textContent).not.toContain('actovia-answer')
     expect(host.querySelector('pre')).toBeNull()
   })
 
@@ -2418,12 +2418,12 @@ describe('an answer in the user bubble', () => {
   })
 
   it('an answer without a title reads "Your answer"', async () => {
-    await show('```exodus-answer\n{"block":"ask","ref":"r"}\n```\n\n**Q** A')
+    await show('```actovia-answer\n{"block":"ask","ref":"r"}\n```\n\n**Q** A')
     expect(title()).toBe('interactive.answer.title')
   })
 
   it('a malformed answer fence is an ordinary message', async () => {
-    await show('```exodus-answer\n{oops}\n```\n\nhello')
+    await show('```actovia-answer\n{oops}\n```\n\nhello')
     expect(host.querySelector('[data-answer]')).toBeNull()
     expect(title()).toBeUndefined()
     expect(host.querySelector('pre')).not.toBeNull()
@@ -2440,7 +2440,7 @@ Expected: FAIL — the first three cases (`data-answer` / `answer-title` not fou
 - [ ] **Step 4: Write `src/renderer/components/chat/interactive/answer-title.tsx`**
 
 ```tsx
-import type { AnswerHead } from '@exodus/shared/utils/interactive-answer'
+import type { AnswerHead } from '@actovia/shared/utils/interactive-answer'
 import { CircleCheckIcon, CircleXIcon, ListChecksIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -2466,10 +2466,10 @@ export function AnswerTitle({ head }: { head: AnswerHead }) {
 
 - [ ] **Step 5: Draw the card in `src/renderer/components/chat/user-bubble.tsx`**
 
-Add the imports — after `import { splitHealth } from '@exodus/shared/utils/health-context'`:
+Add the imports — after `import { splitHealth } from '@actovia/shared/utils/health-context'`:
 
 ```tsx
-import { splitAnswer } from '@exodus/shared/utils/interactive-answer'
+import { splitAnswer } from '@actovia/shared/utils/interactive-answer'
 ```
 
 and after `import { HealthContextCard } from '@/components/chat/health-context-card'`:
@@ -2566,7 +2566,7 @@ Expected: PASS (the bubble's existing tests unchanged).
 - [ ] **Step 7: Lint, format, typecheck, look, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="src/renderer/components/chat/interactive/answer-title.tsx src/renderer/components/chat/user-bubble.tsx tests/unit/renderer/components/chat/answer-card.test.ts"
 bunx oxlint $F && bunx oxfmt $F
 bun run typecheck:web
@@ -2657,26 +2657,26 @@ private let confirmCases: [(String, String, Bool)] = [
 ]
 
 private let findCases: [(String, String, InteractiveBlock.Kind?)] = [
-    ("a questionnaire after a paragraph", "Intro\n\n```exodus-ask\n\(askSource)\n```\n\nAfter", .ask),
-    ("a fence still open (a reply streaming)", "Intro\n\n```exodus-ask\n\(askSource)", nil),
-    ("two blocks: only the first counts", "```exodus-confirm\n\(confirmSource)\n```\n\n```exodus-ask\n\(askSource)\n```", .confirm),
-    ("a first block that does not validate: none", "```exodus-ask\n{oops}\n```\n\n```exodus-confirm\n\(confirmSource)\n```", nil),
-    ("inside a longer backtick fence", "````md\n```exodus-ask\n\(askSource)\n```\n````", nil),
-    ("inside a tilde fence", "~~~\n```exodus-ask\n\(askSource)\n```\n~~~", nil),
-    ("indented under a list item", "- item\n\n  ```exodus-ask\n  \(askSource)\n  ```", nil),
-    ("after an ordinary code block", "```js\nlet a = 1\n```\n\n```exodus-confirm\n\(confirmSource)\n```", .confirm),
-    ("trailing spaces after the name", "```exodus-confirm  \n\(confirmSource)\n```", .confirm),
-    ("another name", "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}\n```", nil),
+    ("a questionnaire after a paragraph", "Intro\n\n```actovia-ask\n\(askSource)\n```\n\nAfter", .ask),
+    ("a fence still open (a reply streaming)", "Intro\n\n```actovia-ask\n\(askSource)", nil),
+    ("two blocks: only the first counts", "```actovia-confirm\n\(confirmSource)\n```\n\n```actovia-ask\n\(askSource)\n```", .confirm),
+    ("a first block that does not validate: none", "```actovia-ask\n{oops}\n```\n\n```actovia-confirm\n\(confirmSource)\n```", nil),
+    ("inside a longer backtick fence", "````md\n```actovia-ask\n\(askSource)\n```\n````", nil),
+    ("inside a tilde fence", "~~~\n```actovia-ask\n\(askSource)\n```\n~~~", nil),
+    ("indented under a list item", "- item\n\n  ```actovia-ask\n  \(askSource)\n  ```", nil),
+    ("after an ordinary code block", "```js\nlet a = 1\n```\n\n```actovia-confirm\n\(confirmSource)\n```", .confirm),
+    ("trailing spaces after the name", "```actovia-confirm  \n\(confirmSource)\n```", .confirm),
+    ("another name", "```actovia-answer\n{\"block\":\"ask\",\"ref\":\"r\"}\n```", nil),
 ]
 
 @Suite("InteractiveBlock: the blocks' limits, as the desktop's zod schemas")
 struct InteractiveBlockTests {
-    @Test("exodus-ask", arguments: askCases)
+    @Test("actovia-ask", arguments: askCases)
     func askLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.ask, source: source) != nil) == valid, "\(name)")
     }
 
-    @Test("exodus-confirm", arguments: confirmCases)
+    @Test("actovia-confirm", arguments: confirmCases)
     func confirmLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.confirm, source: source) != nil) == valid, "\(name)")
     }
@@ -2689,10 +2689,10 @@ struct InteractiveBlockTests {
         }
         #expect(block.questions.map(\.other) == [true, false])
         #expect(block.questions.map(\.type) == [.single, .multi])
-        #expect(InteractiveBlock.Kind(language: "exodus-ask") == .ask)
-        #expect(InteractiveBlock.Kind(language: "exodus-confirm") == .confirm)
-        #expect(InteractiveBlock.Kind(language: "exodus-answer") == nil)
-        #expect(InteractiveBlock.Kind.confirm.language == "exodus-confirm")
+        #expect(InteractiveBlock.Kind(language: "actovia-ask") == .ask)
+        #expect(InteractiveBlock.Kind(language: "actovia-confirm") == .confirm)
+        #expect(InteractiveBlock.Kind(language: "actovia-answer") == nil)
+        #expect(InteractiveBlock.Kind.confirm.language == "actovia-confirm")
     }
 }
 
@@ -2705,13 +2705,13 @@ struct InteractiveFenceTests {
 
     @Test("the fence's text is how its code block is known")
     func matches() throws {
-        let fence = try #require(InteractiveFence.first(in: "Intro\n\n```exodus-ask\n\(askSource)\n```\n"))
+        let fence = try #require(InteractiveFence.first(in: "Intro\n\n```actovia-ask\n\(askSource)\n```\n"))
         #expect(fence.source == askSource)
-        #expect(fence.matches(language: "exodus-ask", code: askSource))
-        #expect(fence.matches(language: "exodus-ask", code: askSource + "\n"))
-        #expect(!fence.matches(language: "exodus-confirm", code: askSource))
+        #expect(fence.matches(language: "actovia-ask", code: askSource))
+        #expect(fence.matches(language: "actovia-ask", code: askSource + "\n"))
+        #expect(!fence.matches(language: "actovia-confirm", code: askSource))
         #expect(!fence.matches(language: nil, code: askSource))
-        #expect(!fence.matches(language: "exodus-ask", code: "{}"))
+        #expect(!fence.matches(language: "actovia-ask", code: "{}"))
     }
 }
 ```
@@ -2738,19 +2738,19 @@ private let en = InteractiveAnswer.Labels(
     other: "Other", addition: "Also", note: "Note", approved: "Approved", rejected: "Rejected")
 
 private let answerCJK =
-    #"```exodus-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
     + #"**哪里最痒？** 小腿\#n**什么时候最痒？** 洗澡后, 晚上\#n**补充:** 用的是丝塔芙润肤乳"#
 private let answerOther =
-    #"```exodus-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"a9f2","title":"我想先确认一下你的具体情况"}\#n```\#n\#n"#
     + #"**哪里最痒？** 其他: 脚踝 和脚背\#n**什么时候最痒？** —"#
 private let answerCommas =
-    #"```exodus-answer\#n{"block":"ask","ref":"r-2","title":"Pick a plan"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"ask","ref":"r-2","title":"Pick a plan"}\#n```\#n\#n"#
     + #"**Which sizes?** Small, cheap, Large, roomy, Other"#
 private let answerApprove =
-    #"```exodus-answer\#n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"approve","ref":"c1","title":"要我把这份行程写进日历吗？"}\#n```\#n\#n"#
     + #"**要我把这份行程写进日历吗？** 同意\#n**备注:** 第三天换成京都"#
 private let answerReject =
-    #"```exodus-answer\#n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \"Q3/Q4\" report?"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"reject","ref":"c2","title":"Send \"Q3/Q4\" report?"}\#n```\#n\#n"#
     + #"**Send "Q3/Q4" report?** Rejected"#
 
 private struct NotABlock: Error {}
@@ -2808,7 +2808,7 @@ struct InteractiveAnswerTests {
         #expect(
             InteractiveAnswer.split(answerReject).head
                 == .init(block: .confirm, decision: .reject, ref: "c2", title: #"Send "Q3/Q4" report?"#))
-        let alone = InteractiveAnswer.split("```exodus-answer\n{\"block\":\"confirm\",\"ref\":\"r\"}\n```")
+        let alone = InteractiveAnswer.split("```actovia-answer\n{\"block\":\"confirm\",\"ref\":\"r\"}\n```")
         #expect(alone.head == .init(block: .confirm, decision: nil, ref: "r", title: nil))
         #expect(alone.body == "")
     }
@@ -2817,10 +2817,10 @@ struct InteractiveAnswerTests {
         "what is not an answer is returned whole",
         arguments: [
             "hello",
-            "```exodus-answer\n{oops}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"poll\",\"ref\":\"r\"}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"ask\"}\n```\n\nhi",
-            "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}",
+            "```actovia-answer\n{oops}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"poll\",\"ref\":\"r\"}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"ask\"}\n```\n\nhi",
+            "```actovia-answer\n{\"block\":\"ask\",\"ref\":\"r\"}",
         ])
     func notAnAnswer(_ text: String) {
         let split = InteractiveAnswer.split(text)
@@ -2863,10 +2863,10 @@ struct InteractiveAnswerTests {
 - [ ] **Step 2: Run them to see them fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat                     # note the user's paths; they stay as they are
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveBlockTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveBlockTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'InteractiveBlock' in scope`, `TEST FAILED`.
 
@@ -2876,7 +2876,7 @@ Expected: `error: cannot find 'InteractiveBlock' in scope`, `TEST FAILED`.
 import Foundation
 
 /// The questionnaire and the confirmation a reply can ask with (spec 2026-10-06): a fenced block whose info string
-/// names it (`exodus-ask`, `exodus-confirm`) and whose body is one JSON object. One that validates is drawn as a
+/// names it (`actovia-ask`, `actovia-confirm`) and whose body is one JSON object. One that validates is drawn as a
 /// control; anything else stays the code block it is. The desktop has the same rules
 /// (`packages/shared/src/types/interactive.ts`), held to the same vectors; lengths are UTF-16 units, as zod counts.
 enum InteractiveBlock: Equatable, Sendable {
@@ -2887,11 +2887,11 @@ enum InteractiveBlock: Equatable, Sendable {
         case ask, confirm
 
         /// The fence's info string.
-        var language: String { "exodus-" + rawValue }
+        var language: String { "actovia-" + rawValue }
 
         init?(language: String) {
-            guard language.hasPrefix("exodus-") else { return nil }
-            self.init(rawValue: String(language.dropFirst("exodus-".count)))
+            guard language.hasPrefix("actovia-") else { return nil }
+            self.init(rawValue: String(language.dropFirst("actovia-".count)))
         }
     }
 
@@ -2990,7 +2990,7 @@ struct InteractiveFence: Equatable, Sendable {
         language.flatMap(InteractiveBlock.Kind.init(language:)) == kind && Self.trimmed(code) == Self.trimmed(source)
     }
 
-    /// A reply's block: its first `exodus-ask` / `exodus-confirm` fence that opens a line at the left margin — not
+    /// A reply's block: its first `actovia-ask` / `actovia-confirm` fence that opens a line at the left margin — not
     /// inside another fence, a list or a quote — and is closed. Only that first one counts: when it does not validate
     /// the reply has none, and a second is code either way. A fence still open (a reply being written) is not one yet.
     static func first(in markdown: String) -> InteractiveFence? {
@@ -3059,13 +3059,13 @@ struct InteractiveFence: Equatable, Sendable {
 ```swift
 import Foundation
 
-/// A questionnaire's or a confirmation's answer, as the user's next message: a leading `exodus-answer` fence naming the
+/// A questionnaire's or a confirmation's answer, as the user's next message: a leading `actovia-answer` fence naming the
 /// block it answers, a blank line, then the answer in plain words — a line a question. Plain text, like `QuotedText`
 /// and `HealthContext`, so every provider reads it as what it is; the transcript reads it back with `split` to draw it
 /// as a card and to freeze the block it names. Held to the desktop's vectors
 /// (`packages/shared/src/utils/interactive-answer.ts`).
 enum InteractiveAnswer {
-    static let infoString = "exodus-answer"
+    static let infoString = "actovia-answer"
     /// An unanswered question's line.
     static let blank = "—"
     private static var opening: String { "```" + infoString + "\n" }  // l10n:ignore: markdown syntax
@@ -3217,7 +3217,7 @@ extension InteractiveAnswer.Head {
 - [ ] **Step 5: Run the tests**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveBlockTests -only-testing:ChatFeatureTests/InteractiveFenceTests -only-testing:ChatFeatureTests/InteractiveAnswerTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveBlockTests -only-testing:ChatFeatureTests/InteractiveFenceTests -only-testing:ChatFeatureTests/InteractiveAnswerTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: a `Test run with N tests … passed` line with N > 0 and no `✘` line (every argument of the parameterized tests passes); `0 error(s)`. If a vector fails, fix the Swift side — the desktop's vectors are the contract.
@@ -3284,22 +3284,22 @@ import Testing
 struct MarkdownFencedBlocksTests {
     @Test("a reserved fence parses as a code block whose language is its whole name")
     func parses() {
-        let blocks = MarkdownParser.parse("Before\n\n```exodus-ask\n{\"title\":\"T\"}\n```")
+        let blocks = MarkdownParser.parse("Before\n\n```actovia-ask\n{\"title\":\"T\"}\n```")
         guard case .codeBlock(let language, let code)? = blocks.last?.kind else {
             Issue.record("expected a code block")
             return
         }
-        #expect(language == "exodus-ask")
+        #expect(language == "actovia-ask")
         #expect(code == "{\"title\":\"T\"}")
     }
 
     @Test("only a named language reaches the host, and the host's nil draws the code")
     func asksOnlyForItsLanguages() {
-        let fenced = MarkdownFencedBlocks(languages: ["exodus-ask"]) { _, code in
+        let fenced = MarkdownFencedBlocks(languages: ["actovia-ask"]) { _, code in
             code == "mine" ? AnyView(Text(verbatim: "drawn")) : nil
         }
-        #expect(fenced.view(language: "exodus-ask", code: "mine") != nil)
-        #expect(fenced.view(language: "exodus-ask", code: "another") == nil)
+        #expect(fenced.view(language: "actovia-ask", code: "mine") != nil)
+        #expect(fenced.view(language: "actovia-ask", code: "another") == nil)
         #expect(fenced.view(language: "swift", code: "mine") == nil)
         #expect(fenced.view(language: nil, code: "mine") == nil)
     }
@@ -3357,7 +3357,7 @@ private let reply = """
     data: {"type":"message_update","message":{"id":"a2","role":"assistant","content":"Done."}}\n\n\
     data: {"type":"done","messages":[{"id":"u2","role":"user","content":"ok"},{"id":"a2","role":"assistant","content":"Done."}]}\n\n
     """
-private let answer = "```exodus-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"u1\",\"title\":\"Go?\"}\n```\n\n**Go?** Approved"
+private let answer = "```actovia-answer\n{\"block\":\"confirm\",\"decision\":\"approve\",\"ref\":\"u1\",\"title\":\"Go?\"}\n```\n\n**Go?** Approved"
 
 extension URLRequest {
     fileprivate func bodyData() -> Data {
@@ -3421,7 +3421,7 @@ struct ChatDetailViewModelAnswerTests {
         await model.sendText(answer)
         #expect(posts.bodies.count == 1)
         let body = try #require(posts.bodies.first)
-        #expect(body.contains("exodus-answer"))
+        #expect(body.contains("actovia-answer"))
         #expect(body.contains("Approved"))
         #expect(model.composerText == "half-typed")
     }
@@ -3457,11 +3457,11 @@ struct ChatDetailViewModelAnswerTests {
 - [ ] **Step 2: Run them to see them fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat                        # note the user's paths
 git diff --stat -- Sources/MarkdownKit/MarkdownBlockView.swift   # must print nothing
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'InteractiveText' in scope` (and `type 'InteractiveAnswer.Labels' has no member 'current'`), `TEST FAILED`.
 
@@ -3542,7 +3542,7 @@ print("added", len(KEYS), "keys to", path)
 - [ ] **Step 4: Apply it to the working catalog and to a copy of the committed one, and verify**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git show HEAD:Resources/App/Localizable.xcstrings > /tmp/blocks/head.xcstrings
 cp /tmp/blocks/head.xcstrings /tmp/blocks/mine.xcstrings
 python3 /tmp/blocks/add_keys.py /tmp/blocks/mine.xcstrings
@@ -3725,8 +3725,8 @@ python3 /tmp/blocks/dual_edit.py apply /tmp/blocks/vm_edits.py
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveTextTests -only-testing:ChatFeatureTests/ChatDetailViewModelAnswerTests -only-testing:ChatFeatureTests/ChatDetailViewModelTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveTextTests -only-testing:ChatFeatureTests/ChatDetailViewModelAnswerTests -only-testing:ChatFeatureTests/ChatDetailViewModelTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: both `Test run with N tests … passed`, no `✘`; `0 error(s)` (warnings that `ios:chat.block.otherPlaceholder`, `noteDefault`, `notePlaceholder`, `submit`, `approve`, `reject`, `answered`, `answer.title` are not referenced yet are expected until Tasks 7–8).
@@ -3781,9 +3781,9 @@ import Testing
 @testable import ChatFeature
 
 private let confirmSource = #"{"title":"Send the report?","details":"To **Ann**."}"#
-private let reply = "Here is the plan.\n\n```exodus-confirm\n\(confirmSource)\n```"
+private let reply = "Here is the plan.\n\n```actovia-confirm\n\(confirmSource)\n```"
 private let answer =
-    #"```exodus-answer\#n{"block":"confirm","decision":"approve","ref":"u1","title":"Send the report?"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"approve","ref":"u1","title":"Send the report?"}\#n```\#n\#n"#
     + "**Send the report?** Approved"
 
 @MainActor
@@ -3811,10 +3811,10 @@ struct InteractiveRenderingTests {
         let blocks = try #require(
             InteractiveRendering.fencedBlocks(
                 fence: fence, runId: "u1", answered: nil, canAnswer: true, sendAnswer: { _ in }))
-        #expect(blocks.languages == ["exodus-confirm"])
-        #expect(blocks.view(language: "exodus-confirm", code: confirmSource) != nil)
-        #expect(blocks.view(language: "exodus-confirm", code: #"{"title":"Another"}"#) == nil)
-        #expect(blocks.view(language: "exodus-ask", code: confirmSource) == nil)
+        #expect(blocks.languages == ["actovia-confirm"])
+        #expect(blocks.view(language: "actovia-confirm", code: confirmSource) != nil)
+        #expect(blocks.view(language: "actovia-confirm", code: #"{"title":"Another"}"#) == nil)
+        #expect(blocks.view(language: "actovia-ask", code: confirmSource) == nil)
     }
 
     @Test("a settled turn redraws when its block is answered, and on a turn starting only when it asks")
@@ -3838,10 +3838,10 @@ struct InteractiveRenderingTests {
 - [ ] **Step 2: Run it to see it fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat -- Sources/ChatFeature/AssistantTurnView.swift   # must print nothing
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveRenderingTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveRenderingTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'InteractiveRendering' in scope`, `TEST FAILED`.
 
@@ -3995,7 +3995,7 @@ struct InteractiveAnsweredLine: View {
 ```swift
 import SwiftUI
 
-/// A reply's questionnaire (`exodus-ask`) as a card in the answer: its title, the questions numbered, each choice a
+/// A reply's questionnaire (`actovia-ask`) as a card in the answer: its title, the questions numbered, each choice a
 /// 44 pt row, "Other…" opening a line to type on, the closing note and Submit. Submit sends the answers as the user's
 /// next message (`InteractiveAnswer`); once the transcript holds that message the card is frozen with its picks.
 struct QuestionnaireBlockView: View {
@@ -4130,7 +4130,7 @@ struct QuestionnaireBlockView: View {
 import MarkdownKit
 import SwiftUI
 
-/// A reply's confirmation (`exodus-confirm`): what will happen (Markdown), a note, Reject (bordered) and Approve
+/// A reply's confirmation (`actovia-confirm`): what will happen (Markdown), a note, Reject (bordered) and Approve
 /// (prominent, the tone's accent) — side by side, one over the other at accessibility sizes. Once the transcript holds
 /// the answer it shows the decision instead.
 struct ConfirmationBlockView: View {
@@ -4321,7 +4321,7 @@ with
 
     /// The turn holds a block still waiting for its answer, so whether one may be sent changes how it looks. Read only
     /// when `canAnswer` changed (a turn starting or ending), never per streamed frame.
-    nonisolated var asks: Bool { answered == nil && turn.body.contains("```exodus-") }
+    nonisolated var asks: Bool { answered == nil && turn.body.contains("```actovia-") }
 ```
 
 and in the `answer` view builder of `extension AssistantTurnView`, replace
@@ -4381,8 +4381,8 @@ python3 /tmp/blocks/dual_edit.py apply /tmp/blocks/view_edits.py
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: every ChatFeature test passes (`InteractiveRenderingTests` included); `** BUILD SUCCEEDED **`; `0 error(s)` (only `ios:chat.block.answer.title` may still warn as unreferenced, until Task 8). The views are seen in Task 9's gallery.
@@ -4449,10 +4449,10 @@ struct InteractiveAnswerCardTests {
 - [ ] **Step 2: Run it to see it fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat -- Sources/ChatFeature/AssistantTurnView.swift   # must print nothing (Task 7 committed it)
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveAnswerCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveAnswerCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'InteractiveAnswerCard' in scope`, `TEST FAILED`.
 
@@ -4582,8 +4582,8 @@ with
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveAnswerCardTests -only-testing:ChatFeatureTests/UserBubbleRulesTests -only-testing:ChatFeatureTests/HealthContextCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd -only-testing:ChatFeatureTests/InteractiveAnswerCardTests -only-testing:ChatFeatureTests/UserBubbleRulesTests -only-testing:ChatFeatureTests/HealthContextCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 python3 scripts/l10n.py audit 2>&1 | grep "ios:chat.block" || echo "every ios:chat.block key is referenced"
 ```
@@ -4632,12 +4632,12 @@ extension MessageGalleryFixtures {
             title: "A questionnaire in the answer",
             json: interactiveRun(
                 id: "ib1", question: "My legs itch after every shower. What can I do?",
-                reply: "That's common when the air is dry. A few details first, so I can be specific:\n\n```exodus-ask\n\(askSource)\n```")),
+                reply: "That's common when the air is dry. A few details first, so I can be specific:\n\n```actovia-ask\n\(askSource)\n```")),
         Run(
             title: "A confirmation before an action",
             json: interactiveRun(
                 id: "ib2", question: "Put the Kyoto trip in my calendar.",
-                reply: "Here's what I'd add:\n\n```exodus-confirm\n\(confirmSource)\n```")),
+                reply: "Here's what I'd add:\n\n```actovia-confirm\n\(confirmSource)\n```")),
         Run(title: "Answered: the block frozen, the answer as a card", json: answeredRun()),
     ]
 
@@ -4690,7 +4690,7 @@ extension MessageGalleryFixtures {
         ]
         return interactiveRun(
             id: "ib3", question: "My legs itch after every shower. What can I do?",
-            reply: "A few details first, so I can be specific:\n\n```exodus-ask\n\(askSource)\n```", then: rest)
+            reply: "A few details first, so I can be specific:\n\n```actovia-ask\n\(askSource)\n```", then: rest)
     }
 }
 #endif
@@ -4722,11 +4722,11 @@ EDITS = [
 ```
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 python3 /tmp/blocks/dual_edit.py check /tmp/blocks/gallery_edits.py    # OK … 3 edit(s)
 python3 /tmp/blocks/dual_edit.py apply /tmp/blocks/gallery_edits.py
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `** BUILD SUCCEEDED **`; `0 error(s)`.
@@ -4740,7 +4740,7 @@ Write `/tmp/blocks/shots.sh`:
 # Light, dark and AX screenshots of the interactive blocks' gallery runs. Run from the repo root.
 set -euo pipefail
 SIM=992425B7-F06B-4CE5-9288-95C71C2F1D44
-APP=app.yancey.exodus.exodus-ios
+APP=app.yancey.actovia.actovia-ios
 OUT=.superpowers/blocks
 mkdir -p "$OUT"
 shoot() {
@@ -4764,7 +4764,7 @@ echo done
 
 ```bash
 xcrun simctl boot 992425B7-F06B-4CE5-9288-95C71C2F1D44 2>/dev/null || true
-xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/blocks-dd/Build/Products/Debug-iphonesimulator/Exodus.app
+xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/blocks-dd/Build/Products/Debug-iphonesimulator/Actovia.app
 bash /tmp/blocks/shots.sh
 ```
 
@@ -4780,8 +4780,8 @@ Fix mismatches before committing (re-run the script after a fix). Tap an option 
 ```markdown
 # Interactive blocks — device checklist
 
-Phase 1 of `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md`: the questionnaire (`exodus-ask`) and the
-confirmation (`exodus-confirm`), on the desktop and on the iPhone.
+Phase 1 of `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md`: the questionnaire (`actovia-ask`) and the
+confirmation (`actovia-confirm`), on the desktop and on the iPhone.
 
 ## Desktop
 
@@ -4808,10 +4808,10 @@ confirmation (`exodus-confirm`), on the desktop and on the iPhone.
 - [ ] **Step 5: Run every ChatFeature and MarkdownKit test once more, and the desktop's**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia-ios
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme MarkdownKit -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/blocks-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+cd /Users/yanceyleo/Code/actovia/actovia
 bunx vitest run tests/unit/shared/types/interactive.test.ts tests/unit/shared/utils/interactive-answer.test.ts tests/unit/main/lib/ai/interactive-blocks-prompt.test.ts tests/unit/renderer/components/chat/interactive-blocks.test.ts tests/unit/renderer/components/chat/answer-card.test.ts
 ```
 Expected: all pass.
@@ -4819,7 +4819,7 @@ Expected: all pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 python3 /tmp/blocks/dual_edit.py patch /tmp/blocks/gallery_edits.py /tmp/blocks/gallery.patch   # PATCH-OK
 .superpowers/sdd/commit-mine.sh "feat(chat): interactive blocks in the message gallery — a questionnaire, a confirmation, one answered with its card — and a device checklist for both apps" \
   --patch /tmp/blocks/gallery.patch \
@@ -4834,11 +4834,11 @@ git diff --stat -- Sources/ChatFeature/MessageGallery.swift   # the user's own e
 
 **Spec coverage:**
 - §1 one mechanism (reserved fence + JSON), answer as plain text, room to type everywhere (Other line per question when allowed, a closing note on every questionnaire, a note on every confirmation), desktop on `questionnaire.tsx`, iOS in its own design language → Tasks 1, 3, 5, 7.
-- §2.1 `exodus-ask` / `exodus-confirm` shapes and limits (zod and the Swift decoder, the same vectors), unknown / invalid → code, one block per message → Tasks 1, 5 (+ Decisions 4, 5).
-- §2.2 the answer: leading `exodus-answer` fence, `{block, ref}` (+ `title`, `decision` — Decision 2), lines as specified, localized words (Decision 3); the prompt's rule about it → Task 2; both clients draw it as a card via `splitAnswer` / `InteractiveAnswer.split` → Tasks 4, 8.
+- §2.1 `actovia-ask` / `actovia-confirm` shapes and limits (zod and the Swift decoder, the same vectors), unknown / invalid → code, one block per message → Tasks 1, 5 (+ Decisions 4, 5).
+- §2.2 the answer: leading `actovia-answer` fence, `{block, ref}` (+ `title`, `decision` — Decision 2), lines as specified, localized words (Decision 3); the prompt's rule about it → Task 2; both clients draw it as a card via `splitAnswer` / `InteractiveAnswer.split` → Tasks 4, 8.
 - §2.3 frozen by ref match from loaded messages, nothing stored; desktop disabled/summary state, iOS disabled + "Answered"; a block renders only once its fence is closed → Tasks 3, 7 (+ Decisions 1, 6).
 - §3 the prompt section, only in the chat's prompt, ~40 lines (20), both examples, the answer rule → Task 2 (+ Decision 9).
-- §4 desktop: `markdown.tsx` hands `exodus-ask`/`exodus-confirm` to `InteractiveFence` (from `pre()`, Decision 12), zod in `packages/shared/src/types/interactive.ts`, `QuestionnaireBlock` on the Questionnaire primitive (Decision 7), `ConfirmationBlock` pending/approved/rejected, `composeAnswer`/`splitAnswer` in `utils/interactive-answer.ts`, sent through `useChat.sendMessage` with the composer untouched, a block in an older run still answers, the user bubble's card → Tasks 1, 3, 4.
+- §4 desktop: `markdown.tsx` hands `actovia-ask`/`actovia-confirm` to `InteractiveFence` (from `pre()`, Decision 12), zod in `packages/shared/src/types/interactive.ts`, `QuestionnaireBlock` on the Questionnaire primitive (Decision 7), `ConfirmationBlock` pending/approved/rejected, `composeAnswer`/`splitAnswer` in `utils/interactive-answer.ts`, sent through `useChat.sendMessage` with the composer untouched, a block in an older run still answers, the user bubble's card → Tasks 1, 3, 4.
 - §5 iOS: MarkdownKit `.codeBlock` → `InteractiveBlockView` (through `markdownFencedBlocks`, Decision 10), `QuestionnaireBlockView`, `ConfirmationBlockView`, `InteractiveAnswer.compose` on the same vectors, `UserBubble` card, Dynamic Type (wrapping rows, stacking buttons), VoiceOver (toggle traits, "Sent"), Reduce Motion, haptics → Tasks 5–8 (+ Decisions 11, 13).
 - §6 streaming (open fence = code), invalid / over limits / second block = code, disabled while streaming, offline (normal failure path — Decision 8), reopened chat (ref match), blanks allowed (`—`, Skip on the desktop) → Tasks 1, 3, 5, 6, 7.
 - §7 testing: shared vitest vectors and zod limits → Task 1; desktop happy-dom (blocks render, invalid → `<pre>`, submit sends the composed text, frozen has no submit, the bubble's card) → Tasks 3, 4; iOS Swift Testing on the same vectors, decoder limits, MarkdownKit block detection, gallery ask/confirm/answered with light/dark/AX screenshots → Tasks 5, 6, 9; the prompt only for chat → Task 2.

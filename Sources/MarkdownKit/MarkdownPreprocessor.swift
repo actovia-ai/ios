@@ -9,7 +9,7 @@ public struct MarkdownBlockCache: Sendable {
 }
 
 public enum MarkdownPreprocessor {
-    public static let citationScheme = "exodus-cite"
+    public static let citationScheme = "actovia-cite"
 
     public static func splitBlocks(_ text: String) -> [Substring] {
         var cache = MarkdownBlockCache()

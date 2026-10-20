@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Localization tooling for exodus-ios (standard library only, Python 3.9+).
+"""Localization tooling for actovia-ios (standard library only, Python 3.9+).
 
   l10n.py audit [--source-only] [--exclude PATH ...]
       Checks both catalogs and the Swift sources; exit status 1 on any error.
@@ -19,7 +19,7 @@
       from English gets positional ones (%2$@ … %1$@) and is listed. Exit status 1 when a shared key
       is not on the desktop (renamed or removed?) or cannot be shared as-is (markup, a plural-suffixed
       catalog key, placeholders that differ between languages).
-      Default LOCALES_DIR: Vendor/exodus-locales
+      Default LOCALES_DIR: Vendor/actovia-locales
 """
 from __future__ import annotations
 
@@ -317,12 +317,12 @@ def audit_catalog(path, implicit_source, source_only):
 def vendor_errors(strings):
     """A desktop-namespaced catalog key must be in the vendored subtree, or nothing records where its
     text came from (a later `sync-from-desktop` would report it missing)."""
-    vendor = ROOT / "Vendor/exodus-locales"
+    vendor = ROOT / "Vendor/actovia-locales"
     if not vendor.is_dir():
         return []
     en = {key for (lang, key) in flatten_desktop_locales(vendor) if lang == SOURCE_LANGUAGE}
     return [
-        "%r is a desktop key but not in Vendor/exodus-locales (sync the subtree, or make it an ios: key)" % key
+        "%r is a desktop key but not in Vendor/actovia-locales (sync the subtree, or make it an ios: key)" % key
         for key, entry in sorted(strings.items())
         if not key.startswith(IOS_PREFIX) and entry.get("shouldTranslate") is not False
         and key not in en and not any("%s_%s" % (key, c) in en for c in PLURAL_CATEGORIES)
@@ -538,7 +538,7 @@ def main():
     fill.add_argument("--file")
     fill.set_defaults(run=cmd_fill)
     sync = sub.add_parser("sync-from-desktop")
-    sync.add_argument("locales_dir", nargs="?", default=str(ROOT / "Vendor/exodus-locales"))
+    sync.add_argument("locales_dir", nargs="?", default=str(ROOT / "Vendor/actovia-locales"))
     sync.add_argument("--file")
     sync.set_defaults(run=cmd_sync)
     args = parser.parse_args()

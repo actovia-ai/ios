@@ -31,12 +31,12 @@
 
 ## Global Constraints
 
-- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/exodus/exodus-ios`, desktop `/Users/yanceyleo/Code/exodus/exodus`. Read `exodus-ios/.superpowers/sdd/constraints.md` once; where it differs from this list (simulator, `git add -p`), this list wins.
-- **Commits only through each repo's helper**, from that repo's root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>` (iOS: `/Users/yanceyleo/Code/exodus/exodus-ios/.superpowers/sdd/commit-mine.sh`; desktop: `/Users/yanceyleo/Code/exodus/exodus/.superpowers/sdd/commit-mine.sh`, whose commit runs the desktop's pre-commit hook: `lint-staged` (oxlint + oxfmt) → `bun run typecheck` → `bun run i18n:check`). Never run `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore`, `git checkout -- <file>`, and never `--no-verify`. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, or if the hook fails on files that are not yours, STOP and report BLOCKED (do not repair history, do not touch the user's files).
-- **Both trees hold the user's uncommitted work.** iOS: `Resources/App/Localizable.xcstrings` (edited by this plan only through `/tmp/health2/add_keys.py`), `Sources/App/ExodusApp.swift` and many ChatFeature/Settings files (never touched), and `Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json` pre-staged by someone else (must stay staged and out of every commit). Desktop: ~170 dirty paths (never touched). Every other file this plan edits was clean on 2026-10-02 (iOS HEAD `2d45d86`, desktop HEAD `d4715615`). Run `git diff --stat` at the start and end of every task: only the files your task names may change. **Before editing a file, run `git diff --stat -- <file>`; if it is no longer empty (the user edited it meanwhile), edit it only through `/tmp/health2/dual_edit.py` (Shared tooling) and commit its patch.**
+- Two repos, both on branch `maintenance`, **never push**: iOS `/Users/yanceyleo/Code/actovia/actovia-ios`, desktop `/Users/yanceyleo/Code/actovia/actovia`. Read `actovia-ios/.superpowers/sdd/constraints.md` once; where it differs from this list (simulator, `git add -p`), this list wins.
+- **Commits only through each repo's helper**, from that repo's root: `.superpowers/sdd/commit-mine.sh "<subject>" [--patch FILE.patch ...] <paths you own>` (iOS: `/Users/yanceyleo/Code/actovia/actovia-ios/.superpowers/sdd/commit-mine.sh`; desktop: `/Users/yanceyleo/Code/actovia/actovia/.superpowers/sdd/commit-mine.sh`, whose commit runs the desktop's pre-commit hook: `lint-staged` (oxlint + oxfmt) → `bun run typecheck` → `bun run i18n:check`). Never run `git add`, `git commit`, `git commit -a`, `git stash`, `git reset`, `git restore`, `git checkout -- <file>`, and never `--no-verify`. After each commit run `git show --stat HEAD` and confirm it lists ONLY your files; if not, or if the hook fails on files that are not yours, STOP and report BLOCKED (do not repair history, do not touch the user's files).
+- **Both trees hold the user's uncommitted work.** iOS: `Resources/App/Localizable.xcstrings` (edited by this plan only through `/tmp/health2/add_keys.py`), `Sources/App/ActoviaApp.swift` and many ChatFeature/Settings files (never touched), and `Resources/App/Assets.xcassets/LaunchLogo.imageset/Contents.json` pre-staged by someone else (must stay staged and out of every commit). Desktop: ~170 dirty paths (never touched). Every other file this plan edits was clean on 2026-10-02 (iOS HEAD `2d45d86`, desktop HEAD `d4715615`). Run `git diff --stat` at the start and end of every task: only the files your task names may change. **Before editing a file, run `git diff --stat -- <file>`; if it is no longer empty (the user edited it meanwhile), edit it only through `/tmp/health2/dual_edit.py` (Shared tooling) and commit its patch.**
 - iOS: Swift 6 language mode, iOS 27.0 deployment target, Tuist 4.208 with buildable folders. **After creating any new file under `Sources/` or `Tests/`, run `tuist generate --no-open` before building** (otherwise a new `Sources/HealthFeature` file compiles into the resource-bundle target and cannot see the module's types).
-- iOS builds/tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/health2-dd`. Tests: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd [-only-testing:HealthFeatureTests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: same with `build -scheme App` and `grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
-- Desktop tests: from `/Users/yanceyleo/Code/exodus/exodus`, `bunx vitest run <path>`. Before a desktop commit: `bunx oxlint <your files>` and `bunx oxfmt <your files>` (so the hook changes nothing), then `bun run typecheck:node` and `bun run typecheck:shared`.
+- iOS builds/tests: simulator `992425B7-F06B-4CE5-9288-95C71C2F1D44`, `-derivedDataPath /tmp/health2-dd`. Tests: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd [-only-testing:HealthFeatureTests/<TypeName>] 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"`. A wrong `-only-testing` name still prints SUCCEEDED — confirm a `Test run with N tests` line with N > 0. App build: same with `build -scheme App` and `grep -E "error:|BUILD (SUCCEEDED|FAILED)"`.
+- Desktop tests: from `/Users/yanceyleo/Code/actovia/actovia`, `bunx vitest run <path>`. Before a desktop commit: `bunx oxlint <your files>` and `bunx oxfmt <your files>` (so the hook changes nothing), then `bun run typecheck:node` and `bun run typecheck:shared`.
 - **Health data stays on the phone** except what this route receives per request; the desktop stores nothing for it (no DB write, no file, no memory write), logs timings and counts only, never a number or a sentence. The desktop keeps no health data (user's decision: no Health entry on the desktop).
 - **Trends against the person's own past are what makes the note valuable** (user's explicit priority): the prompt leads with the change against the period before; the page shows the comparisons.
 - iOS strings: new keys `ios:health.periodReport.<element>`, all ten languages (en, zh-Hant, zh-HK, ja, ko, fr, de, es, pt-BR, it), inserted **textually** with `/tmp/health2/add_keys.py` (Task 5). Never run `scripts/l10n.py add`, `fill` or `save`. `python3 scripts/l10n.py audit 2>&1 | tail -1` prints `0 error(s)` at the end of every iOS task (warnings for keys not referenced yet are fine until Task 7). Views use the key literal (`Text("ios:health.periodReport.writeNow")`); code uses `String(localized: "…", defaultValue: "<exact English>", comment: "…")` / `LocalizedStringResource(…)` whose `defaultValue` equals the catalog's English exactly. Never concatenate a sentence; never pass a ternary of two string literals to a text initializer; user data and numbers go through `Text(verbatim:)`.
@@ -135,7 +135,7 @@ Workflow: write `EDITS.py` with the task's (old, new) pairs → `check` (prints 
 
 ## File Structure
 
-**Desktop (`/Users/yanceyleo/Code/exodus/exodus`)**
+**Desktop (`/Users/yanceyleo/Code/actovia/actovia`)**
 - Modify `packages/shared/src/types/health.ts` — append the period-report schemas, `periodAverage`, `periodDirection`, `parsePeriodReport`.
 - Create `tests/unit/shared/types/health-period-fixtures.ts` — `PERIOD_REQUEST`, `PERIOD_REPORT` (the iOS wire tests hold the same JSON).
 - Create `tests/unit/shared/types/health-period.test.ts` — schemas and lenient parsing.
@@ -178,19 +178,19 @@ Workflow: write `EDITS.py` with the task's (old, new) pairs → `check` (prints 
 
 **Interfaces:**
 - Consumes: `count`, `isObject`, `healthCategorySchema`, `healthStatSchema` (already in `health.ts`).
-- Produces (exported from `@exodus/shared/types/health`): `periodKindSchema`, `reportPeriodSchema`, `periodAggregatesSchema`, `habitKindSchema`, `periodReportRequestSchema`, `periodMetricSchema`, `periodInsightSchema`, `periodComparisonSchema`, `periodReportSchema`; types `PeriodReportRequest`, `PeriodAggregates`, `PeriodMetric`, `PeriodReport`, `PeriodInsight`, `PeriodComparison`; `periodAverage(a: PeriodAggregates | null | undefined, metric: PeriodMetric): number | null`; `periodDirection(current: number, previous: number): 'up' | 'down' | 'flat'`; `parsePeriodReport(value: unknown, request: PeriodReportRequest): PeriodReport | null`. Fixtures `PERIOD_REQUEST`, `PERIOD_REPORT`.
+- Produces (exported from `@actovia/shared/types/health`): `periodKindSchema`, `reportPeriodSchema`, `periodAggregatesSchema`, `habitKindSchema`, `periodReportRequestSchema`, `periodMetricSchema`, `periodInsightSchema`, `periodComparisonSchema`, `periodReportSchema`; types `PeriodReportRequest`, `PeriodAggregates`, `PeriodMetric`, `PeriodReport`, `PeriodInsight`, `PeriodComparison`; `periodAverage(a: PeriodAggregates | null | undefined, metric: PeriodMetric): number | null`; `periodDirection(current: number, previous: number): 'up' | 'down' | 'flat'`; `parsePeriodReport(value: unknown, request: PeriodReportRequest): PeriodReport | null`. Fixtures `PERIOD_REQUEST`, `PERIOD_REPORT`.
 
 - [ ] **Step 1: Check the files are clean and write the fixtures**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 git diff --stat -- packages/shared/src/types/health.ts src/main/lib/server/routes/health.ts   # must print nothing
 ```
 
 Create `tests/unit/shared/types/health-period-fixtures.ts`:
 
 ```ts
-// The period report's wire examples (exodus-ios trends, phase 2). exodus-ios's
+// The period report's wire examples (actovia-ios trends, phase 2). actovia-ios's
 // PeriodReportWireTests holds the same JSON, so the two sides agree on it.
 export const PERIOD_REQUEST = {
   period: { kind: 'month', start: '2026-09-01', end: '2026-09-30' },
@@ -281,7 +281,7 @@ import {
   periodDirection,
   periodReportRequestSchema,
   periodReportSchema
-} from '@exodus/shared/types/health'
+} from '@actovia/shared/types/health'
 import { describe, expect, it } from 'vitest'
 
 import { PERIOD_REPORT, PERIOD_REQUEST } from './health-period-fixtures'
@@ -493,11 +493,11 @@ At the very end of the file add:
 
 ```ts
 
-// ── Period reports (exodus-ios trends, phase 2) ─────────────────────────────
+// ── Period reports (actovia-ios trends, phase 2) ─────────────────────────────
 // A finished week, month, quarter or year: the phone sends that period's
 // aggregates (and the period before's), the daily notes it kept, and the
 // habits it tracks; the desktop answers with the report and keeps nothing.
-// exodus-ios mirrors both in Sources/HealthFeature/Report/PeriodReport.swift
+// actovia-ios mirrors both in Sources/HealthFeature/Report/PeriodReport.swift
 // and PeriodReportInput.swift.
 
 const wireDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -764,7 +764,7 @@ Expected: all pass (the daily note's tests unchanged).
 - [ ] **Step 6: Lint, format, typecheck, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="packages/shared/src/types/health.ts tests/unit/shared/types/health-period-fixtures.ts tests/unit/shared/types/health-period.test.ts"
 bunx oxlint $F && bunx oxfmt $F
 bunx vitest run tests/unit/shared/types/health-period.test.ts
@@ -791,7 +791,7 @@ git show --stat HEAD                   # exactly the three files
 Create `tests/unit/main/lib/server/routes/health-period-report.test.ts`:
 
 ```ts
-import { isAppError } from '@exodus/shared/errors/app-error'
+import { isAppError } from '@actovia/shared/errors/app-error'
 import { Hono } from 'hono'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -1008,7 +1008,7 @@ import {
   healthSnapshotSchema,
   parseHealthSummary,
   type HealthSnapshot
-} from '@exodus/shared/types/health'
+} from '@actovia/shared/types/health'
 ```
 
 with
@@ -1022,13 +1022,13 @@ import {
   periodReportRequestSchema,
   type HealthSnapshot,
   type PeriodReportRequest
-} from '@exodus/shared/types/health'
+} from '@actovia/shared/types/health'
 ```
 
 Replace the file's header comment lines
 
 ```ts
-// exodus-ios's Health workspace: one report a day, written from the phone's
+// actovia-ios's Health workspace: one report a day, written from the phone's
 // aggregated snapshot. Stateless — nothing is stored, and the logs carry
 // timings, never the numbers.
 ```
@@ -1036,7 +1036,7 @@ Replace the file's header comment lines
 with
 
 ```ts
-// exodus-ios's Health workspace: one report a day, written from the phone's
+// actovia-ios's Health workspace: one report a day, written from the phone's
 // aggregated snapshot, and one for each finished week, month, quarter and
 // year, written from that period's aggregates. Stateless — nothing is stored,
 // and the logs carry timings, never the numbers.
@@ -1176,7 +1176,7 @@ Expected: all pass (the daily note's route tests unchanged).
 - [ ] **Step 5: Lint, format, typecheck, commit**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus
+cd /Users/yanceyleo/Code/actovia/actovia
 F="src/main/lib/server/routes/health.ts tests/unit/main/lib/server/routes/health-period-report.test.ts"
 bunx oxlint $F && bunx oxfmt $F
 bunx vitest run tests/unit/main/lib/server/routes/health-period-report.test.ts tests/unit/main/lib/server/routes/health.test.ts
@@ -1491,10 +1491,10 @@ struct PeriodReportInputTests {
 - [ ] **Step 2: Run them to see them fail**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git diff --stat -- Sources/HealthFeature Tests/HealthFeatureTests   # must print nothing
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportWireTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportWireTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'PeriodReportRequest' in scope` (and the other new names), `TEST FAILED`.
 
@@ -1847,7 +1847,7 @@ public struct LivePeriodReportService: PeriodReportService {
 ```bash
 tuist generate --no-open
 for T in PeriodReportWireTests PeriodReportStoreTests PeriodReportInputTests; do
-  xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+  xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 done
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
@@ -2185,7 +2185,7 @@ struct HealthHomeReportsTests {
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportScheduleTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportScheduleTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'PeriodReportSchedule' in scope` (and `PeriodReports`, `periodReports:`), `TEST FAILED`.
 
@@ -2566,9 +2566,9 @@ and add, just before `/// The glance once the report has settled.`:
 ```bash
 tuist generate --no-open
 for T in PeriodReportScheduleTests PeriodReportsTests HealthHomeReportsTests HealthHomeModelTests WidgetGlanceTests; do
-  xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+  xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 done
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: 4, 9 and 5 tests pass in the new suites; `HealthHomeModelTests` and `WidgetGlanceTests` still pass; `** BUILD SUCCEEDED **` (the gallery's `HealthHomeModel(...)` call still compiles: the new parameter has a default); `0 error(s)`.
@@ -2683,7 +2683,7 @@ struct PeriodReportTextTests {
 ```bash
 git diff --stat                                  # note the catalog's foreign edits before you start
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'PeriodReportText' in scope`, `TEST FAILED`.
 
@@ -2798,7 +2798,7 @@ print("added", len(KEYS), "keys and replaced", len(REPLACE), "in", path)
 - [ ] **Step 4: Apply it to the working catalog and to a copy of the committed one, and verify**
 
 ```bash
-cd /Users/yanceyleo/Code/exodus/exodus-ios
+cd /Users/yanceyleo/Code/actovia/actovia-ios
 git show HEAD:Resources/App/Localizable.xcstrings > /tmp/health2/head.xcstrings
 cp /tmp/health2/head.xcstrings /tmp/health2/mine.xcstrings
 python3 /tmp/health2/add_keys.py /tmp/health2/mine.xcstrings
@@ -2975,7 +2975,7 @@ with
 
 ```bash
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportTextTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `Test run with 6 tests passed`; `0 error(s)` (keys only views use show as "not referenced" warnings until Tasks 6–7).
@@ -3076,7 +3076,7 @@ struct PeriodReportPageTests {
 ```bash
 git diff --stat -- Sources/HealthFeature/UI/ReportStory.swift Sources/HealthFeature/UI/HealthHomeView.swift   # must print nothing
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportPageTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportPageTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'PeriodReportView' in scope`, `TEST FAILED`.
 
@@ -3396,9 +3396,9 @@ with
 ```bash
 tuist generate --no-open
 for T in PeriodReportPageTests ReportStoryTests; do
-  xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+  xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 done
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 ```
 Expected: `Test run with 3 tests passed`; `ReportStoryTests` still pass; `** BUILD SUCCEEDED **`; `0 error(s)`.
@@ -3456,7 +3456,7 @@ struct PeriodReportCardTests {
 ```bash
 git diff --stat -- Sources/HealthFeature/Trends/TrendsView.swift Sources/HealthFeature/Trends/WeekCard.swift Sources/HealthFeature/UI/HealthHomeView.swift   # must print nothing
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/PeriodReportCardTests 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 ```
 Expected: `error: cannot find 'PeriodReportCard' in scope`, `TEST FAILED`.
 
@@ -3712,9 +3712,9 @@ with
 ```bash
 tuist generate --no-open
 for T in PeriodReportCardTests WeekCardTests TrendsModelTests; do
-  xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+  xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd -only-testing:HealthFeatureTests/$T 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 done
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 python3 scripts/l10n.py audit 2>&1 | grep "not referenced" | grep -c "ios:health.periodReport" || true   # 0
 ```
@@ -3934,7 +3934,7 @@ Write `/tmp/health2/shots.sh`:
 # Light, dark and AX screenshots of the period-report gallery states. Run from the repo root.
 set -euo pipefail
 SIM=992425B7-F06B-4CE5-9288-95C71C2F1D44
-APP=app.yancey.exodus.exodus-ios
+APP=app.yancey.actovia.actovia-ios
 OUT=.superpowers/health2
 mkdir -p "$OUT"
 shoot() {
@@ -3960,9 +3960,9 @@ echo done
 ```
 
 ```bash
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
 xcrun simctl boot 992425B7-F06B-4CE5-9288-95C71C2F1D44 2>/dev/null || true
-xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/health2-dd/Build/Products/Debug-iphonesimulator/Exodus.app
+xcrun simctl install 992425B7-F06B-4CE5-9288-95C71C2F1D44 /tmp/health2-dd/Build/Products/Debug-iphonesimulator/Actovia.app
 bash /tmp/health2/shots.sh
 ```
 
@@ -4016,7 +4016,7 @@ with
 - [ ] **Step 6: Final checks and commit**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme HealthFeature -destination "id=992425B7-F06B-4CE5-9288-95C71C2F1D44" -derivedDataPath /tmp/health2-dd 2>&1 | grep -E "error:|✘|Test run with|TEST (SUCCEEDED|FAILED)"
 python3 scripts/l10n.py audit 2>&1 | tail -1
 git diff --stat
 .superpowers/sdd/commit-mine.sh "feat(health): period-report gallery states — the page, the calendar card, waiting for the computer, the home's line — device checklist and README" \

@@ -5,7 +5,7 @@ import Testing
 
 @Suite("PinnedSessionDelegate")
 struct PinnedSessionDelegateTests {
-    /// A self-signed P-256 certificate (CN=Exodus), DER, generated with openssl.
+    /// A self-signed P-256 certificate (CN=Actovia), DER, generated with openssl.
     static let certificateDER = Data(
         base64Encoded:
             "MIICBzCCAawCCQDnpUWfTIixVDAKBggqhkjOPQQDAjARMQ8wDQYDVQQDDAZFeG9kdXMwHhcNMjYwOTE5MjA0NzEwWhcNMzYwOTE2MjA0NzEwWjARMQ8wDQYDVQQDDAZFeG9kdXMwggFLMIIBAwYHKoZIzj0CATCB9wIBATAsBgcqhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg/////wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxlHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEQQRrF9Hy4SxCR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClk/jQuL+Gn+bjufrSnwPnhYrzjNXazFezsu2QGg3v1H1AiEA/////wAAAAD//////////7zm+q2nF56E87nKwvxjJVECAQEDQgAEAXOyliOeliZ/N2p+n5fuUF9ITWc0rwI5/PBRkbDXi5r9aOXf1AiVmGyIDpfUFLN/7noGGz9Pk+oRGN3c6V+0ezAKBggqhkjOPQQDAgNJADBGAiEAsuwPVeA2BRcxaCtP9D0oyr83arDupBGj3dRfgMrKPP8CIQDfAaVmKvx86zxH32mGJsYQ2pBhUf1j1+TkhaYIQybX5g=="

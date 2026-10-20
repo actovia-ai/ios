@@ -54,9 +54,9 @@ public struct HeartbeatWave: View {
 enum HeartbeatShader {
     private final class Marker {}
 
-    /// `ExodusIos_OdyKit.bundle`, looked up by hand as `ImageFormingShader` does: no bundle, the Canvas fallback.
+    /// `ActoviaIos_OdyKit.bundle`, looked up by hand as `ImageFormingShader` does: no bundle, the Canvas fallback.
     static let library: ShaderLibrary? = {
-        let name = "ExodusIos_OdyKit.bundle"
+        let name = "ActoviaIos_OdyKit.bundle"
         for base in [Bundle.main.resourceURL, Bundle(for: Marker.self).resourceURL] {
             guard let url = base?.appendingPathComponent(name), let bundle = Bundle(url: url),
                 bundle.url(forResource: "default", withExtension: "metallib") != nil

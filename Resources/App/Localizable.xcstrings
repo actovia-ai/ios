@@ -34195,7 +34195,7 @@
         }
       }
     },
-    "ios:onboarding.getExodus" : {
+    "ios:onboarding.getActovia" : {
       "comment" : "Welcome screen of an unpaired iPhone: a link to the desktop app's website. Actovia is the app's name.",
       "extractionState" : "manual",
       "localizations" : {
@@ -34327,7 +34327,7 @@
         }
       }
     },
-    "ios:onboarding.noExodusYet" : {
+    "ios:onboarding.noActoviaYet" : {
       "comment" : "Under the website link on the welcome screen of an unpaired iPhone.",
       "extractionState" : "manual",
       "localizations" : {
@@ -40537,61 +40537,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sichert Ihre Daten täglich um 3:00 Uhr. Backups werden lokal unter ~/.exodus/backups/ gespeichert."
+            "value" : "Sichert Ihre Daten täglich um 3:00 Uhr. Backups werden lokal unter ~/.actovia/backups/ gespeichert."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Back up your data daily at 3:00 AM. Backups are stored locally in ~/.exodus/backups/."
+            "value" : "Back up your data daily at 3:00 AM. Backups are stored locally in ~/.actovia/backups/."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haga una copia de seguridad de sus datos todos los días a las 3:00 a. m. Las copias se guardan localmente en ~/.exodus/backups/."
+            "value" : "Haga una copia de seguridad de sus datos todos los días a las 3:00 a. m. Las copias se guardan localmente en ~/.actovia/backups/."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sauvegardez vos données quotidiennement à 3h00. Les sauvegardes sont stockées localement dans ~/.exodus/backups/."
+            "value" : "Sauvegardez vos données quotidiennement à 3h00. Les sauvegardes sont stockées localement dans ~/.actovia/backups/."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esegue il backup dei tuoi dati ogni giorno alle 3:00. I backup vengono salvati localmente in ~/.exodus/backups/."
+            "value" : "Esegue il backup dei tuoi dati ogni giorno alle 3:00. I backup vengono salvati localmente in ~/.actovia/backups/."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "毎日午前3:00にデータをバックアップします。バックアップは~/.exodus/backups/にローカル保存されます。"
+            "value" : "毎日午前3:00にデータをバックアップします。バックアップは~/.actovia/backups/にローカル保存されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "매일 오전 3시에 데이터를 백업합니다. 백업은 ~/.exodus/backups/에 로컬로 저장됩니다."
+            "value" : "매일 오전 3시에 데이터를 백업합니다. 백업은 ~/.actovia/backups/에 로컬로 저장됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Faça backup dos seus dados diariamente às 3h. Os backups são armazenados localmente em ~/.exodus/backups/."
+            "value" : "Faça backup dos seus dados diariamente às 3h. Os backups são armazenados localmente em ~/.actovia/backups/."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每天凌晨 3:00 備份你的資料，備份會儲存在本機的 ~/.exodus/backups/。"
+            "value" : "每天凌晨 3:00 備份你的資料，備份會儲存在本機的 ~/.actovia/backups/。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每天凌晨 3:00 備份你的資料。備份會儲存於本機的 ~/.exodus/backups/。"
+            "value" : "每天凌晨 3:00 備份你的資料。備份會儲存於本機的 ~/.actovia/backups/。"
           }
         }
       }

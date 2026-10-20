@@ -30,7 +30,7 @@ struct StepsPictures: Equatable, Sendable {
     }
 }
 
-/// A reply's illustrated steps (`exodus-steps`): a numbered card, each step its text and, when its picture is one of
+/// A reply's illustrated steps (`actovia-steps`): a numbered card, each step its text and, when its picture is one of
 /// the run's search thumbnails, that picture, loaded on sight as the gallery loads its thumbnails. A picture that is
 /// anything else is dropped — never fetched, never a tap-to-load (spec 2026-10-07 §2.1).
 struct StepsBlockView: View {

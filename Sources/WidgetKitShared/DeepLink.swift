@@ -15,7 +15,7 @@ public enum DeepLink: Equatable, Sendable {
         case camera, voice
     }
 
-    public static let scheme = "exodus"
+    public static let scheme = "actovia"
     public static let maxPrompt = 500
 
     public var url: URL {

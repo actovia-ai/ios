@@ -2,7 +2,7 @@ import Foundation
 import Models
 import Testing
 
-// Shapes of exodus's src/main/lib/server/routes/deep-research.ts: `/result/:id` is the `deep_research` row, `/messages/:id`
+// Shapes of actovia's src/main/lib/server/routes/deep-research.ts: `/result/:id` is the `deep_research` row, `/messages/:id`
 // the `deep_research_message` rows, each `message` the JSON-RPC notification `notifyClients` saved.
 
 private func json(_ text: String) -> JSONValue {

@@ -5,7 +5,7 @@ import Foundation
 /// narrow override, not a blanket escape hatch.
 public final class ServerConfigStore: @unchecked Sendable {
     private let userDefaults: UserDefaults
-    private static let key = "exodus.serverURL"
+    private static let key = "actovia.serverURL"
     private static let defaultBaseURL = "http://localhost:60223"
 
     /// The paired computer, when there is one. Set once at start-up.

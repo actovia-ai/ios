@@ -6,11 +6,11 @@ import Testing
 @testable import ChatFeature
 
 private let confirmSource = #"{"title":"Send the report?","details":"To **Ann**."}"#
-private let fenceText = "```exodus-confirm\n\(confirmSource)\n```"
+private let fenceText = "```actovia-confirm\n\(confirmSource)\n```"
 private let reply = "Here is the plan.\n\n\(fenceText)"
 private let noSend: @MainActor @Sendable (String) -> Bool = { _ in false }
 private let answer =
-    #"```exodus-answer\#n{"block":"confirm","decision":"approve","ref":"u1","title":"Send the report?"}\#n```\#n\#n"#
+    #"```actovia-answer\#n{"block":"confirm","decision":"approve","ref":"u1","title":"Send the report?"}\#n```\#n\#n"#
     + "**Send the report?** Approved"
 
 /// How many of the texts' code blocks — at any depth, as MarkdownKit parses them — the host draws as its control.
@@ -85,8 +85,8 @@ struct InteractiveRenderingTests {
         #expect(blocks.view(language: drawn, code: confirmSource) != nil)
         #expect(blocks.view(language: drawn, code: #"{"title":"Another"}"#) == nil)
         // The fence's own name is not enough: only the place the host marked is its block.
-        #expect(blocks.view(language: "exodus-confirm", code: confirmSource) == nil)
-        #expect(blocks.view(language: "exodus-ask", code: confirmSource) == nil)
+        #expect(blocks.view(language: "actovia-confirm", code: confirmSource) == nil)
+        #expect(blocks.view(language: "actovia-ask", code: confirmSource) == nil)
     }
 
     @Test("a settled turn redraws when its block is answered, and on a turn starting only when it asks")
@@ -148,9 +148,9 @@ struct InteractiveRenderingTests {
 
     @Test("only the reply's first top-level closed block is drawn, as the desktop finds it")
     func identification() {
-        let tilde = "~~~exodus-confirm\n\(confirmSource)\n~~~"
-        let quoted = "> ```exodus-confirm\n> \(confirmSource)\n> ```"
-        let listed = "- Item\n\n  ```exodus-confirm\n  \(confirmSource)\n  ```"
+        let tilde = "~~~actovia-confirm\n\(confirmSource)\n~~~"
+        let quoted = "> ```actovia-confirm\n> \(confirmSource)\n> ```"
+        let listed = "- Item\n\n  ```actovia-confirm\n  \(confirmSource)\n  ```"
         #expect(drawnCount([reply]) == 1)
         // A second identical block, after it, is code.
         #expect(drawnCount([reply + "\n\nAgain:\n\n" + fenceText]) == 1)
@@ -165,34 +165,34 @@ struct InteractiveRenderingTests {
         #expect(drawnCount([tilde]) == 0)
         #expect(drawnCount([quoted]) == 0)
         #expect(drawnCount([listed]) == 0)
-        #expect(drawnCount(["```exodus-confirm x\n\(confirmSource)\n```"]) == 0)
-        #expect(drawnCount(["   ```exodus-confirm\n\(confirmSource)\n```"]) == 0)
+        #expect(drawnCount(["```actovia-confirm x\n\(confirmSource)\n```"]) == 0)
+        #expect(drawnCount(["   ```actovia-confirm\n\(confirmSource)\n```"]) == 0)
         // A fence still open (a reply being written) is code.
-        #expect(drawnCount(["Here.\n\n```exodus-confirm\n\(confirmSource)"]) == 0)
+        #expect(drawnCount(["Here.\n\n```actovia-confirm\n\(confirmSource)"]) == 0)
     }
 
     @Test("steps and a chart are drawn as their blocks, once, and a second fence stays code")
     func stepsAndStock() {
         let steps = #"{"steps":[{"text":"A"},{"text":"B"}]}"#
         let stock = #"{"symbol":"NASDAQ:AAPL"}"#
-        #expect(drawnCount(["How to:\n\n```exodus-steps\n\(steps)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n\(stock)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n\(stock)\n```\n\n```exodus-steps\n\(steps)\n```"]) == 1)
-        #expect(drawnCount(["```exodus-stock\n{\"symbol\":\"aapl\"}\n```"]) == 0)
+        #expect(drawnCount(["How to:\n\n```actovia-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n\(stock)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n\(stock)\n```\n\n```actovia-steps\n\(steps)\n```"]) == 1)
+        #expect(drawnCount(["```actovia-stock\n{\"symbol\":\"aapl\"}\n```"]) == 0)
     }
 
     @Test("CRLF line ends are read as the desktop reads them")
     func crlf() throws {
-        let text = "Here is the plan.\r\n\r\n```exodus-confirm\r\n\(confirmSource)\r\n```\r\n"
+        let text = "Here is the plan.\r\n\r\n```actovia-confirm\r\n\(confirmSource)\r\n```\r\n"
         #expect(drawnCount([text]) == 1)
         let fence = try #require(InteractiveFence.first(in: reply))
-        #expect(fence.matches(language: "exodus-confirm", code: confirmSource + "\r\n"))
+        #expect(fence.matches(language: "actovia-confirm", code: confirmSource + "\r\n"))
         #expect(fence.matches(code: confirmSource + "\n\n"))
     }
 
     @Test("a fence that opens in one text block and closes in a later one (after a tool card) is code: nothing marked")
     func fenceAcrossTextBlocks() {
-        let texts = ["Here.\n\n```exodus-confirm\n{\"title\":", "\"Send the report?\"}\n```"]
+        let texts = ["Here.\n\n```actovia-confirm\n{\"title\":", "\"Send the report?\"}\n```"]
         #expect(InteractiveFence.first(in: texts.joined(separator: "\n\n")) != nil)
         #expect(InteractiveRendering.placed(in: texts) == nil)
         #expect(drawnCount(texts) == 0)
@@ -202,7 +202,7 @@ struct InteractiveRenderingTests {
     func utf16() throws {
         let composed = #"{"title":"Caf\#u{E9}?"}"#
         let decomposed = #"{"title":"Cafe\#u{301}?"}"#
-        let fence = try #require(InteractiveFence.first(in: "```exodus-confirm\n\(composed)\n```"))
+        let fence = try #require(InteractiveFence.first(in: "```actovia-confirm\n\(composed)\n```"))
         #expect(fence.matches(code: composed))
         #expect(!fence.matches(code: decomposed))
     }

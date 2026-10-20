@@ -124,7 +124,7 @@ struct AssistantTurnView: View, Equatable {
     /// The turn holds a block still waiting for its answer, so whether one may be sent changes how it looks. Read only
     /// when `canAnswer` changed (a turn starting or ending), never per streamed frame. Steps and a chart never wait.
     nonisolated var asks: Bool {
-        answered == nil && (turn.body.contains("```exodus-ask") || turn.body.contains("```exodus-confirm"))  // l10n:ignore: markdown syntax
+        answered == nil && (turn.body.contains("```actovia-ask") || turn.body.contains("```actovia-confirm"))  // l10n:ignore: markdown syntax
     }
 
     /// `canChoose` counts only for a compared answer, so an ordinary turn does not redraw when a turn starts or ends.

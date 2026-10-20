@@ -1,4 +1,4 @@
-# exodus-ios: Settings parity — design
+# actovia-ios: Settings parity — design
 
 Status: written autonomously on 2026-09-24 while the repo owner slept ("Settings 中值得在 ios 上实现的也实现一下").
 Every verdict below is a ruling the owner can overturn. Source: a read-only survey of the desktop's 21 Settings pages and

@@ -1,12 +1,12 @@
 import Foundation
 
-/// A questionnaire's or a confirmation's answer, as the user's next message: a leading `exodus-answer` fence naming the
+/// A questionnaire's or a confirmation's answer, as the user's next message: a leading `actovia-answer` fence naming the
 /// block it answers, a blank line, then the answer in plain words — a line a question. Plain text, like `QuotedText`
 /// and `HealthContext`, so every provider reads it as what it is; the transcript reads it back with `split` to draw it
 /// as a card and to freeze the block it names. Held to the desktop's vectors
 /// (`packages/shared/src/utils/interactive-answer.ts`), and read in UTF-16 units as it is there.
 enum InteractiveAnswer {
-    static let infoString = "exodus-answer"
+    static let infoString = "actovia-answer"
     /// An unanswered question's line.
     static let blank = "—"
     private static var opening: String { "```" + infoString + "\n" }  // l10n:ignore: markdown syntax

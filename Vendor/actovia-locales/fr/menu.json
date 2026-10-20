@@ -1,0 +1,39 @@
+{
+  "file": "Fichier",
+  "newChat": "Nouvelle discussion",
+  "lockNow": "Verrouiller maintenant",
+  "settings": "Réglages…",
+  "edit": "Édition",
+  "find": "Rechercher",
+  "speech": "Synthèse vocale",
+  "view": "Affichage",
+  "window": "Fenêtre",
+  "learnMore": "En savoir plus",
+  "app": {
+    "about": "À propos de {{name}}",
+    "hide": "Masquer {{name}}",
+    "quit": "Quitter {{name}}"
+  },
+  "tray": {
+    "showApp": "Afficher l'application",
+    "hideApp": "Masquer l'application",
+    "quitActovia": "Quitter Actovia"
+  },
+  "notification": {
+    "philharmonicGroupError": "Le groupe « {{title}} » a rencontré une erreur",
+    "philharmonicGroupFinished": "Le groupe « {{title}} » a terminé",
+    "agentWaiting": "{{name}} vous attend"
+  },
+  "attachment": {
+    "saveImageAs": "Enregistrer l’image sous…",
+    "copyImage": "Copier l’image",
+    "saveAs": "Enregistrer sous…"
+  },
+  "workspaceFile": {
+    "open": "Ouvrir",
+    "revealInFinder": "Afficher dans le Finder",
+    "showInExplorer": "Afficher dans l’Explorateur",
+    "showInFolder": "Afficher dans le dossier",
+    "quickLook": "Coup d’œil"
+  }
+}

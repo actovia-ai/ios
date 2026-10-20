@@ -8,7 +8,7 @@ extension EnvironmentValues {
     @Entry var placePhotoLoader: PlacePhotoLoader?
 }
 
-/// Places photos through the computer's proxy (`GET /api/v1/maps/photo?name=&maxWidth=`, exodus `routes/maps.ts`): the
+/// Places photos through the computer's proxy (`GET /api/v1/maps/photo?name=&maxWidth=`, actovia `routes/maps.ts`): the
 /// computer adds the user's Google key, so the key never reaches the phone. Fetched through the paired session (device
 /// token, pinned TLS), downsampled off the main actor, kept in memory only.
 final class PlacePhotoLoader: Sendable {

@@ -4,7 +4,7 @@ import WidgetUI
 
 struct AskWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "app.yancey.exodus.ask", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "app.yancey.actovia.ask", provider: SnapshotProvider()) { entry in
             AskWidgetView(entry: entry)
         }
         .configurationDisplayName(Text("ios:widget.ask.title"))

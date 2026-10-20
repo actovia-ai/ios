@@ -43,10 +43,10 @@ public struct PairingWelcomeView: View {
 
                 Section {
                     Link(destination: Self.website) {
-                        Label("ios:onboarding.getExodus", systemImage: "arrow.up.right.square")
+                        Label("ios:onboarding.getActovia", systemImage: "arrow.up.right.square")
                     }
                 } footer: {
-                    Text("ios:onboarding.noExodusYet")
+                    Text("ios:onboarding.noActoviaYet")
                 }
             }
         }

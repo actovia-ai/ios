@@ -23,7 +23,7 @@ public protocol CredentialStoring: Sendable {
 /// on this device, never in a backup or in iCloud. A device with no passcode
 /// cannot hold it — so it cannot pair.
 public final class KeychainCredentialStore: CredentialStoring {
-    private static let service = "app.yancey.exodus.pairing"
+    private static let service = "app.yancey.actovia.pairing"
     private static let account = "paired-server"
 
     public init() {}

@@ -3,10 +3,10 @@ import Observation
 import SwiftUI
 
 /// The app's `NSUserActivity` types (also listed under `NSUserActivityTypes` in the Info.plist).
-public enum ExodusActivity {
+public enum ActoviaActivity {
     /// What is on screen, as the system's current activity: iOS titles a screenshot after its `title` (the share
     /// sheet's header, and the file's name when it is AirDropped).
-    public static let viewing = "app.yancey.exodus.viewing"
+    public static let viewing = "app.yancey.actovia.viewing"
 }
 
 /// How a screen's title is put together: its parts, trimmed, the empty ones dropped, joined by a middle dot
@@ -122,7 +122,7 @@ private struct ScreenTitlePublisher: ViewModifier {
         let title = registry.stack.front
         content
             .environment(registry)
-            .userActivity(ExodusActivity.viewing, isActive: title != nil) { activity in
+            .userActivity(ActoviaActivity.viewing, isActive: title != nil) { activity in
                 activity.title = title
                 activity.isEligibleForHandoff = false
                 activity.isEligibleForSearch = false

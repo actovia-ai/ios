@@ -5,7 +5,7 @@ import Testing
 
 @testable import SettingsFeature
 
-/// The Providers page against a computer that hands keys out as masks (exodus `secrets/`), and the Settings notice.
+/// The Providers page against a computer that hands keys out as masks (actovia `secrets/`), and the Settings notice.
 @MainActor
 @Suite("Secrets: masked keys on the Providers page")
 struct SecretsSettingsTests {

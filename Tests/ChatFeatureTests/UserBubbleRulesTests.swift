@@ -11,10 +11,10 @@ struct UserBubbleRulesTests {
 
     @Test("a message that opens with an answer fence is the answer, whatever follows; any other is plain")
     func kind() {
-        let fence = #"```exodus-answer\#n{"block":"ask","ref":"r1","title":"T"}\#n```"#
+        let fence = #"```actovia-answer\#n{"block":"ask","ref":"r1","title":"T"}\#n```"#
         let head = InteractiveAnswer.Head(block: .ask, ref: "r1", title: "T")
         #expect(UserBubbleRules.kind(of: fence + "\n\n**Q a** x") == .answer(head, body: "**Q a** x"))
-        let health = "```exodus-health\n{\"day\":\"2026-10-06\"}\n```\n\nHow did I sleep?"
+        let health = "```actovia-health\n{\"day\":\"2026-10-06\"}\n```\n\nHow did I sleep?"
         #expect(UserBubbleRules.kind(of: fence + "\n\n" + health) == .answer(head, body: health))
         let quoted = "> a line\n\nWhat does it mean?"
         #expect(UserBubbleRules.kind(of: fence + "\n\n" + quoted) == .answer(head, body: quoted))

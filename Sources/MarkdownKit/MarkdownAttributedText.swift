@@ -7,7 +7,7 @@ extension NSAttributedString.Key {
     /// there (`MarkdownChipGapAttribute`).
     static let markdownChipGap = NSAttributedString.Key(MarkdownChipGapAttribute.name)
     /// On what holds a chip to the mark that follows it: nothing that was written.
-    static let markdownChipJoint = NSAttributedString.Key("app.exodus.markdown.chipJoint")
+    static let markdownChipJoint = NSAttributedString.Key("app.actovia.markdown.chipJoint")
 }
 
 /// How a block's text is set in a text view: what `MarkdownStyledText` takes from its modifiers and environment.

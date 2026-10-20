@@ -8,7 +8,7 @@ symbolic keys shared verbatim with the desktop app — eliminating duplicate tra
 for the vocabulary both apps use.
 
 **Architecture:** `packages/shared/src/i18n/locales` (desktop) is vendored into
-`Vendor/exodus-locales` via `git subtree`. Every iOS catalog key becomes `<namespace>:<dotted.path>`
+`Vendor/actovia-locales` via `git subtree`. Every iOS catalog key becomes `<namespace>:<dotted.path>`
 — the desktop's own key format, verbatim — instead of the English source text. `l10n.py` flattens
 the vendored JSON into that same shape and, for any key that exists on both sides, writes the
 desktop's translation for every shipped language, overwriting on every run (staleness was the bug;
@@ -23,7 +23,7 @@ argument position — never a typed placeholder — with iOS call sites formatti
 
 ## Global Constraints
 
-- Exodus (desktop) needs zero code changes for any task in this plan — everything reads its git
+- Actovia (desktop) needs zero code changes for any task in this plan — everything reads its git
   history at `packages/shared/src/i18n/locales`, already committed.
 - This repo has no feature-branch convention — work happens directly on `main`. Per the project's
   standing rule (not this plan's own invention): **do not `git commit` without being asked.** Every
@@ -62,7 +62,7 @@ stop and revisit §4–§5 of the spec before continuing to Task 1.
 
 - [x] **Step 1: Add a probe call site**
 
-In a scratch Swift file (or temporarily in `ExodusApp.swift`, reverted after this task):
+In a scratch Swift file (or temporarily in `ActoviaApp.swift`, reverted after this task):
 
 ```swift
 import SwiftUI
@@ -150,39 +150,39 @@ produced a finding, not code.
 ### Task 1: Vendor the desktop locales via `git subtree`
 
 **Files:**
-- Create: `Vendor/exodus-locales/` (a new top-level directory in this repo, populated by the
+- Create: `Vendor/actovia-locales/` (a new top-level directory in this repo, populated by the
   subtree)
 
 - [x] **Step 1: Split the desktop's locales subdirectory into its own history**
 
-Run, from a checkout of the desktop repo (`~/Code/exodus/exodus`, on `master` — confirm with
-`git -C ~/Code/exodus/exodus branch --show-current`; if not on `master`, `git -C
-~/Code/exodus/exodus checkout master` first, since this must vendor the trunk, not a feature
+Run, from a checkout of the desktop repo (`~/Code/actovia/actovia`, on `master` — confirm with
+`git -C ~/Code/actovia/actovia branch --show-current`; if not on `master`, `git -C
+~/Code/actovia/actovia checkout master` first, since this must vendor the trunk, not a feature
 branch):
 
 ```bash
-cd ~/Code/exodus/exodus
-git subtree split --prefix=packages/shared/src/i18n/locales -b exodus-locales-split
+cd ~/Code/actovia/actovia
+git subtree split --prefix=packages/shared/src/i18n/locales -b actovia-locales-split
 ```
 
-Expected: prints a commit SHA — the tip of a synthetic branch (`exodus-locales-split`) whose entire
+Expected: prints a commit SHA — the tip of a synthetic branch (`actovia-locales-split`) whose entire
 history is just that one subdirectory's changes, rewritten as if it were the repo root.
 
-- [x] **Step 2: Pull that branch into exodus-ios as a subtree**
+- [x] **Step 2: Pull that branch into actovia-ios as a subtree**
 
-Run, from `~/Code/exodus/exodus-ios`:
+Run, from `~/Code/actovia/actovia-ios`:
 
 ```bash
-git subtree add --prefix=Vendor/exodus-locales \
-  ~/Code/exodus/exodus exodus-locales-split --squash
+git subtree add --prefix=Vendor/actovia-locales \
+  ~/Code/actovia/actovia actovia-locales-split --squash
 ```
 
 (A local path as the "remote" works for `git subtree` exactly like a URL — no need to push
-`exodus-locales-split` anywhere first.)
+`actovia-locales-split` anywhere first.)
 
 - [x] **Step 3: Verify the vendored content**
 
-Run: `ls Vendor/exodus-locales/` — expected: one directory per locale (`en`, `de`, `es`, `fr`, `it`,
+Run: `ls Vendor/actovia-locales/` — expected: one directory per locale (`en`, `de`, `es`, `fr`, `it`,
 `ja`, `ko`, `pt-BR`, `zh-Hant-HK`, `zh-Hant-TW`), each containing `*.json` namespace files, matching
 `packages/shared/src/i18n/locales`'s current contents in the desktop repo exactly.
 
@@ -192,18 +192,18 @@ This isn't a step to run now, but write it into `README.md`'s localization secti
 full README update; this note is so the command is correct when that task references it):
 
 ```bash
-git -C ~/Code/exodus/exodus subtree split --prefix=packages/shared/src/i18n/locales -b exodus-locales-split
-git subtree pull --prefix=Vendor/exodus-locales ~/Code/exodus/exodus exodus-locales-split --squash
+git -C ~/Code/actovia/actovia subtree split --prefix=packages/shared/src/i18n/locales -b actovia-locales-split
+git subtree pull --prefix=Vendor/actovia-locales ~/Code/actovia/actovia actovia-locales-split --squash
 ```
 
 - [x] **Step 5: Clean up the desktop repo's scratch branch**
 
-Run, back in `~/Code/exodus/exodus`: `git branch -D exodus-locales-split` (the subtree add already
+Run, back in `~/Code/actovia/actovia`: `git branch -D actovia-locales-split` (the subtree add already
 captured what it needed via `--squash`; this branch was only scaffolding for that one command).
 
 - [x] **Step 6: Stop — do not commit**
 
-Per the Global Constraints, this task's result (the new `Vendor/exodus-locales/` directory, and
+Per the Global Constraints, this task's result (the new `Vendor/actovia-locales/` directory, and
 whatever `git subtree add` staged) is left for a human to review and commit, not committed by this
 task.
 
@@ -275,17 +275,17 @@ class FlattenDesktopLocalesTests(unittest.TestCase):
             root = Path(tmp)
             (root / "en").mkdir()
             (root / "en" / "chat.json").write_text(
-                json.dumps({"composer": {"placeholder": "Ask Exodus"}})
+                json.dumps({"composer": {"placeholder": "Ask Actovia"}})
             )
             (root / "zh-Hant-TW").mkdir()
             (root / "zh-Hant-TW" / "chat.json").write_text(
-                json.dumps({"composer": {"placeholder": "詢問 Exodus"}})
+                json.dumps({"composer": {"placeholder": "詢問 Actovia"}})
             )
             values = l10n.flatten_desktop_locales(root)
-            self.assertEqual(values[("en", "chat:composer.placeholder")], "Ask Exodus")
+            self.assertEqual(values[("en", "chat:composer.placeholder")], "Ask Actovia")
             # zh-Hant-TW maps to the iOS catalog language "zh-Hant" (DESKTOP_LANGUAGE).
             self.assertEqual(
-                values[("zh-Hant", "chat:composer.placeholder")], "詢問 Exodus"
+                values[("zh-Hant", "chat:composer.placeholder")], "詢問 Actovia"
             )
 
     def test_unmapped_desktop_locale_is_skipped(self):
@@ -358,10 +358,10 @@ class CmdSyncTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.locales = self.root / "locales"
         for lang, text in [
-            ("en", "Ask Exodus"), ("zh-Hant-TW", "詢問 Exodus"), ("zh-Hant-HK", "詢問 Exodus"),
-            ("ja", "Exodusに聞く"), ("ko", "Exodus에게 물어보기"), ("fr", "Demander à Exodus"),
-            ("de", "Exodus fragen"), ("es", "Preguntar a Exodus"),
-            ("pt-BR", "Perguntar ao Exodus"), ("it", "Chiedi a Exodus"),
+            ("en", "Ask Actovia"), ("zh-Hant-TW", "詢問 Actovia"), ("zh-Hant-HK", "詢問 Actovia"),
+            ("ja", "Actoviaに聞く"), ("ko", "Actovia에게 물어보기"), ("fr", "Demander à Actovia"),
+            ("de", "Actovia fragen"), ("es", "Preguntar a Actovia"),
+            ("pt-BR", "Perguntar ao Actovia"), ("it", "Chiedi a Actovia"),
         ]:
             d = self.locales / lang
             d.mkdir(parents=True)
@@ -374,7 +374,7 @@ class CmdSyncTests(unittest.TestCase):
                 "chat:composer.placeholder": {
                     "extractionState": "manual",
                     "localizations": {
-                        "en": {"stringUnit": {"state": "translated", "value": "Ask Exodus"}},
+                        "en": {"stringUnit": {"state": "translated", "value": "Ask Actovia"}},
                         # A deliberately stale zh-Hant translation — cmd_sync must overwrite this.
                         "zh-Hant": {"stringUnit": {"state": "translated", "value": "STALE"}},
                     },
@@ -393,7 +393,7 @@ class CmdSyncTests(unittest.TestCase):
         l10n.cmd_sync(args)
         catalog = json.loads(self.catalog_path.read_text())
         zh_hant = catalog["strings"]["chat:composer.placeholder"]["localizations"]["zh-Hant"]
-        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Exodus")
+        self.assertEqual(zh_hant["stringUnit"]["value"], "詢問 Actovia")
 
     def test_ios_only_key_is_untouched(self):
         args = argparse.Namespace(locales_dir=str(self.locales), file=str(self.catalog_path))
@@ -447,7 +447,7 @@ Replace the `seed = sub.add_parser("seed-from-desktop")` block in `main()` with:
 
 ```python
     sync = sub.add_parser("sync-from-desktop")
-    sync.add_argument("locales_dir", nargs="?", default=str(ROOT / "Vendor/exodus-locales"))
+    sync.add_argument("locales_dir", nargs="?", default=str(ROOT / "Vendor/actovia-locales"))
     sync.add_argument("--file")
     sync.set_defaults(run=cmd_sync)
 ```
@@ -537,14 +537,14 @@ class CmdAuditDefaultTests(unittest.TestCase):
 
     def test_a_complete_symbolic_catalog_and_matching_call_site_passes(self):
         strings = {"chat:composer.placeholder": {"extractionState": "manual",
-                   "localizations": {"en": translated("Ask Exodus")}}}
+                   "localizations": {"en": translated("Ask Actovia")}}}
         with fake_repo(strings, swift='Text("chat:composer.placeholder")\n'):
             code, out = run_audit()
             self.assertEqual(code, 0, out)
 
     def test_a_swift_literal_missing_from_the_catalog_fails(self):
         strings = {"chat:composer.placeholder": {"extractionState": "manual",
-                   "localizations": {"en": translated("Ask Exodus")}}}
+                   "localizations": {"en": translated("Ask Actovia")}}}
         with fake_repo(strings, swift='Text("chat:nope")\n'):
             code, out = run_audit()
             self.assertEqual(code, 1)
@@ -674,7 +674,7 @@ import json, re, sys
 sys.path.insert(0, 'scripts')
 import l10n
 
-values = l10n.flatten_desktop_locales('Vendor/exodus-locales')
+values = l10n.flatten_desktop_locales('Vendor/actovia-locales')
 by_text = {}
 for (lang, key), text in values.items():
     if lang == l10n.SOURCE_LANGUAGE and all((l, key) in values for l in l10n.SHIPPED):
@@ -847,7 +847,7 @@ Expected: PASS.
 Replace the `seed-from-desktop` line and its description with:
 
 ```markdown
-python3 scripts/l10n.py sync-from-desktop   # Vendor/exodus-locales by default
+python3 scripts/l10n.py sync-from-desktop   # Vendor/actovia-locales by default
 ```
 
 and replace the paragraph describing `seed-from-desktop`'s text-matching behavior with a
@@ -855,7 +855,7 @@ description of the symbolic-key mechanism (keys are `<namespace>:<dotted.path>`,
 with the desktop app's own `t()` keys; `sync-from-desktop` overwrites every shared key's
 translation from the vendored copy on every run — a stale translation is a bug, not a feature, so
 re-run it whenever the vendored copy is refreshed). Add Task 1 Step 4's two-command re-pull
-sequence as the documented way to refresh `Vendor/exodus-locales`.
+sequence as the documented way to refresh `Vendor/actovia-locales`.
 
 Also update the "Keys are the English source text" paragraph (§10 of the spec supersedes it) to
 describe the new convention: a non-interpolated string's literal argument is now the symbolic key
@@ -918,7 +918,7 @@ sites, and README; nothing is committed.
   differs from the catalog's `en` for that key, report an error naming both. Fix any real mismatch this exposes (do not
   weaken the check to make it pass — if it finds a genuine mismatch, correct the Swift default or the catalog and say so).
 - [ ] **M5.** `Sources/SettingsFeature/PairingViewModel.swift` (~line 39): make the Swift `comment:` say what the catalog
-  comment says ("Exodus is the app's name." included) — comment text only.
+  comment says ("Actovia is the app's name." included) — comment text only.
 - [ ] **M6. Stale text in `l10n.py`:** the module docstring line about `add` ("KEY (the English source text)") must
   describe symbolic keys and `--en-value`; delete the now-unused `DESKTOP_NAMESPACES`; rewrite the `match_key` comment
   so it is short and true.

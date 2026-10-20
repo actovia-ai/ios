@@ -14,7 +14,7 @@ Identical to the message-rendering plan's Global Constraints (no commits or stat
 string with all 10 languages and `python3 scripts/l10n.py audit` exit 0; Swift 6 strict concurrency; `xcodebuild build` +
 touched test schemes; Swift Testing; no new dependency; no comments beyond one short WHY line). Plus:
 
-- Desktop is read-only reference (`~/Code/exodus/exodus`): schema `packages/shared/src/schemas/settings-schema.ts`,
+- Desktop is read-only reference (`~/Code/actovia/actovia`): schema `packages/shared/src/schemas/settings-schema.ts`,
   page sources `src/renderer/components/settings/settings-form/*.tsx`, routes `src/main/lib/server/routes/`
   (`settings.ts`, `memory.ts`, `usage.ts`, `skills.ts`, `mcp.ts`, `backup.ts`), tool names
   `packages/shared/src/constants/tool-names.ts`. Never change the desktop.

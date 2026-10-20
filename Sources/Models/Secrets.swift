@@ -1,6 +1,6 @@
 import Foundation
 
-/// The computer hands every stored secret out as a mask (exodus `src/main/lib/secrets/mask.ts`): `"•••• " + last4`
+/// The computer hands every stored secret out as a mask (actovia `src/main/lib/secrets/mask.ts`): `"•••• " + last4`
 /// for a value of 12 characters or more, `"••••"` for a shorter one, `null` for none. A mask posted back means
 /// "unchanged"; `null` clears.
 public enum SecretMask {
@@ -60,7 +60,7 @@ public enum SecretDestinations {
         }
     }
 
-    /// The desktop's `normalizeBaseUrl` (`@exodus/shared/utils/base-url`): trimmed, scheme and host lowercased, no
+    /// The desktop's `normalizeBaseUrl` (`@actovia/shared/utils/base-url`): trimmed, scheme and host lowercased, no
     /// trailing slash, the query kept; nil for an empty one.
     public static func normalizeBaseURL(_ url: String?) -> String? {
         guard let trimmed = url?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
@@ -116,7 +116,7 @@ public enum SecretDestinations {
     }
 }
 
-/// `GET /api/v1/settings/secrets-status` (exodus `secrets/status.ts`): whether secrets are encrypted at rest, and the
+/// `GET /api/v1/settings/secrets-status` (actovia `secrets/status.ts`): whether secrets are encrypted at rest, and the
 /// stored ones to enter again — those that no longer decrypt and those a change of address cleared.
 public struct SecretsStatus: Decodable, Equatable, Sendable {
     public enum Encryption: Equatable, Sendable {

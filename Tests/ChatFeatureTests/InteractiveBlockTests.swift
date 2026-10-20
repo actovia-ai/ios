@@ -125,40 +125,40 @@ private let stockCases: [(String, String, Bool)] =
     ]
 
 private let findCases: [(String, String, InteractiveBlock.Kind?)] = [
-    ("a questionnaire after a paragraph", "Intro\n\n```exodus-ask\n\(askSource)\n```\n\nAfter", .ask),
-    ("a fence still open (a reply streaming)", "Intro\n\n```exodus-ask\n\(askSource)", nil),
-    ("two blocks: only the first counts", "```exodus-confirm\n\(confirmSource)\n```\n\n```exodus-ask\n\(askSource)\n```", .confirm),
-    ("a first block that does not validate: none", "```exodus-ask\n{oops}\n```\n\n```exodus-confirm\n\(confirmSource)\n```", nil),
-    ("inside a longer backtick fence", "````md\n```exodus-ask\n\(askSource)\n```\n````", nil),
-    ("inside a tilde fence", "~~~\n```exodus-ask\n\(askSource)\n```\n~~~", nil),
-    ("indented under a list item", "- item\n\n  ```exodus-ask\n  \(askSource)\n  ```", nil),
-    ("after an ordinary code block", "```js\nlet a = 1\n```\n\n```exodus-confirm\n\(confirmSource)\n```", .confirm),
-    ("trailing spaces after the name", "```exodus-confirm  \n\(confirmSource)\n```", .confirm),
-    ("after a line of inline code that looks like a fence", "Install it with\n```npm i```\n\n```exodus-confirm\n\(confirmSource)\n```", .confirm),
-    ("a closing line with a no-break space after it: not a closer", "```exodus-confirm\n\(confirmSource)\n``` \u{00A0}", nil),
-    ("an ideographic space after the name: another name", "```exodus-ask\u{3000}\n\(askSource)\n```", nil),
-    ("a tab after the name and after the closing fence", "```exodus-confirm\t\n\(confirmSource)\n```\t", .confirm),
-    ("CRLF line ends", "Intro\r\n\r\n```exodus-confirm \r\n\(confirmSource)\r\n```\r\n", .confirm),
-    ("another name", "```exodus-answer\n{\"block\":\"ask\",\"ref\":\"r\"}\n```", nil),
-    ("a steps block", "Here:\n\n```exodus-steps\n\(stepsSource)\n```", .steps),
-    ("a stock block", "```exodus-stock\n\(stockSource)\n```", .stock),
-    ("a stock block after a questionnaire: the questionnaire", "```exodus-ask\n\(askSource)\n```\n\n```exodus-stock\n\(stockSource)\n```", .ask),
-    ("a stock block that does not validate, then steps: none", "```exodus-stock\n{\"symbol\":\"aapl\"}\n```\n\n```exodus-steps\n\(stepsSource)\n```", nil),
+    ("a questionnaire after a paragraph", "Intro\n\n```actovia-ask\n\(askSource)\n```\n\nAfter", .ask),
+    ("a fence still open (a reply streaming)", "Intro\n\n```actovia-ask\n\(askSource)", nil),
+    ("two blocks: only the first counts", "```actovia-confirm\n\(confirmSource)\n```\n\n```actovia-ask\n\(askSource)\n```", .confirm),
+    ("a first block that does not validate: none", "```actovia-ask\n{oops}\n```\n\n```actovia-confirm\n\(confirmSource)\n```", nil),
+    ("inside a longer backtick fence", "````md\n```actovia-ask\n\(askSource)\n```\n````", nil),
+    ("inside a tilde fence", "~~~\n```actovia-ask\n\(askSource)\n```\n~~~", nil),
+    ("indented under a list item", "- item\n\n  ```actovia-ask\n  \(askSource)\n  ```", nil),
+    ("after an ordinary code block", "```js\nlet a = 1\n```\n\n```actovia-confirm\n\(confirmSource)\n```", .confirm),
+    ("trailing spaces after the name", "```actovia-confirm  \n\(confirmSource)\n```", .confirm),
+    ("after a line of inline code that looks like a fence", "Install it with\n```npm i```\n\n```actovia-confirm\n\(confirmSource)\n```", .confirm),
+    ("a closing line with a no-break space after it: not a closer", "```actovia-confirm\n\(confirmSource)\n``` \u{00A0}", nil),
+    ("an ideographic space after the name: another name", "```actovia-ask\u{3000}\n\(askSource)\n```", nil),
+    ("a tab after the name and after the closing fence", "```actovia-confirm\t\n\(confirmSource)\n```\t", .confirm),
+    ("CRLF line ends", "Intro\r\n\r\n```actovia-confirm \r\n\(confirmSource)\r\n```\r\n", .confirm),
+    ("another name", "```actovia-answer\n{\"block\":\"ask\",\"ref\":\"r\"}\n```", nil),
+    ("a steps block", "Here:\n\n```actovia-steps\n\(stepsSource)\n```", .steps),
+    ("a stock block", "```actovia-stock\n\(stockSource)\n```", .stock),
+    ("a stock block after a questionnaire: the questionnaire", "```actovia-ask\n\(askSource)\n```\n\n```actovia-stock\n\(stockSource)\n```", .ask),
+    ("a stock block that does not validate, then steps: none", "```actovia-stock\n{\"symbol\":\"aapl\"}\n```\n\n```actovia-steps\n\(stepsSource)\n```", nil),
 ]
 
 @Suite("InteractiveBlock: the blocks' limits, as the desktop's zod schemas")
 struct InteractiveBlockTests {
-    @Test("exodus-ask", arguments: askCases)
+    @Test("actovia-ask", arguments: askCases)
     func askLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.ask, source: source) != nil) == valid, "\(name)")
     }
 
-    @Test("exodus-steps", arguments: stepsCases)
+    @Test("actovia-steps", arguments: stepsCases)
     func stepsLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.steps, source: source) != nil) == valid, "\(name)")
     }
 
-    @Test("exodus-stock", arguments: stockCases)
+    @Test("actovia-stock", arguments: stockCases)
     func stockLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.stock, source: source) != nil) == valid, "\(name)")
     }
@@ -177,7 +177,7 @@ struct InteractiveBlockTests {
         #expect(InteractiveBlock.Kind.ask.isAnswerable)
     }
 
-    @Test("exodus-confirm", arguments: confirmCases)
+    @Test("actovia-confirm", arguments: confirmCases)
     func confirmLimits(_ name: String, _ source: String, _ valid: Bool) {
         #expect((InteractiveBlock.parse(.confirm, source: source) != nil) == valid, "\(name)")
     }
@@ -190,10 +190,10 @@ struct InteractiveBlockTests {
         }
         #expect(block.questions.map(\.other) == [true, false])
         #expect(block.questions.map(\.type) == [.single, .multi])
-        #expect(InteractiveBlock.Kind(language: "exodus-ask") == .ask)
-        #expect(InteractiveBlock.Kind(language: "exodus-confirm") == .confirm)
-        #expect(InteractiveBlock.Kind(language: "exodus-answer") == nil)
-        #expect(InteractiveBlock.Kind.confirm.language == "exodus-confirm")
+        #expect(InteractiveBlock.Kind(language: "actovia-ask") == .ask)
+        #expect(InteractiveBlock.Kind(language: "actovia-confirm") == .confirm)
+        #expect(InteractiveBlock.Kind(language: "actovia-answer") == nil)
+        #expect(InteractiveBlock.Kind.confirm.language == "actovia-confirm")
     }
 }
 
@@ -206,12 +206,12 @@ struct InteractiveFenceTests {
 
     @Test("the fence's text is how its code block is known")
     func matches() throws {
-        let fence = try #require(InteractiveFence.first(in: "Intro\n\n```exodus-ask\n\(askSource)\n```\n"))
+        let fence = try #require(InteractiveFence.first(in: "Intro\n\n```actovia-ask\n\(askSource)\n```\n"))
         #expect(fence.source == askSource)
-        #expect(fence.matches(language: "exodus-ask", code: askSource))
-        #expect(fence.matches(language: "exodus-ask", code: askSource + "\n"))
-        #expect(!fence.matches(language: "exodus-confirm", code: askSource))
+        #expect(fence.matches(language: "actovia-ask", code: askSource))
+        #expect(fence.matches(language: "actovia-ask", code: askSource + "\n"))
+        #expect(!fence.matches(language: "actovia-confirm", code: askSource))
         #expect(!fence.matches(language: nil, code: askSource))
-        #expect(!fence.matches(language: "exodus-ask", code: "{}"))
+        #expect(!fence.matches(language: "actovia-ask", code: "{}"))
     }
 }

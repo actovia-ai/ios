@@ -25,7 +25,7 @@ struct MarkdownLinkPolicyTests {
     @Test("every other scheme is discarded", arguments: [
         "javascript:alert(1)", "tel:+15551234567", "sms:+15551234567&body=hi", "facetime:+15551234567",
         "shortcuts://run-shortcut?name=Exfiltrate&input=secret", "file:///etc/passwd", "someapp://do/thing",
-        "exodus://pair?c=1", "relative/path.html", "/absolute/path", "#fragment", "www.example.com",
+        "actovia://pair?c=1", "relative/path.html", "/absolute/path", "#fragment", "www.example.com",
     ])
     func discarded(url: String) {
         #expect(action(url) == .discard)
@@ -33,8 +33,8 @@ struct MarkdownLinkPolicyTests {
 
     @Test("citation links route to the chip callback")
     func citation() {
-        #expect(action("exodus-cite://4") == .citation(4))
-        #expect(action("exodus-cite://x") == .discard)
+        #expect(action("actovia-cite://4") == .citation(4))
+        #expect(action("actovia-cite://x") == .discard)
     }
 
     // The same vectors as the desktop's tests/unit/shared/utils/entity-link.test.ts — keep them in step. (Its
@@ -102,7 +102,7 @@ struct MarkdownLinkRouterTests {
         router.onCitationTap = { cited.append($0) }
         router.openURL = { opened.append($0) }
 
-        _ = router.handle(URL(string: "exodus-cite://2")!)
+        _ = router.handle(URL(string: "actovia-cite://2")!)
         _ = router.handle(URL(string: "https://example.com")!)
         _ = router.handle(URL(string: "tel:123")!)
         _ = router.handle(URL(string: "shortcuts://run-shortcut?name=x")!)
@@ -118,9 +118,9 @@ struct MarkdownLinkRouterTests {
         var second = 0
         router.onCitationTap = { _ in first += 1 }
         _ = router.action
-        _ = router.handle(URL(string: "exodus-cite://1")!)
+        _ = router.handle(URL(string: "actovia-cite://1")!)
         router.onCitationTap = { _ in second += 1 }
-        _ = router.handle(URL(string: "exodus-cite://1")!)
+        _ = router.handle(URL(string: "actovia-cite://1")!)
         #expect(first == 1)
         #expect(second == 1)
     }

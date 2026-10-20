@@ -43,7 +43,7 @@ struct StockChartTests {
         #expect(!StockChart.allowsNavigation(to: URL(string: "https://www.tradingview.com/symbols/NASDAQ-AAPL/")))
         #expect(!StockChart.allowsNavigation(to: URL(string: "https://example.com")))
         #expect(!StockChart.allowsNavigation(to: URL(string: "http://www.tradingview-widget.com/")))
-        #expect(!StockChart.allowsNavigation(to: URL(string: "exodus://pair?c=1")))
+        #expect(!StockChart.allowsNavigation(to: URL(string: "actovia://pair?c=1")))
         #expect(!StockChart.allowsNavigation(to: nil))
     }
 
@@ -75,7 +75,7 @@ struct StockChartTests {
     @Test("the content rules compile") @MainActor
     func rules() async throws {
         let rules = try await WKContentRuleListStore.default().compileContentRuleList(
-            forIdentifier: "exodus-stock-chart-test", encodedContentRuleList: StockChart.contentRules)
+            forIdentifier: "actovia-stock-chart-test", encodedContentRuleList: StockChart.contentRules)
         #expect(rules != nil)
     }
 }

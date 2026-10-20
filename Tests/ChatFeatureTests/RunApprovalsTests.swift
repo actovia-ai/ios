@@ -218,7 +218,7 @@ struct ApprovalSummaryTests {
         let withHidden = "x" + hidden.map { String(UnicodeScalar($0)!) }.joined() + "y"
         #expect(ApprovalSummary.sanitized(withHidden) == "xy")
         #expect(ApprovalSummary.sanitized("a\u{0}b\u{1B}[31mc\u{7F}d\u{85}e\u{9B}f") == "a\u{FFFD}b\u{FFFD}[31mc\u{FFFD}d⏎e\u{FFFD}f")
-        // The desktop's three rules, in order (`sanitizeSummary`, exodus 4a3396d1 + the U+2028/2029/NEL addition).
+        // The desktop's three rules, in order (`sanitizeSummary`, actovia 4a3396d1 + the U+2028/2029/NEL addition).
         let table: [(String, String)] = [
             ("a\r\nb", "a⏎b"), ("a\rb", "a⏎b"), ("a\nb", "a⏎b"), ("a\n\nb", "a⏎⏎b"), ("a\r\r\nb", "a⏎⏎b"),
             ("a\u{2028}b", "a⏎b"), ("a\u{2029}b", "a⏎b"), ("a\u{85}b", "a⏎b"), ("a\tb", "a⇥b"),

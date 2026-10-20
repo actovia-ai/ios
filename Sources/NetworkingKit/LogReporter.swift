@@ -78,7 +78,7 @@ public actor LogReporter {
     /// Set when a flush could not happen (locked, unreachable): the next sign of life flushes at once.
     private let waitingForServer = Mutex(false)
 
-    private static let selfLog = Logger(subsystem: "app.yancey.exodus.ios", category: "log-reporter")
+    private static let selfLog = Logger(subsystem: "app.yancey.actovia.ios", category: "log-reporter")
 
     public init(
         session: URLSession,
@@ -302,7 +302,7 @@ public actor LogReporter {
     }
 
     static func logLocally(_ entry: Entry) {
-        let logger = Logger(subsystem: "app.yancey.exodus.ios", category: entry.scope)
+        let logger = Logger(subsystem: "app.yancey.actovia.ios", category: entry.scope)
         let attributes = entry.attributes.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value.text)" }
             .joined(separator: " ")
         switch entry.level {

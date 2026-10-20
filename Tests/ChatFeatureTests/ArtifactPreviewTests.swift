@@ -14,18 +14,18 @@ struct ArtifactPreviewTests {
     @Test("a sandbox URL is the same path under the API's sandbox route")
     func mapsToAPIPath() {
         #expect(
-            request("exodus-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html")
+            request("actovia-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html")
                 == .init(path: "/api/v1/artifacts/sandbox/src/renderer/sub-apps/artifacts/index.html", query: []))
-        #expect(request("exodus-artifact://sandbox/assets/artifacts-Bm1q5Gz5.js")?.path
+        #expect(request("actovia-artifact://sandbox/assets/artifacts-Bm1q5Gz5.js")?.path
             == "/api/v1/artifacts/sandbox/assets/artifacts-Bm1q5Gz5.js")
         #expect(ArtifactSandboxRoute.pageURL.absoluteString
-            == "exodus-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html")
+            == "actovia-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html")
         #expect(request(ArtifactSandboxRoute.pageURL.absoluteString)?.path == ArtifactSandboxRoute.pageAPIPath)
     }
 
     @Test("a query (the dev server's `?v=`) is passed on")
     func keepsQuery() {
-        #expect(request("exodus-artifact://sandbox/@vite/client?v=abc")
+        #expect(request("actovia-artifact://sandbox/@vite/client?v=abc")
             == .init(path: "/api/v1/artifacts/sandbox/@vite/client", query: [URLQueryItem(name: "v", value: "abc")]))
     }
 
@@ -33,14 +33,14 @@ struct ArtifactPreviewTests {
         "anything but a plain build path is refused",
         arguments: [
             "https://sandbox/assets/a.js",
-            "exodus-artifact://elsewhere/assets/a.js",
-            "exodus-artifact://sandbox/",
-            "exodus-artifact://sandbox/assets/..%2F..%2Fsecret",
-            "exodus-artifact://sandbox/%2e%2e/secret",
-            "exodus-artifact://sandbox/assets/%00.js",
-            "exodus-artifact://sandbox/assets//a.js",
-            "exodus-artifact://sandbox/assets/a%20b.js",
-            "exodus-artifact://sandbox/assets/a%5Cb.js",
+            "actovia-artifact://elsewhere/assets/a.js",
+            "actovia-artifact://sandbox/",
+            "actovia-artifact://sandbox/assets/..%2F..%2Fsecret",
+            "actovia-artifact://sandbox/%2e%2e/secret",
+            "actovia-artifact://sandbox/assets/%00.js",
+            "actovia-artifact://sandbox/assets//a.js",
+            "actovia-artifact://sandbox/assets/a%20b.js",
+            "actovia-artifact://sandbox/assets/a%5Cb.js",
         ])
     func refuses(_ url: String) {
         #expect(request(url) == nil)
@@ -48,7 +48,7 @@ struct ArtifactPreviewTests {
 
     @Test("the web view is told the computer's content type, or bytes when it gave none")
     func passesTypeThrough() {
-        let url = URL(string: "exodus-artifact://sandbox/assets/a.js")!
+        let url = URL(string: "actovia-artifact://sandbox/assets/a.js")!
         let js = ArtifactSandboxRoute.response(
             for: url, file: FetchedFile(data: Data("x".utf8), contentType: "text/javascript; charset=utf-8"))
         #expect(js.statusCode == 200)
@@ -64,8 +64,8 @@ struct ArtifactPreviewTests {
         #expect(ArtifactSandboxRoute.allowsNavigation(to: ArtifactSandboxRoute.pageURL))
         #expect(ArtifactSandboxRoute.allowsNavigation(to: URL(string: "about:blank")))
         #expect(!ArtifactSandboxRoute.allowsNavigation(to: URL(string: "https://example.com")))
-        #expect(!ArtifactSandboxRoute.allowsNavigation(to: URL(string: "exodus-artifact://other/x")))
-        #expect(!ArtifactSandboxRoute.allowsNavigation(to: URL(string: "exodus://pair?c=1")))
+        #expect(!ArtifactSandboxRoute.allowsNavigation(to: URL(string: "actovia-artifact://other/x")))
+        #expect(!ArtifactSandboxRoute.allowsNavigation(to: URL(string: "actovia://pair?c=1")))
         #expect(!ArtifactSandboxRoute.allowsNavigation(to: nil))
     }
 
@@ -172,22 +172,22 @@ struct ArtifactPreviewTests {
 
     @Test("a built asset is kept, under a flat name that is the same for the same path")
     func cachesAssets() throws {
-        let key = try #require(cacheKey("exodus-artifact://sandbox/assets/artifacts-CN-2EpYa.js"))
+        let key = try #require(cacheKey("actovia-artifact://sandbox/assets/artifacts-CN-2EpYa.js"))
         #expect(key.count == 64)
         #expect(key.allSatisfy { $0.isHexDigit })
-        #expect(cacheKey("exodus-artifact://sandbox/assets/artifacts-CN-2EpYa.js") == key)
-        #expect(cacheKey("exodus-artifact://sandbox/assets/useControlled-b4vTsN15.css") != key)
+        #expect(cacheKey("actovia-artifact://sandbox/assets/artifacts-CN-2EpYa.js") == key)
+        #expect(cacheKey("actovia-artifact://sandbox/assets/useControlled-b4vTsN15.css") != key)
     }
 
     @Test(
         "the page, any HTML, a dev server's module and a request with a query are never kept",
         arguments: [
-            "exodus-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html",
-            "exodus-artifact://sandbox/assets/page.html",
-            "exodus-artifact://sandbox/assets/PAGE.HTM",
-            "exodus-artifact://sandbox/src/renderer/sub-apps/artifacts/main.tsx",
-            "exodus-artifact://sandbox/@vite/client",
-            "exodus-artifact://sandbox/assets/a.js?v=1",
+            "actovia-artifact://sandbox/src/renderer/sub-apps/artifacts/index.html",
+            "actovia-artifact://sandbox/assets/page.html",
+            "actovia-artifact://sandbox/assets/PAGE.HTM",
+            "actovia-artifact://sandbox/src/renderer/sub-apps/artifacts/main.tsx",
+            "actovia-artifact://sandbox/@vite/client",
+            "actovia-artifact://sandbox/assets/a.js?v=1",
         ])
     func doesNotCache(_ url: String) {
         #expect(request(url) != nil)

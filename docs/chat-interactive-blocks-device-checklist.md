@@ -1,7 +1,7 @@
 # Interactive blocks — device checklist
 
-Phase 1 of `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md`: the questionnaire (`exodus-ask`) and the
-confirmation (`exodus-confirm`), on the desktop and on the iPhone.
+Phase 1 of `docs/superpowers/specs/2026-10-06-interactive-blocks-design.md`: the questionnaire (`actovia-ask`) and the
+confirmation (`actovia-confirm`), on the desktop and on the iPhone.
 
 ## Desktop
 

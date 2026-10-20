@@ -99,7 +99,7 @@ struct MarkdownInlineStylerTests {
         #expect(output.chips == [1])
         #expect(shape(output) == "Fact\u{2009}\u{27E6}swift.org\u{27E7}.")
         #expect(chips(output) == [MarkdownChip(numbers: [1], label: "swift.org", iconURL: nil)])
-        #expect(chips(output).first?.link == URL(string: "exodus-cite://1"))
+        #expect(chips(output).first?.link == URL(string: "actovia-cite://1"))
     }
 
     @Test("a chip keeps a thin space from the word before it and from the word after it")

@@ -1,4 +1,4 @@
-# exodus-ios Chat + Settings MVP Implementation Plan
+# actovia-ios Chat + Settings MVP Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -15,13 +15,13 @@
 - iOS deployment target: **27.0** for every target (matches this machine's Xcode 27 / the SDK actually installed — resolved from the spec's open "iOS 17+" assumption; this is a personal-use app with no App Store back-compat need, so targeting current-only avoids `@available` hedging everywhere).
 - Destinations: `.iOS` for every target (App included — no reason to block iPad, nothing here is iPhone-specific layout).
 - Swift language mode: **6.0** for every target, set once at the project level in `Project.swift` (`settings: .settings(base: ["SWIFT_VERSION": "6.0"])`) by Task 2 Step 1. Task 1's scaffold ships Tuist's default `SWIFT_VERSION = 5`, so until Task 2 flips it the build does not enforce the strict-concurrency rules this plan's `actor` / `Sendable` / `nonisolated(unsafe)` design is written against — this makes the build enforce them instead of relying on the plan's pre-flight `-strict-concurrency=complete` check alone.
-- Bundle id root: `app.yancey.exodus.exodus-ios` (carried over from the existing project). Each module target's bundle id is `app.yancey.exodus.exodus-ios.<TargetName>`.
+- Bundle id root: `app.yancey.actovia.actovia-ios` (carried over from the existing project). Each module target's bundle id is `app.yancey.actovia.actovia-ios.<TargetName>`.
 - `DEVELOPMENT_TEAM = YLF27G9ZMT` on the App target (carried over from the existing project, needed for on-device signing later; irrelevant for Simulator runs).
-- Running unit tests: Tuist 4.208.0 does **not** generate a scheme for a `.unitTests` target — there is no `-scheme ModelsTests` (`xcodebuild -list` shows only `App`, `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature`, `PhilharmonicFeature`, `ExodusIos-Workspace`). A unit-test target is a testable of the scheme of the module it tests, so run `xcodebuild test -workspace ExodusIos.xcworkspace -scheme <Module> -destination "platform=iOS Simulator,name=iPhone 17"` (`<Module>` = `Models`, `NetworkingKit`, `ChatFeature`, or `SettingsFeature`), and scope to one suite with `-only-testing:<Module>Tests/<Suite>`. If a module's scheme turns out not to include its test target, fall back to `-scheme ExodusIos-Workspace -only-testing:<Module>Tests`. Every `xcodebuild test` command in this plan is written this way.
+- Running unit tests: Tuist 4.208.0 does **not** generate a scheme for a `.unitTests` target — there is no `-scheme ModelsTests` (`xcodebuild -list` shows only `App`, `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature`, `PhilharmonicFeature`, `ActoviaIos-Workspace`). A unit-test target is a testable of the scheme of the module it tests, so run `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme <Module> -destination "platform=iOS Simulator,name=iPhone 17"` (`<Module>` = `Models`, `NetworkingKit`, `ChatFeature`, or `SettingsFeature`), and scope to one suite with `-only-testing:<Module>Tests/<Suite>`. If a module's scheme turns out not to include its test target, fall back to `-scheme ActoviaIos-Workspace -only-testing:<Module>Tests`. Every `xcodebuild test` command in this plan is written this way.
 - Testing framework is **Swift Testing**, not XCTest: `import Testing`, `@Test func …() async throws`, `#expect(...)`, `#require(...)`. Every unit test target hosts it the same way an XCTest target would (`product: .unitTests`).
 - No third-party dependencies anywhere — no `Tuist/Package.swift`, no `tuist install` needed. `tuist generate --no-open` is the only generation command required.
 - JSON field names are camelCase and match `universal-client`'s TypeScript types **exactly** (`providerConfig`, `modelSnapshot`, `openaiApiKey`, `toolCallId`, …) — Swift property names mirror them 1:1 so default `Codable` synthesis needs no `CodingKeys` remapping anywhere in this plan.
-- Server default: `http://localhost:60223`, stored client-side in `UserDefaults` (key `exodus.serverURL`), never hardcoded into a request builder.
+- Server default: `http://localhost:60223`, stored client-side in `UserDefaults` (key `actovia.serverURL`), never hardcoded into a request builder.
 - `ChatMessage` (Models) decodes into an **opaque `[String: JSONValue]` passthrough**, not a narrow struct — required so previously-unmodeled fields (`details`, `toolCallId`, `usage`, `cost`, …) round-trip unmodified when a prior turn's messages are echoed back inside the next `POST /api/chat` body (see the spec §3 and `schemas/chat.ts`'s `messageSchema` comment on the desktop side — this is not a Swift-side invention, it mirrors a documented server requirement).
 - Every task's Swift code in this plan has been verified to compile with the actual toolchain on this machine (`xcrun swift -strict-concurrency=complete <file>.swift`) before being written down — the core Models/NetworkingKit design (JSONValue, ChatMessage, ChatSseEvent, the `.lines` AsyncSequence-based SSE line splitting, the `ChatStreamManager` actor pattern with `AsyncStream.makeStream()`) is proven, not speculative.
 
@@ -30,21 +30,21 @@
 ## Task 1: Tuist scaffold — replace the plain Xcode project, boot an empty app
 
 **Files:**
-- Delete: `exodus-ios.xcodeproj/`, `exodus-ios/` (the old template's `ContentView.swift`, `exodus_iosApp.swift`, `Item.swift` — keep `Assets.xcassets`, moved), `exodus-iosTests/`, `exodus-iosUITests/`
+- Delete: `actovia-ios.xcodeproj/`, `actovia-ios/` (the old template's `ContentView.swift`, `actovia_iosApp.swift`, `Item.swift` — keep `Assets.xcassets`, moved), `actovia-iosTests/`, `actovia-iosUITests/`
 - Create: `Tuist.swift`
 - Create: `Project.swift`
-- Create: `Sources/App/ExodusApp.swift`
+- Create: `Sources/App/ActoviaApp.swift`
 - Create: `Sources/App/RootView.swift` (placeholder body for this task — replaced for real in Task 10)
 - Create: `Sources/Models/.gitkeep` equivalent — actually a real placeholder: `Sources/Models/Placeholder.swift`
 - Create: `Sources/NetworkingKit/Placeholder.swift`
 - Create: `Sources/ChatFeature/Placeholder.swift`
 - Create: `Sources/SettingsFeature/Placeholder.swift`
 - Create: `Sources/PhilharmonicFeature/PhilharmonicPlaceholderView.swift` (this one is real, reused as-is through Task 10)
-- Move: `exodus-ios/Assets.xcassets` → `Resources/App/Assets.xcassets`
+- Move: `actovia-ios/Assets.xcassets` → `Resources/App/Assets.xcassets`
 
 **Interfaces:**
 - Consumes: nothing (first task).
-- Produces: a buildable, runnable `ExodusIos.xcworkspace` with 6 empty-but-linked targets (`App`, `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature`, `PhilharmonicFeature`). Every later task adds real content to these same targets/folders — none of the paths above change shape again.
+- Produces: a buildable, runnable `ActoviaIos.xcworkspace` with 6 empty-but-linked targets (`App`, `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature`, `PhilharmonicFeature`). Every later task adds real content to these same targets/folders — none of the paths above change shape again.
 
 - [ ] **Step 1: Confirm Tuist is installed**
 
@@ -53,16 +53,16 @@ Expected: prints a version (e.g. `4.208.0`). If missing, install with `brew inst
 
 - [ ] **Step 2: Capture the old project's signing identity, then remove it**
 
-The existing template already has real values worth keeping (bundle id `app.yancey.exodus.exodus-ios`, team `YLF27G9ZMT`) — already captured above as Global Constraints, so nothing to extract at runtime. Remove the old Xcode-managed project:
+The existing template already has real values worth keeping (bundle id `app.yancey.actovia.actovia-ios`, team `YLF27G9ZMT`) — already captured above as Global Constraints, so nothing to extract at runtime. Remove the old Xcode-managed project:
 
 ```bash
-git rm -r exodus-ios.xcodeproj exodus-iosTests exodus-iosUITests
-mkdir -p /tmp/exodus-ios-assets-migration
-cp -R exodus-ios/Assets.xcassets /tmp/exodus-ios-assets-migration/
-git rm -r exodus-ios
+git rm -r actovia-ios.xcodeproj actovia-iosTests actovia-iosUITests
+mkdir -p /tmp/actovia-ios-assets-migration
+cp -R actovia-ios/Assets.xcassets /tmp/actovia-ios-assets-migration/
+git rm -r actovia-ios
 mkdir -p Resources/App
-cp -R /tmp/exodus-ios-assets-migration/Assets.xcassets Resources/App/Assets.xcassets
-rm -rf /tmp/exodus-ios-assets-migration
+cp -R /tmp/actovia-ios-assets-migration/Assets.xcassets Resources/App/Assets.xcassets
+rm -rf /tmp/actovia-ios-assets-migration
 ```
 
 - [ ] **Step 3: Create `Tuist.swift`**
@@ -132,7 +132,7 @@ public struct PhilharmonicPlaceholderView: View {
 }
 ```
 
-- [ ] **Step 5: Create `Sources/App/ExodusApp.swift` and `Sources/App/RootView.swift`**
+- [ ] **Step 5: Create `Sources/App/ActoviaApp.swift` and `Sources/App/RootView.swift`**
 
 `Sources/App/RootView.swift` (throwaway body — Task 10 replaces this with the real workspace switcher):
 
@@ -141,7 +141,7 @@ import SwiftUI
 
 struct RootView: View {
     var body: some View {
-        Text("Exodus")
+        Text("Actovia")
     }
 }
 
@@ -150,13 +150,13 @@ struct RootView: View {
 }
 ```
 
-`Sources/App/ExodusApp.swift`:
+`Sources/App/ActoviaApp.swift`:
 
 ```swift
 import SwiftUI
 
 @main
-struct ExodusApp: App {
+struct ActoviaApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -170,7 +170,7 @@ struct ExodusApp: App {
 ```swift
 import ProjectDescription
 
-private let bundleIdRoot = "app.yancey.exodus.exodus-ios"
+private let bundleIdRoot = "app.yancey.actovia.actovia-ios"
 private let developmentTeam = "YLF27G9ZMT"
 private let deploymentTargets = DeploymentTargets.iOS("27.0")
 
@@ -190,13 +190,13 @@ private func moduleTarget(
 }
 
 let project = Project(
-    name: "ExodusIos",
+    name: "ActoviaIos",
     targets: [
         .target(
             name: "App",
             destinations: .iOS,
             product: .app,
-            productName: "Exodus",
+            productName: "Actovia",
             bundleId: bundleIdRoot,
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
@@ -206,7 +206,7 @@ let project = Project(
                         "NSAllowsLocalNetworking": true
                     ],
                     "NSLocalNetworkUsageDescription":
-                        "Exodus 需要访问本地网络以连接到你电脑上运行的 Exodus 服务。"
+                        "Actovia 需要访问本地网络以连接到你电脑上运行的 Actovia 服务。"
                 ]
             ),
             buildableFolders: ["Sources/App", "Resources/App"],
@@ -243,7 +243,7 @@ let project = Project(
 ```bash
 tuist generate --no-open
 xcodebuild build \
-  -workspace ExodusIos.xcworkspace \
+  -workspace ActoviaIos.xcworkspace \
   -scheme App \
   -destination "generic/platform=iOS Simulator"
 ```
@@ -255,15 +255,15 @@ Expected: `** BUILD SUCCEEDED **`.
 ```bash
 xcrun simctl boot "iPhone 17" 2>/dev/null || true
 xcodebuild build \
-  -workspace ExodusIos.xcworkspace \
+  -workspace ActoviaIos.xcworkspace \
   -scheme App \
   -destination "platform=iOS Simulator,name=iPhone 17" \
-  -derivedDataPath /tmp/exodus-ios-dd
-xcrun simctl install booted /tmp/exodus-ios-dd/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch booted app.yancey.exodus.exodus-ios
+  -derivedDataPath /tmp/actovia-ios-dd
+xcrun simctl install booted /tmp/actovia-ios-dd/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch booted app.yancey.actovia.actovia-ios
 ```
 
-Expected: the Simulator shows the app running with the text "Exodus" on screen (no crash).
+Expected: the Simulator shows the app running with the text "Actovia" on screen (no crash).
 
 - [ ] **Step 9: Commit**
 
@@ -304,13 +304,13 @@ EOF
 
 - [ ] **Step 1: Opt the project into Swift 6 language mode, and add the `ModelsTests` target to `Project.swift`**
 
-First, the Swift 6 setting (see Global Constraints). Add one line to the `Project(...)` initializer, between `name: "ExodusIos",` and `targets: [`:
+First, the Swift 6 setting (see Global Constraints). Add one line to the `Project(...)` initializer, between `name: "ActoviaIos",` and `targets: [`:
 
 ```swift
     settings: .settings(base: ["SWIFT_VERSION": "6.0"]),
 ```
 
-It is project-level, so every target — including every test target later tasks append — inherits it; no later task touches it again. (Checked against Tuist 4.208.0: after `tuist generate --no-open`, `xcodebuild -showBuildSettings -project ExodusIos.xcodeproj -target Models` resolves `SWIFT_VERSION = 6.0`, and the Task 1 scaffold still builds clean under it. If any of this task's own code raises a Swift 6 diagnostic the plan's snippet missed, fix the code — do not lower the setting.)
+It is project-level, so every target — including every test target later tasks append — inherits it; no later task touches it again. (Checked against Tuist 4.208.0: after `tuist generate --no-open`, `xcodebuild -showBuildSettings -project ActoviaIos.xcodeproj -target Models` resolves `SWIFT_VERSION = 6.0`, and the Task 1 scaffold still builds clean under it. If any of this task's own code raises a Swift 6 diagnostic the plan's snippet missed, fix the code — do not lower the setting.)
 
 Then add this element to the `targets:` array, right after the `moduleTarget(name: "Models")` line:
 
@@ -453,7 +453,7 @@ struct ChatSseEventTests {
 
 - [ ] **Step 3: Run the tests and confirm they fail (types don't exist yet)**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: build failure — `Cannot find type 'ChatMessage' in scope` (and similar for `ChatSseEvent`).
 
 - [ ] **Step 4: Implement `JSONValue.swift`**
@@ -679,7 +679,7 @@ extension ChatSseEvent: Decodable {
 ```bash
 rm Sources/Models/Placeholder.swift
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 Expected: `** TEST SUCCEEDED **`, all 8 tests pass.
@@ -891,7 +891,7 @@ struct ChatSummaryTests {
 
 - [ ] **Step 2: Run the tests and confirm they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing ModelsTests/SettingsTests -only-testing ModelsTests/HTTPErrorTests -only-testing ModelsTests/ChatSummaryTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17" -only-testing ModelsTests/SettingsTests -only-testing ModelsTests/HTTPErrorTests -only-testing ModelsTests/ChatSummaryTests`
 Expected: build failure — the new types don't exist yet.
 
 - [ ] **Step 3: Implement `AiProviders.swift`**
@@ -1130,7 +1130,7 @@ public struct ChatSummary: Codable, Equatable, Sendable, Identifiable {
 
 - [ ] **Step 7: Run the tests and confirm they pass**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: `** TEST SUCCEEDED **`, all tests pass (Task 2's tests plus this task's).
 
 - [ ] **Step 8: Commit**
@@ -1164,7 +1164,7 @@ EOF
 **Interfaces:**
 - Consumes: `Models` (`HTTPError`, `ServerErrorEnvelope`, and every request/response type used in tests).
 - Produces:
-  - `final class ServerConfigStore: @unchecked Sendable` with `init(userDefaults: UserDefaults = .standard)`, `var baseURLString: String { get set }` (default `"http://localhost:60223"`, persisted at key `"exodus.serverURL"`). `@unchecked` because `UserDefaults` itself is thread-safe but not `Sendable`-annotated by Foundation, and this type has no other mutable state.
+  - `final class ServerConfigStore: @unchecked Sendable` with `init(userDefaults: UserDefaults = .standard)`, `var baseURLString: String { get set }` (default `"http://localhost:60223"`, persisted at key `"actovia.serverURL"`). `@unchecked` because `UserDefaults` itself is thread-safe but not `Sendable`-annotated by Foundation, and this type has no other mutable state.
   - `struct APIClient: Sendable` with `init(session: URLSession = .shared, serverConfig: ServerConfigStore)`, `func get<T: Decodable>(_ path: String) async throws -> T`, `func post<Body: Encodable, T: Decodable>(_ path: String, body: Body) async throws -> T`, `func post<Body: Encodable>(_ path: String, body: Body) async throws`, `func delete(_ path: String) async throws`.
 
 - [ ] **Step 1: Add the `NetworkingKitTests` target to `Project.swift`**
@@ -1337,7 +1337,7 @@ extension URLRequest {
 
 - [ ] **Step 4: Run the tests and confirm they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: build failure — `ServerConfigStore`/`APIClient` don't exist yet.
 
 - [ ] **Step 5: Implement `ServerConfigStore.swift`**
@@ -1350,7 +1350,7 @@ import Foundation
 /// narrow override, not a blanket escape hatch.
 public final class ServerConfigStore: @unchecked Sendable {
     private let userDefaults: UserDefaults
-    private static let key = "exodus.serverURL"
+    private static let key = "actovia.serverURL"
     private static let defaultBaseURL = "http://localhost:60223"
 
     public init(userDefaults: UserDefaults = .standard) {
@@ -1442,7 +1442,7 @@ Note: `EmptyResponse() as! T` is safe only because the two call sites that pass 
 ```bash
 rm Sources/NetworkingKit/Placeholder.swift
 tuist generate --no-open
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 Expected: `** TEST SUCCEEDED **`.
@@ -1521,7 +1521,7 @@ struct SSEFrameParsingTests {
 
 - [ ] **Step 2: Run the test and confirm it fails**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/SSEFrameParsingTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/SSEFrameParsingTests`
 Expected: build failure — `SSEFrameParsing` doesn't exist yet.
 
 - [ ] **Step 3: Implement `SSEFrameParsing.swift`**
@@ -1542,7 +1542,7 @@ public enum SSEFrameParsing {
 
 - [ ] **Step 4: Run the test and confirm it passes**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/SSEFrameParsingTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/SSEFrameParsingTests`
 Expected: `** TEST SUCCEEDED **`.
 
 - [ ] **Step 5: Implement `SSEClient.swift`**
@@ -1591,7 +1591,7 @@ public struct SSEClient: Sendable {
 
 - [ ] **Step 6: Build the whole workspace to confirm `SSEClient` compiles (no dedicated test for it — see Step 5's note)**
 
-Run: `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"`
+Run: `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"`
 Expected: `** BUILD SUCCEEDED **`.
 
 - [ ] **Step 7: Commit**
@@ -1778,7 +1778,7 @@ struct ChatStreamManagerTests {
 
 - [ ] **Step 2: Run the tests and confirm they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/ChatStreamManagerTests`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing NetworkingKitTests/ChatStreamManagerTests`
 Expected: build failure — `ChatStreamManager` doesn't exist yet.
 
 - [ ] **Step 3: Implement `ChatStreamManager.swift`**
@@ -1930,7 +1930,7 @@ public actor ChatStreamManager {
 
 - [ ] **Step 4: Run the tests and confirm they pass**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: `** TEST SUCCEEDED **`, every NetworkingKit test (Tasks 4-6) passes.
 
 - [ ] **Step 5: Commit**
@@ -2305,7 +2305,7 @@ struct SettingsViewModelTests {
         let cases: [(input: String, expected: String)] = [
             ("192.168.1.10:60223", "http://192.168.1.10:60223"),
             ("  http://mac.local:60223/  ", "http://mac.local:60223"),
-            ("https://exodus.example.com", "https://exodus.example.com"),
+            ("https://actovia.example.com", "https://actovia.example.com"),
         ]
         for (input, expected) in cases {
             let (vm, config) = makeViewModel()
@@ -2371,7 +2371,7 @@ extension URLRequest {
 
 - [ ] **Step 3: Run the tests and confirm they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: build failure — `SettingsViewModel` doesn't exist yet.
 
 - [ ] **Step 4: Implement `SettingsViewModel.swift`**
@@ -2535,7 +2535,7 @@ public final class SettingsViewModel {
 
 - [ ] **Step 5: Run the tests and confirm they pass**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: `** TEST SUCCEEDED **`.
 
 - [ ] **Step 6: Implement `SettingsView.swift`**
@@ -2686,7 +2686,7 @@ struct RootView: View {
 ```bash
 rm Sources/SettingsFeature/Placeholder.swift
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Expected: `** BUILD SUCCEEDED **`.
@@ -2971,7 +2971,7 @@ struct ChatListViewModelTests {
 
 - [ ] **Step 3: Run the tests and confirm they fail**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: build failure — `ChatListViewModel` doesn't exist yet.
 
 - [ ] **Step 4: Implement `ChatListViewModel.swift`**
@@ -3047,7 +3047,7 @@ public final class ChatListViewModel {
 
 - [ ] **Step 5: Run the tests and confirm they pass**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: `** TEST SUCCEEDED **`.
 
 - [ ] **Step 6: Implement `ChatListView.swift`**
@@ -3138,7 +3138,7 @@ public struct ChatListView: View {
 ```bash
 rm Sources/ChatFeature/Placeholder.swift
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Expected: `** BUILD SUCCEEDED **`. `ChatListView` isn't reachable from `RootView` yet — that's Task 10.
@@ -3197,7 +3197,7 @@ In `Sources/NetworkingKit/ChatStreamManager.swift`, in `send(chatId:messages:ser
 
 In `Tests/NetworkingKitTests/ChatStreamManagerTests.swift` add a test, written first and seen failing: a transport failure (the streaming mock's URLProtocol answers `didFailWithError(URLError(.cannotConnectToHost))` instead of a response) makes the manager yield `.status(.error)` then `.failed(message)` with `message == URLError(.cannotConnectToHost).localizedDescription` and `message.contains("Domain=") == false` (a bare in-process `URLError` describes itself as "(NSURLErrorDomain error -1004.)"; the `String(describing:)` dump form contains `Domain=`), and no `.finished`. Add whatever small static the mock needs (for example a `failure: URLError?` set by the test and reset in the existing `reset()`), keeping every existing test unchanged.
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:NetworkingKitTests/ChatStreamManagerTests` (type name; confirm N > 0), then the full `NetworkingKit` suite. Commit: `Show a readable message when the chat request cannot connect`.
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:NetworkingKitTests/ChatStreamManagerTests` (type name; confirm N > 0), then the full `NetworkingKit` suite. Commit: `Show a readable message when the chat request cannot connect`.
 
 - [ ] **Step 2: Write `ChatHistoryRows` tests and see them fail**
 
@@ -3316,7 +3316,7 @@ struct ChatHistoryRowsTests {
 }
 ```
 
-Run (type name, confirm the build fails on the missing `ChatHistoryRows`): `xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ChatFeatureTests/ChatHistoryRowsTests`
+Run (type name, confirm the build fails on the missing `ChatHistoryRows`): `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ChatFeatureTests/ChatHistoryRowsTests`
 
 - [ ] **Step 3: Implement `ChatHistoryRows.swift`**
 
@@ -3728,7 +3728,7 @@ struct ChatDetailViewModelTests {
 }
 ```
 
-Run (type name; confirm the build fails on the missing `ChatDetailViewModel`): `xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ChatFeatureTests/ChatDetailViewModelTests`
+Run (type name; confirm the build fails on the missing `ChatDetailViewModel`): `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:ChatFeatureTests/ChatDetailViewModelTests`
 
 - [ ] **Step 5: Implement `ChatDetailViewModel.swift`**
 
@@ -3836,7 +3836,7 @@ public final class ChatDetailViewModel {
 
 - [ ] **Step 6: Run the tests and confirm they pass**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"` — the whole `ChatFeature` suite (Task 8's tests + `ChatHistoryRowsTests` + `ChatDetailViewModelTests`). Confirm N > 0 and that the count is what you expect.
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"` — the whole `ChatFeature` suite (Task 8's tests + `ChatHistoryRowsTests` + `ChatDetailViewModelTests`). Confirm N > 0 and that the count is what you expect.
 
 - [ ] **Step 7: Implement `MessageRow.swift`**
 
@@ -3992,7 +3992,7 @@ public struct ChatDetailView: View {
 
 ```bash
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Expected: `** BUILD SUCCEEDED **`. `ChatDetailView` isn't reachable from `RootView` yet — that's Task 10, so the view code (title, tap/scroll behaviour, the typing indicator, pull-to-refresh) is verified by the build only until then; say so in the report.
@@ -4026,7 +4026,7 @@ EOF
 **Files:**
 - Modify: `Sources/App/RootView.swift` — replace the Task 7 throwaway body with real navigation
 - Create: `Sources/App/AppWorkspace.swift`
-- Modify: `Sources/App/ExodusApp.swift` — construct the shared `APIClient`/`ChatStreamManager`/`ServerConfigStore` once
+- Modify: `Sources/App/ActoviaApp.swift` — construct the shared `APIClient`/`ChatStreamManager`/`ServerConfigStore` once
 
 **Interfaces:**
 - Consumes: `ChatListView`, `ChatDetailView` (ChatFeature); `SettingsView` (SettingsFeature); `PhilharmonicPlaceholderView` (PhilharmonicFeature); `APIClient`, `ChatStreamManager`, `ServerConfigStore` (NetworkingKit).
@@ -4036,8 +4036,8 @@ EOF
 
 1. **Reload the chat list when Settings closes.** `ChatListView` loads in `.task`, which runs when the list appears — not when a sheet above it is dismissed. The first-run flow on a real device is: the default `localhost` is unreachable, the list shows "Can't load chats", the user opens Settings, enters the Mac's LAN address and saves. Without a reload the list would stay on the error until the user pulled down. `RootView` bumps a token when the sheet is dismissed and the list carries `.id(token)`, which re-creates it and re-runs its `.task`.
 2. **Settings is presented as a sheet, never pushed.** `SettingsView` owns a `NavigationStack`, calls `dismiss()` and reloads its form in `.task` on every appearance (Task 7 review).
-3. **Nothing in the app writes `ServerConfigStore.baseURLString` except `SettingsViewModel.saveServerURL()`.** Its "never save to a server whose settings were not loaded" guard is invalidated only there (Task 7 review). `RootView`/`ExodusApp` only read the store.
-4. **Exactly one `ChatStreamManager`,** constructed in `ExodusApp.init` and passed down (Task 6 review).
+3. **Nothing in the app writes `ServerConfigStore.baseURLString` except `SettingsViewModel.saveServerURL()`.** Its "never save to a server whose settings were not loaded" guard is invalidated only there (Task 7 review). `RootView`/`ActoviaApp` only read the store.
+4. **Exactly one `ChatStreamManager`,** constructed in `ActoviaApp.init` and passed down (Task 6 review).
 5. **The "Info.plist review" is a real check:** Task 1 put `NSAppTransportSecurity → NSAllowsLocalNetworking` and `NSLocalNetworkUsageDescription` in the App target; Step 4 verifies both are in the GENERATED plist. `NSAllowsLocalNetworking` lets plain `http://` reach IP addresses, `.local` and unqualified hosts (a LAN Mac) but not a public hostname, which iOS then refuses with its own App Transport Security error — correct for a LAN-only MVP.
 6. **Step 5 is launch-and-look only for the implementer.** Nothing in this environment can tap the Simulator, so the tap-through (workspace menu, gear/Settings sheet, New Chat push, list reload after saving a new address) is done by the human in Task 11. The implementer launches the app, takes a screenshot of the root screen, and says exactly what it shows. With no desktop server running the root screen should show the "Can't load chats" state (Task 8), which is itself a useful check.
 
@@ -4132,14 +4132,14 @@ struct RootView: View {
 }
 ```
 
-- [ ] **Step 3: Update `Sources/App/ExodusApp.swift`**
+- [ ] **Step 3: Update `Sources/App/ActoviaApp.swift`**
 
 ```swift
 import NetworkingKit
 import SwiftUI
 
 @main
-struct ExodusApp: App {
+struct ActoviaApp: App {
     private let serverConfig: ServerConfigStore
     private let apiClient: APIClient
     private let streamManager: ChatStreamManager
@@ -4163,7 +4163,7 @@ struct ExodusApp: App {
 
 ```bash
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Expected: `** BUILD SUCCEEDED **`.
@@ -4174,12 +4174,12 @@ Then the Info.plist review: `plutil -p` the generated App plist (Tuist puts it u
 
 ```bash
 xcodebuild build \
-  -workspace ExodusIos.xcworkspace \
+  -workspace ActoviaIos.xcworkspace \
   -scheme App \
   -destination "platform=iOS Simulator,name=iPhone 17" \
-  -derivedDataPath /tmp/exodus-ios-dd
-xcrun simctl install booted /tmp/exodus-ios-dd/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch booted app.yancey.exodus.exodus-ios
+  -derivedDataPath /tmp/actovia-ios-dd
+xcrun simctl install booted /tmp/actovia-ios-dd/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch booted app.yancey.actovia.actovia-ios
 ```
 
 Take a screenshot of the root screen (`xcrun simctl io booted screenshot <path under the scratchpad directory>`, then read it) and report what it shows. Expected: the nav bar title "Chat" with a chevron, a gear button on the right, the New Chat button, and — if no desktop server is running — the "Can't load chats" state; if `pnpm dev` is running in `../universal-client`, the chat list. You cannot tap the Simulator from here, so the rest of the original manual check (the workspace menu with "Chat" checked and "Philharmonic(即将支持)" disabled, the gear opening Settings as a sheet, New Chat pushing an empty `ChatDetailView`, the list reloading after a new address is saved) is Task 11's human pass: say so in the report. Use a derived-data path under the scratchpad directory rather than `/tmp`.
@@ -4218,10 +4218,10 @@ In `../universal-client`: `pnpm dev`. Confirm it logs the Hono server listening 
 - [ ] **Step 2: Run the full test suite one more time**
 
 ```bash
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme NetworkingKit -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme SettingsFeature -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme ChatFeature -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 Expected: `** TEST SUCCEEDED **` on all four.
@@ -4229,14 +4229,14 @@ Expected: `** TEST SUCCEEDED **` on all four.
 - [ ] **Step 3: Fresh install and manual walkthrough**
 
 ```bash
-xcrun simctl uninstall booted app.yancey.exodus.exodus-ios || true
+xcrun simctl uninstall booted app.yancey.actovia.actovia-ios || true
 xcodebuild build \
-  -workspace ExodusIos.xcworkspace \
+  -workspace ActoviaIos.xcworkspace \
   -scheme App \
   -destination "platform=iOS Simulator,name=iPhone 17" \
-  -derivedDataPath /tmp/exodus-ios-dd
-xcrun simctl install booted /tmp/exodus-ios-dd/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch booted app.yancey.exodus.exodus-ios
+  -derivedDataPath /tmp/actovia-ios-dd
+xcrun simctl install booted /tmp/actovia-ios-dd/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch booted app.yancey.actovia.actovia-ios
 ```
 
 Walk through, on a fresh install (no prior UserDefaults state, so Server URL defaults to `http://localhost:60223`):

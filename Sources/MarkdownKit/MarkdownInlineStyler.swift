@@ -147,14 +147,14 @@ struct MarkdownChip: Equatable {
 /// the same font as a `UIFont`, and a `Font` cannot be read back.
 enum MarkdownIntentAttribute: AttributedStringKey {
     typealias Value = InlinePresentationIntent
-    static let name = "app.exodus.markdown.intent"
+    static let name = "app.actovia.markdown.intent"
 }
 
 /// On the thin space that keeps a chip off the word beside it. Its value: whether white space was written there,
 /// which is what a copied selection puts back in the chip's place.
 enum MarkdownChipGapAttribute: AttributedStringKey {
     typealias Value = Bool
-    static let name = "app.exodus.markdown.chipGap"
+    static let name = "app.actovia.markdown.chipGap"
 }
 
 /// Turns the parser's semantic runs (`inlinePresentationIntent`, `link`) into what is drawn: text with a

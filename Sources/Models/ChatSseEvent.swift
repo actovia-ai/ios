@@ -80,7 +80,7 @@ extension ChatSseEvent: Decodable {
     }
 }
 
-/// `approval_required` (exodus `ApprovalRequiredEvent`): a call that touches a secret outside Actovia, paused between
+/// `approval_required` (actovia `ApprovalRequiredEvent`): a call that touches a secret outside Actovia, paused between
 /// its start and its result. `summary` is the path or command, never contents; `expiresAt` is when the computer
 /// declines it unanswered (epoch milliseconds, the computer's clock).
 public struct ApprovalRequest: Decodable, Equatable, Sendable {
@@ -121,7 +121,7 @@ public struct ApprovalRequest: Decodable, Equatable, Sendable {
     }
 }
 
-/// How a paused call ended (exodus `ApprovalOutcome`). Anything but `allowed` declines it.
+/// How a paused call ended (actovia `ApprovalOutcome`). Anything but `allowed` declines it.
 public enum ApprovalOutcome: Equatable, Sendable, Decodable {
     case allowed, denied, timedOut, stopped
     /// A value this build does not know: a decline of some kind.

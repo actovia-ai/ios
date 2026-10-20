@@ -1,6 +1,6 @@
-# exodus-ios: message rendering (markdown first) — design
+# actovia-ios: message rendering (markdown first) — design
 
-Status: written autonomously on 2026-09-24 while the repo owner slept ("模仿 exodus 的 Message 弄 ios 端的,
+Status: written autonomously on 2026-09-24 while the repo owner slept ("模仿 actovia 的 Message 弄 ios 端的,
 核心是 markdown … 具体还是靠你"). Every decision below is a ruling the owner can overturn; nothing is committed, and the
 renderer sits behind one small interface so the engine can be swapped (§4).
 
@@ -66,7 +66,7 @@ The desktop's rules are string-level and no Swift library implements them, so th
 3. **`~~` only strikes through.** cmark-gfm and Foundation strike single-`~` pairs (`19~32°C to 5~10°C` strikes "32°C
    to 5"); the preprocessor escapes a lone `~`.
 4. **Money is not math:** no single-dollar math ever; `$$…$$` handled in a later phase (raw TeX block first).
-5. **Citations:** `【N-source】` becomes a styled run linking `exodus-cite://N` (resolved to the Nth web-search result of
+5. **Citations:** `【N-source】` becomes a styled run linking `actovia-cite://N` (resolved to the Nth web-search result of
    the run so far, exactly like `buildCitationSources`), or is stripped when unresolved.
 
 `MarkdownParser` maps swift-markdown's typed AST to a small `MarkdownBlock` enum (paragraph, heading, list with task

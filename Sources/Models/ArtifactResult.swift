@@ -1,6 +1,6 @@
 import Foundation
 
-/// `create_artifact`'s result (exodus `calling-tools/create-artifact.ts`): a single-file React component the desktop
+/// `create_artifact`'s result (actovia `calling-tools/create-artifact.ts`): a single-file React component the desktop
 /// renders in its artifact sandbox, with the chat and id it is saved under there.
 public struct ArtifactResult: JSONValueDecodable {
     public let artifactId: String

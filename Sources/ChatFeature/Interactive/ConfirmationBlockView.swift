@@ -1,7 +1,7 @@
 import MarkdownKit
 import SwiftUI
 
-/// A reply's confirmation (`exodus-confirm`): what will happen (Markdown), a note, Reject (bordered) and Approve
+/// A reply's confirmation (`actovia-confirm`): what will happen (Markdown), a note, Reject (bordered) and Approve
 /// (prominent, the tone's accent) — side by side, one over the other at accessibility sizes. Once the transcript holds
 /// the answer it shows the decision instead.
 struct ConfirmationBlockView: View {

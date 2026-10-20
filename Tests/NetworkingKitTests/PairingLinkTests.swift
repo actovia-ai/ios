@@ -7,7 +7,7 @@ import Testing
 struct PairingLinkTests {
     /// As the desktop's `buildPairingLink` writes it (URLSearchParams: `,` → %2C, space → `+`).
     static let valid =
-        "exodus://pair?h=192.168.1.10%2Cmac.local&p=63129&c=abc-DEF_123&f=VldKaXWVm4PXpwRHg9LDxh0tcUW5A5sOgwTVeSyjWtM&n=Yancey%27s+Mac+%26+Co"
+        "actovia://pair?h=192.168.1.10%2Cmac.local&p=63129&c=abc-DEF_123&f=VldKaXWVm4PXpwRHg9LDxh0tcUW5A5sOgwTVeSyjWtM&n=Yancey%27s+Mac+%26+Co"
 
     @Test("parses every field of a link the desktop wrote")
     func parsesEveryField() throws {
@@ -26,7 +26,7 @@ struct PairingLinkTests {
 
     @Test("falls back to the first host when the computer sent no name")
     func nameFallsBackToHost() throws {
-        let link = try #require(PairingLink(string: "exodus://pair?h=10.0.0.2&p=63129&c=x&f=y"))
+        let link = try #require(PairingLink(string: "actovia://pair?h=10.0.0.2&p=63129&c=x&f=y"))
         #expect(link.name == "10.0.0.2")
     }
 
@@ -34,13 +34,13 @@ struct PairingLinkTests {
         "rejects anything that is not a complete pairing link",
         arguments: [
             "https://pair?h=a&p=63129&c=x&f=y&n=z",  // wrong scheme
-            "exodus://other?h=a&p=63129&c=x&f=y&n=z",  // wrong host
-            "exodus://pair?p=63129&c=x&f=y&n=z",  // no hosts
-            "exodus://pair?h=&p=63129&c=x&f=y&n=z",  // empty hosts
-            "exodus://pair?h=a&p=notaport&c=x&f=y&n=z",  // bad port
-            "exodus://pair?h=a&p=70000&c=x&f=y&n=z",  // port out of range
-            "exodus://pair?h=a&p=63129&f=y&n=z",  // no code
-            "exodus://pair?h=a&p=63129&c=x&n=z",  // no fingerprint
+            "actovia://other?h=a&p=63129&c=x&f=y&n=z",  // wrong host
+            "actovia://pair?p=63129&c=x&f=y&n=z",  // no hosts
+            "actovia://pair?h=&p=63129&c=x&f=y&n=z",  // empty hosts
+            "actovia://pair?h=a&p=notaport&c=x&f=y&n=z",  // bad port
+            "actovia://pair?h=a&p=70000&c=x&f=y&n=z",  // port out of range
+            "actovia://pair?h=a&p=63129&f=y&n=z",  // no code
+            "actovia://pair?h=a&p=63129&c=x&n=z",  // no fingerprint
             "not a url",
             ""
         ])

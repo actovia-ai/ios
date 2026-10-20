@@ -1,6 +1,6 @@
 # Actovia iOS
 
-A native iPhone client for the desktop Actovia app (the `exodus` checkout at `../exodus`): a ChatGPT-style slide-out drawer lists your
+A native iPhone client for the desktop Actovia app (the `actovia` checkout at `../actovia`): a ChatGPT-style slide-out drawer lists your
 Recents and searches them, and the chat beside it sends messages, streams the replies and edits the
 AI-provider settings, all through the desktop's local HTTP server. It stores nothing but the server address.
 Swift 6 and SwiftUI: prefer native frameworks as much as possible and reach for a third-party library only
@@ -25,8 +25,8 @@ localization work in its
 ```sh
 tuist install                # a fresh clone: fetches the Swift packages (swift-markdown) first
 tuist generate --no-open
-open ExodusIos.xcworkspace   # run the App scheme, or from the command line:
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+open ActoviaIos.xcworkspace   # run the App scheme, or from the command line:
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
 ```
 
 Regenerate after adding or removing files. `DEVELOPMENT_TEAM` in `Project.swift` is the author's; change it for your device.
@@ -34,7 +34,7 @@ Regenerate after adding or removing files. `DEVELOPMENT_TEAM` in `Project.swift`
 ## Tests
 
 ```sh
-xcodebuild test -workspace ExodusIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
+xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 The schemes are `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature` and `App`. There is no
@@ -61,12 +61,12 @@ matches nothing and still prints `** TEST SUCCEEDED **`, so look for a `Test run
   `report-home`). Design: [spec](docs/superpowers/specs/2026-10-01-health-workspace-design.md),
   [trends spec](docs/superpowers/specs/2026-10-02-health-trends-design.md).
 - `WidgetKitShared`: what the app and its widgets share — the snapshot (`WidgetSnapshot`: up to three recent chat
-  titles and today's health glance, never a message) kept in the App Group `group.app.yancey.exodus`, the
-  `exodus://` links a widget opens (`DeepLink`: a new chat, pre-filled but never sent; a chat; Health's ask box)
+  titles and today's health glance, never a message) kept in the App Group `group.app.yancey.actovia`, the
+  `actovia://` links a widget opens (`DeepLink`: a new chat, pre-filled but never sent; a chat; Health's ask box)
   and the rules an entry is drawn by. Design: [spec](docs/superpowers/specs/2026-10-01-ios-widgets-design.md).
 - `WidgetUI`: the widgets' views — the small and medium Home Screen widgets over the Health hero's sky at the
   entry's hour, the two Lock Screen widgets, and Ody's outline on tinted screens.
-- `ExodusWidgets` (`Widgets/Sources`, embedded in the App): the widget extension — Ask (small, medium), Today (Lock
+- `ActoviaWidgets` (`Widgets/Sources`, embedded in the App): the widget extension — Ask (small, medium), Today (Lock
   Screen) and the Ask control for Control Center and the Action button. It links only the two widget modules and
   `OdyKit`, never `NetworkingKit` or the keychain: it reads the snapshot the App writes. Launch the App with
   `-WidgetGallery` (DEBUG) to see every widget on fixtures; [device checklist](docs/widgets-device-checklist.md).
@@ -76,7 +76,7 @@ matches nothing and still prints `** TEST SUCCEEDED **`, so look for a `Test run
 
 ## Connecting to the desktop
 
-Run the desktop app from `../exodus` (`bun start`); it serves the API on port 60223 under `/api/v1`, the
+Run the desktop app from `../actovia` (`bun start`); it serves the API on port 60223 under `/api/v1`, the
 versioned prefix this app addresses. The default address, `http://localhost:60223`, works from the Simulator
 on the same Mac. On a real iPhone open Settings (gear),
 then Connection, and enter the Mac's LAN IP or `<name>.local` with the port, e.g. `http://192.168.1.10:60223`.
@@ -85,7 +85,7 @@ iOS asks once for local-network permission.
 ## Connecting to the computer
 
 A device reaches Actovia only after it has been **paired**. On the computer, Settings → Devices → Pair a device
-shows a QR code: `exodus://pair?h=<hosts>&p=63129&c=<one-time code>&f=<certificate fingerprint>&n=<name>`
+shows a QR code: `actovia://pair?h=<hosts>&p=63129&c=<one-time code>&f=<certificate fingerprint>&n=<name>`
 (`PairingLink`). Settings → Computer here scans it (`QRScannerView`, VisionKit) — or pastes the link, which is
 what the Simulator does — and `ServerConnection.pair` trades the code for a per-device token over HTTPS.
 
@@ -138,7 +138,7 @@ Chinese, matching the desktop: a Simplified Chinese phone shows English.
 ```sh
 python3 scripts/l10n.py add "ios:chat.detail.copyButton" --en-value "Copy" --comment "Where it appears and what any %@ stands for."
 python3 scripts/l10n.py fill translations.json   # {"ios:chat.detail.copyButton": {"de": "…", "ja": "…"}}
-python3 scripts/l10n.py sync-from-desktop        # Vendor/exodus-locales by default
+python3 scripts/l10n.py sync-from-desktop        # Vendor/actovia-locales by default
 python3 scripts/l10n.py audit                    # add --source-only while strings are still being added
 python3 -m unittest Tests.L10nScriptTests.test_l10n   # the script's own tests
 ```
@@ -163,23 +163,23 @@ English form as its own `defaultValue:`. `audit` fails when a Swift literal name
 catalog (exact match), an entry has no explicit `en`, a shipped language is untranslated, a placeholder differs
 from the English, a `String(localized:)` call has no `defaultValue:` or one whose text differs from the
 catalog's `en` (for a plural, from every English form), or a key that is not `ios:` is missing from
-`Vendor/exodus-locales` (its text would have no recorded source).
+`Vendor/actovia-locales` (its text would have no recorded source).
 
 The sync overwrites every shared key's translations on every run. A stale translation is a bug, not a feature:
 never hand-edit a shared key (the next sync reverts it, and the fix belongs in the desktop's catalog), and re-run
-the sync whenever `Vendor/exodus-locales` is refreshed. Refresh it from a desktop commit, never its working
+the sync whenever `Vendor/actovia-locales` is refreshed. Refresh it from a desktop commit, never its working
 tree. `git subtree pull` refuses a dirty working tree, so when this checkout has uncommitted work, pull in a
 throwaway worktree and fast-forward (the commit touches only `Vendor/`). A scratch clone keeps the split branch
 out of the desktop repository:
 
 ```sh
-git clone -q --no-checkout ~/Code/actovia/actovia /tmp/exodus-split       # add -b <branch> for a branch other than master
-git -C /tmp/exodus-split subtree split --prefix=packages/shared/src/i18n/locales <commit> -b exodus-locales-split
+git clone -q --no-checkout ~/Code/actovia/actovia /tmp/actovia-split       # add -b <branch> for a branch other than master
+git -C /tmp/actovia-split subtree split --prefix=packages/shared/src/i18n/locales <commit> -b actovia-locales-split
 git worktree add --detach /tmp/ios-subtree HEAD
-git -C /tmp/ios-subtree subtree pull --prefix=Vendor/exodus-locales /tmp/exodus-split exodus-locales-split --squash \
+git -C /tmp/ios-subtree subtree pull --prefix=Vendor/actovia-locales /tmp/actovia-split actovia-locales-split --squash \
   -m "chore(locales): sync the desktop catalogs (<what>)"
 git merge --ff-only "$(git -C /tmp/ios-subtree rev-parse HEAD)"
-git worktree remove /tmp/ios-subtree && rm -rf /tmp/exodus-split
+git worktree remove /tmp/ios-subtree && rm -rf /tmp/actovia-split
 ```
 
 Then `python3 scripts/l10n.py sync-from-desktop`. The subtree pull commits by itself; the sync's result is left

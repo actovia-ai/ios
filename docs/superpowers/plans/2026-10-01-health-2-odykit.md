@@ -20,8 +20,8 @@
 - Springs follow the spec: poke `response 0.4, dampingFraction 0.45`.
 - Haptics only through `.sensoryFeedback`; no sounds.
 - Palette (from `brand/art.mjs`): body `#FFFFFF → #F6F2EC → #D3C8B8`, rim `#7A5A2A` at 0–0.3 opacity, ink `#1B1B1F`, blush `#FF7E95` @ 0.55, bindle `#E5392E`, sun `#FFD84A`, marigold `#FFAE1A`.
-- Same repo rules as plan 1: stage only named files, `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, never push. `Sources/App/ExodusApp.swift` has unrelated uncommitted edits — stage your hunk only (`git add -p`).
-- Test command: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:OdyKitTests/<Type>`; confirm the `Test run with N tests` line. `tuist generate --no-open` after adding files.
+- Same repo rules as plan 1: stage only named files, `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, never push. `Sources/App/ActoviaApp.swift` has unrelated uncommitted edits — stage your hunk only (`git add -p`).
+- Test command: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:OdyKitTests/<Type>`; confirm the `Test run with N tests` line. `tuist generate --no-open` after adding files.
 
 ## Review Focus
 
@@ -44,7 +44,7 @@
 - `Sources/OdyKit/Confetti.swift` — `ConfettiSystem`, `ConfettiView`.
 - `Sources/OdyKit/HeartbeatWave.swift`, `Sources/OdyKit/HeartbeatWave.metal` — `ECG` math, shader, view with fallback.
 - `Sources/App/OdyGallery.swift` — DEBUG `-OdyGallery`.
-- Modify `Sources/App/ExodusApp.swift` — show the gallery for the launch argument.
+- Modify `Sources/App/ActoviaApp.swift` — show the gallery for the launch argument.
 - Tests: `Tests/OdyKitTests/{SVGPathTests,OdyFaceTests,BlinkScheduleTests,DaySkyTests,ConfettiTests,ECGTests}.swift`.
 
 ---
@@ -117,7 +117,7 @@ struct SVGPathTests {
 
 - [ ] **Step 2: Run to verify they fail**
 
-Run: `tuist generate --no-open && xcodebuild test -workspace ExodusIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:OdyKitTests/SVGPathTests`
+Run: `tuist generate --no-open && xcodebuild test -workspace ActoviaIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:OdyKitTests/SVGPathTests`
 Expected: build failure — `SVGPath` not found.
 
 - [ ] **Step 3: Write the parser**
@@ -254,7 +254,7 @@ Note: `M` followed by a lowercase command letter is handled because `peekCommand
 // Sources/OdyKit/OdyKit.swift
 import SwiftUI
 
-/// Ody, the Exodus mascot, as a living SwiftUI character and the scenes it appears in. The body curve and palette
+/// Ody, the Actovia mascot, as a living SwiftUI character and the scenes it appears in. The body curve and palette
 /// come from the desktop's `brand/art.mjs` — keep them in sync.
 public enum OdyKit {
     static let version = 1
@@ -1578,9 +1578,9 @@ public struct HeartbeatWave: View {
 enum HeartbeatShader {
     private final class Marker {}
 
-    /// `ExodusIos_OdyKit.bundle`, looked up by hand as `ImageFormingShader` does: no bundle, the Canvas fallback.
+    /// `ActoviaIos_OdyKit.bundle`, looked up by hand as `ImageFormingShader` does: no bundle, the Canvas fallback.
     static let library: ShaderLibrary? = {
-        let name = "ExodusIos_OdyKit.bundle"
+        let name = "ActoviaIos_OdyKit.bundle"
         for base in [Bundle.main.resourceURL, Bundle(for: Marker.self).resourceURL] {
             guard let url = base?.appendingPathComponent(name), let bundle = Bundle(url: url),
                 bundle.url(forResource: "default", withExtension: "metallib") != nil
@@ -1627,7 +1627,7 @@ static float ecg(float phase) {
 
 - [ ] **Step 4: Run to verify they pass**
 
-Run: `tuist generate --no-open` then Step 2's command. Expected: `Test run with 3 tests … passed`. Also `xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"` succeeds (the `.metal` compiles into `ExodusIos_OdyKit.bundle`).
+Run: `tuist generate --no-open` then Step 2's command. Expected: `Test run with 3 tests … passed`. Also `xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"` succeeds (the `.metal` compiles into `ActoviaIos_OdyKit.bundle`).
 
 - [ ] **Step 5: Commit**
 
@@ -1644,7 +1644,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" -- Sources/OdyKit/Heart
 
 **Files:**
 - Create: `Sources/App/OdyGallery.swift`
-- Modify: `Sources/App/ExodusApp.swift:48-53` (one more `else if` branch)
+- Modify: `Sources/App/ActoviaApp.swift:48-53` (one more `else if` branch)
 
 **Interfaces:**
 - Produces: DEBUG launch argument `-OdyGallery`.
@@ -1706,7 +1706,7 @@ struct OdyGalleryView: View {
 
 - [ ] **Step 2: Hook it up**
 
-In `Sources/App/ExodusApp.swift`, after the `SettingsGalleryLaunch` branch (around line 52), add:
+In `Sources/App/ActoviaApp.swift`, after the `SettingsGalleryLaunch` branch (around line 52), add:
 
 ```swift
                 } else if OdyGalleryLaunch.isEnabled {
@@ -1719,10 +1719,10 @@ and `import OdyKit` is **not** needed there (the gallery file imports it). The f
 
 ```bash
 tuist generate --no-open
-xcodebuild build -workspace ExodusIos.xcworkspace -scheme App -destination "platform=iOS Simulator,name=iPhone 17" -derivedDataPath Derived
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "platform=iOS Simulator,name=iPhone 17" -derivedDataPath Derived
 xcrun simctl boot "iPhone 17" 2>/dev/null; open -a Simulator
-xcrun simctl install booted Derived/Build/Products/Debug-iphonesimulator/Exodus.app
-xcrun simctl launch booted app.yancey.exodus.exodus-ios -OdyGallery
+xcrun simctl install booted Derived/Build/Products/Debug-iphonesimulator/Actovia.app
+xcrun simctl launch booted app.yancey.actovia.actovia-ios -OdyGallery
 sleep 3; xcrun simctl io booted screenshot .superpowers/ody-gallery.png
 ```
 
@@ -1730,14 +1730,14 @@ Open `.superpowers/ody-gallery.png` and `.superpowers/ody-states-v2.png` side by
 
 - [ ] **Step 4: Run all OdyKit tests**
 
-Run: `xcodebuild test -workspace ExodusIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17"`
+Run: `xcodebuild test -workspace ActoviaIos.xcworkspace -scheme OdyKit -destination "platform=iOS Simulator,name=iPhone 17"`
 Expected: `Test run with 32 tests … passed` (1 + 7 + 4 + 5 + 3 + 5 + 4 + 3).
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add Sources/App/OdyGallery.swift
-git add -p Sources/App/ExodusApp.swift   # only the OdyGallery branch
+git add -p Sources/App/ActoviaApp.swift   # only the OdyGallery branch
 git commit -m "feat(ody): DEBUG gallery for every scene, face, sky and effect
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"

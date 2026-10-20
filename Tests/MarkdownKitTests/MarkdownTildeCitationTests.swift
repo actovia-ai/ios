@@ -57,11 +57,11 @@ struct MarkdownTildeCitationTests {
     }
 
     @Test(
-        "rewriteCitations turns each marker into exodus-cite links",
+        "rewriteCitations turns each marker into actovia-cite links",
         arguments: [
-            ("It rained 【1-source】 and cleared 【2-source】.", "It rained [1](exodus-cite://1) and cleared [2](exodus-cite://2).", [1, 2]),
-            ("both 【1,2-source】", "both [1](exodus-cite://1)[2](exodus-cite://2)", [1, 2]),
-            ("spaced 【3, 4-source】", "spaced [3](exodus-cite://3)[4](exodus-cite://4)", [3, 4]),
+            ("It rained 【1-source】 and cleared 【2-source】.", "It rained [1](actovia-cite://1) and cleared [2](actovia-cite://2).", [1, 2]),
+            ("both 【1,2-source】", "both [1](actovia-cite://1)[2](actovia-cite://2)", [1, 2]),
+            ("spaced 【3, 4-source】", "spaced [3](actovia-cite://3)[4](actovia-cite://4)", [3, 4]),
             ("half 【1-so", "half 【1-so", []),
             ("not a citation 【note】", "not a citation 【note】", []),
             ("code `【1-source】` stays", "code `【1-source】` stays", []),
@@ -84,7 +84,7 @@ struct MarkdownTildeCitationTests {
         }
         let link = try #require(MarkdownFixtures.runs(content).first { $0.link != nil })
         #expect(link.text == "1")
-        #expect(link.link?.absoluteString == "exodus-cite://1")
+        #expect(link.link?.absoluteString == "actovia-cite://1")
         #expect(MarkdownPreprocessor.citationNumber(from: try #require(link.link)) == 1)
         #expect(MarkdownPreprocessor.citationNumber(from: try #require(URL(string: "https://1"))) == nil)
     }

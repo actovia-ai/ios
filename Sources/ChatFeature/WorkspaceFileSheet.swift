@@ -11,7 +11,7 @@ extension EnvironmentValues {
 }
 
 /// A file the chat's tools wrote, read from the computer through the paired session (device token, pinned TLS):
-/// `GET /api/v1/workspace/:chatId/file?path=…` (exodus `routes/workspace.ts`). The computer confines the path to this
+/// `GET /api/v1/workspace/:chatId/file?path=…` (actovia `routes/workspace.ts`). The computer confines the path to this
 /// chat's workspace and sends text only, at most 1 MB.
 final class WorkspaceFileLoader: Sendable {
     typealias Fetch = @Sendable (_ path: String) async throws -> WorkspaceFile
