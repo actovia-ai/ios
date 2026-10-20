@@ -16,8 +16,13 @@ public final class ServerConnection: @unchecked Sendable {
     private let store: CredentialStoring
     private let state = NSLock()
     private var computers: PairedComputers?
+    /// True while the current computer is changing (`retarget`): no token is handed out and no certificate is
+    /// trusted until every pooled connection of the one before has been dropped.
+    private var suspended = false
+    /// Counts changes of the current computer, so only the newest one lifts `suspended`.
+    private var retargets = 0
     /// The computer requests go to: the current one of `computers`. Read under `state`.
-    private var server: PairedServer? { computers?.active }
+    private var server: PairedServer? { suspended ? nil : computers?.active }
     /// The pin to trust while pairing, before there is a stored server.
     private var pendingPin: String?
     private var computerChangeHandlers: [@Sendable () -> Void] = []
@@ -46,7 +51,7 @@ public final class ServerConnection: @unchecked Sendable {
 
     /// A credential exists (it may still be locked behind Face ID).
     public var isPaired: Bool { store.exists }
-    public var isUnlocked: Bool { state.withLock { server != nil } }
+    public var isUnlocked: Bool { state.withLock { computers != nil } }
     public var serverName: String? { state.withLock { server?.name } }
     public var currentHost: String? { state.withLock { server?.orderedHosts.first } }
 
@@ -87,18 +92,46 @@ public final class ServerConnection: @unchecked Sendable {
     }
 
     /// Talk to another paired computer from now on. What was kept in memory from the one before goes with it
-    /// (`onComputerChange`), and the app's screens start again on the new one.
-    public func switchTo(fingerprint: String) throws {
+    /// (`onComputerChange`), and the app's screens start again on the new one. Returns once the switch has taken
+    /// effect (`retarget`).
+    public func switchTo(fingerprint: String) async throws {
         let updated: PairedComputers? = state.withLock {
             guard var current = computers, current.active?.fingerprint != fingerprint,
                 current.select(fingerprint)
             else { return nil }
-            computers = current
             return current
         }
         guard let updated else { return }
         try store.save(updated)
-        computerChanged()
+        await retarget(updated).value
+    }
+
+    /// Makes `next` the paired computers, with a different current one. A request reads its address and its token
+    /// at different moments, and `URLSession` keeps TLS connections open between requests: without this, a switch
+    /// could send one computer's token to another — down a connection whose certificate was checked against the
+    /// old pin, when two computers share an address. So the token and the pin are withdrawn at once (`suspended`),
+    /// every pooled connection is dropped (`flush`: later requests open new ones, each checked against the pin of
+    /// the moment), and only then is the new computer's token handed out. A request caught in between fails; none
+    /// reaches the wrong computer.
+    @discardableResult
+    private func retarget(_ next: PairedComputers?) -> Task<Void, Never> {
+        let generation: Int = state.withLock {
+            computers = next
+            suspended = true
+            retargets += 1
+            return retargets
+        }
+        if let next { try? store.save(next) } else { try? store.clear() }
+        let session = self.session
+        return Task {
+            await session.flush()
+            let newest: Bool = state.withLock {
+                guard retargets == generation else { return false }
+                suspended = false
+                return true
+            }
+            if newest { computerChanged() }
+        }
     }
 
     /// Lifts the computer's own lock — a separate thing from this device's token being locked
@@ -138,34 +171,30 @@ public final class ServerConnection: @unchecked Sendable {
     /// Returns the telling, for a test to wait on; `nil` when there is no token to tell with.
     @discardableResult
     public func leave(session: URLSession? = nil) -> Task<Void, Never>? {
-        guard let fingerprint = state.withLock({ server?.fingerprint }) else {
-            unpair()
-            return nil
+        guard let fingerprint = state.withLock({ computers?.active?.fingerprint }) else {
+            return unpair()
         }
         return forget(fingerprint: fingerprint, session: session)
     }
 
     /// Unpairs one computer, the current one or another: forgotten here at once, then told, as `leave` describes.
-    /// Another computer is told over a session of its own that trusts its certificate — the shared one trusts the
-    /// current computer's only. When the current one goes, the next paired computer takes its place.
+    /// The computer is told over a session of its own that trusts only its certificate — the shared one trusts the
+    /// current computer's, which after this is another one or none. When the current one goes, the next paired
+    /// computer takes its place (`retarget`). The task finishes once both are done.
     @discardableResult
     public func forget(fingerprint: String, session: URLSession? = nil) -> Task<Void, Never>? {
-        let (gone, wasActive): (PairedServer?, Bool) = state.withLock {
-            let gone = computers?.servers.first { $0.fingerprint == fingerprint }
-            return (gone, computers?.active?.fingerprint == fingerprint)
-        }
+        let gone: PairedServer? = state.withLock { computers?.servers.first { $0.fingerprint == fingerprint } }
         let urlSession =
             session
-            ?? (wasActive
-                ? self.session
-                : URLSession(
-                    configuration: Self.noStoreConfiguration(),
-                    delegate: PinnedSessionDelegate(pin: { fingerprint }), delegateQueue: nil))
-        remove(fingerprint: fingerprint, changed: wasActive)
-        guard let gone else { return nil }
+            ?? URLSession(
+                configuration: Self.noStoreConfiguration(),
+                delegate: PinnedSessionDelegate(pin: { fingerprint }), delegateQueue: nil)
+        let change = remove(fingerprint: fingerprint)
+        guard let gone else { return change }
         let token = "Bearer \(gone.token)"
         let candidates = gone.orderedHosts.map { gone.baseURLString(host: $0) }
         return Task.detached {
+            await change?.value
             for base in candidates {
                 guard let url = URL(string: base)?.appendingPathComponent("/api/v1/pair") else { continue }
                 var request = URLRequest(url: url, timeoutInterval: 5)
@@ -179,26 +208,27 @@ public final class ServerConnection: @unchecked Sendable {
     }
 
     /// Forget the current computer: revoked there (a 401), or unpaired here. Another paired computer, if there is
-    /// one, becomes the current one.
-    public func unpair() {
-        guard let fingerprint = state.withLock({ server?.fingerprint }) else {
-            try? store.clear()
-            lock()
-            computerChanged()
-            return
+    /// one, becomes the current one once the task has finished (`retarget`); this one's token is withdrawn at once.
+    @discardableResult
+    public func unpair() -> Task<Void, Never>? {
+        guard let fingerprint = state.withLock({ computers?.active?.fingerprint }) else {
+            return retarget(nil)
         }
-        remove(fingerprint: fingerprint, changed: true)
+        return remove(fingerprint: fingerprint)
     }
 
-    private func remove(fingerprint: String, changed: Bool) {
-        let remaining: PairedComputers? = state.withLock {
-            guard var current = computers else { return nil }
+    /// Takes a computer off the list: the current one through `retarget` (its task), another one simply saved.
+    private func remove(fingerprint: String) -> Task<Void, Never>? {
+        let (remaining, wasActive): (PairedComputers?, Bool) = state.withLock {
+            guard var current = computers else { return (nil, false) }
+            let wasActive = current.active?.fingerprint == fingerprint
             current.remove(fingerprint)
-            computers = current.isEmpty ? nil : current
-            return computers
+            return (current.isEmpty ? nil : current, wasActive)
         }
+        if wasActive { return retarget(remaining) }
+        state.withLock { computers = remaining }
         if let remaining { try? store.save(remaining) } else { try? store.clear() }
-        if changed { computerChanged() }
+        return nil
     }
 
     /// Runs `handler` whenever the paired computer goes (unpaired, revoked) or another is paired, so what was kept in
@@ -281,8 +311,7 @@ public final class ServerConnection: @unchecked Sendable {
             var all = state.withLock { computers } ?? PairedComputers()
             all.upsert(paired)
             try store.save(all)
-            state.withLock { computers = all }
-            computerChanged()
+            await retarget(all).value
             return
         }
         throw lastError

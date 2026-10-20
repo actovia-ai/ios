@@ -110,7 +110,7 @@ struct PairingSection: View {
     /// a swipe unpairs it.
     private func computerRow(_ computer: PairedComputer) -> some View {
         Button {
-            if viewModel.switchTo(computer.fingerprint) { onChange() }
+            Task { if await viewModel.switchTo(computer.fingerprint) { onChange() } }
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
@@ -131,6 +131,7 @@ struct PairingSection: View {
             }
             .contentShape(Rectangle())
         }
+        .disabled(viewModel.isWorking)
         .accessibilityAddTraits(computer.isActive ? .isSelected : [])
         .swipeActions {
             Button("ios:settings.pairing.unpair", role: .destructive) { confirmUnpair = computer }

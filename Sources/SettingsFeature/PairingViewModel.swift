@@ -102,10 +102,12 @@ public final class PairingViewModel {
 
     /// Talks to another paired computer from now on. Returns whether it switched.
     @discardableResult
-    public func switchTo(_ fingerprint: String) -> Bool {
+    public func switchTo(_ fingerprint: String) async -> Bool {
         guard computers.contains(where: { $0.fingerprint == fingerprint && !$0.isActive }) else { return false }
+        isWorking = true
+        defer { isWorking = false }
         do {
-            try connection.switchTo(fingerprint: fingerprint)
+            try await connection.switchTo(fingerprint: fingerprint)
         } catch {
             fail(
                 String(

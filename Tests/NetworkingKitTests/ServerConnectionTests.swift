@@ -74,13 +74,13 @@ struct ServerConnectionTests {
     }
 
     @Test("unpair() tells whoever keeps things from the computer, once per unpair; lock() does not")
-    func unpairNotifies() {
+    func unpairNotifies() async {
         let calls = Mutex(0)
         let connection = ServerConnection(store: InMemoryCredentialStore(stored))
         connection.onComputerChange { calls.withLock { $0 += 1 } }
         connection.lock()
         #expect(calls.withLock { $0 } == 0)
-        connection.unpair()
+        await connection.unpair()?.value
         #expect(calls.withLock { $0 } == 1)
     }
 
@@ -258,7 +258,7 @@ struct ServerConnectionTests {
         connection.onComputerChange { changes.withLock { $0 += 1 } }
         try await connection.unlock(reason: "test")
 
-        try connection.switchTo(fingerprint: "HOMELAB")
+        try await connection.switchTo(fingerprint: "HOMELAB")
         #expect(connection.baseURLString == "https://100.64.0.9:63129")
         #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
         #expect(connection.pin == "HOMELAB")
@@ -266,7 +266,7 @@ struct ServerConnectionTests {
         #expect(try await store.load(reason: "test")?.activeFingerprint == "HOMELAB")
 
         // Switching to the one already current changes nothing.
-        try connection.switchTo(fingerprint: "HOMELAB")
+        try await connection.switchTo(fingerprint: "HOMELAB")
         #expect(changes.withLock { $0 } == 1)
     }
 
@@ -295,14 +295,22 @@ struct ServerConnectionTests {
         #expect(connection.authorization == nil)
     }
 
-    @Test("a revocation (401) unpairs the current computer only; the next one takes over")
+    /// A request reads its address and its token at different moments, and TLS connections stay pooled between
+    /// requests: the old computer's token and pin go at once, and the next computer's come only after the pool has
+    /// been flushed — never one computer's token on another's address or connection.
+    @Test("a revocation (401) unpairs the current computer only; the next takes over once old connections are gone")
     func revokedHandsOver() async throws {
         let store = InMemoryCredentialStore(
             computers: PairedComputers(servers: [stored, homelab], activeFingerprint: "PIN"))
         let connection = ServerConnection(store: store)
         try await connection.unlock(reason: "test")
 
-        connection.unpair()
+        let handover = connection.unpair()
+        #expect(connection.authorization == nil, "no token while connections to the old computer may be pooled")
+        #expect(connection.pin == nil, "and no certificate trusted either")
+        #expect(connection.baseURLCandidates.isEmpty)
+        #expect(connection.isUnlocked, "Face ID is not asked again for a handover")
+        await handover?.value
         #expect(connection.isPaired)
         #expect(connection.authorization == "Bearer HOMELAB-TOKEN")
         #expect(connection.pairedComputers.map(\.isActive) == [true])
