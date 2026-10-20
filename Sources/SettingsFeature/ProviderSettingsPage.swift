@@ -183,16 +183,29 @@ struct ProviderSettingsPage: View {
     private func apiKeyRow(provider: AiProviders) -> some View {
         switch viewModel.savedKeyState {
         case .saved(let lastFour) where !replacingKey:
-            SavedKeyRow(lastFour: lastFour)
-            Button {
-                replacingKey = true
-                keyFieldFocused = true
+            // One row: the saved key is the control, its menu holds what can be done to it — two full-width
+            // action rows under it read as a list of their own, the destructive one as loud as the key.
+            Menu {
+                Button {
+                    replacingKey = true
+                    keyFieldFocused = true
+                } label: {
+                    Label("ios:settings.secrets.replaceKey", systemImage: "pencil")
+                }
+                Button(role: .destructive, action: viewModel.clearKey) {
+                    Label("ios:settings.secrets.removeKey", systemImage: "trash")
+                }
             } label: {
-                Text("ios:settings.secrets.replaceKey")
+                HStack(spacing: 6) {
+                    SavedKeyRow(lastFour: lastFour)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+                }
+                .contentShape(Rectangle())
             }
-            Button(role: .destructive, action: viewModel.clearKey) {
-                Text("ios:settings.secrets.removeKey")
-            }
+            .tint(.primary)
             keyProblem
         case .willClear:
             LabeledContent {
