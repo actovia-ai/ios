@@ -1,11 +1,12 @@
 // The app's version, shared by every target — the App Store wants the widget
 // extension's to match the app's, so it lives here once, not per target.
 //
-//   MARKETING_VERSION        what people see (semver), set by hand per release
+//   MARKETING_VERSION        what people see (semver)
 //   CURRENT_PROJECT_VERSION  the build number: the commit count at the release,
 //                            so it only ever grows (TestFlight's one rule)
 //
-// Change both through `scripts/release.sh <version>`, which also commits and
-// tags; a hand edit here is a release without its tag.
+// A conventional commit pushed to main makes semantic-release run
+// `scripts/set-version.sh <version>`, the only writer of this file — don't edit
+// it by hand.
 MARKETING_VERSION = 1.0.0
 CURRENT_PROJECT_VERSION = 287

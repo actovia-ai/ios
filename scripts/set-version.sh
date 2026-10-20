@@ -23,3 +23,9 @@ sed -E \
   "$file" >"$tmp"
 cat "$tmp" >"$file"
 rm -f "$tmp"
+
+if ! grep -qx "MARKETING_VERSION = $version" "$file" \
+  || ! grep -qx "CURRENT_PROJECT_VERSION = $build" "$file"; then
+  echo "set-version: $file does not hold exactly 'MARKETING_VERSION = $version' and 'CURRENT_PROJECT_VERSION = $build' after writing; check its format" >&2
+  exit 1
+fi
