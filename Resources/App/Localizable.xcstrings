@@ -10388,61 +10388,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Chart konnte nicht geladen werden."
+            "value" : "TradingView war nicht erreichbar."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The chart could not be loaded."
+            "value" : "TradingView could not be reached."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudo cargar el gráfico."
+            "value" : "No se pudo conectar con TradingView."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le graphique n'a pas pu être chargé."
+            "value" : "Impossible de joindre TradingView."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossibile caricare il grafico."
+            "value" : "Impossibile raggiungere TradingView."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "チャートを読み込めませんでした。"
+            "value" : "TradingView に接続できませんでした。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "차트를 불러올 수 없습니다."
+            "value" : "TradingView에 연결할 수 없습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível carregar o gráfico."
+            "value" : "Não foi possível acessar o TradingView."
           }
         },
         "zh-HK" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "載入唔到圖表。"
+            "value" : "無法連線到 TradingView。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法載入圖表。"
+            "value" : "無法連線到 TradingView。"
           }
         }
       }

@@ -1,12 +1,12 @@
 import Foundation
 
-/// TradingView's Mini Chart (`mini-symbol-overview`) as the URL its loader script would put in a frame — the
-/// desktop's `stock-chart.ts` byte for byte, held to the same vectors — and what the chart's web view may load and
-/// where it may go (spec 2026-10-07 §2.3).
+/// TradingView's Symbol Overview (`symbol-overview`: price, change, market status, an area chart and range tabs) as
+/// the URL its loader script would put in a frame — the desktop's `stock-chart.ts` byte for byte, held to the same
+/// vectors — and what the chart's web view may load and where it may go (spec 2026-10-07 §2.3).
 enum StockChart {
-    static let height: CGFloat = 220
+    static let height: CGFloat = 380
     static let embedOrigin = "https://www.tradingview-widget.com"
-    private static let embedPath = "/embed-widget/mini-symbol-overview/"
+    private static let embedPath = "/embed-widget/symbol-overview/"
 
     /// The widget's locale codes for the app's languages: Korean is `kr`, Brazilian Portuguese `br`, Chinese by
     /// script or region (`zh_TW` for Traditional), and English for a language it does not have.
@@ -30,17 +30,27 @@ enum StockChart {
         identifier.isEmpty ? "en" : tradingViewLocale(Locale(identifier: identifier))
     }
 
-    /// The embed URL: `locale` and `symbol` in the query, the settings JSON percent-encoded in the hash, in the
-    /// desktop's key order and with its `encodeURIComponent` alphabet, so both apps write the same string.
+    /// The range tabs under the chart, each `label|interval`, as TradingView's own Symbol Overview offers them.
+    static let dateRanges = ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"]
+
+    /// The embed URL: `locale` in the query, the settings JSON percent-encoded in the hash, in the desktop's key order
+    /// and with its `encodeURIComponent` alphabet, so both apps write the same string. The range the model picked is
+    /// the tab the chart opens on (`symbol|range`).
     static func embedURL(symbol: String, range: InteractiveBlock.Stock.Range, dark: Bool, locale: String) -> URL? {
         let theme = if dark { "dark" } else { "light" }
+        let name = symbol.split(separator: ":").last.map(String.init) ?? symbol
+        let ranges = dateRanges.map { "\"\($0)\"" }.joined(separator: ",")
         let settings =
-            "{\"symbol\":\"\(symbol)\",\"dateRange\":\"\(range.rawValue)\",\"colorTheme\":\"\(theme)\","
-            + "\"isTransparent\":true,\"width\":\"100%\",\"height\":220,\"autosize\":false,\"largeChartUrl\":\"\"}"
-        guard let query = formEncoded(tradingViewLocale(locale)), let encodedSymbol = formEncoded(symbol),
+            "{\"symbols\":[[\"\(name)\",\"\(symbol)|\(range.rawValue)\"]],\"chartOnly\":false,\"width\":\"100%\","
+            + "\"height\":380,\"colorTheme\":\"\(theme)\",\"isTransparent\":true,\"autosize\":false,"
+            + "\"showVolume\":false,\"showMA\":false,\"hideDateRanges\":false,\"hideMarketStatus\":false,"
+            + "\"hideSymbolLogo\":false,\"scalePosition\":\"right\",\"scaleMode\":\"Normal\",\"fontSize\":\"10\","
+            + "\"noTimeScale\":false,\"valuesTracking\":\"1\",\"changeMode\":\"price-and-percent\","
+            + "\"chartType\":\"area\",\"lineWidth\":2,\"lineType\":0,\"dateRanges\":[\(ranges)]}"
+        guard let query = formEncoded(tradingViewLocale(locale)),
             let hash = settings.addingPercentEncoding(withAllowedCharacters: uriComponentAllowed)
         else { return nil }
-        return URL(string: "\(embedOrigin)\(embedPath)?locale=\(query)&symbol=\(encodedSymbol)#\(hash)")
+        return URL(string: "\(embedOrigin)\(embedPath)?locale=\(query)#\(hash)")
     }
 
     /// The symbol's own page on TradingView: "Open on TradingView", and where a tap on the chart goes.

@@ -6,14 +6,17 @@ enum StockChartPhase: Equatable {
     case loading, loaded, failed
 }
 
-/// A reply's stock chart (`actovia-stock`): TradingView's Mini Chart as its own embed URL in a web view that may load
+/// A reply's stock chart (`actovia-stock`): TradingView's Symbol Overview as its own embed URL in a web view that may load
 /// nothing but TradingView's hosts and go nowhere else — a tap on the chart opens the symbol's page in the browser —
 /// the model's note under it, and "Chart by TradingView" with the page's link (the disclosure the phone has, having
-/// no privacy page). When the chart cannot load, the symbol and the note stand in its place.
+/// no privacy page). When the chart cannot load — TradingView not reachable from the phone's network, often — the
+/// symbol and the note stand in its place, with Retry.
 struct StockBlockView: View {
     let block: InteractiveBlock.Stock
 
     @State private var phase = StockChartPhase.loading
+    /// Bumped by Retry: a new web view, a new load.
+    @State private var attempt = 0
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
@@ -21,9 +24,18 @@ struct StockBlockView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if phase == .failed {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: block.symbol).font(.headline)
-                    Text("ios:chat.block.chartUnavailable").font(.subheadline).foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: block.symbol).font(.headline)
+                        Text("ios:chat.block.chartUnavailable").font(.subheadline).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Button("common:action.retry") {
+                        phase = .loading
+                        attempt += 1
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .buttonStyle(.borderless)
                 }
                 .padding(CardStyle.inset)
             } else if let url = StockChart.embedURL(
@@ -54,7 +66,7 @@ struct StockBlockView: View {
         }
         .modifier(CardSurface())
         // The web view is made once for what the URL is made of; a change of scheme makes it again.
-        .id("\(block.symbol)|\(block.range?.rawValue ?? "")|\(colorScheme == .dark)")
+        .id("\(block.symbol)|\(block.range?.rawValue ?? "")|\(colorScheme == .dark)|\(attempt)")
     }
 }
 
@@ -130,8 +142,8 @@ struct StockChartWebView: UIViewRepresentable {
                 }
                 webView.configuration.userContentController.add(rules)
                 webView.load(URLRequest(url: url))
-                // Ten seconds of silence is a failure (offline, blocked).
-                try? await Task.sleep(for: .seconds(10))
+                // Twenty seconds of silence is a failure (offline, blocked, a slow route to TradingView); Retry tries again.
+                try? await Task.sleep(for: .seconds(20))
                 if !Task.isCancelled, self.phase == .loading { self.set(.failed) }
             }
         }
