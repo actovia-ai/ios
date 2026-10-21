@@ -15,13 +15,18 @@ struct ReportStory: View {
     @ScaledMetric(relativeTo: .title2) private var headlineSize: CGFloat = 26
     @State private var shown = false
 
-    /// Nil when there are no insights this app can draw, so the caller shows the Markdown note instead.
-    init?(_ summary: HealthSummary, eyebrow: Text? = nil) {
+    /// The headline as shown: on the home, less the hero's words when it opens with them (`ReportText.headline`).
+    private let shownHeadline: String?
+
+    /// Nil when there are no insights this app can draw, so the caller shows the Markdown note instead. `heroTitle`
+    /// is the hero's headline right above, on the home: the note's headline does not say it a second time.
+    init?(_ summary: HealthSummary, eyebrow: Text? = nil, heroTitle: String? = nil) {
         let stories = ReportText.stories(summary)
         guard !stories.isEmpty else { return nil }
         self.summary = summary
         self.stories = stories
         self.eyebrow = eyebrow ?? Text("ios:health.report.eyebrow")
+        shownHeadline = heroTitle.map { ReportText.headline(summary.headline, after: $0) } ?? summary.headline
     }
 
     var body: some View {
@@ -30,11 +35,13 @@ struct ReportStory: View {
                 eyebrow
                     .font(.footnote.weight(.bold))
                     .foregroundStyle(ReportInk.green)
-                headline
-                    .font(.system(size: headlineSize, weight: .heavy, design: .rounded))
-                    .tracking(-0.5)
-                    .lineSpacing(2)
-                    .accessibilityAddTraits(.isHeader)
+                if let shownHeadline {
+                    headline(shownHeadline)
+                        .font(.system(size: headlineSize, weight: .heavy, design: .rounded))
+                        .tracking(-0.5)
+                        .lineSpacing(2)
+                        .accessibilityAddTraits(.isHeader)
+                }
             }
             .padding(.bottom, 4)
             .entrance(0, shown: shown, rise: !reduceMotion)
@@ -53,13 +60,13 @@ struct ReportStory: View {
 
     /// The headline with its phrase in the category's gradient. An AttributedString can't carry a gradient, so the
     /// pieces are joined as an interpolation built in code: no string literal, so nothing lands in the catalog.
-    private var headline: Text {
-        guard let phrase = summary.headlineHighlight,
+    private func headline(_ text: String) -> Text {
+        guard let phrase = summary.headlineHighlight, text.contains(phrase),
             let category = summary.headlineCategory.flatMap(HealthCategory.init(rawValue:))
-        else { return Text(verbatim: summary.headline) }
+        else { return Text(verbatim: text) }
         let gradient = LinearGradient(
             colors: CategoryStyle.of(category).accentGradient, startPoint: .leading, endPoint: .trailing)
-        let runs = ReportText.runs(summary.headline, highlights: [phrase])
+        let runs = ReportText.runs(text, highlights: [phrase])
         var joined = LocalizedStringKey.StringInterpolation(literalCapacity: 0, interpolationCount: runs.count)
         for run in runs {
             let piece = Text(verbatim: run.text)
@@ -159,6 +166,21 @@ enum ReportInk {
 
 /// Splitting a sentence around the phrases the model marked.
 enum ReportText {
+    /// The note's headline under a hero that already says how the day is: when the headline opens with the hero's
+    /// words ("A little under-slept, so take it easy." under "A little under-slept"), what follows them, capitalised
+    /// ("So take it easy."); nil when nothing follows. Any other headline is kept whole.
+    static func headline(_ headline: String, after heroTitle: String) -> String? {
+        let hero = heroTitle.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
+        guard !hero.isEmpty,
+            let range = headline.range(of: hero, options: [.anchored, .caseInsensitive, .diacriticInsensitive])
+        else { return headline }
+        let rest = headline[range.upperBound...].trimmingCharacters(
+            in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: ",，、;；:：—–-·")))  // l10n:ignore: punctuation, not copy
+        guard rest.contains(where: { $0.isLetter || $0.isNumber }) else { return nil }
+        guard let first = rest.first, first.isLowercase else { return rest }
+        return first.uppercased() + rest.dropFirst()
+    }
+
     struct Run: Equatable {
         var text: String
         var isHighlight: Bool

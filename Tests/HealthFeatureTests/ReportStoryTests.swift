@@ -48,3 +48,25 @@ struct ReportStoryTests {
         #expect(CategoryStyle.of(.body).symbol == "drop.fill")
     }
 }
+
+@Suite("The note's headline under the hero")
+struct HeadlineAfterHeroTests {
+    @Test("a headline that opens with the hero's words keeps only what follows them")
+    func dropsTheHerosWords() {
+        #expect(
+            ReportText.headline("A little under-slept, so take it easy.", after: "A little under-slept")
+                == "So take it easy.")
+        #expect(ReportText.headline("a little UNDER-SLEPT — rest today", after: "A little under-slept") == "Rest today")
+    }
+
+    @Test("a headline that is only the hero's words is not shown")
+    func nothingLeft() {
+        #expect(ReportText.headline("A little under-slept.", after: "A little under-slept") == nil)
+    }
+
+    @Test("any other headline is kept whole")
+    func keepsOthers() {
+        #expect(ReportText.headline("Slept well, moved little.", after: "A little under-slept") == "Slept well, moved little.")
+        #expect(ReportText.headline("Rest: a little under-slept", after: "A little under-slept") == "Rest: a little under-slept")
+    }
+}

@@ -463,7 +463,7 @@ struct FileSheet: View {
             .screenTitle(ScreenTitles.join(FileCardRules.fileName(path), enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     ShareLink(item: text)

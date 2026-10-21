@@ -147,7 +147,7 @@ struct WorkspaceFileSheet: View {
                 .screenTitle(WorkspaceFileSheetModel.screenTitle(fileName: model.fileName, chatTitle: enclosingTitle))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("common:action.close", role: .close) { dismiss() }
+                        Button(role: .close) { dismiss() }
                     }
                     if let text = model.text {
                         ToolbarItemGroup(placement: .primaryAction) {

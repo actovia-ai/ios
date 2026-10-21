@@ -1,6 +1,7 @@
 import MarkdownKit
 import Models
 import NetworkingKit
+import OdyKit
 import SwiftUI
 
 /// What a new chat opens on when a widget's round button started it: the camera, or recording (`ChatDetailView`'s
@@ -282,13 +283,26 @@ public struct ChatDetailView: View {
         .screenVoiceGlow(active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
     }
 
+    /// A new chat: Ody, still but for a blink (nothing at all under Reduce Motion), over the hour's greeting —
+    /// the widgets' words — and the question. Ody keeps its own colours in every tone; it is not a button here.
     private var emptyState: some View {
-        Text("ios:chat.detail.greeting")
-            .font(.title2.weight(.semibold))
+        VStack(spacing: 14) {
+            OdyView(expression: .happy, pokable: false)
+                .frame(width: 67, height: 72)
+                .padding(.bottom, 4)
+            VStack(spacing: 6) {
+                EmptyChatGreeting.title(at: .now)
+                    .font(.title2.weight(.semibold))
+                Text("ios:chat.detail.greeting")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .allowsHitTesting(false)
+            .accessibilityElement(children: .combine)
+        }
+        .padding(.horizontal, 32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .allowsHitTesting(false)
     }
 
     private var composer: some View {
@@ -313,7 +327,7 @@ public struct ChatDetailView: View {
         .padding(.leading, 16)
         .padding(.trailing, ComposerRowLayout.inset)
         .padding(.vertical, ComposerRowLayout.inset)
-        .glassEffect(.regular, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
+        .glassEffect(ComposerRowLayout.glass, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,
@@ -592,5 +606,27 @@ struct ComposerQuote: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("ios:chat.ask.quoted"))
         .accessibilityValue(Text(verbatim: text))
+    }
+}
+
+/// The empty chat's greeting by the hour, in the widgets' periods and words (`WidgetPresentation.period`): morning
+/// from 5, afternoon from 12, evening from 18.
+enum EmptyChatGreeting {
+    enum Period: Equatable { case morning, afternoon, evening }
+
+    static func period(at date: Date, calendar: Calendar = .current) -> Period {
+        switch calendar.component(.hour, from: date) {
+        case 5..<12: .morning
+        case 12..<18: .afternoon
+        default: .evening
+        }
+    }
+
+    static func title(at date: Date) -> Text {
+        switch period(at: date) {
+        case .morning: Text("ios:widget.greeting.morning")
+        case .afternoon: Text("ios:widget.greeting.afternoon")
+        case .evening: Text("ios:widget.greeting.evening")
+        }
     }
 }

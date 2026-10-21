@@ -72,7 +72,7 @@ struct AppShell: View {
                 },
                 onRecentsChange: { widgetWriter.recentsChanged($0) }
             ) {
-                ForEach(AppWorkspace.allCases) { option in
+                ForEach(AppWorkspace.listed) { option in
                     WorkspaceRow(option: option, isSelected: option == workspace) {
                         workspace = option
                         setSidebar(open: false)

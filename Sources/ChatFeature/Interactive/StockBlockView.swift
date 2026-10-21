@@ -14,7 +14,7 @@ enum StockChartPhase: Equatable {
 struct StockBlockView: View {
     let block: InteractiveBlock.Stock
 
-    @State private var phase = StockChartPhase.loading
+    @State private var phase = Self.pinnedPhase ?? .loading
     /// Bumped by Retry: a new web view, a new load.
     @State private var attempt = 0
     @Environment(\.colorScheme) private var colorScheme
@@ -27,27 +27,22 @@ struct StockBlockView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if phase == .failed {
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(verbatim: block.symbol).font(.headline)
-                        Text("ios:chat.block.chartUnavailable").font(.subheadline).foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 8)
-                    Button("common:action.retry") {
-                        phase = .loading
-                        attempt += 1
-                    }
-                    .font(.subheadline.weight(.medium))
-                    .buttonStyle(.borderless)
-                }
-                .padding(CardStyle.inset)
+                unavailable
             } else if let url = StockChart.embedURL(
                 symbol: block.symbol, range: block.range ?? .default, dark: isDark,
                 locale: locale.identifier)
             {
-                StockChartWebView(url: url, onPhase: { phase = $0 }, openExternally: { openURL($0) })
+                StockChartWebView(
+                    url: url, onPhase: { if Self.pinnedPhase == nil { phase = $0 } },
+                    openExternally: { openURL($0) })
                     .frame(height: StockChart.height)
                     .accessibilityLabel(Text(verbatim: block.symbol))
+                    // Until the chart draws, the web view is transparent: the symbol and a spinner hold its place,
+                    // so the card is not an empty frame for the seconds TradingView takes.
+                    .overlay {
+                        if phase == .loading { loadingPlaceholder.transition(.opacity) }
+                    }
+                    .animation(.easeOut(duration: 0.2), value: phase)
             }
             if let note = block.note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty {
                 Text(verbatim: note)
@@ -58,7 +53,8 @@ struct StockBlockView: View {
             HStack {
                 Text("ios:chat.block.chartBy")
                 Spacer()
-                if let page = StockChart.symbolPageURL(block.symbol) {
+                // Failed, the link is the card's own button above.
+                if phase != .failed, let page = StockChart.symbolPageURL(block.symbol) {
                     Link(destination: page) { Text("ios:chat.block.openOnTradingView") }
                 }
             }
@@ -73,6 +69,64 @@ struct StockBlockView: View {
         .onAppear { if dark == nil { dark = colorScheme == .dark } }
         .onChange(of: colorScheme) { follow() }
         .onChange(of: scenePhase) { follow() }
+    }
+
+    /// `-MessageGalleryStock loading|failed` (DEBUG): the card held in that state, for screenshots.
+    private static var pinnedPhase: StockChartPhase? {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-MessageGalleryStock"), index + 1 < arguments.count else {
+            return nil
+        }
+        switch arguments[index + 1] {
+        case "loading": return .loading
+        case "failed": return .failed
+        default: return nil
+        }
+        #else
+        return nil
+        #endif
+    }
+
+    private var loadingPlaceholder: some View {
+        VStack(alignment: .leading) {
+            Text(verbatim: block.symbol).font(.headline)
+            Spacer()
+            ProgressView().frame(maxWidth: .infinity)
+            Spacer()
+        }
+        .padding(CardStyle.inset)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .allowsHitTesting(false)
+    }
+
+    /// The chart could not load (TradingView unreachable from the phone's network, often): the symbol, what went
+    /// wrong, and the two ways on — try again, or read the symbol on TradingView's own page in the browser.
+    private var unavailable: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: "chart.line.downtrend.xyaxis")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(verbatim: block.symbol).font(.headline)
+                Text("ios:chat.block.chartUnavailable").font(.subheadline).foregroundStyle(.secondary)
+            }
+            HStack(spacing: 12) {
+                Button("common:action.retry") {
+                    phase = .loading
+                    attempt += 1
+                }
+                .buttonStyle(.bordered)
+                if let page = StockChart.symbolPageURL(block.symbol) {
+                    Link(destination: page) { Text("ios:chat.block.openOnTradingView") }
+                        .buttonStyle(.borderless)
+                }
+            }
+            .font(.subheadline.weight(.medium))
+        }
+        .padding(CardStyle.inset)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var isDark: Bool {

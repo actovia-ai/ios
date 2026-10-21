@@ -195,7 +195,7 @@ private struct MapItineraryInlineCard: View {
                 }
                 if model.showsDayPicker {
                     MapDayPicker(model: model, inks: inks, selection: $dayIndex, inset: CardStyle.inset)
-                        .padding(.top, 6)
+                        .padding(.top, 4)
                 }
                 if let header = day.header {
                     MapDayHeaderLine(header: header, summary: day.summary, ink: inks[day: day.index])
@@ -288,56 +288,116 @@ private struct MapDayHeaderLine: View {
     }
 }
 
-/// The days of a trip, one picked: the transcript's card and the full-screen map share it.
+/// The days of a trip, one picked: the transcript's card and the full-screen map share it. Compact chips — the day's
+/// short name, its date as secondary text when the label carries one ("D1 10/21") — with the picked one filled in its
+/// day's colour, as the route is drawn; the others carry a dot of theirs. In the card they sit on the card's fill;
+/// over the full-screen map each chip is glass of its own, beside the system's map controls.
 struct MapDayPicker: View {
+    enum Surface { case card, map }
+
     let model: MapItineraryCardModel
     let inks: [MapDayInk]
     @Binding var selection: Int
     var inset: CGFloat = 16
+    var surface: Surface = .card
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
-                HStack(spacing: 8) {
-                    ForEach(model.days) { day in
-                        let isSelected = day.index == selection
-                        let ink = inks[day: day.index]
-                        Button {
-                            selection = day.index
-                        } label: {
-                            HStack(spacing: 6) {
-                                DaySwatch(ink: ink)
-                                Text(verbatim: MapItineraryText.dayLabel(day))
-                                    .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 7)
-                            .frame(minHeight: 44)
-                            .background(
-                                Capsule().fill(isSelected ? ink.fill.opacity(0.16) : Color(.tertiarySystemFill))
-                                    .frame(minHeight: 34)
-                            )
-                            .overlay(
-                                Capsule().strokeBorder(isSelected ? ink.fill : .clear, lineWidth: 1.5).frame(minHeight: 34)
-                            )
-                            .contentShape(.rect)
+                GlassEffectContainer(spacing: 6) {
+                    HStack(spacing: 6) {
+                        ForEach(model.days) { day in
+                            chip(day, isSelected: day.index == selection, ink: inks[day: day.index])
+                                .id(day.index)
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(isSelected ? .isSelected : [])
-                        .id(day.index)
                     }
                 }
                 .padding(.horizontal, inset)
-                .padding(.vertical, 4)
             }
             .scrollIndicators(.hidden)
+            .scrollClipDisabled(surface == .map)
             // The day picked is brought into view: it may have been picked where the chip is off screen.
             .onChange(of: selection) { _, day in
-                withAnimation(.smooth(duration: 0.3)) { proxy.scrollTo(day, anchor: .center) }
+                withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) { proxy.scrollTo(day, anchor: .center) }
             }
         }
+        .sensoryFeedback(.selection, trigger: selection)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("chat:mapItineraryCard.tabsAriaLabel"))
+    }
+
+    private func chip(_ day: MapItineraryCardModel.Day, isSelected: Bool, ink: MapDayInk) -> some View {
+        let parts = MapDayChipText(MapItineraryText.dayLabel(day))
+        return Button {
+            withAnimation(reduceMotion ? nil : .snappy(duration: 0.2)) { selection = day.index }
+        } label: {
+            HStack(spacing: 5) {
+                if !isSelected {
+                    Circle().fill(ink.fill).frame(width: 7, height: 7).accessibilityHidden(true)
+                }
+                Text(verbatim: parts.name).fontWeight(.semibold)
+                if let date = parts.detail {
+                    Text(verbatim: date)
+                        .foregroundStyle(isSelected ? AnyShapeStyle(ink.glyph.opacity(0.75)) : AnyShapeStyle(.secondary))
+                }
+            }
+            .font(.footnote)
+            .monospacedDigit()
+            .lineLimit(1)
+            .foregroundStyle(isSelected ? AnyShapeStyle(ink.glyph) : AnyShapeStyle(.primary))
+            .padding(.horizontal, 12)
+            .frame(height: 32)
+            .modifier(MapDayChipSurface(surface: surface, isSelected: isSelected, fill: ink.fill))
+            // 44 pt to the finger, 32 to the eye.
+            .padding(.vertical, 6)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(verbatim: MapItineraryText.dayLabel(day)))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// A day chip's words: the label's first word as its name, and the rest — a date, mostly — as secondary text.
+struct MapDayChipText: Equatable {
+    let name: String
+    let detail: String?
+
+    init(name: String, detail: String?) {
+        self.name = name
+        self.detail = detail
+    }
+
+    init(_ label: String) {
+        let trimmed = label.trimmingCharacters(in: .whitespaces)
+        // Only a date-like tail is split off ("D1 10/21", "Day 2 · Oct 22"); "Day 1" stays whole.
+        if let space = trimmed.lastIndex(of: " "),
+            case let rest = trimmed[trimmed.index(after: space)...],
+            rest.contains(where: { "/-.月日".contains($0) }),  // l10n:ignore: date separators, not copy
+            rest.contains(where: \.isNumber)
+        {
+            name = trimmed[..<space].trimmingCharacters(in: CharacterSet(charactersIn: " ·"))
+            detail = String(rest)
+        } else {
+            name = trimmed
+            detail = nil
+        }
+    }
+}
+
+private struct MapDayChipSurface: ViewModifier {
+    let surface: MapDayPicker.Surface
+    let isSelected: Bool
+    let fill: Color
+
+    func body(content: Content) -> some View {
+        switch surface {
+        case .card:
+            content.background(Capsule().fill(isSelected ? AnyShapeStyle(fill) : AnyShapeStyle(.fill.tertiary)))
+        case .map:
+            content.glassEffect(isSelected ? .regular.tint(fill).interactive() : .regular.interactive(), in: .capsule)
+        }
     }
 }
 
@@ -437,36 +497,39 @@ struct MapStopRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: Self.badgeGap) {
-            StopBadge(number: stop.number, ink: ink)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                let layout =
-                    dynamicTypeSize.isAccessibilitySize
-                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
-                    : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 6))
-                layout {
+        // The time stands apart on the right, centred on the name and what is under it; at the accessibility sizes
+        // there is no room beside them and it goes under the name.
+        HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: Self.badgeGap) {
+                StopBadge(number: stop.number, ink: ink)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: stop.place.name)
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    if let time = stop.place.timeLabel {
-                        Text(verbatim: time)
-                            .font(.caption.monospacedDigit())
+                    if dynamicTypeSize.isAccessibilitySize, let time = stop.place.timeLabel {
+                        timeText(time)
+                    }
+                    let meta = MapItineraryText.meta(stop.place)
+                    if !meta.isEmpty {
+                        Text(verbatim: meta)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if stop.coordinate == nil {
+                        Label("ios:chat.card.map.notOnMap", systemImage: "mappin.slash")
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-                let meta = MapItineraryText.meta(stop.place)
-                if !meta.isEmpty {
-                    Text(verbatim: meta)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                if stop.coordinate == nil {
-                    Label("ios:chat.card.map.notOnMap", systemImage: "mappin.slash")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if !dynamicTypeSize.isAccessibilitySize, let time = stop.place.timeLabel {
+                timeText(time)
+                    .multilineTextAlignment(.trailing)
+                    .lineLimit(2)
+                    .frame(maxWidth: 96, alignment: .trailing)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, CardStyle.inset)
@@ -476,6 +539,12 @@ struct MapStopRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: MapItineraryText.accessibilityLabel(stop, dayLabel: dayLabel)))
         .accessibilityAddTraits(.isButton)
+    }
+
+    private func timeText(_ time: String) -> some View {
+        Text(verbatim: time)
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(.secondary)
     }
 }
 
@@ -538,7 +607,9 @@ struct MapItineraryFullView: View {
     @State private var visibleRegion: MapRegion?
     @State private var detent: PresentationDetent
     @State private var sheetHeight: CGFloat = 0
-    @State private var topBarHeight: CGFloat = 0
+    /// The floating bar's bottom edge and the status bar's height, both in the cover's own space — never the screen's.
+    @State private var topBarBottom: CGFloat = 0
+    @State private var topInset: CGFloat = 0
     @State private var screenHeight: CGFloat = 800
     @State private var showsStops = true
     @State private var closing = false
@@ -551,6 +622,7 @@ struct MapItineraryFullView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     static let peekBase: CGFloat = 170
+    private static let space = "MapItineraryFullView"  // l10n:ignore: a coordinate space's name
     @ScaledMetric(relativeTo: .body) private var peekHeight: CGFloat = MapItineraryFullView.peekBase
 
     init(model: MapItineraryCardModel, start: MapItineraryFocus) {
@@ -585,11 +657,18 @@ struct MapItineraryFullView: View {
                 } else {
                     Color(.systemGroupedBackground).ignoresSafeArea()
                 }
-                // Its bottom edge on screen: the map runs under the status bar, so the bar's height alone is short.
+                // Its bottom edge in the cover, not on screen. Read in `.global`, it moved with the cover: on Close the
+                // cover's frame is already the one below the screen, the map's top inset became a screen's height, the
+                // map grew the stack the bar is measured in, and the two chased each other without end — a hang.
                 topBar(inks)
-                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { topBarHeight = $0 + 8 }
+                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.space)).maxY } action: {
+                        topBarBottom = $0
+                    }
             }
+            .coordinateSpace(.named(Self.space))
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
+            // The map runs under the status bar, so the bar's own edge is short of the map's top inset by this much.
+            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
             .sheet(isPresented: $showsStops, onDismiss: { if closing { dismiss() } }) {
                 stopsSheet(inks)
                     .presentationDetents([peek, .medium, .large], selection: $detent)
@@ -640,7 +719,7 @@ struct MapItineraryFullView: View {
         }
         // The route is framed in what is left between the floating bar and the sheet, up to half the screen: past
         // that the sheet is being read, not the map.
-        .safeAreaPadding(.top, topBarHeight)
+        .safeAreaPadding(.top, topInset + topBarBottom + 8)
         // Frozen while closing: the sheet's height drops as it goes, and a map re-framed mid-dismissal jumps.
         .safeAreaPadding(.bottom, closing ? frozenBottom : min(sheetHeight, screenHeight * 0.5))
         .ignoresSafeArea()
@@ -702,10 +781,7 @@ struct MapItineraryFullView: View {
             }
             .padding(.horizontal, 16)
             if model.showsDayPicker {
-                MapDayPicker(model: model, inks: inks, selection: $dayIndex)
-                    .background(.clear)
-                    .glassEffect(.regular, in: .capsule)
-                    .padding(.horizontal, 12)
+                MapDayPicker(model: model, inks: inks, selection: $dayIndex, surface: .map)
             }
         }
         .padding(.top, 4)

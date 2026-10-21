@@ -52,10 +52,12 @@ struct HealthHomeView: View {
                 .padding(.horizontal, -16)
                 .id(Self.heroID)
                 // A note told as stories carries its own headline.
-                if let summary = readySummary, ReportText.stories(summary).isEmpty {
-                    Text(verbatim: summary.headline).font(.headline).padding(.top, 2)
+                if let summary = readySummary, ReportText.stories(summary).isEmpty,
+                    let headline = ReportText.headline(summary.headline, after: heroTitle)
+                {
+                    Text(verbatim: headline).font(.headline).padding(.top, 2)
                 }
-                ReportCard(report: model.report) { Task { await model.grantConsent() } }
+                ReportCard(report: model.report, heroTitle: heroTitle) { Task { await model.grantConsent() } }
                 // Trends are local: shown without a note or consent, hidden only until Health access is asked.
                 if let week = model.week, model.day?.snapshot.odyState != .permission {
                     // One card: the week opens the calendar; a report written in the last two days, under it, opens
@@ -193,6 +195,11 @@ struct HealthHomeView: View {
     private var columns: [GridItem] {
         typeSize.isAccessibilitySize
             ? [GridItem(.flexible())] : [GridItem(.adaptive(minimum: 150), spacing: 10)]
+    }
+
+    /// What the hero says of the day, at now — the note under it opens after these words, never with them again.
+    private var heroTitle: String {
+        String(localized: HeroTitle.of(model.day?.snapshot.odyState ?? .noData))
     }
 
     private var readySummary: HealthSummary? {

@@ -19,15 +19,23 @@ struct PairingSection: View {
     @State private var confirmUnpair: PairedComputer?
     /// Paired already, and showing the steps to pair one more.
     @State private var addingComputer = false
+    private let style: Style
     private let onChange: () -> Void
+
+    /// `settings`: list rows under a "Computer" header (Settings → Connection). `welcome`: the first screen's call to
+    /// action — full-width buttons, Scan prominent, on no row background.
+    enum Style { case settings, welcome }
 
     /// `onChange` fires after pairing or unpairing — the server the rest of
     /// Settings talks to has just changed.
-    init(connection: ServerConnection, onChange: @escaping () -> Void) {
+    init(connection: ServerConnection, style: Style = .settings, onChange: @escaping () -> Void) {
         _viewModel = State(
             initialValue: PairingViewModel(connection: connection, deviceName: UIDevice.current.name))
+        self.style = style
         self.onChange = onChange
     }
+
+    private var asksToPair: Bool { !viewModel.isPaired || addingComputer }
 
     var body: some View {
         Section {
@@ -39,31 +47,31 @@ struct PairingSection: View {
                     ProgressView()
                     Text("ios:settings.pairing.inProgress")
                 }
-            } else if !viewModel.isPaired || addingComputer {
-                Text(
-                    "ios:settings.pairing.instructions"
-                )
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                if QRScannerView.isSupported {
-                    Button("ios:settings.pairing.scanCode") { Task { await openScanner() } }
-                        .navigationDestination(isPresented: $isScanning) {
-                            ScannerScreen { link in
-                                scannedLink = link
-                                isScanning = false
-                            }
-                        }
-                }
-                Button("ios:settings.pairing.pasteLink") {
-                    pair(from: UIPasteboard.general.string)
+            } else if asksToPair {
+                switch style {
+                case .settings:
+                    if QRScannerView.isSupported {
+                        Button("ios:settings.pairing.scanCode") { Task { await openScanner() } }
+                            .navigationDestination(isPresented: $isScanning) { scannerScreen }
+                    }
+                    Button("ios:settings.pairing.pasteLink") {
+                        pair(from: UIPasteboard.general.string)
+                    }
+                case .welcome:
+                    welcomeButtons
                 }
             } else {
                 Button("ios:settings.pairing.pairAnother") { addingComputer = true }
             }
         } header: {
-            Text("ios:settings.pairing.sectionTitle")
+            if style == .settings {
+                Text("ios:settings.pairing.sectionTitle")
+            }
         } footer: {
-            if viewModel.computers.count > 1 {
+            // How to pair goes under the buttons, as a footer reads: the buttons come first.
+            if asksToPair && !viewModel.isWorking {
+                Text("ios:settings.pairing.instructions")
+            } else if viewModel.computers.count > 1 {
                 Text("ios:settings.pairing.computersFooter")
             }
         }
@@ -172,6 +180,39 @@ struct PairingSection: View {
     }
 
     /// The system prompt comes up here, before the scanner screen, not over it.
+    private var scannerScreen: some View {
+        ScannerScreen { link in
+            scannedLink = link
+            isScanning = false
+        }
+    }
+
+    /// Scan is the way to pair, full width and prominent; Paste is the fallback beside a computer's copied link —
+    /// prominent itself only where there is no camera to scan with (the Simulator).
+    private var welcomeButtons: some View {
+        VStack(spacing: 10) {
+            if QRScannerView.isSupported {
+                Button { Task { await openScanner() } } label: {
+                    Text("ios:settings.pairing.scanCode").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glassProminent)
+                Button { pair(from: UIPasteboard.general.string) } label: {
+                    Text("ios:settings.pairing.pasteLink").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
+            } else {
+                Button { pair(from: UIPasteboard.general.string) } label: {
+                    Text("ios:settings.pairing.pasteLink").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glassProminent)
+            }
+        }
+        .controlSize(.large)
+        .navigationDestination(isPresented: $isScanning) { scannerScreen }
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+    }
+
     private func openScanner() async {
         guard await AVCaptureDevice.requestAccess(for: .video) else {
             cameraDenied = true

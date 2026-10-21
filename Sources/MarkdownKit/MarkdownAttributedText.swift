@@ -8,6 +8,24 @@ extension NSAttributedString.Key {
     static let markdownChipGap = NSAttributedString.Key(MarkdownChipGapAttribute.name)
     /// On what holds a chip to the mark that follows it: nothing that was written.
     static let markdownChipJoint = NSAttributedString.Key("app.actovia.markdown.chipJoint")
+    /// On inline code. Its box is drawn by the text view (`MarkdownTextView`), rounded and only as wide as the code's
+    /// visible characters on each line — a `.backgroundColor` is square and boxes a space the line wrapped at.
+    static let markdownInlineCode = NSAttributedString.Key("app.actovia.markdown.inlineCode")
+}
+
+/// Inline code as it is set in a text view.
+enum MarkdownInlineCode {
+    /// Code up to this long keeps together on one line: its spaces are no-break spaces, so `swift --version` is not
+    /// split after `swift`. Longer code (a path, a command line) wraps as it must.
+    nonisolated static let keepsTogether = 32
+    nonisolated static let noBreakSpace = "\u{00A0}"
+    /// The box's corners and how far it reaches past the code's first and last characters.
+    static let cornerRadius: CGFloat = 4
+    static let outset: CGFloat = 2
+
+    static func set(_ code: String) -> String {
+        code.count <= keepsTogether ? code.replacingOccurrences(of: " ", with: noBreakSpace) : code
+    }
 }
 
 /// How a block's text is set in a text view: what `MarkdownStyledText` takes from its modifiers and environment.
@@ -118,7 +136,8 @@ enum MarkdownAttributedText {
             switch segment {
             case .text(let text):
                 for run in text.runs {
-                    let string = String(text[run.range].characters).replacingOccurrences(of: "\n", with: lineBreak)
+                    var string = String(text[run.range].characters).replacingOccurrences(of: "\n", with: lineBreak)
+                    if (run[MarkdownIntentAttribute.self] ?? []).contains(.code) { string = MarkdownInlineCode.set(string) }
                     result.append(NSAttributedString(string: string, attributes: attributes(of: run, style: style, paragraph: paragraph)))
                 }
             case .chip(let chip):
@@ -172,7 +191,7 @@ enum MarkdownAttributedText {
             .foregroundColor: style.color,
             .paragraphStyle: paragraph,
         ]
-        if intent.contains(.code) { attributes[.backgroundColor] = UIColor.tertiarySystemFill }
+        if intent.contains(.code) { attributes[.markdownInlineCode] = true }
         if run[AttributeScopes.SwiftUIAttributes.StrikethroughStyleAttribute.self] != nil
             || run[AttributeScopes.UIKitAttributes.StrikethroughStyleAttribute.self] != nil
         {
@@ -233,9 +252,12 @@ enum MarkdownAttributedText {
                 afterChip = false
                 return
             }
-            let words = (text.string as NSString).substring(with: piece)
+            var words = (text.string as NSString).substring(with: piece)
                 .replacingOccurrences(of: "\u{FFFC}", with: "")
                 .replacingOccurrences(of: lineBreak, with: "\n")
+            if attributes[.markdownInlineCode] != nil {
+                words = words.replacingOccurrences(of: MarkdownInlineCode.noBreakSpace, with: " ")
+            }
             guard let first = words.first else { return }
             if afterChip { owesSpace = false }
             if owesSpace, let last = copied.last, !last.isWhitespace, !first.isWhitespace { copied += " " }

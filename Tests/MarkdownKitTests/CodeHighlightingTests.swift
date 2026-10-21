@@ -21,6 +21,17 @@ struct MarkdownLanguageNameTests {
         #expect(MarkdownLanguageName.display("swift") == "Swift")
     }
 
+    @Test("plain text has no name to show")
+    func plainText() {
+        #expect(MarkdownLanguageName.isPlainText(nil))
+        #expect(MarkdownLanguageName.isPlainText(""))
+        #expect(MarkdownLanguageName.isPlainText(" Plaintext "))
+        #expect(MarkdownLanguageName.isPlainText("text"))
+        #expect(MarkdownLanguageName.isPlainText("txt"))
+        #expect(!MarkdownLanguageName.isPlainText("swift"))
+        #expect(!MarkdownLanguageName.isPlainText("sh"))
+    }
+
     @Test("is not fooled by case or spaces, and keeps an unknown name with a capital first letter")
     func caseAndUnknown() {
         #expect(MarkdownLanguageName.display("TypeScript") == "TypeScript")

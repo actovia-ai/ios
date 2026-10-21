@@ -59,16 +59,18 @@ struct MarkdownCodeBlockView: View {
             HStack(spacing: 6) {
                 // The desktop's strip: a code glyph and the language as its makers spell it, at the subheadline
                 // size — caption read too small over code (owner, 2026-10-08). A fence with no language (an ASCII
-                // diagram, plain output) is Text, so every block has the same strip.
-                Image(systemName: "chevron.left.forwardslash.chevron.right")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .accessibilityHidden(true)
-                Text(verbatim: MarkdownLanguageName.display(language ?? "text"))
-                    // A size under the glyph: the subheadline read too big beside the code (owner, 2026-10-08).
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                // diagram, plain output) or plain text by name has no name to give: the strip is the copy button.
+                if !MarkdownLanguageName.isPlainText(language) {
+                    Image(systemName: "chevron.left.forwardslash.chevron.right")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                    Text(verbatim: MarkdownLanguageName.display(language ?? ""))
+                        // A size under the glyph: the subheadline read too big beside the code (owner, 2026-10-08).
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
                 Spacer(minLength: 8)
                 // The icon alone, in a box of one size: a label that read "Copy" and then "Copied" changed width and
                 // shook the strip; the word is still there for VoiceOver, and the symbol morphs in place.

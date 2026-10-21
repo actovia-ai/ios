@@ -15,14 +15,15 @@ private let sidebarRowInsets = EdgeInsets(top: 12, leading: 16, bottom: 12, trai
 /// small text size, where the content alone would be shorter than the list's minimum row height.
 ///
 /// Not a `Button`: one inside a `List` fires on touch-up wherever the finger ended up, so a left
-/// swipe over a row closed the drawer and opened that chat at the same time. A `TapGesture` fails as
-/// soon as the finger moves, which leaves the swipe to the drawer — and what the `Button` gave
-/// VoiceOver is spelled out instead, the trait plus an activation action.
+/// swipe over a row closed the drawer and opened that chat at the same time. The touches are read by
+/// `SidebarRowTouchSurface`, whose tap fails as soon as the finger moves, which leaves the swipe to the
+/// drawer and the scroll to the list — and what the `Button` gave VoiceOver is spelled out instead,
+/// the trait plus an activation action.
 private struct SidebarRow: ViewModifier {
     let isSelected: Bool
+    var menu: (() -> UIMenu)? = nil
     let select: () -> Void
-    /// A finger down on the row, tracked purely for the background tint below — it never wins the
-    /// touch itself.
+    /// A finger down on the row, for the background tint below; `SidebarRowTouchSurface` reports it.
     @State private var isPressed = false
 
     func body(content: Content) -> some View {
@@ -31,16 +32,10 @@ private struct SidebarRow: ViewModifier {
             .padding(sidebarRowInsets)
             .frame(minHeight: 44)
             .contentShape(Rectangle())
-            .onTapGesture(perform: select)
-            // A same-priority, zero-distance drag purely for visual state: `.simultaneously` means
-            // it never competes with `onTapGesture` above or the drawer's own pan for the touch, it
-            // only reports when a finger is down. The only acknowledgment a row not built as a
-            // `Button` (see the note above) would otherwise give at all.
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
-            )
+            .overlay {
+                SidebarRowTouchSurface(select: select, pressChanged: { isPressed = $0 }, menu: menu)
+                    .accessibilityHidden(true)
+            }
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets())
             // A shape, not a plain colour: `listRowBackground` otherwise fills the row's full,
@@ -275,37 +270,74 @@ public struct ChatSidebarView<Workspaces: View>: View {
         }
         // The selected tint lives inside `SidebarRow` now, alongside the press tint: applying
         // `.listRowBackground` again out here would simply replace whichever one it set.
+        // The long-press menu is the row's own, shown without lifting anything (see `SidebarRowTouchSurface`);
+        // VoiceOver gets the same four as named actions. Both close over this row's chat, so nothing indexes
+        // `list.chats` after a concurrent load.
         .modifier(
-            SidebarRow(isSelected: chat.id == activeChatId) { onSelectChat(chat.id, chat.title) })
+            SidebarRow(isSelected: chat.id == activeChatId, menu: { menu(for: chat) }) {
+                onSelectChat(chat.id, chat.title)
+            })
+        .accessibilityAction(named: favoriteActionName(for: chat)) {
+            Task { await list.toggleFavorite(chat) }
+        }
+        .accessibilityAction(named: Text("chat:sidebar.history.rename")) { beginRename(chat) }
+        .accessibilityAction(named: Text("ios:chat.sidebar.copyConversationId")) { copyID(of: chat) }
+        .accessibilityAction(named: Text("common:action.delete")) { delete(chat) }
         // A leading swipe stars the chat (the desktop's star on hover); the row moves to Favorites at once.
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             favoriteButton(for: chat)
                 .tint(.yellow)
         }
-        // Closes over this row's chat, so nothing indexes `list.chats` after a concurrent load.
-        .contextMenu {
-            favoriteButton(for: chat)
-            Button {
-                renameText = chat.title.collapsedWhitespace
-                renamingChat = chat
-            } label: {
-                Label("chat:sidebar.history.rename", systemImage: "pencil")
-            }
-            Button {
-                UIPasteboard.general.string = ConversationID.copyText(for: chat)
-                copiedTrigger += 1
-            } label: {
-                Label("ios:chat.sidebar.copyConversationId", systemImage: "doc.on.doc")
-            }
-            Button(role: .destructive) {
-                Task {
-                    if await list.delete(chat) {
-                        deletedTrigger += 1
-                        onDeleteChat(chat.id)
-                    }
-                }
-            } label: {
-                Label("common:action.delete", systemImage: "trash")
+    }
+
+    /// Favorite (or Unfavorite), Rename, Copy Chat ID, Delete.
+    private func menu(for chat: ChatSummary) -> UIMenu {
+        let favorite =
+            chat.favorite == true
+            ? UIAction(
+                title: String(localized: "ios:chat.sidebar.unfavorite", defaultValue: "Unfavorite"),
+                image: UIImage(systemName: "star.slash")
+            ) { _ in Task { await list.toggleFavorite(chat) } }
+            : UIAction(
+                title: String(localized: "ios:chat.sidebar.favorite", defaultValue: "Favorite"),
+                image: UIImage(systemName: "star")
+            ) { _ in Task { await list.toggleFavorite(chat) } }
+        return UIMenu(children: [
+            favorite,
+            UIAction(
+                title: String(localized: "chat:sidebar.history.rename", defaultValue: "Rename"),
+                image: UIImage(systemName: "pencil")
+            ) { _ in beginRename(chat) },
+            UIAction(
+                title: String(localized: "ios:chat.sidebar.copyConversationId", defaultValue: "Copy Chat ID"),
+                image: UIImage(systemName: "doc.on.doc")
+            ) { _ in copyID(of: chat) },
+            UIAction(
+                title: String(localized: "common:action.delete", defaultValue: "Delete"),
+                image: UIImage(systemName: "trash"), attributes: .destructive
+            ) { _ in delete(chat) },
+        ])
+    }
+
+    private func favoriteActionName(for chat: ChatSummary) -> Text {
+        chat.favorite == true ? Text("ios:chat.sidebar.unfavorite") : Text("ios:chat.sidebar.favorite")
+    }
+
+    private func beginRename(_ chat: ChatSummary) {
+        renameText = chat.title.collapsedWhitespace
+        renamingChat = chat
+    }
+
+    private func copyID(of chat: ChatSummary) {
+        UIPasteboard.general.string = ConversationID.copyText(for: chat)
+        copiedTrigger += 1
+    }
+
+    private func delete(_ chat: ChatSummary) {
+        Task {
+            if await list.delete(chat) {
+                deletedTrigger += 1
+                onDeleteChat(chat.id)
             }
         }
     }

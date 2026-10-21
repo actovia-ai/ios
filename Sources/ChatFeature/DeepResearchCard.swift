@@ -423,7 +423,7 @@ struct DeepResearchReportView: View {
                     enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     ShareLink(item: report.markdown) {

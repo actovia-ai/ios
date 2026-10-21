@@ -8,10 +8,12 @@ import SwiftUI
 /// note a report from before them carries; or why there is none.
 struct ReportCard: View {
     let report: HealthHomeModel.Report
+    /// The hero's headline, which the note's own does not repeat.
+    var heroTitle: String?
     let onConsent: () -> Void
 
     var body: some View {
-        if case .ready(let summary) = report, let story = ReportStory(summary) {
+        if case .ready(let summary) = report, let story = ReportStory(summary, heroTitle: heroTitle) {
             story.transition(.opacity)
         } else if report != .idle {
             Group {

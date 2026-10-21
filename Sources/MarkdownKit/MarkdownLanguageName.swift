@@ -11,6 +11,13 @@ enum MarkdownLanguageName {
         return first.uppercased() + key.dropFirst()
     }
 
+    /// A block with no language, or plain text by name: its strip carries no name — "Text" over an ASCII diagram or a
+    /// command's output said nothing — only the copy button.
+    static func isPlainText(_ id: String?) -> Bool {
+        let key = (id ?? "").trimmingCharacters(in: .whitespaces).lowercased()
+        return ["", "plaintext", "plain", "text", "txt"].contains(key)
+    }
+
     private static let names: [String: String] = [
         "bash": "Bash", "c": "C", "c++": "C++", "cpp": "C++", "cs": "C#", "csharp": "C#", "css": "CSS",
         "dart": "Dart", "diff": "Diff", "dockerfile": "Dockerfile", "docker": "Dockerfile", "elixir": "Elixir",

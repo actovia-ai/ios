@@ -35,7 +35,7 @@ struct EntitySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close") { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
         }

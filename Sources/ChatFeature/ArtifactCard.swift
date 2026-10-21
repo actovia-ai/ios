@@ -363,7 +363,7 @@ struct ArtifactPreviewScreen: View {
             .screenTitle(ArtifactCardRules.title(artifact))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
         }
