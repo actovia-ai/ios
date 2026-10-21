@@ -15,20 +15,15 @@ private let sidebarRowInsets = EdgeInsets(top: 12, leading: 16, bottom: 12, trai
 /// small text size, where the content alone would be shorter than the list's minimum row height.
 ///
 /// Not a `Button`: one inside a `List` fires on touch-up wherever the finger ended up, so a left
-/// swipe over a row closed the drawer and opened that chat at the same time. A `TapGesture` fails as
-/// soon as the finger moves, which leaves the swipe to the drawer — and what the `Button` gave
-/// VoiceOver is spelled out instead, the trait plus an activation action.
+/// swipe over a row closed the drawer and opened that chat at the same time. The touches are read by
+/// `SidebarRowTouchSurface`, whose tap fails as soon as the finger moves, which leaves the swipe to the
+/// drawer and the scroll to the list — and what the `Button` gave VoiceOver is spelled out instead,
+/// the trait plus an activation action.
 private struct SidebarRow: ViewModifier {
     let isSelected: Bool
     let select: () -> Void
-    /// A finger down on the row, tracked purely for the background tint below — it never wins the
-    /// touch itself.
+    /// A finger down on the row, for the background tint below; `SidebarRowTouchSurface` reports it.
     @State private var isPressed = false
-    /// When the finger came down. A press held this long was a long press — the row's menu — and its touch-up is
-    /// not a tap: SwiftUI's tap has no time limit, and on a device a finger lifted as the menu came up selected the
-    /// chat, which closed the drawer behind the menu.
-    @State private var pressStart: Date?
-    static let longestTap: TimeInterval = 0.35
 
     func body(content: Content) -> some View {
         content
@@ -36,22 +31,10 @@ private struct SidebarRow: ViewModifier {
             .padding(sidebarRowInsets)
             .frame(minHeight: 44)
             .contentShape(Rectangle())
-            .onTapGesture {
-                if let pressStart, Date().timeIntervalSince(pressStart) > Self.longestTap { return }
-                select()
+            .overlay {
+                SidebarRowTouchSurface(select: select) { isPressed = $0 }
+                    .accessibilityHidden(true)
             }
-            // A same-priority, zero-distance drag purely for visual state: `.simultaneously` means
-            // it never competes with `onTapGesture` above or the drawer's own pan for the touch, it
-            // only reports when a finger is down. The only acknowledgment a row not built as a
-            // `Button` (see the note above) would otherwise give at all.
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if !isPressed { pressStart = Date() }
-                        isPressed = true
-                    }
-                    .onEnded { _ in isPressed = false }
-            )
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets())
             // A shape, not a plain colour: `listRowBackground` otherwise fills the row's full,
