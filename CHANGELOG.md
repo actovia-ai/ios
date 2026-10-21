@@ -1,3 +1,22 @@
+# [1.3.0](https://github.com/actovia-ai/ios/compare/v1.2.0...v1.3.0) (2026-10-21)
+
+
+### Bug Fixes
+
+* **pairing:** an unheard unpair's token stays behind Face ID; a long press no longer closes the drawer ([b90f064](https://github.com/actovia-ai/ios/commit/b90f064d30c6570303f50ebb43a95c8c050b7f61))
+* **settings:** a saved key is one row whose menu replaces or removes it ([7863739](https://github.com/actovia-ai/ios/commit/7863739075ecb0a7ce5594d7ef2fba5e23152fec))
+
+
+### Features
+
+* **chat:** the stock chart is TradingView's Symbol Overview, and a chart that cannot load offers Retry ([47a2331](https://github.com/actovia-ai/ios/commit/47a2331252268394d35d22c21ba66a699c3b0e1b))
+* **pairing:** Settings → Computer asks each computer whether this iPhone is still paired ([99093d0](https://github.com/actovia-ai/ios/commit/99093d0523d939a323929cfb7c82d5ad2bdc17d3))
+
+
+### Performance Improvements
+
+* **chat:** a chat picked in the drawer is laid out after the drawer has closed ([95559fd](https://github.com/actovia-ai/ios/commit/95559fdc2375cb6d995e0686c54e36f416ede4b5))
+
 # [1.2.0](https://github.com/actovia-ai/ios/compare/v1.1.0...v1.2.0) (2026-10-20)
 
 
