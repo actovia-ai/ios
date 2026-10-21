@@ -374,7 +374,7 @@ struct MapDayChipText: Equatable {
         // Only a date-like tail is split off ("D1 10/21", "Day 2 · Oct 22"); "Day 1" stays whole.
         if let space = trimmed.lastIndex(of: " "),
             case let rest = trimmed[trimmed.index(after: space)...],
-            rest.contains(where: { "/-.月日".contains($0) }),
+            rest.contains(where: { "/-.月日".contains($0) }),  // l10n:ignore: date separators, not copy
             rest.contains(where: \.isNumber)
         {
             name = trimmed[..<space].trimmingCharacters(in: CharacterSet(charactersIn: " ·"))
