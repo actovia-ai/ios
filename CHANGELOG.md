@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/actovia-ai/ios/compare/v1.3.1...v1.3.2) (2026-10-21)
+
+
+### Bug Fixes
+
+* **chat:** the stock chart sends the reader to Safari only on their tap ([6602de5](https://github.com/actovia-ai/ios/commit/6602de5c358c1431296c939f7bbbf86f190ae960))
+
 ## [1.3.1](https://github.com/actovia-ai/ios/compare/v1.3.0...v1.3.1) (2026-10-21)
 
 
