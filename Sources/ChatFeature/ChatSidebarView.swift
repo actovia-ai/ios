@@ -24,6 +24,11 @@ private struct SidebarRow: ViewModifier {
     /// A finger down on the row, tracked purely for the background tint below — it never wins the
     /// touch itself.
     @State private var isPressed = false
+    /// When the finger came down. A press held this long was a long press — the row's menu — and its touch-up is
+    /// not a tap: SwiftUI's tap has no time limit, and on a device a finger lifted as the menu came up selected the
+    /// chat, which closed the drawer behind the menu.
+    @State private var pressStart: Date?
+    static let longestTap: TimeInterval = 0.35
 
     func body(content: Content) -> some View {
         content
@@ -31,14 +36,20 @@ private struct SidebarRow: ViewModifier {
             .padding(sidebarRowInsets)
             .frame(minHeight: 44)
             .contentShape(Rectangle())
-            .onTapGesture(perform: select)
+            .onTapGesture {
+                if let pressStart, Date().timeIntervalSince(pressStart) > Self.longestTap { return }
+                select()
+            }
             // A same-priority, zero-distance drag purely for visual state: `.simultaneously` means
             // it never competes with `onTapGesture` above or the drawer's own pan for the touch, it
             // only reports when a finger is down. The only acknowledgment a row not built as a
             // `Button` (see the note above) would otherwise give at all.
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
+                    .onChanged { _ in
+                        if !isPressed { pressStart = Date() }
+                        isPressed = true
+                    }
                     .onEnded { _ in isPressed = false }
             )
             .listRowSeparator(.hidden)
@@ -58,6 +69,30 @@ private struct SidebarRow: ViewModifier {
             .animation(.easeOut(duration: 0.1), value: isPressed)
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
             .accessibilityAction { select() }
+    }
+}
+
+/// What a long-pressed chat lifts: its whole title and when it was started, on a card of the page's colour — never
+/// the row's own snapshot, which carried the drawer's transform with it.
+private struct ChatRowPreview: View {
+    let chat: ChatSummary
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(chat.title.collapsedWhitespace)
+                .font(.headline)
+                .lineLimit(4)
+                .fixedSize(horizontal: false, vertical: true)
+            if let timestamp = RecentTimestamp.format(chat.createdAt) {
+                Text(timestamp)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        // Narrower than the drawer, so the lifted card sits over it rather than over the chat beside it.
+        .frame(width: 280, alignment: .leading)
+        .background(Color(.systemBackground))
     }
 }
 
@@ -282,6 +317,10 @@ public struct ChatSidebarView<Workspaces: View>: View {
             favoriteButton(for: chat)
                 .tint(.yellow)
         }
+        // The lifted preview is a card of its own, not a snapshot of the row: the row lives in the drawer, which
+        // is scaled and offset under the card, and its snapshot came up oversized and out of place. Its shape is
+        // the row's pill, inset as `SidebarRow` draws it.
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 10, style: .continuous).inset(by: 2))
         // Closes over this row's chat, so nothing indexes `list.chats` after a concurrent load.
         .contextMenu {
             favoriteButton(for: chat)
@@ -307,6 +346,8 @@ public struct ChatSidebarView<Workspaces: View>: View {
             } label: {
                 Label("common:action.delete", systemImage: "trash")
             }
+        } preview: {
+            ChatRowPreview(chat: chat)
         }
     }
 
