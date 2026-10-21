@@ -517,3 +517,19 @@ private final class MapReportLog: @unchecked Sendable {
 
     func append(_ entry: String) { lock.withLock { stored.append(entry) } }
 }
+
+@Suite("Map day chip text")
+struct MapDayChipTextTests {
+    @Test("a date-like tail becomes the chip's secondary text")
+    func splitsDate() {
+        #expect(MapDayChipText("D1 10/21") == MapDayChipText(name: "D1", detail: "10/21"))
+        #expect(MapDayChipText("第1天 10月21日") == MapDayChipText(name: "第1天", detail: "10月21日"))
+        #expect(MapDayChipText("Day 2 · 2026-10-22") == MapDayChipText(name: "Day 2", detail: "2026-10-22"))
+    }
+
+    @Test("a label without a date stays whole")
+    func keepsPlainLabels() {
+        #expect(MapDayChipText("Day 1") == MapDayChipText(name: "Day 1", detail: nil))
+        #expect(MapDayChipText("Arrival") == MapDayChipText(name: "Arrival", detail: nil))
+    }
+}
