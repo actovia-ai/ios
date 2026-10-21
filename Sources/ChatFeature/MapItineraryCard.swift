@@ -607,7 +607,9 @@ struct MapItineraryFullView: View {
     @State private var visibleRegion: MapRegion?
     @State private var detent: PresentationDetent
     @State private var sheetHeight: CGFloat = 0
-    @State private var topBarHeight: CGFloat = 0
+    /// The floating bar's bottom edge and the status bar's height, both in the cover's own space — never the screen's.
+    @State private var topBarBottom: CGFloat = 0
+    @State private var topInset: CGFloat = 0
     @State private var screenHeight: CGFloat = 800
     @State private var showsStops = true
     @State private var closing = false
@@ -620,6 +622,7 @@ struct MapItineraryFullView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     static let peekBase: CGFloat = 170
+    private static let space = "MapItineraryFullView"  // l10n:ignore: a coordinate space's name
     @ScaledMetric(relativeTo: .body) private var peekHeight: CGFloat = MapItineraryFullView.peekBase
 
     init(model: MapItineraryCardModel, start: MapItineraryFocus) {
@@ -654,11 +657,18 @@ struct MapItineraryFullView: View {
                 } else {
                     Color(.systemGroupedBackground).ignoresSafeArea()
                 }
-                // Its bottom edge on screen: the map runs under the status bar, so the bar's height alone is short.
+                // Its bottom edge in the cover, not on screen. Read in `.global`, it moved with the cover: on Close the
+                // cover's frame is already the one below the screen, the map's top inset became a screen's height, the
+                // map grew the stack the bar is measured in, and the two chased each other without end — a hang.
                 topBar(inks)
-                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { topBarHeight = $0 + 8 }
+                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.space)).maxY } action: {
+                        topBarBottom = $0
+                    }
             }
+            .coordinateSpace(.named(Self.space))
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
+            // The map runs under the status bar, so the bar's own edge is short of the map's top inset by this much.
+            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
             .sheet(isPresented: $showsStops, onDismiss: { if closing { dismiss() } }) {
                 stopsSheet(inks)
                     .presentationDetents([peek, .medium, .large], selection: $detent)
@@ -709,7 +719,7 @@ struct MapItineraryFullView: View {
         }
         // The route is framed in what is left between the floating bar and the sheet, up to half the screen: past
         // that the sheet is being read, not the map.
-        .safeAreaPadding(.top, topBarHeight)
+        .safeAreaPadding(.top, topInset + topBarBottom + 8)
         // Frozen while closing: the sheet's height drops as it goes, and a map re-framed mid-dismissal jumps.
         .safeAreaPadding(.bottom, closing ? frozenBottom : min(sheetHeight, screenHeight * 0.5))
         .ignoresSafeArea()
