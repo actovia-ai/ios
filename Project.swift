@@ -10,7 +10,7 @@ private func moduleTarget(
 ) -> Target {
     .target(
         name: name,
-        destinations: .iOS,
+        destinations: [.iPhone],
         product: .staticFramework,
         bundleId: "\(bundleIdRoot).\(name)",
         deploymentTargets: deploymentTargets,
@@ -46,7 +46,7 @@ let project = Project(
     targets: [
         .target(
             name: "App",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .app,
             productName: "Actovia",
             bundleId: bundleIdRoot,
@@ -125,7 +125,7 @@ let project = Project(
         // keychain; it reads the App Group snapshot the app writes. The App's string catalog is a member too.
         .target(
             name: "ActoviaWidgets",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .appExtension,
             productName: "ActoviaWidgets",
             bundleId: "\(bundleIdRoot).widgets",
@@ -144,7 +144,7 @@ let project = Project(
         ),
         .target(
             name: "AppTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).AppTests",
             deploymentTargets: deploymentTargets,
@@ -154,7 +154,7 @@ let project = Project(
         moduleTarget(name: "Models"),
         .target(
             name: "ModelsTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).ModelsTests",
             deploymentTargets: deploymentTargets,
@@ -164,7 +164,7 @@ let project = Project(
         moduleTarget(name: "NetworkingKit", dependencies: [.target(name: "Models")]),
         .target(
             name: "NetworkingKitTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).NetworkingKitTests",
             deploymentTargets: deploymentTargets,
@@ -177,7 +177,7 @@ let project = Project(
         ),
         .target(
             name: "MarkdownKitTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).MarkdownKitTests",
             deploymentTargets: deploymentTargets,
@@ -193,7 +193,7 @@ let project = Project(
         ),
         .target(
             name: "ChatFeatureTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).ChatFeatureTests",
             deploymentTargets: deploymentTargets,
@@ -208,7 +208,7 @@ let project = Project(
         ),
         .target(
             name: "SettingsFeatureTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).SettingsFeatureTests",
             deploymentTargets: deploymentTargets,
@@ -223,7 +223,7 @@ let project = Project(
         moduleTarget(name: "WidgetUI", dependencies: [.target(name: "WidgetKitShared"), .target(name: "OdyKit")]),
         .target(
             name: "WidgetKitSharedTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).WidgetKitSharedTests",
             deploymentTargets: deploymentTargets,
@@ -232,7 +232,7 @@ let project = Project(
         ),
         .target(
             name: "OdyKitTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).OdyKitTests",
             deploymentTargets: deploymentTargets,
@@ -248,7 +248,7 @@ let project = Project(
         ),
         .target(
             name: "HealthFeatureTests",
-            destinations: .iOS,
+            destinations: [.iPhone],
             product: .unitTests,
             bundleId: "\(bundleIdRoot).HealthFeatureTests",
             deploymentTargets: deploymentTargets,
