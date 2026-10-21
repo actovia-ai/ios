@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/actovia-ai/ios/compare/v1.3.0...v1.3.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **chat:** a stock chart is not loaded again on every return from another app ([a92f8d2](https://github.com/actovia-ai/ios/commit/a92f8d249c8fc10416243fb5ff214b3fba35b974))
+
 # [1.3.0](https://github.com/actovia-ai/ios/compare/v1.2.0...v1.3.0) (2026-10-21)
 
 
