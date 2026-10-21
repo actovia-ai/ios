@@ -70,7 +70,10 @@ private struct ApprovalAsk: View {
                 }
                 // All of it, wrapped, in a region that scrolls once it is long: nothing is cut or hidden.
                 ScrollView {
+                    // The command or path being approved is what the person reads before tapping Allow: full
+                    // contrast, not the card's secondary grey.
                     ApprovalSummaryText(summary: request.summary)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -78,7 +81,7 @@ private struct ApprovalAsk: View {
                 .frame(maxHeight: summaryMaxHeight)
                 .fixedSize(horizontal: false, vertical: true)
                 .scrollBounceBehavior(.basedOnSize)
-                .background(.fill.tertiary, in: CardStyle.innerShape)
+                .background(.fill.secondary, in: CardStyle.innerShape)
                 if request.truncated, let hidden = request.hiddenChars, hidden > 0 {
                     Text(verbatim: ApprovalSummary.truncatedNote(hiddenChars: hidden))
                         .font(.footnote.weight(.medium))

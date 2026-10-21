@@ -363,7 +363,7 @@ struct UsedMemoriesSheet: View {
                     enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
         }

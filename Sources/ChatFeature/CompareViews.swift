@@ -146,7 +146,7 @@ struct OtherVersionSheet: View {
             .screenTitle(ScreenTitles.join(CompareText.otherVersions(1), enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
             .safeAreaBar(edge: .bottom) {

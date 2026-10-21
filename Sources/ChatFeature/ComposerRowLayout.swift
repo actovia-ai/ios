@@ -98,6 +98,9 @@ struct ComposerRowLayout: Layout {
     /// The pill's corners: half its one-line height (a button and the inset above and below), so one line reads as a
     /// capsule, as the desktop's; more lines, a quote or pictures and it is a rounded box.
     static let cornerRadius: CGFloat = (buttonSide + 2 * inset) / 2
+    /// The composer's glass: a light wash of the page colour under it, so a draft grown to several lines over a busy
+    /// transcript is not read through the text behind it.
+    static var glass: Glass { .regular.tint(Color(.systemBackground).opacity(0.5)) }
 
     /// The height of one line of the field's text, at the reader's text size.
     var oneLineHeight: CGFloat

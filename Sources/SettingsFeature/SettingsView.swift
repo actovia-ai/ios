@@ -74,7 +74,7 @@ public struct SettingsView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
             .task {

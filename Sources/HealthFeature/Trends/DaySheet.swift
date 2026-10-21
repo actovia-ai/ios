@@ -48,7 +48,7 @@ struct DaySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("common:action.close") { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
             .safeAreaInset(edge: .bottom) {

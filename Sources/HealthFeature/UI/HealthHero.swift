@@ -184,6 +184,8 @@ private struct HeroScene: View, Animatable {
     /// How much of the prototype's sky is drawn above the hero's frame, under the status bar and toolbar. The
     /// prototype had room for a bar above the title; in the app that room is the toolbar's.
     static let lift: CGFloat = 40
+    /// The height, in points, of the fade from the ground into the page at the hero's foot.
+    static let fade: CGFloat = 56
 
     var hour: Double
     let scrub: DayScrub
@@ -223,6 +225,12 @@ private struct HeroScene: View, Animatable {
         let top = Self.lift
         ZStack(alignment: .topLeading) {
             DaySkyView(clockHour: hour)
+            // The ground fades into the page below instead of ending on a hard edge — in dark mode a bright noon
+            // sky would otherwise stop dead on black. Under Ody and the stage track, which stay crisp on top of it.
+            LinearGradient(colors: [.clear, HealthSurface.page], startPoint: .top, endPoint: .bottom)
+                .frame(width: 300 * s, height: Self.fade)
+                .placed(x: 0, y: 236 * s - Self.fade)
+                .accessibilityHidden(true)
             // Pillow, under Ody while asleep.
             RoundedRectangle(cornerRadius: 13 * s)
                 .fill(.white)
@@ -365,7 +373,8 @@ private struct StageTrack: View {
             let x = { (h: Double) in CGFloat((min(max(h, scrub.start), scrub.now) - scrub.start) / span) * size.width }
             let bar = CGRect(x: 0, y: size.height / 2 - 2.5, width: size.width, height: 5)
             let rounded = Path(roundedRect: bar, cornerRadius: 2.5)
-            context.fill(rounded, with: .color(.black.opacity(0.08)))
+            // `primary`: the rail ends over the fade into the page, which is black in dark mode.
+            context.fill(rounded, with: .color(.primary.opacity(0.1)))
             var stages = context
             stages.clip(to: rounded)
             for s in night?.stages ?? [] {

@@ -413,7 +413,7 @@ struct ImageViewer: View {
                     enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
                 if let page = pages.first(where: { $0.id == selection }) ?? pages.first,
                     case .ready(let uiImage) = page.source

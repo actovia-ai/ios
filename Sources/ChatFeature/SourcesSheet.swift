@@ -29,7 +29,7 @@ struct SourcesSheet: View {
                     enclosingTitle))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("common:action.close", role: .close) { dismiss() }
+                    Button(role: .close) { dismiss() }
                 }
             }
         }
