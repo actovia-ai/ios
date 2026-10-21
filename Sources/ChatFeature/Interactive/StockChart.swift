@@ -83,11 +83,22 @@ enum StockChart {
         return host == "tradingview.com" || host.hasSuffix(".tradingview.com")
     }
 
-    /// Whether a navigation the web view cancels opens outside the app: only TradingView's own site, and only when
-    /// the chart's top frame or a new window asked for it (a tap) — a subframe or a script elsewhere on the page
-    /// that navigates is just cancelled.
-    static func opensExternally(_ url: URL?, isMainFrameOrWindow: Bool) -> Bool {
-        isMainFrameOrWindow && isTradingViewSite(url)
+    /// Whether a navigation the web view cancels opens outside the app: only TradingView's own site, only when the
+    /// chart's top frame or a new window asked for it, and only for a tap — a script that navigates, or a subframe,
+    /// is just cancelled, so nothing sends the reader to Safari unasked.
+    static func opensExternally(_ url: URL?, isMainFrameOrWindow: Bool, isTap: Bool) -> Bool {
+        isTap && isMainFrameOrWindow && isTradingViewSite(url)
+    }
+
+    /// How soon after a finger touched the chart a navigation still counts as that tap's: the widget may answer a
+    /// tap from a script (`window.open`), which WebKit does not report as a link activation.
+    static let tapWindow: TimeInterval = 1
+
+    /// Whether a navigation is the reader's tap: a link they activated, or one that follows their touch closely.
+    static func isTap(linkActivated: Bool, sinceTouch: TimeInterval?) -> Bool {
+        if linkActivated { return true }
+        guard let sinceTouch else { return false }
+        return sinceTouch >= 0 && sinceTouch <= tapWindow
     }
 
     /// A navigation that was called off rather than failed: `URLError.cancelled`, or WebKit's "frame load

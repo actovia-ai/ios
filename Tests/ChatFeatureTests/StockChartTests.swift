@@ -68,9 +68,19 @@ struct StockChartTests {
     @Test("only the top frame or a new window may send TradingView's site to the browser")
     func opensExternally() {
         let site = URL(string: "https://www.tradingview.com/symbols/NASDAQ-AAPL/")
-        #expect(StockChart.opensExternally(site, isMainFrameOrWindow: true))
-        #expect(!StockChart.opensExternally(site, isMainFrameOrWindow: false))
-        #expect(!StockChart.opensExternally(URL(string: "https://example.com/"), isMainFrameOrWindow: true))
+        #expect(StockChart.opensExternally(site, isMainFrameOrWindow: true, isTap: true))
+        #expect(!StockChart.opensExternally(site, isMainFrameOrWindow: false, isTap: true))
+        #expect(!StockChart.opensExternally(URL(string: "https://example.com/"), isMainFrameOrWindow: true, isTap: true))
+        // A script that navigates on its own never sends the reader to Safari.
+        #expect(!StockChart.opensExternally(site, isMainFrameOrWindow: true, isTap: false))
+    }
+
+    @Test("a tap: a link activated, or a navigation within a second of a touch")
+    func tapWindow() {
+        #expect(StockChart.isTap(linkActivated: true, sinceTouch: nil))
+        #expect(StockChart.isTap(linkActivated: false, sinceTouch: 0.3))
+        #expect(!StockChart.isTap(linkActivated: false, sinceTouch: 5))
+        #expect(!StockChart.isTap(linkActivated: false, sinceTouch: nil))
     }
 
     @Test("a cancelled navigation is not a failure")

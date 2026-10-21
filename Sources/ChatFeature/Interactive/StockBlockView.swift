@@ -111,6 +111,8 @@ struct StockChartWebView: UIViewRepresentable {
         webView.isInspectable = true
         #endif
         context.coordinator.webView = webView
+        webView.addGestureRecognizer(
+            TouchRecorder { [weak coordinator = context.coordinator] in coordinator?.lastTouch = Date() })
         context.coordinator.load(url)
         return webView
     }
@@ -131,6 +133,8 @@ struct StockChartWebView: UIViewRepresentable {
         var openExternally: (URL) -> Void
         weak var webView: WKWebView?
         var loading: Task<Void, Never>?
+        /// When a finger last touched the chart (`TouchRecorder`).
+        var lastTouch: Date?
         private var phase = StockChartPhase.loading
 
         /// Compiled once per launch: a chat with several charts makes a web view for each.
@@ -168,6 +172,12 @@ struct StockChartWebView: UIViewRepresentable {
             onPhase(phase)
         }
 
+        private func isTap(_ action: WKNavigationAction) -> Bool {
+            StockChart.isTap(
+                linkActivated: action.navigationType == .linkActivated,
+                sinceTouch: lastTouch.map { Date().timeIntervalSince($0) })
+        }
+
         // MARK: WKNavigationDelegate
 
         func webView(
@@ -177,7 +187,9 @@ struct StockChartWebView: UIViewRepresentable {
             if StockChart.allowsNavigation(to: url) { return .allow }
             // A nil target frame is a new window; a subframe's navigation elsewhere is only cancelled.
             let isMainFrameOrWindow = navigationAction.targetFrame?.isMainFrame != false
-            if let url, StockChart.opensExternally(url, isMainFrameOrWindow: isMainFrameOrWindow) {
+            if let url,
+                StockChart.opensExternally(url, isMainFrameOrWindow: isMainFrameOrWindow, isTap: isTap(navigationAction))
+            {
                 openExternally(url)
             }
             return .cancel
@@ -206,8 +218,33 @@ struct StockChartWebView: UIViewRepresentable {
             _ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
             for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures
         ) -> WKWebView? {
-            if let url = navigationAction.request.url, StockChart.isTradingViewSite(url) { openExternally(url) }
+            // A new window: from the chart's own top frame, and from a tap, as above.
+            let fromTopFrame = navigationAction.sourceFrame.isMainFrame
+            if let url = navigationAction.request.url,
+                StockChart.opensExternally(url, isMainFrameOrWindow: fromTopFrame, isTap: isTap(navigationAction))
+            {
+                openExternally(url)
+            }
             return nil
         }
+    }
+}
+
+/// Notes when a finger comes down on the chart, and nothing else: it never recognizes, so every touch goes on to the
+/// web view (and the chat's scrolling) as before.
+private final class TouchRecorder: UIGestureRecognizer {
+    private let onTouch: () -> Void
+
+    init(onTouch: @escaping () -> Void) {
+        self.onTouch = onTouch
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        onTouch()
+        state = .failed
     }
 }
