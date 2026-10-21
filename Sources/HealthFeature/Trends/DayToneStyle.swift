@@ -3,13 +3,14 @@ import OdyKit
 import SwiftUI
 
 extension DayTone {
-    /// The cell's fill (style C): soft tints on the cream page, deeper ones in Dark Mode; the day's number in primary
-    /// ink stays at 4.5:1 or more on each.
+    /// The cell's fill (style C): soft tints on the cream page, deeper ones in Dark Mode — those at 18% less OKLCH
+    /// chroma than first drawn, so a month of them does not glare on black; the day's number in primary ink stays at
+    /// 4.5:1 or more on each.
     var fill: Color {
         switch self {
-        case .good: .adaptive(0xCFEFD8, dark: 0x2F6B54)
-        case .tired: .adaptive(0xDDD6FF, dark: 0x4B3F9A)
-        case .recovering: .adaptive(0xFFDDBF, dark: 0x8A5A2A)
+        case .good: .adaptive(0xCFEFD8, dark: 0x3A6956)
+        case .tired: .adaptive(0xDDD6FF, dark: 0x4B448D)
+        case .recovering: .adaptive(0xFFDDBF, dark: 0x845D38)
         case .empty: .adaptive(0xF0EADB, dark: 0x24222C)
         }
     }

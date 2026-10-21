@@ -99,6 +99,16 @@ struct MarkdownAttributedTextTests {
         }
     }
 
+    @Test("short inline code keeps together on its line, and copies with plain spaces")
+    func codeKeepsTogether() {
+        let text = built("run `swift --version` now", style: MarkdownTextStyle(spec: .body, color: .label))
+        #expect(text.string.contains("swift\u{00A0}--version"))
+        #expect(MarkdownAttributedText.copied(from: text, in: NSRange(location: 0, length: text.length)) == "run swift --version now")
+        let long = "a very long command line that is well over the limit"
+        let wrapped = built("`\(long)`", style: MarkdownTextStyle(spec: .body, color: .label))
+        #expect(wrapped.string.contains(long))
+    }
+
     private func weight(of font: UIFont?) -> CGFloat? {
         let traits = font?.fontDescriptor.object(forKey: .traits) as? [UIFontDescriptor.TraitKey: Any]
         return (traits?[.weight] as? CGFloat).map { ($0 * 100).rounded() / 100 }
@@ -108,8 +118,10 @@ struct MarkdownAttributedTextTests {
     func colours() {
         let text = built("plain `code` ~~old~~", style: MarkdownTextStyle(spec: .body, color: .secondaryLabel))
         #expect(attributes(of: "plain", in: text)[.foregroundColor] as? UIColor == .secondaryLabel)
-        #expect(attributes(of: "plain", in: text)[.backgroundColor] == nil)
-        #expect(attributes(of: "code", in: text)[.backgroundColor] as? UIColor == .tertiarySystemFill)
+        #expect(attributes(of: "plain", in: text)[.markdownInlineCode] == nil)
+        // The box is the text view's to draw (rounded, trimmed per line), not a square `.backgroundColor`.
+        #expect(attributes(of: "code", in: text)[.markdownInlineCode] as? Bool == true)
+        #expect(attributes(of: "code", in: text)[.backgroundColor] == nil)
         #expect(attributes(of: "old", in: text)[.strikethroughStyle] as? Int == NSUnderlineStyle.single.rawValue)
         #expect(attributes(of: "plain", in: text)[.strikethroughStyle] == nil)
     }

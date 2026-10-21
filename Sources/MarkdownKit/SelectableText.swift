@@ -9,6 +9,8 @@ final class MarkdownTextView: UITextView {
         didSet { if quoteRules != oldValue { setNeedsLayout() } }
     }
     private var ruleViews: [UIView] = []
+    /// The boxes behind inline code, one per line a code span stands on.
+    private var codeViews: [UIView] = []
 
     /// Set by TextKit 2, as a text view made with no container is. Not `init(usingTextLayoutManager:)`: that is a
     /// class factory, and leaves the properties of a subclass unmade.
@@ -37,6 +39,61 @@ final class MarkdownTextView: UITextView {
     override func layoutSubviews() {
         super.layoutSubviews()
         layOutQuoteRules()
+        layOutCodeBoxes()
+    }
+
+    /// Inline code's boxes: on each line a span stands on, from its first visible character to its last — never
+    /// over a space the line broke at — rounded, a little wider than the code, behind the text.
+    private func layOutCodeBoxes() {
+        var boxes: [CGRect] = []
+        let text = attributedText ?? NSAttributedString()
+        var spans: [NSRange] = []
+        text.enumerateAttribute(.markdownInlineCode, in: NSRange(location: 0, length: text.length)) { value, range, _ in
+            if value != nil { spans.append(range) }
+        }
+        if !spans.isEmpty, let manager = textLayoutManager, let content = manager.textContentManager {
+            let string = text.string as NSString
+            let start = manager.documentRange.location
+            for line in MarkdownTextMeasure.lines(in: manager) {
+                for span in spans {
+                    var piece = NSIntersectionRange(span, line.range)
+                    while piece.length > 0,
+                        let scalar = Unicode.Scalar(string.character(at: piece.location + piece.length - 1)),
+                        CharacterSet.whitespacesAndNewlines.contains(scalar)
+                    {
+                        piece.length -= 1
+                    }
+                    guard piece.length > 0,
+                        let from = content.location(start, offsetBy: piece.location),
+                        let to = content.location(from, offsetBy: piece.length),
+                        let range = NSTextRange(location: from, end: to)
+                    else { continue }
+                    var minX = CGFloat.infinity
+                    var maxX = -CGFloat.infinity
+                    manager.enumerateTextSegments(in: range, type: .standard, options: []) { _, rect, _, _ in
+                        minX = min(minX, rect.minX)
+                        maxX = max(maxX, rect.maxX)
+                        return true
+                    }
+                    guard minX < maxX else { continue }
+                    boxes.append(
+                        CGRect(
+                            x: minX - MarkdownInlineCode.outset, y: line.top,
+                            width: maxX - minX + 2 * MarkdownInlineCode.outset, height: line.bottom - line.top))
+                }
+            }
+        }
+        while codeViews.count > boxes.count { codeViews.removeLast().removeFromSuperview() }
+        while codeViews.count < boxes.count {
+            let view = UIView()
+            view.isUserInteractionEnabled = false
+            view.backgroundColor = .tertiarySystemFill
+            view.layer.cornerRadius = MarkdownInlineCode.cornerRadius
+            view.layer.cornerCurve = .continuous
+            insertSubview(view, at: 0)
+            codeViews.append(view)
+        }
+        for (box, view) in zip(boxes, codeViews) where view.frame != box { view.frame = box }
     }
 
     override func tintColorDidChange() {
