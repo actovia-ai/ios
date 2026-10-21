@@ -53,6 +53,14 @@ enum StockChart {
         return URL(string: "\(embedOrigin)\(embedPath)?locale=\(query)#\(hash)")
     }
 
+    /// Whether the chart is drawn dark: the scheme on screen while the app is active, else the one it was drawn in.
+    /// Going to the background, iOS draws the app in both appearances for the app switcher's snapshots; following
+    /// that would make the web view anew, and load the chart again, on every trip to another app. A change made
+    /// while away (dark mode at sunset) is taken up on return.
+    static func drawsDark(shown: Bool?, onScreen: Bool, isActive: Bool) -> Bool {
+        isActive ? onScreen : (shown ?? onScreen)
+    }
+
     /// The symbol's own page on TradingView: "Open on TradingView", and where a tap on the chart goes.
     static func symbolPageURL(_ symbol: String) -> URL? {
         guard let colon = symbol.firstIndex(of: ":") else { return nil }

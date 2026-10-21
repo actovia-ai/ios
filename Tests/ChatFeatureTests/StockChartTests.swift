@@ -30,6 +30,14 @@ struct StockChartTests {
         #expect(StockChart.tradingViewLocale(identifier) == expected, "\(identifier)")
     }
 
+    @Test("the scheme follows the screen while active, and holds through the background's snapshots")
+    func schemeThroughBackground() {
+        #expect(StockChart.drawsDark(shown: false, onScreen: true, isActive: true))
+        #expect(!StockChart.drawsDark(shown: false, onScreen: true, isActive: false))
+        #expect(StockChart.drawsDark(shown: true, onScreen: false, isActive: false))
+        #expect(StockChart.drawsDark(shown: nil, onScreen: true, isActive: false))
+    }
+
     @Test("the symbol's page: the colon a dash")
     func symbolPage() {
         #expect(StockChart.symbolPageURL("NASDAQ:AAPL")?.absoluteString == "https://www.tradingview.com/symbols/NASDAQ-AAPL/")

@@ -18,6 +18,9 @@ struct StockBlockView: View {
     /// Bumped by Retry: a new web view, a new load.
     @State private var attempt = 0
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
+    /// The scheme the chart is drawn in; see `StockChart.drawsDark`.
+    @State private var dark: Bool?
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
 
@@ -39,7 +42,7 @@ struct StockBlockView: View {
                 }
                 .padding(CardStyle.inset)
             } else if let url = StockChart.embedURL(
-                symbol: block.symbol, range: block.range ?? .default, dark: colorScheme == .dark,
+                symbol: block.symbol, range: block.range ?? .default, dark: isDark,
                 locale: locale.identifier)
             {
                 StockChartWebView(url: url, onPhase: { phase = $0 }, openExternally: { openURL($0) })
@@ -66,7 +69,18 @@ struct StockBlockView: View {
         }
         .modifier(CardSurface())
         // The web view is made once for what the URL is made of; a change of scheme makes it again.
-        .id("\(block.symbol)|\(block.range?.rawValue ?? "")|\(colorScheme == .dark)|\(attempt)")
+        .id("\(block.symbol)|\(block.range?.rawValue ?? "")|\(isDark)|\(attempt)")
+        .onAppear { if dark == nil { dark = colorScheme == .dark } }
+        .onChange(of: colorScheme) { follow() }
+        .onChange(of: scenePhase) { follow() }
+    }
+
+    private var isDark: Bool {
+        StockChart.drawsDark(shown: dark, onScreen: colorScheme == .dark, isActive: scenePhase == .active)
+    }
+
+    private func follow() {
+        dark = isDark
     }
 }
 
