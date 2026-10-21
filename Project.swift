@@ -188,7 +188,7 @@ let project = Project(
             name: "ChatFeature",
             dependencies: [
                 .target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "MarkdownKit"),
-                .package(product: "VoiceGlowKit")
+                .target(name: "OdyKit"), .package(product: "VoiceGlowKit")
             ]
         ),
         .target(
@@ -204,7 +204,7 @@ let project = Project(
         ),
         moduleTarget(
             name: "SettingsFeature",
-            dependencies: [.target(name: "NetworkingKit"), .target(name: "Models")]
+            dependencies: [.target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "OdyKit")]
         ),
         .target(
             name: "SettingsFeatureTests",

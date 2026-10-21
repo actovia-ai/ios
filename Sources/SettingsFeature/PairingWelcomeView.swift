@@ -1,4 +1,5 @@
 import NetworkingKit
+import OdyKit
 import SwiftUI
 
 /// What an unpaired device opens on: what this app is, and the way to pair — the same scan and paste as Settings →
@@ -20,10 +21,11 @@ public struct PairingWelcomeView: View {
             Form {
                 Section {
                     VStack(spacing: 12) {
-                        Image(systemName: "laptopcomputer.and.iphone")
-                            .font(.system(size: 44, weight: .regular))
-                            .foregroundStyle(.secondary)
-                            .accessibilityHidden(true)
+                        // Ody, not yet anywhere: the offline scene, as Health's onboarding shows its own.
+                        OdySceneView(.offline)
+                            .frame(width: 132, height: 132)
+                            .clipShape(.rect(cornerRadius: 30, style: .continuous))
+                            .padding(.bottom, 6)
                         Text("ios:onboarding.title")
                             .font(.title2.weight(.semibold))
                             .multilineTextAlignment(.center)
@@ -37,7 +39,7 @@ public struct PairingWelcomeView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                PairingSection(connection: connection) {
+                PairingSection(connection: connection, style: .welcome) {
                     if connection.isPaired { onPaired() }
                 }
 
