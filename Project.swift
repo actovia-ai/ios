@@ -217,7 +217,24 @@ let project = Project(
                 .target(name: "SettingsFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
             ]
         ),
-        moduleTarget(name: "PhilharmonicFeature", dependencies: [.target(name: "Models")]),
+        moduleTarget(
+            name: "PhilharmonicFeature",
+            dependencies: [
+                .target(name: "Models"), .target(name: "NetworkingKit"), .target(name: "ChatFeature"),
+                .target(name: "MarkdownKit"), .target(name: "OdyKit")
+            ]
+        ),
+        .target(
+            name: "PhilharmonicFeatureTests",
+            destinations: [.iPhone],
+            product: .unitTests,
+            bundleId: "\(bundleIdRoot).PhilharmonicFeatureTests",
+            deploymentTargets: deploymentTargets,
+            buildableFolders: ["Tests/PhilharmonicFeatureTests"],
+            dependencies: [
+                .target(name: "PhilharmonicFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
+            ]
+        ),
         moduleTarget(name: "OdyKit"),
         moduleTarget(name: "WidgetKitShared"),
         moduleTarget(name: "WidgetUI", dependencies: [.target(name: "WidgetKitShared"), .target(name: "OdyKit")]),
