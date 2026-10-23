@@ -70,7 +70,21 @@ struct AppShell: View {
                     content
                 }
             } else {
-                SideDrawer(isOpen: $isSidebarOpen) { sidebar } content: { content }
+                // Narrow, the sidebar is a page of its own that takes the screen, not a drawer that pushes the
+                // content aside (owner, 2026-10-23, after Claude's app on the folded Duo). The chat stays alive
+                // behind it — a reply keeps streaming, the scroll position holds — and only one of the two is
+                // seen, touched or read by VoiceOver at a time.
+                ZStack {
+                    content
+                        .opacity(isSidebarOpen ? 0 : 1)
+                        .allowsHitTesting(!isSidebarOpen)
+                        .accessibilityHidden(isSidebarOpen)
+                    sidebar
+                        .environment(\.closeSidebar, CloseSidebarAction { setSidebar(open: false) })
+                        .opacity(isSidebarOpen ? 1 : 0)
+                        .allowsHitTesting(isSidebarOpen)
+                        .accessibilityHidden(!isSidebarOpen)
+                }
             }
         }
         // Measured behind the layout, from its first width on: `onGeometryChange` on the switching `Group` was never
@@ -180,9 +194,8 @@ struct AppShell: View {
                     }
                 }
         }
-        // Docked, the bar stands beside the camera as Claude's does on the Duo (owner, 2026-10-23): the transcript is
-        // a centred column there and loses nothing to it. On a phone the bars stay on top.
-        .horizontalBars(!isDocked)
+        // No `horizontalBars()` here: on a Duo, folded or open, the bar stands beside the camera as Claude's does
+        // (owner, 2026-10-23); a phone without a side camera keeps it on top by itself.
     }
 
     @ViewBuilder
@@ -281,16 +294,16 @@ struct AppShell: View {
         Task { await composerTools.refresh(from: ComposerToolsSource(apiClient: apiClient)) }
     }
 
-    /// Opens or closes the drawer. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
+    /// Shows the sidebar page or the content. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
     private func setSidebar(open: Bool) {
         guard !isDocked else { return }
-        withAnimation(drawerAnimation(reduceMotion: reduceMotion)) { isSidebarOpen = open }
+        withAnimation(.easeOut(duration: 0.2)) { isSidebarOpen = open }
     }
 
-    /// The toolbar's sidebar button: the drawer on a phone, the docked column on a wide screen.
+    /// The toolbar's sidebar button: the sidebar page on a narrow screen, the docked column on a wide screen.
     private func toggleSidebar() {
         if isDocked {
-            withAnimation(drawerAnimation(reduceMotion: reduceMotion)) { isDockedSidebarShown.toggle() }
+            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy) { isDockedSidebarShown.toggle() }
         } else {
             setSidebar(open: !isSidebarOpen)
         }

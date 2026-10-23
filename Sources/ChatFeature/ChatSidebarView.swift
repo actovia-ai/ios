@@ -13,6 +13,18 @@ extension EnvironmentValues {
     @Entry public var sidebarIsDocked = false
 }
 
+/// Takes the sidebar page away again, back to the content. Set only where the sidebar is a page of its own (a
+/// narrow screen); docked beside the content it has nothing to close.
+public struct CloseSidebarAction {
+    let action: () -> Void
+    public init(_ action: @escaping () -> Void) { self.action = action }
+    public func callAsFunction() { action() }
+}
+
+extension EnvironmentValues {
+    @Entry public var closeSidebar: CloseSidebarAction? = nil
+}
+
 /// The docked sidebar's surface: a little darker than the page in light, a little lighter in dark.
 private let dockedSidebarSurface = Color(uiColor: UIColor { traits in
     traits.userInterfaceStyle == .dark ? UIColor(white: 0.085, alpha: 1) : UIColor(white: 0.955, alpha: 1)
@@ -137,6 +149,9 @@ public struct ChatSidebarView<Workspaces: View>: View {
     }
 
     @Environment(\.sidebarIsDocked) private var isDocked
+    @Environment(\.closeSidebar) private var closeSidebar
+    /// The screen's top safe-area inset, for the search field's room (see the field).
+    @State private var topInset: CGFloat = 60
     private var dockedSurface: Color { dockedSidebarSurface }
 
     public var body: some View {
@@ -173,6 +188,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
             }
             .listStyle(.plain)
+            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
             .scrollContentBackground(isDocked ? .hidden : .automatic)
             .background { if isDocked { dockedSurface.ignoresSafeArea() } }
             // The insets alone do not shrink a row below the list's own minimum, which is what held
@@ -199,9 +215,9 @@ public struct ChatSidebarView<Workspaces: View>: View {
                     SidebarSearchBar(
                         text: Binding(get: { search.query }, set: { search.updateQuery($0) }),
                         onCancel: leaveSearch)
-                    // Docked (landscape, an unfolded Duo) the status bar is beside the screen, not above it: the
-                    // top inset is about nothing, and the field sat on the screen's edge under its rounded corner.
-                    .padding(.top, isDocked ? 14 : 0)
+                    // Where the status bar is beside the screen rather than above it (a Duo, landscape) the top inset
+                    // is about nothing, and the field sat on the screen's edge under its rounded corner.
+                    .padding(.top, topInset < 30 ? 14 : 0)
                 }
             }
             .toolbar { sidebarToolbar }
@@ -518,6 +534,16 @@ public struct ChatSidebarView<Workspaces: View>: View {
             // Without this, Liquid Glass gives a plain `Text` toolbar item the same circular
             // glass background a button gets — it read as a tappable "E…" bubble, not a title.
             .sharedBackgroundVisibility(.hidden)
+            if let closeSidebar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        closeSidebar()
+                    } label: {
+                        Label("ios:app.sidebar.close", systemImage: "sidebar.leading")
+                    }
+                    .accessibilityIdentifier("sidebarClose")
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     withAnimation(.snappy) { isSearching = true }
