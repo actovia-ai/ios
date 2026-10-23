@@ -56,6 +56,7 @@ public struct SSEClient: Sendable {
                                     "Fallback error text for a server response without a message. %lld is the HTTP status code."
                             ))
                     }
+                    continuation.yield(.opened)
                     for try await line in bytes.lines {
                         switch SSEFrameParsing.frame(E.self, fromLine: line) {
                         case .event(let event):
@@ -78,8 +79,11 @@ public struct SSEClient: Sendable {
     }
 }
 
-/// One item of a stream: an event, or the server's heartbeat.
+/// One item of a stream: the server's 2xx answer (first, once), an event, or the server's heartbeat.
 public enum SSEItem<E: Sendable>: Sendable {
+    /// The server took the request: what follows is the stream. A group stream sends no byte until something
+    /// happens, so this is the only sign a reconnect worked.
+    case opened
     case event(E)
     case heartbeat
 }

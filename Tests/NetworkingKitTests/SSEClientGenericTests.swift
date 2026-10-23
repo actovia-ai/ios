@@ -37,18 +37,19 @@ private struct Probe: Decodable, Sendable, Equatable {
 struct SSEClientGenericTests {
     private let request = URLRequest(url: URL(string: "https://computer.test/api/v1/philharmonic/conversations/c/sse")!)
 
-    @Test("a ping is a heartbeat and a data line an event, in order")
+    @Test("the answer opens the stream; a ping is a heartbeat and a data line an event, in order")
     func heartbeatThenEvent() async throws {
         SSEMockURLProtocol.body = Data(": ping\n\ndata: {\"type\":\"pm_started\"}\n\n".utf8)
         let client = SSEClient(session: SSEMockURLProtocol.makeSession())
         var items: [String] = []
         for try await item in client.events(Probe.self, for: request) {
             switch item {
+            case .opened: items.append("opened")
             case .heartbeat: items.append("heartbeat")
             case .event(let probe): items.append(probe.type)
             }
         }
-        #expect(items == ["heartbeat", "pm_started"])
+        #expect(items == ["opened", "heartbeat", "pm_started"])
     }
 
     @Test("the chat stream drops the heartbeat")
