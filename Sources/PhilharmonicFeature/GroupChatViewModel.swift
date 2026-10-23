@@ -82,7 +82,7 @@ public final class GroupChatViewModel {
     public func send(text: String, pictures: [ComposerPicture]) async -> Bool {
         let attachments = pictures.enumerated().map { index, picture in
             OutgoingAttachment(
-                name: "photo-\(index + 1).\(picture.mimeType == "image/png" ? "png" : "jpg")", url: picture.dataURL,
+                name: "photo-\(index + 1).\(Self.fileExtension(of: picture))", url: picture.dataURL,
                 contentType: picture.mimeType)
         }
         do {
@@ -94,6 +94,12 @@ public final class GroupChatViewModel {
             report(error)
             return false
         }
+    }
+
+    /// A prepared picture is a JPEG, or a PNG when it is transparent.
+    private static func fileExtension(of picture: ComposerPicture) -> String {
+        if picture.mimeType == "image/png" { return "png" }
+        return "jpg"
     }
 
     public func interrupt() async {

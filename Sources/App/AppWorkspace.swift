@@ -1,7 +1,6 @@
 import Foundation
 
-/// The top-level areas of the app. Philharmonic is not available yet, and the drawer leaves it out until it is
-/// (`listed`).
+/// The top-level areas of the app; the drawer lists those that are available (`listed`).
 enum AppWorkspace: CaseIterable, Identifiable {
     case chat
     case health
@@ -30,7 +29,7 @@ enum AppWorkspace: CaseIterable, Identifiable {
         }
     }
 
-    var isAvailable: Bool { self != .philharmonic }
+    var isAvailable: Bool { true }
 
     /// What the drawer lists: the workspaces that work. A "Coming soon" row was a promise with nothing behind it.
     static var listed: [AppWorkspace] { allCases.filter(\.isAvailable) }

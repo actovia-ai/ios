@@ -54,6 +54,10 @@ struct AppShell: View {
     /// The composer's `+` choices (reasoning effort, Deep Research) for the whole app session, as the desktop keeps them,
     /// with the current model's levels and the MCP tools the menu offers.
     @State private var composerTools = ComposerTools()
+    /// The Philharmonic workspace's groups, made the first time the shell appears.
+    @State private var groupList: GroupListViewModel?
+    @State private var philharmonicSelection: PhilharmonicSelection = .none
+    @State private var showsNewGroup = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @Environment(ColorToneModel.self) private var toneModel: ColorToneModel?
@@ -164,7 +168,8 @@ struct AppShell: View {
                 // change, so it is never recreated by this).
                 if id == activeChat.id { activeChat.title = title }
             },
-            onRecentsChange: { widgetWriter.recentsChanged($0) }
+            onRecentsChange: { widgetWriter.recentsChanged($0) },
+            showsRecents: workspace != .philharmonic
         ) {
             ForEach(AppWorkspace.listed) { option in
                 WorkspaceRow(option: option, isSelected: option == workspace) {
@@ -172,8 +177,20 @@ struct AppShell: View {
                     setSidebar(open: false)
                 }
             }
+        } lists: {
+            if let groupList {
+                GroupListSection(model: groupList, selection: philharmonicSelection) { picked in
+                    philharmonicSelection = picked
+                    setSidebar(open: false)
+                }
+            }
+        }
+        .task {
+            if groupList == nil { groupList = GroupListViewModel(api: philharmonicAPI) }
         }
     }
+
+    private var philharmonicAPI: PhilharmonicAPI { PhilharmonicAPI(client: apiClient, serverConfig: serverConfig) }
 
     private var content: some View {
         NavigationStack {
@@ -192,7 +209,16 @@ struct AppShell: View {
                         .accessibilityIdentifier("sidebarToggle")
                     }
                     // Health has its own menu there; a new chat is in the drawer.
-                    if workspace != .health {
+                    if workspace == .philharmonic {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showsNewGroup = true
+                            } label: {
+                                Label("philharmonic:chat.conversationList.newGroupMenuItem", systemImage: "square.and.pencil")
+                            }
+                            .accessibilityIdentifier("topNewGroup")
+                        }
+                    } else if workspace != .health {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 startNewChat()
@@ -241,7 +267,20 @@ struct AppShell: View {
                 workspace = .chat
             }
         case .philharmonic:
-            PhilharmonicPlaceholderView()
+            PhilharmonicRootView(
+                api: philharmonicAPI, selection: philharmonicSelection, onNewGroup: { showsNewGroup = true },
+                onGroupGone: {
+                    philharmonicSelection = .none
+                    Task { await groupList?.load() }
+                }
+            )
+            .sheet(isPresented: $showsNewGroup) {
+                if let groupList {
+                    NewGroupSheet(model: groupList) { group in
+                        philharmonicSelection = .group(id: group.id, title: group.title)
+                    }
+                }
+            }
         }
     }
 
@@ -252,7 +291,10 @@ struct AppShell: View {
             let title = activeChat.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return title.isEmpty
                 ? String(localized: "chat:sidebar.newChat", defaultValue: "New chat") : title
-        case .health, .philharmonic:
+        case .philharmonic:
+            if case .group(_, let title) = philharmonicSelection { return title }
+            return String(localized: workspace.title)
+        case .health:
             return String(localized: workspace.title)
         }
     }

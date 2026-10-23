@@ -4,15 +4,15 @@ import Foundation
 /// a conversation list: today shows the time, the last few days a weekday, anything older a short
 /// date. `now` and `calendar` are parameters so a test can pin them; the view always calls with the
 /// defaults.
-enum RecentTimestamp {
-    static func format(
+public enum RecentTimestamp {
+    public static func format(
         _ iso8601: String, now: Date = .now, calendar: Calendar = .current, locale: Locale = .current
     ) -> String? {
         guard let date = parseDate(iso8601) else { return nil }
         return format(date, now: now, calendar: calendar, locale: locale)
     }
 
-    static func format(
+    public static func format(
         _ date: Date, now: Date = .now, calendar: Calendar = .current, locale: Locale = .current
     ) -> String {
         if calendar.isDate(date, inSameDayAs: now) {
