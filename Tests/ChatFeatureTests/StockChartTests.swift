@@ -22,9 +22,11 @@ struct StockChartTests {
 
     @Test("the widget's locale for the app's", arguments: [
         ("en", "en"), ("de", "de"), ("es", "es"), ("fr", "fr"), ("it", "it"), ("ja", "ja"), ("ko", "kr"),
-        ("pt-BR", "br"), ("zh-Hant-TW", "zh_TW"), ("zh-Hant-HK", "zh_TW"), ("zh", "zh_CN"), ("nl", "en"), ("", "en"),
+        ("pt-BR", "br"), ("ru", "ru"), ("zh-Hans", "zh_CN"), ("zh-Hant-TW", "zh_TW"), ("zh-Hant-HK", "zh_TW"),
+        ("zh", "zh_CN"), ("nl", "en"), ("", "en"),
         // The phone's own spellings.
-        ("zh-Hant", "zh_TW"), ("zh-HK", "zh_TW"), ("zh_TW", "zh_TW"), ("pt_BR", "br"), ("en_US", "en"),
+        ("zh-Hant", "zh_TW"), ("zh-HK", "zh_TW"), ("zh_TW", "zh_TW"), ("zh-Hans_CN", "zh_CN"), ("ru_RU", "ru"),
+        ("pt_BR", "br"), ("en_US", "en"),
     ])
     func locale(_ identifier: String, _ expected: String) {
         #expect(StockChart.tradingViewLocale(identifier) == expected, "\(identifier)")

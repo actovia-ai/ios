@@ -147,9 +147,9 @@ catalog's value for the current language. A string with an interpolation, and an
 `String(localized: "ios:…", defaultValue: "English text", comment: "…")`; `LocalizedStringResource("…")` also
 takes a key. The modules are static frameworks, so every string resolves from the app's main bundle.
 
-The shipped languages are English (the source), Traditional Chinese for Taiwan (`zh-Hant`) and for Hong Kong
-(`zh-HK`), Japanese, Korean, French, German, Spanish, Brazilian Portuguese and Italian. There is no Simplified
-Chinese, matching the desktop: a Simplified Chinese phone shows English.
+The shipped languages are English (the source), Simplified Chinese (`zh-Hans`), Traditional Chinese for Taiwan
+(`zh-Hant`) and for Hong Kong (`zh-HK`), Japanese, Korean, French, German, Spanish, Brazilian Portuguese, Italian
+and Russian (`ru`), the same twelve as the desktop.
 
 `scripts/l10n.py` (Python 3.9, standard library only) maintains the catalogs:
 
@@ -162,7 +162,7 @@ python3 -m unittest Tests.L10nScriptTests.test_l10n   # the script's own tests
 ```
 
 `add` creates the key (an `ios:` key needs `--en-value`; a desktop key needs none, the sync writes it), `fill`
-merges translations into an `ios:` key, and `sync-from-desktop` copies the desktop's translations, all ten
+merges translations into an `ios:` key, and `sync-from-desktop` copies the desktop's translations, all twelve
 languages, into every catalog key that is not an `ios:` key (`zh-Hant-TW` becomes `zh-Hant`, `zh-Hant-HK`
 becomes `zh-HK`; `{{x}}` becomes `%@` and a literal `%` becomes `%%`). To use a desktop string, `add` its key,
 use it at a call site and run the sync; a desktop key that is not in the catalog is never created. `ios:` keys

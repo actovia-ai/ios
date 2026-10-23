@@ -66,6 +66,18 @@
             "value" : "O Actovia usa a câmera para escanear o código de pareamento exibido no seu computador e para tirar fotos que você adiciona a um chat."
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia использует камеру, чтобы сканировать код сопряжения на экране компьютера и делать фото, которые вы добавляете в чат."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 使用相机扫描电脑上显示的配对码，以及拍摄你添加到聊天中的照片。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
@@ -130,6 +142,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O Actovia usa o Face ID para desbloquear a conexão com o seu computador."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia использует Face ID, чтобы разблокировать подключение к компьютеру."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 使用面容 ID 解锁与电脑的连接。"
           }
         },
         "zh-Hant" : {
@@ -197,6 +221,18 @@
             "value" : "O Actovia lê seus dados de sono, atividade, coração e corpo para escrever seu relatório de saúde diário."
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia читает данные о сне, активности, сердце и теле, чтобы составлять ваш ежедневный отчёт о здоровье."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 会读取你的睡眠、活动、心脏和身体数据，用于撰写你的每日健康报告。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
@@ -260,6 +296,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O Actovia salva no Saúde a água que você registra."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia сохраняет записанную вами воду в приложение «Здоровье»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 会将你记录的饮水量保存到“健康” App。"
           }
         },
         "zh-Hant" : {
@@ -328,6 +376,18 @@
             "value" : "O Actovia precisa de acesso à rede local para se conectar ao serviço do Actovia em execução no seu computador."
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia нужен доступ к локальной сети, чтобы подключаться к службе Actovia на вашем компьютере."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 需要访问本地网络，才能连接到在你电脑上运行的 Actovia 服务。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
@@ -392,6 +452,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O Actovia usa sua localização para mostrar sua posição no mapa do roteiro e centralizar o mapa quando você toca no botão de localização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia использует вашу геопозицию, чтобы показывать её на карте маршрута и центрировать карту при нажатии кнопки геопозиции."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 会使用你的位置，在行程地图上显示你所在的位置，并在你轻点定位按钮时将地图居中。"
           }
         },
         "zh-Hant" : {
@@ -459,6 +531,18 @@
             "value" : "O Actovia grava sua voz apenas enquanto você dita uma mensagem, para transformá-la em texto para a conversa."
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia записывает ваш голос только во время диктовки сообщения, чтобы превратить его в текст для чата."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 仅在你语音输入消息时录音，并将其转换为聊天中的文字。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
@@ -523,6 +607,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O Actovia salva as imagens que você escolher na sua fototeca."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia сохраняет выбранные вами изображения в медиатеку."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actovia 会将你选择的图片保存到你的照片图库。"
           }
         },
         "zh-Hant" : {
