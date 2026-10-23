@@ -45,7 +45,7 @@ public struct TurnButtonLabel: View {
     static let glyphSide: CGFloat = 22
 
     /// Send and record in the tone (in light its ink, in dark its fill); stop neutral; a recording's stop red.
-    static func fill(_ state: TurnButtonState, scheme: ColorScheme, toneFill: Color, toneInk: Color) -> Color {
+    public static func fill(_ state: TurnButtonState, scheme: ColorScheme, toneFill: Color, toneInk: Color) -> Color {
         switch state {
         case .stop: Color(.label)
         case .recording: .red
@@ -53,7 +53,7 @@ public struct TurnButtonLabel: View {
         }
     }
 
-    static func glyph(_ state: TurnButtonState, scheme: ColorScheme, accentGlyph: Color) -> Color {
+    public static func glyph(_ state: TurnButtonState, scheme: ColorScheme, accentGlyph: Color) -> Color {
         switch state {
         case .stop: Color(.systemBackground)
         case .recording: .white

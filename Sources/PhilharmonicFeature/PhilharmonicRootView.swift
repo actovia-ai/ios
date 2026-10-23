@@ -20,6 +20,12 @@ public struct PhilharmonicRootView: View {
         self.onGroupGone = onGroupGone
     }
 
+    static func stream(_ conversationId: String, api: PhilharmonicAPI) -> GroupStream {
+        GroupStream(
+            connect: { try api.streamEvents(conversationId: conversationId) },
+            unlock: { await api.unlockComputer() })
+    }
+
     public var body: some View {
         switch selection {
         case .none:
@@ -31,8 +37,9 @@ public struct PhilharmonicRootView: View {
                 Button("philharmonic:container.noGroupSelected.createButton", action: onNewGroup)
                     .buttonStyle(.glassProminent)
             }
-        case .group:
-            TranscriptSkeleton()
+        case .group(let id, _):
+            GroupChatView(conversationId: id, api: api, stream: Self.stream(id, api: api), onGone: onGroupGone)
+                .id(id)
         case .dashboard, .workforce:
             ProgressView()
         }

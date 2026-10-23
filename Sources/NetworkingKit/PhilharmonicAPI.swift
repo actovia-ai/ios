@@ -153,6 +153,20 @@ public struct PhilharmonicAPI: Sendable {
         Self.streamRequest(conversationId: conversationId, route: route)
     }
 
+    /// The group's events, on the route of the moment (each reconnect asks again: the best address may have moved).
+    public func streamEvents(conversationId: String) throws -> AsyncThrowingStream<SSEItem<PhilharmonicSseEvent>, Error> {
+        let route = route
+        guard let request = Self.streamRequest(conversationId: conversationId, route: route) else {
+            throw URLError(.badURL)
+        }
+        return SSEClient().events(PhilharmonicSseEvent.self, for: request, session: route.session)
+    }
+
+    /// The computer answered 423: unlock it from here (Face ID stands in for its PIN), as the chat does.
+    public func unlockComputer() async -> Bool {
+        await serverConfig.connection?.unlockComputer(route: route) ?? false
+    }
+
     /// `GET …/conversations/:id/sse` on the route's best address. The server pings every 15 s; the reader decides
     /// when silence means a dead connection, so URLSession is told to wait an hour, as the chat's stream is.
     public static func streamRequest(conversationId: String, route: ServerRoute) -> URLRequest? {
