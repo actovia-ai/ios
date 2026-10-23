@@ -13,6 +13,26 @@ public struct SSEClient: Sendable {
 
     /// `session`: the paired computer's own (its `ServerRoute.session`); nil uses this client's.
     public func events(for request: URLRequest, session given: URLSession? = nil) -> AsyncThrowingStream<ChatSseEvent, Error> {
+        let items = events(ChatSseEvent.self, for: request, session: given)
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    for try await item in items {
+                        if case .event(let event) = item { continuation.yield(event) }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    /// Any stream's events, and a `.heartbeat` for each `:` line the server sends to say it is still there.
+    public func events<E: Decodable & Sendable>(
+        _ type: E.Type, for request: URLRequest, session given: URLSession? = nil
+    ) -> AsyncThrowingStream<SSEItem<E>, Error> {
         let session = given ?? self.session
         return AsyncThrowingStream { continuation in
             let reporter = self.reporter
@@ -37,9 +57,11 @@ public struct SSEClient: Sendable {
                             ))
                     }
                     for try await line in bytes.lines {
-                        switch SSEFrameParsing.frame(fromLine: line) {
+                        switch SSEFrameParsing.frame(E.self, fromLine: line) {
                         case .event(let event):
-                            continuation.yield(event)
+                            continuation.yield(.event(event))
+                        case .comment:
+                            continuation.yield(.heartbeat)
                         case .undecodable(let type, let reason, let bytes):
                             issues.note(type: type, reason: reason, bytes: bytes)
                         case .ignored:
@@ -54,4 +76,10 @@ public struct SSEClient: Sendable {
             continuation.onTermination = { _ in task.cancel() }
         }
     }
+}
+
+/// One item of a stream: an event, or the server's heartbeat.
+public enum SSEItem<E: Sendable>: Sendable {
+    case event(E)
+    case heartbeat
 }

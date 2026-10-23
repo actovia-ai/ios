@@ -2,11 +2,15 @@ import Foundation
 import Models
 
 public enum SSEFrameParsing {
-    public enum Frame: Sendable {
-        case event(ChatSseEvent)
+    private struct TypeOnly: Decodable { let type: String }
+
+    public enum Frame<E: Sendable>: Sendable {
+        case event(E)
         /// A `data:` frame this app could not read: what may be reported about it, never its payload.
         case undecodable(type: String?, reason: String, bytes: Int)
         case ignored
+        /// A `:` line — the server's heartbeat (`: ping`), which says the connection is alive.
+        case comment
     }
 
     public static func decodeEvent(fromLine line: String, decoder: JSONDecoder = JSONDecoder()) -> ChatSseEvent? {
@@ -14,14 +18,20 @@ public enum SSEFrameParsing {
         return nil
     }
 
-    public static func frame(fromLine line: String, decoder: JSONDecoder = JSONDecoder()) -> Frame {
+    public static func frame(fromLine line: String, decoder: JSONDecoder = JSONDecoder()) -> Frame<ChatSseEvent> {
+        frame(ChatSseEvent.self, fromLine: line, decoder: decoder)
+    }
+
+    public static func frame<E: Decodable & Sendable>(
+        _ type: E.Type, fromLine line: String, decoder: JSONDecoder = JSONDecoder()
+    ) -> Frame<E> {
+        if line.hasPrefix(":") { return .comment }
         guard line.hasPrefix("data: ") else { return .ignored }
         let jsonPart = line.dropFirst("data: ".count).trimmingCharacters(in: .whitespaces)
         guard !jsonPart.isEmpty, let data = jsonPart.data(using: .utf8) else { return .ignored }
         do {
-            return .event(try decoder.decode(ChatSseEvent.self, from: data))
+            return .event(try decoder.decode(E.self, from: data))
         } catch {
-            struct TypeOnly: Decodable { let type: String }
             let type = (try? decoder.decode(TypeOnly.self, from: data))?.type
             let reason =
                 if let decoding = error as? DecodingError {
