@@ -131,11 +131,23 @@ struct GroupChatViewModelTests {
         for _ in 0..<300 where !condition() { try? await Task.sleep(for: .milliseconds(10)) }
     }
 
+    /// URLSession hands over a stream's response only with its first byte, and a quiet group's first byte is the
+    /// server's ping 15 s later: the group is read on open, not on the stream's.
+    @Test func readsTheGroupBeforeTheStreamOpens() async {
+        let vm = makeVM(Body.oneRow)
+        await vm.start()
+        await eventually { !vm.isLoading }
+        #expect(vm.bubbles.map(\.id) == ["m1"])
+        #expect(vm.plan?.summary == "Ship it")
+        vm.stop()
+    }
+
     private func started(_ vm: GroupChatViewModel) async {
         await vm.start()
         await eventually { wire.connects.withLock { $0 } == 1 }
         wire.send(.opened)
-        await eventually { !vm.isLoading }
+        // Read twice by then: on open, and on the stream's connect.
+        await eventually { requests("/plan") == 2 }
     }
 
     @Test("opening a group reads its messages and plan once the stream is up")
@@ -190,7 +202,8 @@ struct GroupChatViewModelTests {
         wire.send(.event(.messageEnd(conversationId: "c1", messageId: "m3")))
         await eventually { vm.bubbles.count == 3 }
         #expect(vm.bubbles.map(\.id) == ["m1", "m2", "m3"])
-        #expect(requests("/messages") == 2)
+        // Whole reads: on open, on the stream's connect, and the failed `after` read's fallback.
+        #expect(requests("/messages") == 3)
         vm.stop()
     }
 
@@ -198,13 +211,12 @@ struct GroupChatViewModelTests {
     func reconnectReadsWhole() async {
         let vm = makeVM(Body.oneRow)
         await started(vm)
-        #expect(requests("/messages") == 1)
-        #expect(requests("/plan") == 1)
+        #expect(requests("/messages") == 2)
         wire.drop()
         await eventually { wire.connects.withLock { $0 } == 2 }
         wire.send(.opened)
-        await eventually { requests("/plan") == 2 }
-        #expect(requests("/messages") == 2)
+        await eventually { requests("/plan") == 3 }
+        #expect(requests("/messages") == 3)
         vm.stop()
     }
 
@@ -215,7 +227,8 @@ struct GroupChatViewModelTests {
             // The server answers an unknown group's messages with an empty list, and leaves it out of the list.
             return (200, "[]")
         }
-        await started(vm)
+        // The read on open finds it gone, before the stream has said anything.
+        await vm.start()
         await eventually { vm.notice != nil }
         #expect(vm.notice == .gone)
         wire.drop()
@@ -231,7 +244,8 @@ struct GroupChatViewModelTests {
             return (200, "[]")
         }
         await started(vm)
-        await eventually { requests("/conversations") == 1 }
+        // Each whole read of an empty group asks the list: on open and on the stream's connect.
+        await eventually { requests("/conversations") == 2 }
         try? await Task.sleep(for: .milliseconds(50))
         #expect(vm.notice == nil)
         #expect(vm.bubbles.isEmpty)

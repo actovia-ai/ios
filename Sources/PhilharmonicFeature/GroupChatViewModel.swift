@@ -53,7 +53,9 @@ public final class GroupChatViewModel {
         self.stream = stream
     }
 
-    /// Starts listening. The group is read whole each time the stream connects (missed events are not replayed).
+    /// Reads the group and starts listening. The group is read whole again each time the stream connects (missed
+    /// events are not replayed). The first read does not wait for the stream: URLSession hands over a stream's
+    /// response only with its first byte, which a quiet group may not send for 15 s.
     public func start() async {
         guard listening == nil else { return }
         let updates = await stream.updates()
@@ -63,6 +65,7 @@ public final class GroupChatViewModel {
                 await self.handle(update)
             }
         }
+        await readWhole()
     }
 
     public func stop() {
