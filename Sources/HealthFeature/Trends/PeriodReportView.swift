@@ -59,6 +59,7 @@ struct PeriodReportView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .readingColumn(HealthLayout.columnWidth)
             .padding(.bottom, 24)
             .animation(reduceMotion ? nil : .smooth, value: state)
         }
@@ -92,7 +93,7 @@ struct PeriodReportView: View {
                     placeholder: LocalizedStringResource(
                         "ios:health.periodReport.ask.placeholder", defaultValue: "Ask about this report…",
                         comment: "Report page ask box placeholder."),
-                    onSend: onAsk)
+                    columnWidth: HealthLayout.columnWidth, onSend: onAsk)
             }
         }
         .sensoryFeedback(.success, trigger: rewritten)

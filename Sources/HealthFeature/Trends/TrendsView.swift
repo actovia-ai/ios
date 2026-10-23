@@ -69,6 +69,7 @@ struct TrendsView: View {
                 legend
             }
             .padding(.horizontal, 16)
+            .readingColumn(HealthLayout.columnWidth)
             .padding(.bottom, 24)
         }
         .background(HealthSurface.page)

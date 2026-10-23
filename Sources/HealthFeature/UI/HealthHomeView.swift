@@ -23,6 +23,8 @@ struct HealthHomeView: View {
     /// The page is wider than its column (an unfolded iPhone Duo): the hero is a card in the column, not a sky from
     /// edge to edge — at the screen's full width it was taller than the screen.
     @State private var isWide = false
+    /// The scroll view's safe-area insets: the sides are what the hero's sky reaches under.
+    @State private var sideInsets = EdgeInsets()
     @State private var scroll = ScrollPosition()
     /// The visible part of the scroll view, in its own coordinate space.
     @State private var viewport: CGRect = .zero
@@ -52,7 +54,10 @@ struct HealthHomeView: View {
                     stretch: 1 + min(pull, 140) / 300, bindleBounce: bounce, bindleAnchor: $bindleAnchor,
                     isReading: model.isReadingFirst
                 )
-                .padding(.horizontal, isWide ? 0 : -16)
+                // Narrow, the sky bleeds to the screen's edges — past the page's margin and, on a Duo, under the strip
+                // the vertical bar keeps beside the camera, which showed as a band of the page's colour beside it.
+                .padding(.leading, isWide ? 0 : -16 - sideInsets.leading)
+                .padding(.trailing, isWide ? 0 : -16 - sideInsets.trailing)
                 .modifier(HeroCardShape(isCard: isWide))
                 .id(Self.heroID)
                 // A note told as stories carries its own headline.
@@ -122,6 +127,7 @@ struct HealthHomeView: View {
             .padding(.bottom, 24)
         }
         .onGeometryChange(for: Bool.self) { $0.size.width > Self.columnWidth } action: { isWide = $0 }
+        .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { sideInsets = $0 }
         .scrollPosition($scroll)
         .background(HealthSurface.page)
         .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, v in
@@ -171,8 +177,7 @@ struct HealthHomeView: View {
                 suggestions: [
                     "ios:health.ask.suggestion.sleep", "ios:health.ask.suggestion.energy", "ios:health.ask.suggestion.week",
                 ],
-                attachment: { snapshotJSON }, initialText: initialAsk, onSend: onAsk)
-            .readingColumn(Self.columnWidth)
+                attachment: { snapshotJSON }, initialText: initialAsk, columnWidth: Self.columnWidth, onSend: onAsk)
         }
         .navigationDestination(for: HealthCategory.self) { c in
             HealthDetailView(category: c, model: model, onAsk: onAsk)
@@ -195,7 +200,7 @@ struct HealthHomeView: View {
     private static let heroID = "hero"
     /// Narrower than a chat's column: the hero is as tall as it is wide, and on a landscape screen the cards under it
     /// should start above the fold.
-    private static let columnWidth: CGFloat = 560
+    private static let columnWidth = HealthLayout.columnWidth
 
     /// An empty day, for the cards' placeholder shapes.
     private static let placeholderSnapshot = HealthSnapshot(

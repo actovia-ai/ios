@@ -188,7 +188,6 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
             }
             .listStyle(.plain)
-            .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
             .scrollContentBackground(isDocked ? .hidden : .automatic)
             .background { if isDocked { dockedSurface.ignoresSafeArea() } }
             // The insets alone do not shrink a row below the list's own minimum, which is what held
@@ -217,7 +216,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
                         onCancel: leaveSearch)
                     // Where the status bar is beside the screen rather than above it (a Duo, landscape) the top inset
                     // is about nothing, and the field sat on the screen's edge under its rounded corner.
-                    .padding(.top, topInset < 30 ? 14 : 0)
+                    .padding(.top, topInset < 30 ? 16 : 0)
                 }
             }
             .toolbar { sidebarToolbar }
@@ -285,6 +284,8 @@ public struct ChatSidebarView<Workspaces: View>: View {
             .sensoryFeedback(.impact(weight: .medium), trigger: deletedTrigger)
             .sensoryFeedback(.success, trigger: copiedTrigger)
         }
+        // Read outside the stack: inside it the inset includes the navigation bar's own height.
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
     }
 
     // MARK: - Rows

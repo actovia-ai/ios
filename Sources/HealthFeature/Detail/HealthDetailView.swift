@@ -56,6 +56,7 @@ struct HealthDetailView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .readingColumn(HealthLayout.columnWidth)
             .padding(.bottom, 24)
         }
         .background(HealthSurface.page)
@@ -64,7 +65,8 @@ struct HealthDetailView: View {
         .screenTitle(ScreenTitles.join(enclosingTitle, String(localized: style.title)))
         .safeAreaInset(edge: .bottom) {
             AskComposer(
-                suggestions: Self.suggestions(category), attachment: { weekJSON }, onSend: onAsk)
+                suggestions: Self.suggestions(category), attachment: { weekJSON },
+                columnWidth: HealthLayout.columnWidth, onSend: onAsk)
         }
         .task { await reload() }
     }

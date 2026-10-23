@@ -6,6 +6,11 @@ import SwiftUI
 /// Ask about the day. The question goes to a new chat with the numbers always attached (Chat shows them as its health
 /// card), so there is nothing to confirm here. A suggestion fills the box rather than sending, so it can be read and
 /// changed first.
+/// Health's pages keep to one column on a wide screen (an unfolded Duo, landscape): the cards and the ask box.
+enum HealthLayout {
+    static let columnWidth: CGFloat = 560
+}
+
 struct AskComposer: View {
     let suggestions: [LocalizedStringResource]
     /// The numbers that go with the question, built only when sending; nil sends the question alone.
@@ -14,6 +19,8 @@ struct AskComposer: View {
     /// A question handed over from a widget: in the box, focused, waiting to be read and sent.
     let initialText: String?
     let placeholder: LocalizedStringResource
+    /// The widest the suggestions and the box get; the frosted panel behind them always spans the screen.
+    let columnWidth: CGFloat
 
     @State private var text = ""
     @FocusState private var focused: Bool
@@ -25,8 +32,10 @@ struct AskComposer: View {
         placeholder: LocalizedStringResource = LocalizedStringResource(
             "ios:health.ask.placeholder", defaultValue: "Ask about your day…",
             comment: "Health: placeholder of the ask composer."),
+        columnWidth: CGFloat = .infinity,
         onSend: @escaping (String) -> Void
     ) {
+        self.columnWidth = columnWidth
         self.suggestions = suggestions
         self.attachment = attachment
         self.onSend = onSend
@@ -81,6 +90,8 @@ struct AskComposer: View {
         .padding(.horizontal, 12)
         .padding(.top, 14)
         .padding(.bottom, 8)
+        // Before the panel: on a wide screen the panel narrowed with the column, and the page showed on either side.
+        .readingColumn(columnWidth)
         // One frosted panel behind the whole stack, fading in at its top edge, so what scrolls under it stays
         // legible without a hard line.
         .background {
@@ -92,7 +103,8 @@ struct AskComposer: View {
                         Color.black
                     }
                 }
-                .ignoresSafeArea(edges: .bottom)
+                // The sides too: on a Duo the vertical bar keeps a strip of its own, and the panel stopped short of it.
+                .ignoresSafeArea(edges: [.bottom, .horizontal])
         }
         .animation(.smooth(duration: 0.25), value: focused)
         .animation(.smooth(duration: 0.25), value: text.isEmpty)

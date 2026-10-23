@@ -33,6 +33,8 @@ struct AppShell: View {
     /// The screen is wide enough for the sidebar to stay beside the content (an unfolded iPhone Duo, landscape), as
     /// Claude's app does there; the toolbar button then hides and shows it instead of sliding a drawer.
     @State private var isDocked = false
+    /// The narrow layout's sidebar is a page of its own rather than a drawer (a folded Duo).
+    @State private var usesSidebarPage = false
     /// Whether the docked sidebar is showing. Its own value, so a drawer closed on a phone does not hide it later.
     @State private var isDockedSidebarShown = true
     @State private var workspace: AppWorkspace = .chat
@@ -69,11 +71,11 @@ struct AppShell: View {
                     }
                     content
                 }
-            } else {
-                // Narrow, the sidebar is a page of its own that takes the screen, not a drawer that pushes the
-                // content aside (owner, 2026-10-23, after Claude's app on the folded Duo). The chat stays alive
-                // behind it — a reply keeps streaming, the scroll position holds — and only one of the two is
-                // seen, touched or read by VoiceOver at a time.
+            } else if usesSidebarPage {
+                // A folded Duo: the sidebar is a page of its own that takes the screen, not a drawer that pushes the
+                // content aside (owner, 2026-10-23, after Claude's app there). The chat stays alive behind it — a
+                // reply keeps streaming, the scroll position holds — and only one of the two is seen, touched or read
+                // by VoiceOver at a time. Other phones keep the drawer (same day).
                 ZStack {
                     content
                         .opacity(isSidebarOpen ? 0 : 1)
@@ -85,6 +87,8 @@ struct AppShell: View {
                         .allowsHitTesting(isSidebarOpen)
                         .accessibilityHidden(!isSidebarOpen)
                 }
+            } else {
+                SideDrawer(isOpen: $isSidebarOpen) { sidebar } content: { content }
             }
         }
         // Measured behind the layout, from its first width on: `onGeometryChange` on the switching `Group` was never
@@ -95,6 +99,12 @@ struct AppShell: View {
                     isDocked = wide
                     // The drawer's state means nothing beside a docked sidebar, and must not open over the content later.
                     if wide { isSidebarOpen = false }
+                }
+                // Upright with a side inset: the camera beside the screen, a folded Duo. An ordinary phone upright
+                // has none (a landscape phone does, but is docked by then).
+                .onChange(of: proxy.size.width < proxy.size.height
+                    && proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing > 0, initial: true) { _, page in
+                    usesSidebarPage = page
                 }
             }
         }
@@ -297,7 +307,9 @@ struct AppShell: View {
     /// Shows the sidebar page or the content. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
     private func setSidebar(open: Bool) {
         guard !isDocked else { return }
-        withAnimation(.easeOut(duration: 0.2)) { isSidebarOpen = open }
+        withAnimation(usesSidebarPage ? .easeOut(duration: 0.2) : drawerAnimation(reduceMotion: reduceMotion)) {
+            isSidebarOpen = open
+        }
     }
 
     /// The toolbar's sidebar button: the sidebar page on a narrow screen, the docked column on a wide screen.
