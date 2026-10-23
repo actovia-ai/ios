@@ -52,7 +52,7 @@ struct HealthHomeView: View {
                 HealthHero(
                     day: model.day, mood: model.day?.snapshot.odyState ?? .noData, now: now, calendar: .current,
                     stretch: 1 + min(pull, 140) / 300, bindleBounce: bounce, bindleAnchor: $bindleAnchor,
-                    isReading: model.isReadingFirst
+                    isReading: model.isReadingFirst, trailingInset: isWide ? 0 : sideInsets.trailing
                 )
                 // Narrow, the sky bleeds to the screen's edges — past the page's margin and, on a Duo, under the strip
                 // the vertical bar keeps beside the camera, which showed as a band of the page's colour beside it.

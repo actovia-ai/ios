@@ -40,11 +40,16 @@ struct HealthHero: View {
 
     /// `scrubbedTo` starts the hero at an hour of the scrub instead of now (the gallery's frozen states).
     let isReading: Bool
+    /// What the sky reaches under on the trailing side and the controls stay clear of: the strip a Duo's vertical bar
+    /// keeps beside the camera.
+    let trailingInset: CGFloat
 
     init(
         day: HealthDay?, mood: OdyMood, now: Date, calendar: Calendar, stretch: CGFloat, bindleBounce: Int,
-        bindleAnchor: Binding<CGRect>, scrubbedTo hour: Double? = nil, isReading: Bool = false
+        bindleAnchor: Binding<CGRect>, scrubbedTo hour: Double? = nil, isReading: Bool = false,
+        trailingInset: CGFloat = 0
     ) {
+        self.trailingInset = trailingInset
         self.day = day
         self.mood = mood
         self.isReading = isReading
@@ -97,7 +102,7 @@ struct HealthHero: View {
                     }
                 }
                 .padding(.top, (44 - HeroScene.lift) * s)
-                .padding(.trailing, 14)
+                .padding(.trailing, 14 + trailingInset)
                 .animation(.spring(Self.spring), value: atNow)
             }
             // After the overlay, so a swipe that starts on the chip is a scrub too; a tap on it is still a tap.
