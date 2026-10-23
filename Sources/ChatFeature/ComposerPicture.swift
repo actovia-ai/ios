@@ -67,7 +67,7 @@ public struct ComposerPicture: Identifiable, Equatable, Sendable {
 
     /// Off the main actor: a 48 MP photo takes a moment to decode.
     @concurrent
-    static func prepared(_ data: Data) async throws -> ComposerPicture {
+    public static func prepared(_ data: Data) async throws -> ComposerPicture {
         try prepare(data)
     }
 }

@@ -3,11 +3,13 @@ import SwiftUI
 /// What a chat shows while its first page loads (desktop spec 2026-10-01 §D): the shape of a conversation — a question
 /// on the right, an answer's lines on the left — so the screen has its layout before its words. Only once the load has
 /// been slow for 300 ms: on the LAN the page arrives first and nothing flashes; over a tunnel the screen is not blank.
-struct TranscriptSkeleton: View {
+public struct TranscriptSkeleton: View {
     @State private var shown = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 32) {
             ForEach(0..<2, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: 16) {

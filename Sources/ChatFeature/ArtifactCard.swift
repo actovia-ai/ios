@@ -4,12 +4,16 @@ import SwiftUI
 /// `create_artifact`: the artifact itself, in the chat, the way the desktop shows it — the computer's own sandbox page,
 /// live, as tall as it draws up to a limit, and a button that opens it full screen. When the phone cannot show it, a
 /// line says to view it on the computer.
-struct ArtifactCard: View {
+public struct ArtifactCard: View {
     let artifact: ArtifactResult
     @State private var state = ArtifactInlineState()
     @State private var showsFullScreen = false
 
-    var body: some View {
+    public init(artifact: ArtifactResult) {
+        self.artifact = artifact
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center, spacing: 12) {
                 HStack(alignment: .center, spacing: 12) {

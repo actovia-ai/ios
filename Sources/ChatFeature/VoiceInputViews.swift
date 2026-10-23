@@ -3,12 +3,17 @@ import UIKit
 
 /// The composer's round button's face, shared by the chat screen and the composer gallery: the icon morphs between
 /// states (`.contentTransition`) because the button around it keeps one identity.
-struct TurnButtonLabel: View {
+public struct TurnButtonLabel: View {
     let state: TurnButtonState
     let glyph: Color
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    var body: some View {
+    public init(state: TurnButtonState, glyph: Color) {
+        self.state = state
+        self.glyph = glyph
+    }
+
+    public var body: some View {
         Label {
             // One literal per branch, never a ternary (scripts/l10n.py audit bans it).
             switch state {

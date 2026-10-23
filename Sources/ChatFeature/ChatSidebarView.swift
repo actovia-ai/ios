@@ -79,6 +79,15 @@ private struct SidebarRow: ViewModifier {
     }
 }
 
+extension View {
+    /// A sidebar row: full width, the press and selected tints, and a tap that leaves a swipe to the drawer.
+    public func sidebarRow(
+        isSelected: Bool, menu: (() -> UIMenu)? = nil, select: @escaping () -> Void
+    ) -> some View {
+        modifier(SidebarRow(isSelected: isSelected, menu: menu, select: select))
+    }
+}
+
 /// The drawer's content: workspaces, Recents, and an inline search. It owns its `NavigationStack`, so
 /// the title and the search button are native; the bottom bar is a `safeAreaBar` of its own, because a
 /// bottom-bar toolbar item cannot show a labelled button. Rows have no swipe actions (a left swipe
@@ -91,7 +100,7 @@ enum ConversationID {
     }
 }
 
-public struct ChatSidebarView<Workspaces: View>: View {
+public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     @State private var list: ChatListViewModel
     @State private var search: ChatSearchViewModel
     @State private var isSearching = false
@@ -118,6 +127,10 @@ public struct ChatSidebarView<Workspaces: View>: View {
     private let onRenameChat: (String, String) -> Void
     private let onRecentsChange: ([ChatSummary]) -> Void
     private let workspaces: Workspaces
+    /// Drawn where Recents is when `showsRecents` is false (another workspace's own list).
+    private let lists: Lists
+    /// False in a workspace other than Chat: no favourites, Recents, chat search or New Chat.
+    private let showsRecents: Bool
 
     /// A brand name: a plain `String`, shown as is and never looked up in the catalog.
     private static var appName: String { "Actovia" }
@@ -133,7 +146,9 @@ public struct ChatSidebarView<Workspaces: View>: View {
         onDeleteChat: @escaping (String) -> Void,
         onRenameChat: @escaping (String, String) -> Void,
         onRecentsChange: @escaping ([ChatSummary]) -> Void = { _ in },
-        @ViewBuilder workspaces: () -> Workspaces
+        showsRecents: Bool = true,
+        @ViewBuilder workspaces: () -> Workspaces,
+        @ViewBuilder lists: () -> Lists
     ) {
         _list = State(initialValue: ChatListViewModel(apiClient: apiClient))
         _search = State(initialValue: ChatSearchViewModel(apiClient: apiClient))
@@ -147,6 +162,8 @@ public struct ChatSidebarView<Workspaces: View>: View {
         self.onRenameChat = onRenameChat
         self.onRecentsChange = onRecentsChange
         self.workspaces = workspaces()
+        self.lists = lists()
+        self.showsRecents = showsRecents
     }
 
     @Environment(\.sidebarIsDocked) private var isDocked
@@ -163,14 +180,18 @@ public struct ChatSidebarView<Workspaces: View>: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(sidebarRowInsets)
                 }
-                if !list.favorites.isEmpty {
-                    Section("ios:chat.sidebar.favorites") {
-                        ForEach(list.favorites) { chat in
-                            row(for: chat)
+                if showsRecents {
+                    if !list.favorites.isEmpty {
+                        Section("ios:chat.sidebar.favorites") {
+                            ForEach(list.favorites) { chat in
+                                row(for: chat)
+                            }
                         }
                     }
+                    recentsSection
+                } else {
+                    lists
                 }
-                recentsSection
             }
             .listStyle(.plain)
             .scrollContentBackground(isDocked ? .hidden : .automatic)
@@ -526,13 +547,15 @@ public struct ChatSidebarView<Workspaces: View>: View {
                     .accessibilityIdentifier("sidebarClose")
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    withAnimation(.snappy) { isSearching = true }
-                } label: {
-                    Label("ios:chat.search.label", systemImage: "magnifyingglass")
+            if showsRecents {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation(.snappy) { isSearching = true }
+                    } label: {
+                        Label("ios:chat.search.label", systemImage: "magnifyingglass")
+                    }
+                    .accessibilityIdentifier("sidebarSearch")
                 }
-                .accessibilityIdentifier("sidebarSearch")
             }
     }
 
@@ -541,16 +564,18 @@ public struct ChatSidebarView<Workspaces: View>: View {
     /// asks for a labelled pill next to the round gear.
     private var bottomBar: some View {
         HStack {
-            Button(action: onNewChat) {
-                Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
-                    .labelStyle(.titleAndIcon)
-                    // The longest translation ("Nouvelle conversation") must fit on one line next to
-                    // the gear, in a sidebar that is a fraction of the screen wide.
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+            if showsRecents {
+                Button(action: onNewChat) {
+                    Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
+                        .labelStyle(.titleAndIcon)
+                        // The longest translation ("Nouvelle conversation") must fit on one line next to
+                        // the gear, in a sidebar that is a fraction of the screen wide.
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+                .buttonStyle(.glassProminent)
+                .accessibilityIdentifier("sidebarNewChat")
             }
-            .buttonStyle(.glassProminent)
-            .accessibilityIdentifier("sidebarNewChat")
             Spacer(minLength: 12)
             Button(action: onOpenSettings) {
                 Label("common:nav.settings", systemImage: "gearshape")
@@ -620,5 +645,27 @@ public struct ChatSidebarView<Workspaces: View>: View {
     private func leaveSearch() {
         withAnimation(.snappy) { isSearching = false }
         search.reset()
+    }
+}
+
+extension ChatSidebarView where Lists == EmptyView {
+    public init(
+        apiClient: APIClient,
+        activeChatId: String,
+        isOpen: Bool,
+        reloadToken: Int,
+        onSelectChat: @escaping (String, String?) -> Void,
+        onNewChat: @escaping () -> Void,
+        onOpenSettings: @escaping () -> Void,
+        onDeleteChat: @escaping (String) -> Void,
+        onRenameChat: @escaping (String, String) -> Void,
+        onRecentsChange: @escaping ([ChatSummary]) -> Void = { _ in },
+        @ViewBuilder workspaces: () -> Workspaces
+    ) {
+        self.init(
+            apiClient: apiClient, activeChatId: activeChatId, isOpen: isOpen, reloadToken: reloadToken,
+            onSelectChat: onSelectChat, onNewChat: onNewChat, onOpenSettings: onOpenSettings,
+            onDeleteChat: onDeleteChat, onRenameChat: onRenameChat, onRecentsChange: onRecentsChange,
+            workspaces: workspaces, lists: { EmptyView() })
     }
 }

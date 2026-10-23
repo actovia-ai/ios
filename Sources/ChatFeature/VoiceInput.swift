@@ -13,12 +13,12 @@ public enum VoiceRecordingState: Equatable, Sendable {
 }
 
 /// What the composer's one round button is: it keeps a single identity and morphs between these.
-enum TurnButtonState: Equatable {
+public enum TurnButtonState: Equatable, Sendable {
     case send, stop, mic, recording, transcribing
 
     /// A recording comes first (nothing else can start while it runs), then a turn in flight; with nothing to send,
     /// the button records.
-    static func `for`(text: String, hasPictures: Bool, inFlight: Bool, recording: VoiceRecordingState) -> Self {
+    public static func `for`(text: String, hasPictures: Bool, inFlight: Bool, recording: VoiceRecordingState) -> Self {
         switch recording {
         case .recording: return .recording
         case .transcribing: return .transcribing
@@ -30,7 +30,7 @@ enum TurnButtonState: Equatable {
     }
 
     /// The SF Symbol drawn (under the spinner while transcribing, so the button keeps its size).
-    var symbol: String {
+    public var symbol: String {
         switch self {
         case .send, .transcribing: "arrow.up"
         case .stop, .recording: "stop.fill"
@@ -39,7 +39,7 @@ enum TurnButtonState: Equatable {
     }
 
     /// For UI tests; never shown.
-    var identifier: String {
+    public var identifier: String {
         switch self {
         case .send: "sendButton"
         case .stop: "stopButton"

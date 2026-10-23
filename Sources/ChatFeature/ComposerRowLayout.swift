@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Which part of the composer's row a child is: the `+` on the left, the field, or one of the round buttons on the
 /// right. Set with `.composerRole(_:)`; a child without one is laid out as a trailing button.
-enum ComposerRole {
+public enum ComposerRole: Sendable {
     case leading, field, trailing
 }
 
@@ -11,7 +11,7 @@ private struct ComposerRoleKey: LayoutValueKey {
 }
 
 extension View {
-    func composerRole(_ role: ComposerRole) -> some View {
+    public func composerRole(_ role: ComposerRole) -> some View {
         layoutValue(key: ComposerRoleKey.self, value: role)
     }
 }
@@ -89,29 +89,35 @@ struct ComposerRowPlan: Equatable {
 
 /// The composer's row laid out by `ComposerRowPlan`: one `Layout` with the same children in both shapes, so the
 /// field keeps its identity (its focus, the keyboard) across the change and the move animates.
-struct ComposerRowLayout: Layout {
+public struct ComposerRowLayout: Layout {
     /// The round buttons at either end, `+` and the turn button, one size.
-    static let buttonSide: CGFloat = 36
+    public static let buttonSide: CGFloat = 36
     /// The pill's padding around them, the same on every side: the buttons sit concentric in the pill's ends, never
     /// closer to the side than to the top (owner, 2026-10-08: a 64 pt bar read tall, its buttons crowding the sides).
-    static let inset: CGFloat = 8
+    public static let inset: CGFloat = 8
     /// The pill's corners: half its one-line height (a button and the inset above and below), so one line reads as a
     /// capsule, as the desktop's; more lines, a quote or pictures and it is a rounded box.
-    static let cornerRadius: CGFloat = (buttonSide + 2 * inset) / 2
+    public static let cornerRadius: CGFloat = (buttonSide + 2 * inset) / 2
     /// The composer's glass: a light wash of the page colour under it, so a draft grown to several lines over a busy
     /// transcript is not read through the text behind it.
-    static var glass: Glass { .regular.tint(Color(.systemBackground).opacity(0.5)) }
+    public static var glass: Glass { .regular.tint(Color(.systemBackground).opacity(0.5)) }
 
     /// The height of one line of the field's text, at the reader's text size.
     var oneLineHeight: CGFloat
     var spacing: CGFloat = 8
     var rowSpacing: CGFloat = 6
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    public init(oneLineHeight: CGFloat, spacing: CGFloat = 8, rowSpacing: CGFloat = 6) {
+        self.oneLineHeight = oneLineHeight
+        self.spacing = spacing
+        self.rowSpacing = rowSpacing
+    }
+
+    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         plan(width: proposal.replacingUnspecifiedDimensions().width, subviews: subviews).size
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let plan = plan(width: bounds.width, subviews: subviews)
         var leading = plan.leading.makeIterator()
         var trailing = plan.trailing.makeIterator()

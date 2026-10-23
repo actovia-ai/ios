@@ -301,7 +301,7 @@ extension AssistantTurnView {
     }
 }
 
-struct UserBubble: View {
+public struct UserBubble: View {
     let text: String
     var messageId = ""
     /// The pictures the question was asked with, drawn above the bubble.
@@ -320,7 +320,18 @@ struct UserBubble: View {
     /// The bubble sets its lines closer than an answer does.
     private static let lineSpacingScale: CGFloat = 0.6
 
-    var body: some View {
+    public init(
+        text: String, messageId: String = "", images: [String] = [], isExpanded: Bool = false,
+        expand: (() -> Void)? = nil
+    ) {
+        self.text = text
+        self.messageId = messageId
+        self.images = images
+        self.isExpanded = isExpanded
+        self.expand = expand
+    }
+
+    public var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
             if !images.isEmpty {
                 UserImageStrip(messageId: messageId, dataURLs: images)
@@ -436,11 +447,16 @@ struct UserBubble: View {
     }
 }
 
-struct RunErrorLine: View {
+public struct RunErrorLine: View {
     let text: String
     var onRetry: (() -> Void)?
 
-    var body: some View {
+    public init(text: String, onRetry: (() -> Void)? = nil) {
+        self.text = text
+        self.onRetry = onRetry
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label {
                 Text(verbatim: text).textSelection(.enabled)
@@ -469,10 +485,12 @@ struct RunErrorLine: View {
 }
 
 /// Three dots breathing in turn while the reply has not started.
-struct TypingIndicator: View {
+public struct TypingIndicator: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         TimelineView(.animation(paused: reduceMotion)) { context in
             let time = context.date.timeIntervalSinceReferenceDate
             HStack(spacing: 5) {

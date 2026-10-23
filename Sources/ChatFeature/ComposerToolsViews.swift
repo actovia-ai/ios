@@ -8,7 +8,7 @@ import UIKit
 /// The composer's `+` (the desktop's `ComposerToolsButton`): pictures from Photos or the camera, the reasoning effort,
 /// Deep Research, and the tools the computer's MCP servers offer. It presents its own pickers, sheet and alert; picked
 /// pictures go to `onPictures` in pick order, each as a loader the receiver calls when that one's turn comes.
-struct ComposerToolsButton: View {
+public struct ComposerToolsButton: View {
     /// nil in a preview: the menu offers pictures only.
     let tools: ComposerTools?
     let attachments: ComposerAttachments
@@ -22,7 +22,17 @@ struct ComposerToolsButton: View {
     @State private var showsMcpTools = false
     @State private var explainsCamera = false
 
-    var body: some View {
+    public init(
+        tools: ComposerTools?, attachments: ComposerAttachments, cameraRequest: Int = 0,
+        onPictures: @escaping ([ComposerPicture.Loader]) -> Void
+    ) {
+        self.tools = tools
+        self.attachments = attachments
+        self.cameraRequest = cameraRequest
+        self.onPictures = onPictures
+    }
+
+    public var body: some View {
         Menu {
             Section {
                 Button {
@@ -168,7 +178,7 @@ struct ComposerToolsButton: View {
 
 /// The pictures waiting in the composer (the desktop's `FilePreview`): rounded squares in pick order, each with a ✕ on
 /// its corner, then a placeholder for each picked one not ready yet. Scrolls sideways when ten do not fit.
-struct ComposerPictureStrip: View {
+public struct ComposerPictureStrip: View {
     let pictures: [ComposerPicture]
     var preparing = 0
     let onRemove: (ComposerPicture.ID) -> Void
@@ -184,7 +194,15 @@ struct ComposerPictureStrip: View {
     /// The ✕'s target around the disc: small enough to stay inside the strip, which clips.
     private var target: CGFloat { badge + 12 }
 
-    var body: some View {
+    public init(
+        pictures: [ComposerPicture], preparing: Int = 0, onRemove: @escaping (ComposerPicture.ID) -> Void
+    ) {
+        self.pictures = pictures
+        self.preparing = preparing
+        self.onRemove = onRemove
+    }
+
+    public var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 12) {
                 ForEach(Array(pictures.enumerated()), id: \.element.id) { index, picture in
