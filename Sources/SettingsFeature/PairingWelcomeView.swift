@@ -16,6 +16,10 @@ public struct PairingWelcomeView: View {
     /// Where the desktop app is downloaded from (the desktop's `package.json` `homepage`).
     static let website = URL(string: "https://actovia.yancey.app")!  // l10n:ignore: a URL
 
+    /// The form's widest column: on a wide screen (an unfolded Duo, landscape) the rows would otherwise run 900 pt.
+    private static let columnWidth: CGFloat = 560
+    @State private var sideMargin: CGFloat = 0
+
     public var body: some View {
         NavigationStack {
             Form {
@@ -50,6 +54,11 @@ public struct PairingWelcomeView: View {
                 } footer: {
                     Text("ios:onboarding.noActoviaYet")
                 }
+            }
+            // The grouped background still spans the screen; only the rows keep to the column.
+            .contentMargins(.horizontal, sideMargin, for: .scrollContent)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
+                sideMargin = max(0, (width - Self.columnWidth) / 2)
             }
         }
     }
