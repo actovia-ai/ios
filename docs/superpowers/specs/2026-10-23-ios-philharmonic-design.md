@@ -82,7 +82,9 @@ missing or contradicted.
 - SSE: `GET /api/v1/philharmonic/conversations/:id/sse` — `data: <json>` lines, no event names, no heartbeat; replays
   `pm_started` and a pending `ask_user` on connect. The event union is `PhilharmonicSseEvent`
   (`packages/shared/src/types/philharmonic.ts`). One stream per open group; on a drop it reconnects (see "Also
-  decided") and re-reads `/messages?after=` and `/plan` (events missed while away are not replayed).
+  decided") and re-reads all of `/messages` and `/plan` (events missed while away are not replayed, and saved rows
+  can change after they are saved — an agent card answered or gone stale — so only the re-read after a
+  `message_end` uses `?after=`).
 - Transcript rows are `ConversationMessageData` (renderer `stores/philharmonic.ts`, not the shared package) with
   `parts` (`attachment`, `artifact`, `decision`, `agent_card`) and `roundId`. Decode leniently; an unknown part or
   event is ignored, never fatal (the chat's `unknown` event pattern).
@@ -126,11 +128,13 @@ CLAUDE.md lines, done and merged before the iOS work starts:
 1. **Heartbeat on the group stream.** Every Philharmonic SSE stream (`/conversations/:id/sse`, `/sse`,
    `/tasks/:id/sse`) sends an SSE comment line (`: ping`) every 15 s, so a client can tell a quiet round from a
    dead connection. Comments are ignored by `EventSource` and by the iOS frame parser. The phone treats 45 s without
-   a byte as a dropped connection: reconnect, then re-read what it missed (below).
+   a byte as a dropped connection: reconnect, then read the group again.
 2. **Only new messages.** `GET /conversations/:id/messages?after=<messageId>` returns the rows after that one, in
    order (the whole list without it, as today; an unknown id is a 404 the client answers with a full read). Rows are
-   ordered by `createdAt` then `id`, so two rows with one timestamp keep one order. The desktop's `GroupChat` uses it
-   for the re-read after `message_end` too.
+   ordered by `createdAt` then `id`, so two rows with one timestamp keep one order. Rows can be edited after they
+   are saved (an agent card's parts), so `after` is only for the re-read that follows a `message_end` — the live
+   `agent_card` events carry those edits — and every client reads the whole list when it (re)connects. The
+   desktop's `GroupChat` follows the same rule.
 3. **Photos in a group are saved like Chat's.** The Philharmonic composer's S3 path is broken twice over: it posts to
    `/api/v1/s3-uploader/direct-upload` while the router is mounted at `/api/v1/s3` (a 404 and a warning toast on every
    photo when S3 is set up), and an S3 link would reach the model as if it were image data (`bareImageData` in
