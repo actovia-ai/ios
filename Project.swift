@@ -232,7 +232,8 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/PhilharmonicFeatureTests"],
             dependencies: [
-                .target(name: "PhilharmonicFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
+                .target(name: "PhilharmonicFeature"), .target(name: "ChatFeature"), .target(name: "NetworkingKit"),
+                .target(name: "Models"),
             ]
         ),
         moduleTarget(name: "OdyKit"),

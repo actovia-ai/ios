@@ -25,7 +25,7 @@ public struct ComposerPicture: Identifiable, Equatable, Sendable {
         case undecodable, unencodable
     }
 
-    init(id: UUID = UUID(), mimeType: String, dataURL: String, pixelWidth: Int, pixelHeight: Int) {
+    public init(id: UUID = UUID(), mimeType: String, dataURL: String, pixelWidth: Int, pixelHeight: Int) {
         self.id = id
         self.mimeType = mimeType
         self.dataURL = dataURL
