@@ -2,6 +2,7 @@ import ChatFeature
 import HealthFeature
 import Models
 import NetworkingKit
+import OdyKit
 import PhilharmonicFeature
 import SettingsFeature
 import SwiftUI
@@ -29,6 +30,11 @@ struct AppShell: View {
 
     @State private var activeChat = ActiveChat.new()
     @State private var isSidebarOpen = false
+    /// The screen is wide enough for the sidebar to stay beside the content (an unfolded iPhone Duo, landscape), as
+    /// Claude's app does there; the toolbar button then hides and shows it instead of sliding a drawer.
+    @State private var isDocked = false
+    /// Whether the docked sidebar is showing. Its own value, so a drawer closed on a phone does not hide it later.
+    @State private var isDockedSidebarShown = true
     @State private var workspace: AppWorkspace = .chat
     /// Settings, and the page it opens on. One value, so the page arrives with the presentation itself: two flags let
     /// the first presentation read a stale page and open on the root.
@@ -51,64 +57,31 @@ struct AppShell: View {
     @Environment(ColorToneModel.self) private var toneModel: ColorToneModel?
 
     var body: some View {
-        SideDrawer(isOpen: $isSidebarOpen) {
-            ChatSidebarView(
-                apiClient: apiClient,
-                activeChatId: activeChat.id,
-                isOpen: isSidebarOpen,
-                reloadToken: recentsReloadToken,
-                onSelectChat: { id, title in select(id: id, title: title) },
-                onNewChat: { startNewChat() },
-                onOpenSettings: { settings = .root },
-                onDeleteChat: { id in
-                    // The deleted chat was the one on screen: leave it for a fresh one, drawer stays open.
-                    if id == activeChat.id { activeChat = .new() }
-                },
-                onRenameChat: { id, title in
-                    // The renamed chat is the one on screen: `ChatDetailView` picks this up from
-                    // its own `title` argument changing, via `.onChange` (its `chatId` does not
-                    // change, so it is never recreated by this).
-                    if id == activeChat.id { activeChat.title = title }
-                },
-                onRecentsChange: { widgetWriter.recentsChanged($0) }
-            ) {
-                ForEach(AppWorkspace.listed) { option in
-                    WorkspaceRow(option: option, isSelected: option == workspace) {
-                        workspace = option
-                        setSidebar(open: false)
+        Group {
+            if isDocked {
+                HStack(spacing: 0) {
+                    if isDockedSidebarShown {
+                        sidebar
+                            .frame(width: ReadingColumn.sidebarWidth)
+                            .transition(.move(edge: .leading).combined(with: .opacity))
+                        Divider().ignoresSafeArea()
                     }
+                    content
+                }
+            } else {
+                SideDrawer(isOpen: $isSidebarOpen) { sidebar } content: { content }
+            }
+        }
+        // Measured behind the layout, from its first width on: `onGeometryChange` on the switching `Group` was never
+        // called for the width it started with, and a landscape launch stayed a drawer.
+        .background {
+            GeometryReader { proxy in
+                Color.clear.onChange(of: proxy.size.width >= ReadingColumn.dockedSidebarFrom, initial: true) { _, wide in
+                    isDocked = wide
+                    // The drawer's state means nothing beside a docked sidebar, and must not open over the content later.
+                    if wide { isSidebarOpen = false }
                 }
             }
-        } content: {
-            NavigationStack {
-                detail
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button {
-                                setSidebar(open: !isSidebarOpen)
-                            } label: {
-                                if isSidebarOpen {
-                                    Label("ios:app.sidebar.close", systemImage: "sidebar.leading")
-                                } else {
-                                    Label("ios:app.sidebar.open", systemImage: "sidebar.leading")
-                                }
-                            }
-                            .accessibilityIdentifier("sidebarToggle")
-                        }
-                        // Health has its own menu there; a new chat is in the drawer.
-                        if workspace != .health {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button {
-                                    startNewChat()
-                                } label: {
-                                    Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
-                                }
-                                .accessibilityIdentifier("topNewChat")
-                            }
-                        }
-                    }
-            }
-            .horizontalBars()
         }
         .sheet(
             item: $settings,
@@ -145,6 +118,68 @@ struct AppShell: View {
             guard let link = pendingLink.take() else { return }
             open(link)
         }
+    }
+
+    private var sidebar: some View {
+        ChatSidebarView(
+            apiClient: apiClient,
+            activeChatId: activeChat.id,
+            isOpen: isDocked ? isDockedSidebarShown : isSidebarOpen,
+            reloadToken: recentsReloadToken,
+            onSelectChat: { id, title in select(id: id, title: title) },
+            onNewChat: { startNewChat() },
+            onOpenSettings: { settings = .root },
+            onDeleteChat: { id in
+                // The deleted chat was the one on screen: leave it for a fresh one, drawer stays open.
+                if id == activeChat.id { activeChat = .new() }
+            },
+            onRenameChat: { id, title in
+                // The renamed chat is the one on screen: `ChatDetailView` picks this up from
+                // its own `title` argument changing, via `.onChange` (its `chatId` does not
+                // change, so it is never recreated by this).
+                if id == activeChat.id { activeChat.title = title }
+            },
+            onRecentsChange: { widgetWriter.recentsChanged($0) }
+        ) {
+            ForEach(AppWorkspace.listed) { option in
+                WorkspaceRow(option: option, isSelected: option == workspace) {
+                    workspace = option
+                    setSidebar(open: false)
+                }
+            }
+        }
+    }
+
+    private var content: some View {
+        NavigationStack {
+            detail
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            toggleSidebar()
+                        } label: {
+                            if isSidebarVisible {
+                                Label("ios:app.sidebar.close", systemImage: "sidebar.leading")
+                            } else {
+                                Label("ios:app.sidebar.open", systemImage: "sidebar.leading")
+                            }
+                        }
+                        .accessibilityIdentifier("sidebarToggle")
+                    }
+                    // Health has its own menu there; a new chat is in the drawer.
+                    if workspace != .health {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                startNewChat()
+                            } label: {
+                                Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
+                            }
+                            .accessibilityIdentifier("topNewChat")
+                        }
+                    }
+                }
+        }
+        .horizontalBars()
     }
 
     @ViewBuilder
@@ -243,9 +278,22 @@ struct AppShell: View {
         Task { await composerTools.refresh(from: ComposerToolsSource(apiClient: apiClient)) }
     }
 
+    /// Opens or closes the drawer. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
     private func setSidebar(open: Bool) {
+        guard !isDocked else { return }
         withAnimation(drawerAnimation(reduceMotion: reduceMotion)) { isSidebarOpen = open }
     }
+
+    /// The toolbar's sidebar button: the drawer on a phone, the docked column on a wide screen.
+    private func toggleSidebar() {
+        if isDocked {
+            withAnimation(drawerAnimation(reduceMotion: reduceMotion)) { isDockedSidebarShown.toggle() }
+        } else {
+            setSidebar(open: !isSidebarOpen)
+        }
+    }
+
+    private var isSidebarVisible: Bool { isDocked ? isDockedSidebarShown : isSidebarOpen }
 }
 
 extension ComposerOpening {

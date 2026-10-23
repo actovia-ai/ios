@@ -97,6 +97,7 @@ public struct ChatDetailView: View {
                         actions: transcriptActions)
                 }
                 .padding(.horizontal)
+                .readingColumn()
                 .padding(.top, 8)
                 // What is scrolled to: the end of the transcript and the room that keeps its last line off the
                 // composer.
@@ -329,6 +330,7 @@ public struct ChatDetailView: View {
         .padding(.vertical, ComposerRowLayout.inset)
         .glassEffect(ComposerRowLayout.glass, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
+        .readingColumn()
         .padding(.bottom, 4)
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,
         // the drawer), rather than inventing a new one.

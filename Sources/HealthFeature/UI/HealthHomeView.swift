@@ -20,6 +20,9 @@ struct HealthHomeView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var pull: CGFloat = 0
+    /// The page is wider than its column (an unfolded iPhone Duo): the hero is a card in the column, not a sky from
+    /// edge to edge — at the screen's full width it was taller than the screen.
+    @State private var isWide = false
     @State private var scroll = ScrollPosition()
     /// The visible part of the scroll view, in its own coordinate space.
     @State private var viewport: CGRect = .zero
@@ -49,7 +52,8 @@ struct HealthHomeView: View {
                     stretch: 1 + min(pull, 140) / 300, bindleBounce: bounce, bindleAnchor: $bindleAnchor,
                     isReading: model.isReadingFirst
                 )
-                .padding(.horizontal, -16)
+                .padding(.horizontal, isWide ? 0 : -16)
+                .modifier(HeroCardShape(isCard: isWide))
                 .id(Self.heroID)
                 // A note told as stories carries its own headline.
                 if let summary = readySummary, ReportText.stories(summary).isEmpty,
@@ -114,8 +118,10 @@ struct HealthHomeView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .readingColumn(Self.columnWidth)
             .padding(.bottom, 24)
         }
+        .onGeometryChange(for: Bool.self) { $0.size.width > Self.columnWidth } action: { isWide = $0 }
         .scrollPosition($scroll)
         .background(HealthSurface.page)
         .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, v in
@@ -166,6 +172,7 @@ struct HealthHomeView: View {
                     "ios:health.ask.suggestion.sleep", "ios:health.ask.suggestion.energy", "ios:health.ask.suggestion.week",
                 ],
                 attachment: { snapshotJSON }, initialText: initialAsk, onSend: onAsk)
+            .readingColumn(Self.columnWidth)
         }
         .navigationDestination(for: HealthCategory.self) { c in
             HealthDetailView(category: c, model: model, onAsk: onAsk)
@@ -186,6 +193,9 @@ struct HealthHomeView: View {
     }
 
     private static let heroID = "hero"
+    /// Narrower than a chat's column: the hero is as tall as it is wide, and on a landscape screen the cards under it
+    /// should start above the fold.
+    private static let columnWidth: CGFloat = 560
 
     /// An empty day, for the cards' placeholder shapes.
     private static let placeholderSnapshot = HealthSnapshot(
@@ -287,4 +297,18 @@ enum HealthSurface {
         UIColor { $0.userInterfaceStyle == .dark ? .systemGroupedBackground : UIColor(OdyPalette.hex(0xFFF9E8)) })
     static let card = Color(
         UIColor { $0.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .white })
+}
+
+/// On a wide screen the hero is a rounded card in the page's column. On a phone nothing is clipped: the sky reaches up
+/// past the hero's frame, under the navigation bar, and a clip of any radius would cut it off.
+private struct HeroCardShape: ViewModifier {
+    let isCard: Bool
+
+    func body(content: Content) -> some View {
+        if isCard {
+            content.clipShape(.rect(cornerRadius: 28, style: .continuous))
+        } else {
+            content
+        }
+    }
 }
