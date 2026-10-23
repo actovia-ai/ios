@@ -11,6 +11,8 @@ struct GroupChatView: View {
 
     @State private var model: GroupChatViewModel
     @State private var roster = GroupRoster()
+    @State private var memberIds: [String] = []
+    @State private var members: MembersViewModel?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.toneInk) private var toneInk
 
@@ -67,12 +69,28 @@ struct GroupChatView: View {
             // Who is who: names, teams, CLIs. A failed read leaves the fallbacks ("Employee").
             async let employees = try? api.employees()
             async let teams = try? api.teams()
-            let (people, groups) = await (employees, teams)
+            async let conversations = try? api.conversations()
+            let (people, groups, all) = await (employees, teams, conversations)
+            memberIds = all?.first { $0.id == model.conversationId }?.memberAgentIds ?? []
             roster = GroupRoster(
                 employees: Dictionary((people ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }),
                 teams: Dictionary((groups ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }))
         }
         .onDisappear { model.stop() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    members = MembersViewModel(api: api, memberIds: memberIds)
+                } label: {
+                    Label("philharmonic:chat.membersPanel.heading", systemImage: "person.2")
+                }
+                .accessibilityIdentifier("groupMembers")
+            }
+        }
+        .sheet(item: $members) { members in
+            MembersSheet(model: members, teams: roster.teams, busy: model.busy)
+                .presentationDetents([.medium, .large])
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await model.resume() } }
         }

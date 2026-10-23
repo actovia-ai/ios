@@ -59,6 +59,8 @@ public struct GroupListSection: View {
             Label("philharmonic:chat.conversationList.configNav.workforce", systemImage: "person.3")
                 .sidebarRow(isSelected: selection == .workforce) { onSelect(.workforce) }
         }
+        // The row's own ink, as the workspace rows above: the list's tint would draw the icons in blue.
+        .foregroundStyle(.primary)
         .task { await model.load() }
         .alert(
             "philharmonic:chat.conversationList.renameDialog.title",

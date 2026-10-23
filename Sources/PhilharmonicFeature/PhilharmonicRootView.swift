@@ -40,8 +40,10 @@ public struct PhilharmonicRootView: View {
         case .group(let id, _):
             GroupChatView(conversationId: id, api: api, stream: Self.stream(id, api: api), onGone: onGroupGone)
                 .id(id)
-        case .dashboard, .workforce:
-            ProgressView()
+        case .dashboard:
+            DashboardView(api: api)
+        case .workforce:
+            WorkforceView(api: api)
         }
     }
 }
