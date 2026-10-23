@@ -12,7 +12,7 @@
   l10n.py fill TRANSLATIONS.json [--file PATH]
       Merges {"key": {"lang": "text"}} into a catalog as translated strings.
   l10n.py sync-from-desktop [LOCALES_DIR] [--file PATH]
-      Overwrites every non-`ios:` key with the desktop's text in all ten languages ({{x}} becomes
+      Overwrites every non-`ios:` key with the desktop's text in all twelve languages ({{x}} becomes
       %@, and then a literal % becomes %%); `ios:` keys are never touched. A catalog key the desktop
       only has as `<key>_one` / `<key>_other` / … becomes a plural (`variations.plural`, {{count}} as
       %lld, which must be the first placeholder). A language that orders the placeholders differently
@@ -33,11 +33,11 @@ ROOT = Path(__file__).resolve().parent.parent
 LOCALIZABLE = ROOT / "Resources/App/Localizable.xcstrings"
 INFOPLIST = ROOT / "Resources/App/InfoPlist.xcstrings"
 SOURCE_LANGUAGE = "en"
-SHIPPED = ["en", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it"]
+SHIPPED = ["en", "zh-Hans", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it", "ru"]
 # The desktop's locale directory -> our catalog language.
 DESKTOP_LANGUAGE = {
-    "en": "en", "zh-Hant-TW": "zh-Hant", "zh-Hant-HK": "zh-HK", "ja": "ja", "ko": "ko",
-    "fr": "fr", "de": "de", "es": "es", "pt-BR": "pt-BR", "it": "it",
+    "en": "en", "zh-Hans": "zh-Hans", "zh-Hant-TW": "zh-Hant", "zh-Hant-HK": "zh-HK", "ja": "ja", "ko": "ko",
+    "fr": "fr", "de": "de", "es": "es", "pt-BR": "pt-BR", "it": "it", "ru": "ru",
 }
 
 PLACEHOLDER = r"%(?:\d+\$)?[-+0#]*\d*(?:\.\d+)?(?:hh|h|ll|l|q|z|t|j)?[diouxXeEfFgGaAcCsSp@]"
@@ -136,8 +136,7 @@ def placeholder_names(text):
 
 def flatten_desktop_locales(locales_dir):
     """(iOS catalog language, "namespace:dotted.key") -> text, for every desktop locale this
-    project ships (DESKTOP_LANGUAGE's keys); anything else (e.g. zh-Hans) is skipped, matching the
-    desktop's own zh-Hans-falls-back-to-English choice."""
+    project ships (DESKTOP_LANGUAGE's keys); a desktop locale this app does not ship is skipped."""
     values = {}
     for locale_dir in sorted(p for p in Path(locales_dir).iterdir() if p.is_dir()):
         lang = DESKTOP_LANGUAGE.get(locale_dir.name)

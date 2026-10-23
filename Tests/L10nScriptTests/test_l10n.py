@@ -100,12 +100,11 @@ class FlattenDesktopLocalesTests(unittest.TestCase):
             )
 
     def test_unmapped_desktop_locale_is_skipped(self):
-        # zh-Hans has no iOS catalog language (DESKTOP_LANGUAGE has no entry
-        # for it) — matches the desktop's own "falls back to English" choice.
+        # nl has no iOS catalog language (DESKTOP_LANGUAGE has no entry for it).
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "zh-Hans").mkdir()
-            (root / "zh-Hans" / "chat.json").write_text(json.dumps({"a": "x"}))
+            (root / "nl").mkdir()
+            (root / "nl" / "chat.json").write_text(json.dumps({"a": "x"}))
             values = l10n.flatten_desktop_locales(root)
             self.assertEqual(
                 [k for k in values if k[0] not in l10n.SHIPPED], []
@@ -113,8 +112,8 @@ class FlattenDesktopLocalesTests(unittest.TestCase):
 
 
 DESKTOP_DIRS = {
-    "en": "en", "zh-Hant": "zh-Hant-TW", "zh-HK": "zh-Hant-HK", "ja": "ja", "ko": "ko",
-    "fr": "fr", "de": "de", "es": "es", "pt-BR": "pt-BR", "it": "it",
+    "en": "en", "zh-Hans": "zh-Hans", "zh-Hant": "zh-Hant-TW", "zh-HK": "zh-Hant-HK", "ja": "ja", "ko": "ko",
+    "fr": "fr", "de": "de", "es": "es", "pt-BR": "pt-BR", "it": "it", "ru": "ru",
 }
 MISSING_HEADING = "shared key not found on the desktop (renamed or removed?)"
 UNSHAREABLE_HEADING = "not shareable as-is: markup/plural"
@@ -141,10 +140,10 @@ class CmdSyncTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.locales = self.root / "locales"
         self.texts = {
-            "en": "Ask Actovia", "zh-Hant-TW": "詢問 Actovia", "zh-Hant-HK": "詢問 Actovia",
+            "en": "Ask Actovia", "zh-Hans": "问问 Actovia", "zh-Hant-TW": "詢問 Actovia", "zh-Hant-HK": "詢問 Actovia",
             "ja": "Actoviaに聞く", "ko": "Actovia에게 물어보기", "fr": "Demander à Actovia",
             "de": "Actovia fragen", "es": "Preguntar a Actovia",
-            "pt-BR": "Perguntar ao Actovia", "it": "Chiedi a Actovia",
+            "pt-BR": "Perguntar ao Actovia", "it": "Chiedi a Actovia", "ru": "Спросите Actovia",
         }
         for desktop_dir in self.texts:
             self.write_chat(desktop_dir)

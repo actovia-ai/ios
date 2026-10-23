@@ -13,7 +13,7 @@ enum StockChart {
     static func tradingViewLocale(_ locale: Locale) -> String {
         guard let language = locale.language.languageCode?.identifier.lowercased() else { return "en" }
         switch language {
-        case "en", "de", "es", "fr", "it", "ja": return language
+        case "en", "de", "es", "fr", "it", "ja", "ru": return language
         case "ko": return "kr"
         case "pt": return "br"
         case "zh":

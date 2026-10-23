@@ -22,7 +22,7 @@ private func moduleTarget(
 let project = Project(
     name: "ActoviaIos",
     options: .options(
-        defaultKnownRegions: ["en", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it"],
+        defaultKnownRegions: ["en", "zh-Hans", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it", "ru"],
         developmentRegion: "en"
     ),
     // The composer's glow while recording (Sources/ChatFeature/ComposerVoiceGlow.swift): Jakub Antalik's voice-glow,
