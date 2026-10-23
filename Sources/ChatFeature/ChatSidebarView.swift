@@ -199,6 +199,9 @@ public struct ChatSidebarView<Workspaces: View>: View {
                     SidebarSearchBar(
                         text: Binding(get: { search.query }, set: { search.updateQuery($0) }),
                         onCancel: leaveSearch)
+                    // Docked (landscape, an unfolded Duo) the status bar is beside the screen, not above it: the
+                    // top inset is about nothing, and the field sat on the screen's edge under its rounded corner.
+                    .padding(.top, isDocked ? 14 : 0)
                 }
             }
             .toolbar { sidebarToolbar }
