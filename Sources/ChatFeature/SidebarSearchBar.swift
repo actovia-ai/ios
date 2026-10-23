@@ -1,15 +1,16 @@
 import SwiftUI
 
-/// The sidebar's search field: a native `TextField` in a glass capsule with a Cancel button. Built by
-/// hand because `.searchable` did not respond inside the drawer (see the spec, section 3).
+/// The search screen's field: a magnifier, a plain `TextField` and a Cancel button on one line, a hairline under
+/// it — Hikki's search is the reference (owner, 2026-10-23). Built by hand because `.searchable` did not respond
+/// inside the drawer (see the spec, section 3).
 struct SidebarSearchBar: View {
     @Binding var text: String
     let onCancel: () -> Void
     @FocusState private var focused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
-            HStack(spacing: 8) {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
@@ -26,18 +27,19 @@ struct SidebarSearchBar: View {
                         Image(systemName: "xmark.circle.fill")
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
                     .accessibilityLabel("ios:chat.search.clearButton")
                 }
+                Button("common:action.cancel", action: onCancel)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("searchCancel")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .glassEffect(.regular, in: .capsule)
-
-            Button("common:action.cancel", action: onCancel)
-                .accessibilityIdentifier("searchCancel")
+            .frame(minHeight: 44)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            Divider()
         }
-        .padding(.horizontal, 12)
         .onAppear { focused = true }
     }
 }

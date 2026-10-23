@@ -95,6 +95,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
     @State private var list: ChatListViewModel
     @State private var search: ChatSearchViewModel
     @State private var isSearching = false
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     /// Bumped exactly once when a chat's delete succeeds and its row leaves the list — a plain
     /// counter so `sensoryFeedback` fires with the row's removal, not when the context menu opens
     /// and not for a failed delete (which raises `list.showsErrorAlert` instead).
@@ -150,42 +151,26 @@ public struct ChatSidebarView<Workspaces: View>: View {
 
     @Environment(\.sidebarIsDocked) private var isDocked
     @Environment(\.closeSidebar) private var closeSidebar
-    /// The screen's top safe-area inset, for the search field's room (see the field).
-    @State private var topInset: CGFloat = 60
     private var dockedSurface: Color { dockedSidebarSurface }
 
     public var body: some View {
         NavigationStack {
             List {
-                if isSearching && search.hasQuery {
-                    searchResultRows
-                } else {
-                    if !isSearching {
-                        // On the rows, not on the `Section`: a section passes the hidden separator down
-                        // but keeps the insets to itself.
-                        Section {
-                            workspaces
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(sidebarRowInsets)
-                        }
-                    }
-                    if !isSearching, !list.favorites.isEmpty {
-                        Section("ios:chat.sidebar.favorites") {
-                            ForEach(list.favorites) { chat in
-                                row(for: chat)
-                            }
-                        }
-                    }
-                    Section("ios:chat.sidebar.recents") {
-                        ForEach(list.recents) { chat in
+                // On the rows, not on the `Section`: a section passes the hidden separator down
+                // but keeps the insets to itself.
+                Section {
+                    workspaces
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(sidebarRowInsets)
+                }
+                if !list.favorites.isEmpty {
+                    Section("ios:chat.sidebar.favorites") {
+                        ForEach(list.favorites) { chat in
                             row(for: chat)
                         }
-                        if list.hasMore, !list.chats.isEmpty {
-                            loadMoreRow
-                        }
-                        recentsStateRow
                     }
                 }
+                recentsSection
             }
             .listStyle(.plain)
             .scrollContentBackground(isDocked ? .hidden : .automatic)
@@ -197,7 +182,6 @@ public struct ChatSidebarView<Workspaces: View>: View {
             // effect for free: without it the rows print through the pill and the gear, and at
             // an accessibility text size a title is chopped mid-word by them.
             .scrollEdgeEffectStyle(.hard, for: .bottom)
-            .overlay { searchStateOverlay }
             // Spinner, empty state, failure and results all cross-fade instead of cutting — the
             // Recents block only when a load finishes, search on every phase it can be in while a
             // query is live (apple-design: preventing a jarring change).
@@ -209,16 +193,6 @@ public struct ChatSidebarView<Workspaces: View>: View {
             // instead, left-aligned and a size up from that.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .safeAreaBar(edge: .top) {
-                if isSearching {
-                    SidebarSearchBar(
-                        text: Binding(get: { search.query }, set: { search.updateQuery($0) }),
-                        onCancel: leaveSearch)
-                    // Where the status bar is beside the screen rather than above it (a Duo, landscape) the top inset
-                    // is about nothing, and the field sat on the screen's edge under its rounded corner.
-                    .padding(.top, topInset < 30 ? 16 : 0)
-                }
-            }
             .toolbar { sidebarToolbar }
             // Hidden while searching so it cannot ghost through the keyboard.
             .safeAreaBar(edge: .bottom) {
@@ -284,8 +258,16 @@ public struct ChatSidebarView<Workspaces: View>: View {
             .sensoryFeedback(.impact(weight: .medium), trigger: deletedTrigger)
             .sensoryFeedback(.success, trigger: copiedTrigger)
         }
-        // Read outside the stack: inside it the inset includes the navigation bar's own height.
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
+        // Search takes the screen, Hikki's way (owner, 2026-10-23): the field and Cancel on top, Recents under
+        // it until something is typed, then the matches. On a narrow screen it covers everything; on a wide one
+        // (the unfolded Duo) it is a card over the dimmed app.
+        .fullScreenCover(isPresented: searchPresented(compact: true)) {
+            searchSheet
+        }
+        .sheet(isPresented: searchPresented(compact: false)) {
+            searchSheet
+                .presentationSizing(.page)
+        }
     }
 
     // MARK: - Rows
@@ -311,7 +293,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
         // `list.chats` after a concurrent load.
         .modifier(
             SidebarRow(isSelected: chat.id == activeChatId, menu: { menu(for: chat) }) {
-                onSelectChat(chat.id, chat.title)
+                select(chat.id, chat.title)
             })
         .accessibilityAction(named: favoriteActionName(for: chat)) {
             Task { await list.toggleFavorite(chat) }
@@ -440,7 +422,7 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
                 // Title and snippet are one element to VoiceOver, as the button's label used to be.
                 .accessibilityElement(children: .combine)
-                .modifier(SidebarRow(isSelected: false) { onSelectChat(result.id, result.title.collapsedWhitespace) })
+                .modifier(SidebarRow(isSelected: false) { select(result.id, result.title.collapsedWhitespace) })
             }
         }
     }
@@ -519,7 +501,6 @@ public struct ChatSidebarView<Workspaces: View>: View {
 
     @ToolbarContentBuilder
     private var sidebarToolbar: some ToolbarContent {
-        if !isSearching {
             ToolbarItem(placement: .topBarLeading) {
                 // A brand name: shown as is, never looked up in the catalog (see `appName` above).
                 // One size up from the system's own inline title (`.headline`), left-aligned
@@ -553,7 +534,6 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
                 .accessibilityIdentifier("sidebarSearch")
             }
-        }
     }
 
     /// A bar of its own, not `ToolbarItem(placement: .bottomBar)`: a bottom-bar item ignores
@@ -585,6 +565,56 @@ public struct ChatSidebarView<Workspaces: View>: View {
         // fraction of the screen, and "Nouvelle conversation" next to the gear only fits on one line
         // up to about this size; past it the title would truncate. The list itself still scales.
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+
+    /// Opens a chat; picked from the search sheet, the sheet goes too.
+    private func select(_ id: String, _ title: String?) {
+        if isSearching { leaveSearch() }
+        onSelectChat(id, title)
+    }
+
+    /// Recents, in the sidebar and in the search sheet before anything is typed.
+    private var recentsSection: some View {
+        Section("ios:chat.sidebar.recents") {
+            ForEach(list.recents) { chat in
+                row(for: chat)
+            }
+            if list.hasMore, !list.chats.isEmpty {
+                loadMoreRow
+            }
+            recentsStateRow
+        }
+    }
+
+    /// Whether search is open in the presentation for this width: one of the two, never both.
+    private func searchPresented(compact: Bool) -> Binding<Bool> {
+        Binding(
+            get: { isSearching && (horizontalSizeClass != .regular) == compact },
+            set: { if !$0 { leaveSearch() } })
+    }
+
+    private var searchSheet: some View {
+        VStack(spacing: 0) {
+            SidebarSearchBar(
+                text: Binding(get: { search.query }, set: { search.updateQuery($0) }),
+                onCancel: leaveSearch)
+                .padding(.top, 8)
+            List {
+                if search.hasQuery {
+                    searchResultRows
+                } else {
+                    recentsSection
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .environment(\.defaultMinListRowHeight, 44)
+            .scrollDismissesKeyboard(.interactively)
+            .overlay { searchStateOverlay }
+            .animation(.easeOut(duration: 0.15), value: search.phase)
+            .animation(.easeOut(duration: 0.15), value: search.hasQuery)
+        }
+        .presentationDragIndicator(.hidden)
     }
 
     private func leaveSearch() {
