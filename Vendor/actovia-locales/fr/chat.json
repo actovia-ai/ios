@@ -34,8 +34,8 @@
     "deepResearch": "Recherche approfondie"
   },
   "messageList": {
-    "greetingTitle": "Bonjour !",
-    "greetingSubtitle": "Comment puis-je vous aider aujourd'hui ?",
+    "greetingTitle": "On va où aujourd’hui ?",
+    "greetingSubtitle": "Posez une question, explorez un sujet ou confiez une tâche.",
     "attachmentAlt": "pièce jointe",
     "scrollToBottom": "Défiler vers le bas",
     "moreImages": "Afficher {{count}} de plus",
@@ -54,7 +54,9 @@
     "mapItinerarySummary": "{{days}}, {{stops}}",
     "toolFailed": "Échec de {{tool}}",
     "webSearchResultCount_one": "{{count}} résultat",
-    "webSearchResultCount_other": "{{count}} résultats"
+    "webSearchResultCount_other": "{{count}} résultats",
+    "webSearchResultCountFor_one": "{{count}} résultat pour « {{query}} »",
+    "webSearchResultCountFor_other": "{{count}} résultats pour « {{query}} »"
   },
   "toolFailedToast": {
     "title": "Échec de l'outil : {{tool}}"
@@ -214,8 +216,8 @@
     "forward": "Suivant",
     "streaming": "Réponse en cours…",
     "noModel": "Choisir un modèle",
-    "modelMenu": "Modèle",
     "noModels": "Aucun modèle récupéré pour l'instant",
+    "modelScope": "Cette conversation uniquement. Les nouvelles conversations commencent avec le modèle par défaut, choisi dans Fournisseurs d'IA.",
     "openProviders": "Ouvrir les fournisseurs d'IA",
     "menu": "Options de la discussion",
     "exportMarkdown": "Exporter en Markdown…",
@@ -271,7 +273,12 @@
       "placeholder": "Rechercher des conversations…",
       "ariaLabel": "Rechercher des conversations",
       "recent": "Récentes",
-      "noResults": "Aucune conversation ne correspond à « {{query}} »"
+      "noResults": "Aucune conversation ne correspond à « {{query}} »",
+      "hint": {
+        "move": "Naviguer",
+        "open": "Ouvrir",
+        "close": "Fermer"
+      }
     }
   },
   "run": {

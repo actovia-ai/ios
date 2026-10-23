@@ -59,7 +59,9 @@
       "title": "Schedule a task",
       "description": "Runs inside an existing Group, once or on a recurring schedule.",
       "titleLabel": "Title",
+      "titlePlaceholder": "Weekly status report",
       "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What should the team do?",
       "groupLabel": "Group",
       "groupPlaceholder": "Choose a group",
       "onceButton": "One-off",
@@ -91,7 +93,6 @@
     },
     "uploader": {
       "attachAria": "Attach images",
-      "s3FallbackTitle": "S3 upload failed, using inline data",
       "attachFailedTitle": "Could not attach files"
     },
     "composer": {
@@ -160,6 +161,10 @@
       "deleteDialog": {
         "title": "Delete this group?",
         "description": "<0>{{title}}</0> and all its messages, tasks, and executions will be permanently removed."
+      },
+      "rename": "Rename",
+      "renameDialog": {
+        "title": "Rename group"
       }
     },
     "dateLabels": {
@@ -167,7 +172,6 @@
       "yesterday": "Yesterday"
     },
     "groupChat": {
-      "renameTitle": "Click to rename",
       "errorTitle": "Group encountered an error",
       "memberCount_one": "{{count}} member",
       "memberCount_other": "{{count}} members",
@@ -326,7 +330,8 @@
     },
     "conversationCostList": {
       "title": "Cost by conversation",
-      "empty": "No conversation usage data yet"
+      "empty": "No conversation usage data yet",
+      "deleted": "Deleted group"
     }
   },
   "workforce": {

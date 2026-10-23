@@ -34,8 +34,8 @@
     "deepResearch": "Deep research"
   },
   "messageList": {
-    "greetingTitle": "Hello there!",
-    "greetingSubtitle": "How can I assist you today?",
+    "greetingTitle": "Where to today?",
+    "greetingSubtitle": "Ask anything, research a topic, or hand off a task.",
     "attachmentAlt": "attachment",
     "scrollToBottom": "Scroll to bottom",
     "moreImages": "Show {{count}} more",
@@ -54,7 +54,9 @@
     "mapItinerarySummary": "{{days}}, {{stops}}",
     "toolFailed": "{{tool}} failed",
     "webSearchResultCount_one": "{{count}} result",
-    "webSearchResultCount_other": "{{count}} results"
+    "webSearchResultCount_other": "{{count}} results",
+    "webSearchResultCountFor_one": "{{count}} result for “{{query}}”",
+    "webSearchResultCountFor_other": "{{count}} results for “{{query}}”"
   },
   "toolFailedToast": {
     "title": "Tool failed: {{tool}}"
@@ -214,8 +216,8 @@
     "forward": "Forward",
     "streaming": "Replying…",
     "noModel": "Choose a model",
-    "modelMenu": "Model",
     "noModels": "No models fetched yet",
+    "modelScope": "Only this chat. New chats start with the default model, set in AI Providers.",
     "openProviders": "Open AI Providers",
     "menu": "Chat options",
     "exportMarkdown": "Export as Markdown…",
@@ -271,7 +273,12 @@
       "placeholder": "Search chats…",
       "ariaLabel": "Search chats",
       "recent": "Recent",
-      "noResults": "No chats match “{{query}}”"
+      "noResults": "No chats match “{{query}}”",
+      "hint": {
+        "move": "Move",
+        "open": "Open",
+        "close": "Close"
+      }
     }
   },
   "run": {

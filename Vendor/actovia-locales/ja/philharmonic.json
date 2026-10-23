@@ -59,7 +59,9 @@
       "title": "タスクをスケジュール",
       "description": "既存のグループ内で、1回限りまたは定期スケジュールで実行します。",
       "titleLabel": "タイトル",
+      "titlePlaceholder": "週次の進捗レポート",
       "descriptionLabel": "説明",
+      "descriptionPlaceholder": "チームに何をしてもらいますか?",
       "groupLabel": "グループ",
       "groupPlaceholder": "グループを選択",
       "onceButton": "1回限り",
@@ -91,7 +93,6 @@
     },
     "uploader": {
       "attachAria": "画像を添付",
-      "s3FallbackTitle": "S3へのアップロードに失敗したため、インライン形式で保存します",
       "attachFailedTitle": "ファイルを添付できませんでした"
     },
     "composer": {
@@ -160,6 +161,10 @@
       "deleteDialog": {
         "title": "このグループを削除しますか?",
         "description": "<0>{{title}}</0>とそのすべてのメッセージ、タスク、実行履歴が完全に削除されます。"
+      },
+      "rename": "名前を変更",
+      "renameDialog": {
+        "title": "グループ名を変更"
       }
     },
     "dateLabels": {
@@ -167,7 +172,6 @@
       "yesterday": "昨日"
     },
     "groupChat": {
-      "renameTitle": "クリックして名前を変更",
       "errorTitle": "グループでエラーが発生しました",
       "memberCount_other": "{{count}}人のメンバー",
       "toggleMembersAria": "メンバーの表示切り替え",
@@ -324,7 +328,8 @@
     },
     "conversationCostList": {
       "title": "会話別コスト",
-      "empty": "会話の利用データはまだありません"
+      "empty": "会話の利用データはまだありません",
+      "deleted": "削除されたグループ"
     }
   },
   "workforce": {

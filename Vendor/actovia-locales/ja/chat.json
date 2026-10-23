@@ -34,8 +34,8 @@
     "deepResearch": "ディープリサーチ"
   },
   "messageList": {
-    "greetingTitle": "こんにちは!",
-    "greetingSubtitle": "今日はどのようなご用件ですか?",
+    "greetingTitle": "今日はどこへ行きましょう？",
+    "greetingSubtitle": "質問でも、調べものでも、作業の依頼でもどうぞ。",
     "attachmentAlt": "添付ファイル",
     "scrollToBottom": "最下部へスクロール",
     "moreImages": "さらに{{count}}件を表示",
@@ -51,7 +51,8 @@
     "mapItineraryStopCount_other": "{{count}}件の立ち寄り先",
     "mapItinerarySummary": "{{days}}、{{stops}}",
     "toolFailed": "{{tool}}が失敗しました",
-    "webSearchResultCount_other": "{{count}}件の結果"
+    "webSearchResultCount_other": "{{count}}件の結果",
+    "webSearchResultCountFor_other": "「{{query}}」の結果 {{count}}件"
   },
   "toolFailedToast": {
     "title": "ツールが失敗しました: {{tool}}"
@@ -206,8 +207,8 @@
     "forward": "進む",
     "streaming": "返信中…",
     "noModel": "モデルを選択",
-    "modelMenu": "モデル",
     "noModels": "まだモデルを取得していません",
+    "modelScope": "このチャットのみに適用されます。新しいチャットは AIプロバイダー で設定した既定のモデルで始まります。",
     "openProviders": "AIプロバイダーを開く",
     "menu": "チャットのオプション",
     "exportMarkdown": "Markdownとして書き出す…",
@@ -261,7 +262,12 @@
       "placeholder": "チャットを検索…",
       "ariaLabel": "チャットを検索",
       "recent": "最近",
-      "noResults": "「{{query}}」に一致するチャットはありません"
+      "noResults": "「{{query}}」に一致するチャットはありません",
+      "hint": {
+        "move": "移動",
+        "open": "開く",
+        "close": "閉じる"
+      }
     }
   },
   "run": {

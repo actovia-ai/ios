@@ -34,8 +34,8 @@
     "deepResearch": "심층 조사"
   },
   "messageList": {
-    "greetingTitle": "안녕하세요!",
-    "greetingSubtitle": "무엇을 도와드릴까요?",
+    "greetingTitle": "오늘은 어디로 떠나 볼까요?",
+    "greetingSubtitle": "무엇이든 묻거나, 주제를 조사하거나, 작업을 맡겨 보세요.",
     "attachmentAlt": "첨부 파일",
     "scrollToBottom": "맨 아래로 스크롤",
     "moreImages": "{{count}}개 더 보기",
@@ -51,7 +51,8 @@
     "mapItineraryStopCount_other": "{{count}}개 경유지",
     "mapItinerarySummary": "{{days}}, {{stops}}",
     "toolFailed": "{{tool}} 실패",
-    "webSearchResultCount_other": "결과 {{count}}건"
+    "webSearchResultCount_other": "결과 {{count}}건",
+    "webSearchResultCountFor_other": "\"{{query}}\" 결과 {{count}}건"
   },
   "toolFailedToast": {
     "title": "도구 실패: {{tool}}"
@@ -206,8 +207,8 @@
     "forward": "앞으로",
     "streaming": "답변 중…",
     "noModel": "모델 선택",
-    "modelMenu": "모델",
     "noModels": "아직 가져온 모델이 없습니다",
+    "modelScope": "이 채팅에만 적용됩니다. 새 채팅은 AI 제공업체에서 설정한 기본 모델로 시작합니다.",
     "openProviders": "AI 제공업체 열기",
     "menu": "채팅 옵션",
     "exportMarkdown": "Markdown으로 내보내기…",
@@ -261,7 +262,12 @@
       "placeholder": "채팅 검색…",
       "ariaLabel": "채팅 검색",
       "recent": "최근",
-      "noResults": "“{{query}}”와(과) 일치하는 채팅이 없습니다"
+      "noResults": "“{{query}}”와(과) 일치하는 채팅이 없습니다",
+      "hint": {
+        "move": "이동",
+        "open": "열기",
+        "close": "닫기"
+      }
     }
   },
   "run": {

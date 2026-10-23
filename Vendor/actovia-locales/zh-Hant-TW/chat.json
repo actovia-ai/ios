@@ -34,8 +34,8 @@
     "deepResearch": "深度研究"
   },
   "messageList": {
-    "greetingTitle": "你好！",
-    "greetingSubtitle": "有什麼我可以幫忙的嗎？",
+    "greetingTitle": "今天想去哪裡？",
+    "greetingSubtitle": "提問、研究一個主題，或交辦一項任務。",
     "attachmentAlt": "附件",
     "scrollToBottom": "捲動至底部",
     "moreImages": "顯示其餘 {{count}} 張",
@@ -51,7 +51,8 @@
     "mapItineraryStopCount_other": "{{count}} 個停留點",
     "mapItinerarySummary": "{{days}}，{{stops}}",
     "toolFailed": "{{tool}} 失敗",
-    "webSearchResultCount_other": "{{count}} 筆結果"
+    "webSearchResultCount_other": "{{count}} 筆結果",
+    "webSearchResultCountFor_other": "「{{query}}」的 {{count}} 筆結果"
   },
   "toolFailedToast": {
     "title": "工具失敗：{{tool}}"
@@ -206,8 +207,8 @@
     "forward": "下一頁",
     "streaming": "回覆中…",
     "noModel": "選擇模型",
-    "modelMenu": "模型",
     "noModels": "尚未取得模型",
+    "modelScope": "只套用於這個對話。新對話會使用在 AI 供應商中設定的預設模型。",
     "openProviders": "開啟 AI 供應商",
     "menu": "聊天選項",
     "exportMarkdown": "匯出為 Markdown…",
@@ -261,7 +262,12 @@
       "placeholder": "搜尋聊天…",
       "ariaLabel": "搜尋聊天",
       "recent": "最近",
-      "noResults": "沒有符合「{{query}}」的聊天"
+      "noResults": "沒有符合「{{query}}」的聊天",
+      "hint": {
+        "move": "移動",
+        "open": "開啟",
+        "close": "關閉"
+      }
     }
   },
   "run": {

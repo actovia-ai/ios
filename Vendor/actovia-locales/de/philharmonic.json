@@ -59,7 +59,9 @@
       "title": "Eine Aufgabe planen",
       "description": "Läuft innerhalb einer bestehenden Gruppe, einmalig oder nach einem wiederkehrenden Zeitplan.",
       "titleLabel": "Titel",
+      "titlePlaceholder": "Wöchentlicher Statusbericht",
       "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Was soll das Team tun?",
       "groupLabel": "Gruppe",
       "groupPlaceholder": "Gruppe auswählen",
       "onceButton": "Einmalig",
@@ -91,7 +93,6 @@
     },
     "uploader": {
       "attachAria": "Bilder anhängen",
-      "s3FallbackTitle": "S3-Upload fehlgeschlagen, verwende eingebettete Daten",
       "attachFailedTitle": "Dateien konnten nicht angehängt werden"
     },
     "composer": {
@@ -160,6 +161,10 @@
       "deleteDialog": {
         "title": "Diese Gruppe löschen?",
         "description": "<0>{{title}}</0> sowie alle zugehörigen Nachrichten, Aufgaben und Ausführungen werden endgültig entfernt."
+      },
+      "rename": "Umbenennen",
+      "renameDialog": {
+        "title": "Gruppe umbenennen"
       }
     },
     "dateLabels": {
@@ -167,7 +172,6 @@
       "yesterday": "Gestern"
     },
     "groupChat": {
-      "renameTitle": "Zum Umbenennen klicken",
       "errorTitle": "Bei der Gruppe ist ein Fehler aufgetreten",
       "memberCount_one": "{{count}} Mitglied",
       "memberCount_other": "{{count}} Mitglieder",
@@ -326,7 +330,8 @@
     },
     "conversationCostList": {
       "title": "Kosten nach Unterhaltung",
-      "empty": "Noch keine Unterhaltungsnutzungsdaten"
+      "empty": "Noch keine Unterhaltungsnutzungsdaten",
+      "deleted": "Gelöschte Gruppe"
     }
   },
   "workforce": {

@@ -34,8 +34,8 @@
     "deepResearch": "Pesquisa aprofundada"
   },
   "messageList": {
-    "greetingTitle": "Olá!",
-    "greetingSubtitle": "Como posso ajudar você hoje?",
+    "greetingTitle": "Para onde vamos hoje?",
+    "greetingSubtitle": "Pergunte qualquer coisa, pesquise um tema ou delegue uma tarefa.",
     "attachmentAlt": "anexo",
     "scrollToBottom": "Rolar até o final",
     "moreImages": "Mostrar mais {{count}}",
@@ -54,7 +54,9 @@
     "mapItinerarySummary": "{{days}}, {{stops}}",
     "toolFailed": "{{tool}} falhou",
     "webSearchResultCount_one": "{{count}} resultado",
-    "webSearchResultCount_other": "{{count}} resultados"
+    "webSearchResultCount_other": "{{count}} resultados",
+    "webSearchResultCountFor_one": "{{count}} resultado para “{{query}}”",
+    "webSearchResultCountFor_other": "{{count}} resultados para “{{query}}”"
   },
   "toolFailedToast": {
     "title": "Falha na ferramenta: {{tool}}"
@@ -214,8 +216,8 @@
     "forward": "Avançar",
     "streaming": "Respondendo…",
     "noModel": "Escolher um modelo",
-    "modelMenu": "Modelo",
     "noModels": "Nenhum modelo obtido ainda",
+    "modelScope": "Só esta conversa. Novas conversas começam com o modelo padrão, definido em Provedores de IA.",
     "openProviders": "Abrir provedores de IA",
     "menu": "Opções do chat",
     "exportMarkdown": "Exportar como Markdown…",
@@ -271,7 +273,12 @@
       "placeholder": "Pesquisar chats…",
       "ariaLabel": "Pesquisar chats",
       "recent": "Recentes",
-      "noResults": "Nenhum chat corresponde a “{{query}}”"
+      "noResults": "Nenhum chat corresponde a “{{query}}”",
+      "hint": {
+        "move": "Mover",
+        "open": "Abrir",
+        "close": "Fechar"
+      }
     }
   },
   "run": {

@@ -59,7 +59,9 @@
       "title": "Planifier une tâche",
       "description": "S'exécute dans un groupe existant, une fois ou selon une planification récurrente.",
       "titleLabel": "Titre",
+      "titlePlaceholder": "Point hebdomadaire",
       "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Que doit faire l’équipe ?",
       "groupLabel": "Groupe",
       "groupPlaceholder": "Choisir un groupe",
       "onceButton": "Ponctuelle",
@@ -91,7 +93,6 @@
     },
     "uploader": {
       "attachAria": "Joindre des images",
-      "s3FallbackTitle": "Échec du téléversement S3, utilisation de données intégrées",
       "attachFailedTitle": "Impossible de joindre les fichiers"
     },
     "composer": {
@@ -160,6 +161,10 @@
       "deleteDialog": {
         "title": "Supprimer ce groupe ?",
         "description": "<0>{{title}}</0> ainsi que tous ses messages, tâches et exécutions seront définitivement supprimés."
+      },
+      "rename": "Renommer",
+      "renameDialog": {
+        "title": "Renommer le groupe"
       }
     },
     "dateLabels": {
@@ -167,7 +172,6 @@
       "yesterday": "Hier"
     },
     "groupChat": {
-      "renameTitle": "Cliquez pour renommer",
       "errorTitle": "Le groupe a rencontré une erreur",
       "memberCount_one": "{{count}} membre",
       "memberCount_other": "{{count}} membres",
@@ -326,7 +330,8 @@
     },
     "conversationCostList": {
       "title": "Coût par conversation",
-      "empty": "Aucune donnée d'utilisation par conversation pour le moment"
+      "empty": "Aucune donnée d'utilisation par conversation pour le moment",
+      "deleted": "Groupe supprimé"
     }
   },
   "workforce": {
