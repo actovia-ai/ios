@@ -7,6 +7,17 @@ import SwiftUI
 /// the list reads as one column of titles, like the ChatGPT app's sidebar.
 private let sidebarRowInsets = EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
 
+extension EnvironmentValues {
+    /// The sidebar stands docked beside the content (a wide screen) rather than sliding over it: it then takes a
+    /// surface a step off the page's, as Claude's does on the Duo (owner, 2026-10-23), so the two read as two panes.
+    @Entry public var sidebarIsDocked = false
+}
+
+/// The docked sidebar's surface: a little darker than the page in light, a little lighter in dark.
+private let dockedSidebarSurface = Color(uiColor: UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor(white: 0.085, alpha: 1) : UIColor(white: 0.955, alpha: 1)
+})
+
 /// One selectable sidebar row — a Recents chat or a search result.
 ///
 /// The padding is part of the row's own hit area and the list row itself gets no insets, so the
@@ -125,6 +136,9 @@ public struct ChatSidebarView<Workspaces: View>: View {
         self.workspaces = workspaces()
     }
 
+    @Environment(\.sidebarIsDocked) private var isDocked
+    private var dockedSurface: Color { dockedSidebarSurface }
+
     public var body: some View {
         NavigationStack {
             List {
@@ -159,6 +173,8 @@ public struct ChatSidebarView<Workspaces: View>: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(isDocked ? .hidden : .automatic)
+            .background { if isDocked { dockedSurface.ignoresSafeArea() } }
             // The insets alone do not shrink a row below the list's own minimum, which is what held
             // the rows at 52 pt. 44 pt is the touch-target floor, never less.
             .environment(\.defaultMinListRowHeight, 44)

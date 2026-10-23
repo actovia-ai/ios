@@ -62,6 +62,7 @@ struct AppShell: View {
                 HStack(spacing: 0) {
                     if isDockedSidebarShown {
                         sidebar
+                            .environment(\.sidebarIsDocked, true)
                             .frame(width: ReadingColumn.sidebarWidth)
                             .transition(.move(edge: .leading).combined(with: .opacity))
                         Divider().ignoresSafeArea()
@@ -179,7 +180,9 @@ struct AppShell: View {
                     }
                 }
         }
-        .horizontalBars()
+        // Docked, the bar stands beside the camera as Claude's does on the Duo (owner, 2026-10-23): the transcript is
+        // a centred column there and loses nothing to it. On a phone the bars stay on top.
+        .horizontalBars(!isDocked)
     }
 
     @ViewBuilder
@@ -318,9 +321,10 @@ extension View {
     /// them into a vertical bar beside the camera (an iPhone Duo). A chat's two bar buttons don't fill that bar, and
     /// the transcript and the composer gave up its whole width for them; with horizontal bars they run edge to edge.
     /// Applied once per presentation: the shell, and sheets that bring their own bars.
+    /// `enabled` false leaves the system's choice — the vertical bar — as the docked layout wants.
     @ViewBuilder
-    func horizontalBars() -> some View {
-        if #available(iOS 27.1, *) {
+    func horizontalBars(_ enabled: Bool = true) -> some View {
+        if #available(iOS 27.1, *), enabled {
             toolbarVerticalBehavior(.disabled)
         } else {
             self

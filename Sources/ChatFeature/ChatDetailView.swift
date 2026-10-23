@@ -34,6 +34,8 @@ public struct ChatDetailView: View {
     @State private var recordingDiscardedAt: Date?
     /// The end of the transcript is in view (`TranscriptEnd`): a streaming reply is followed only then.
     @State private var isAtEnd = true
+    /// The reader has touched the transcript since it opened: `settleAtEnd` leaves where they scrolled to alone.
+    @State private var hasTouchedTranscript = false
     /// The older pages whose arrival the transcript has already answered: a page put in above is not a new message,
     /// and must not scroll the reader to the end.
     @State private var handledOlderPages = 0
@@ -119,6 +121,9 @@ public struct ChatDetailView: View {
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
             .scrollDismissesKeyboard(.interactively)
+            .onScrollPhaseChange { _, phase in
+                if phase == .interacting { hasTouchedTranscript = true }
+            }
             // What scrolls under the composer fades out, as under the title bar. Set, not left to the default: the
             // default left the bottom edge bare, and a reply showed sharp below the bar and doubled in its glass.
             .scrollEdgeEffectStyle(.soft, for: .bottom)
@@ -140,6 +145,7 @@ public struct ChatDetailView: View {
                     return
                 }
                 scrollToBottom(proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
+                if old == 0 { settleAtEnd(proxy) }
             }
             // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
             // the reader has scrolled up — the button over the composer brings them back.
@@ -193,6 +199,9 @@ public struct ChatDetailView: View {
         }
         .navigationTitle(viewModel.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
+        // Kept as the screen's name (VoiceOver, the app switcher) but not drawn: the transcript runs up under the
+        // bar's buttons, as in Claude's app (owner, 2026-10-23). The chat's name is in the sidebar.
+        .toolbar(removing: .title)
         .task {
             // First: a turn reads the session's choices when it starts, and one may start right below.
             viewModel.composerTools = composerTools
@@ -505,6 +514,21 @@ public struct ChatDetailView: View {
                 scrollToBottom(proxy, animated: false)
             } else if let first {
                 proxy.scrollTo(first, anchor: .top)
+            }
+        }
+    }
+
+    /// A chat that opens lands at its end only once its rows have their real heights: the lazy rows above the end
+    /// are first placed at an estimate, and a chart's or an artifact's web view takes its height a second or two
+    /// later — on a wide screen (an unfolded Duo) that left the transcript short of its end, the button over the
+    /// composer. Followed for two seconds, or until the reader touches the transcript.
+    private func settleAtEnd(_ proxy: ScrollViewProxy) {
+        hasTouchedTranscript = false
+        Task {
+            for delay in [0.15, 0.35, 0.5, 1.0] {
+                try? await Task.sleep(for: .seconds(delay))
+                guard !hasTouchedTranscript else { return }
+                scrollToBottom(proxy, animated: false)
             }
         }
     }
