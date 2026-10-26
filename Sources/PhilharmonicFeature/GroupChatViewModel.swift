@@ -73,9 +73,22 @@ public final class GroupChatViewModel {
         listening = nil
     }
 
-    /// Back in the foreground: the connection may have died while the app slept.
+    /// Back in the foreground: the connection may have died while the app slept. The group is read at once rather
+    /// than when the new connection's first byte arrives; a stream that gave up as locked starts again.
     public func resume() async {
-        await stream.reconnectNow()
+        switch notice {
+        case .gone:
+            return
+        case .locked:
+            notice = nil
+            await start()
+        default:
+            guard listening != nil else { return }
+            await stream.reconnectNow()
+            live = []
+            liveCards = [:]
+            await readWhole()
+        }
     }
 
     // MARK: Acting
@@ -91,10 +104,11 @@ public final class GroupChatViewModel {
         do {
             let row = try await api.send(conversationId: conversationId, content: text, attachments: attachments)
             history = GroupHistory.append(history, [row])
+            if case .error = notice { notice = nil }
             rebuild()
             return true
         } catch {
-            report(error)
+            await reportChecking(error)
             return false
         }
     }
@@ -106,7 +120,7 @@ public final class GroupChatViewModel {
     }
 
     public func interrupt() async {
-        do { _ = try await api.interrupt(conversationId: conversationId) } catch { report(error) }
+        do { _ = try await api.interrupt(conversationId: conversationId) } catch { await reportChecking(error) }
     }
 
     /// Answers the PM's question.
@@ -143,9 +157,13 @@ public final class GroupChatViewModel {
     private func handle(_ update: GroupStreamUpdate) async {
         switch update {
         case .connected:
-            // What was being written while away is not replayed; the saved rows say how it ended.
+            // What was being written while away is not replayed; the saved rows say how it ended. Nor is a round's
+            // end: the server re-sends `pm_started` and a waiting `ask_user` on connect, so start from neither.
             live = []
             liveCards = [:]
+            pmRunning = false
+            askUser = nil
+            busy = BusyAgents()
             await readWhole()
         case .event(let event):
             await apply(event)
@@ -164,6 +182,8 @@ public final class GroupChatViewModel {
         busy.apply(event)
         switch event {
         case .messageStart(_, let messageId, let role, let agentId):
+            // A new message means the question was answered (perhaps on the computer), as the desktop reads it.
+            askUser = nil
             if !live.contains(where: { $0.messageId == messageId }) {
                 live.append(LiveBubble(messageId: messageId, role: role, agentId: agentId))
             }
@@ -224,7 +244,7 @@ public final class GroupChatViewModel {
             // Rows an earlier read held that this one missed (saved while it was on its way) stay.
             let freshIds = Set(fresh.map(\.id))
             history = fresh + history.filter { !freshIds.contains($0.id) }
-            if notice == .locked { notice = nil }
+            notice = nil
         } catch let error as HTTPError where error.statusCode == 404 {
             gone()
             return
@@ -261,6 +281,16 @@ public final class GroupChatViewModel {
 
     private func report(_ error: Error) {
         if let error = error as? HTTPError, error.statusCode == 404 { return gone() }
+        notice = .error(error.localizedDescription)
+    }
+
+    /// A write to a group deleted on the computer fails as a server error, not a 404, and a healthy stream never
+    /// says the group went: the list of groups tells.
+    private func reportChecking(_ error: Error) async {
+        if let error = error as? HTTPError, error.statusCode == 404 { return gone() }
+        if let groups = try? await api.conversations(), !groups.contains(where: { $0.id == conversationId }) {
+            return gone()
+        }
         notice = .error(error.localizedDescription)
     }
 }

@@ -69,6 +69,7 @@ private final class Wire: Sendable {
 
     func send(_ items: Item...) { open.withLock { list in items.forEach { list.last?.yield($0) } } }
     func drop() { open.withLock { $0.last?.finish() } }
+    func fail(_ error: Error) { open.withLock { $0.last?.finish(throwing: error) } }
 }
 
 private final class Flag: Sendable {
@@ -315,6 +316,95 @@ struct GroupChatViewModelTests {
         await eventually { vm.bubbles.count == 2 }
         #expect(vm.bubbles.map(\.id) == ["m1", "m2"])
         #expect(!vm.pmRunning)
+        #expect(vm.notice == nil)
+        vm.stop()
+    }
+
+    // MARK: Final review fixes
+
+    @Test("a reconnect forgets the round state it held: the server re-sends what is still true")
+    func reconnectClearsStaleRoundState() async {
+        let vm = makeVM(Body.oneRow)
+        await started(vm)
+        wire.send(
+            .event(.pmStarted(conversationId: "c1")),
+            .event(.askUser(conversationId: "c1", question: "Which?", options: ["A"])))
+        await eventually { vm.askUser != nil }
+        // The round ended while the app was away: no pm_ended reaches the phone.
+        wire.drop()
+        await eventually { wire.connects.withLock { $0 } == 2 }
+        wire.send(.opened)
+        await eventually { requests("/plan") == 3 }
+        #expect(!vm.pmRunning)
+        #expect(vm.askUser == nil)
+        #expect(vm.busy.label(for: BusyAgents.pm) == nil)
+        vm.stop()
+    }
+
+    @Test("a new message closes the PM's question, as on the desktop (answered there)")
+    func messageStartClearsQuestion() async {
+        let vm = makeVM(Body.oneRow)
+        await started(vm)
+        wire.send(.event(.askUser(conversationId: "c1", question: "Which?", options: ["A"])))
+        await eventually { vm.askUser != nil }
+        wire.send(.event(.messageStart(conversationId: "c1", messageId: "m2", role: .user, agentId: nil)))
+        await eventually { vm.askUser == nil }
+        #expect(vm.askUser == nil)
+        vm.stop()
+    }
+
+    @Test("back in the foreground the group is read whole at once, not at the stream's first byte")
+    func resumeReadsWholeAtOnce() async {
+        let vm = makeVM(Body.oneRow)
+        await started(vm)
+        #expect(requests("/messages") == 2)
+        await vm.resume()
+        await eventually { requests("/messages") == 3 }
+        #expect(requests("/messages") == 3)
+        vm.stop()
+    }
+
+    @Test("an error notice goes once a read succeeds")
+    func errorNoticeClearsOnSuccessfulRead() async {
+        let failing = Flag()
+        failing.isOn = true
+        let vm = makeVM { _, path, _ in
+            if failing.isOn { return (500, #"{"error":{"code":"X","message":"no"}}"#) }
+            return Body.oneRow("GET", path, nil)
+        }
+        await vm.start()
+        await eventually { vm.notice != nil }
+        #expect(vm.notice != nil)
+        failing.isOn = false
+        wire.send(.opened)
+        await eventually { vm.notice == nil }
+        #expect(vm.notice == nil)
+        vm.stop()
+    }
+
+    @Test("a send that fails because the group was deleted says the group is gone")
+    func failedSendToDeletedGroupIsGone() async {
+        let vm = makeVM { method, path, _ in
+            if method == "POST" { return (500, #"{"error":{"code":"DB","message":"foreign key"}}"#) }
+            if path.hasSuffix("/conversations") { return (200, "[]") }
+            return (200, "[]")
+        }
+        let sent = await vm.send(text: "hi", pictures: [])
+        #expect(!sent)
+        #expect(vm.notice == .gone)
+    }
+
+    @Test("locked, then back in the foreground: the group tries again")
+    func lockedResumeStartsAgain() async {
+        let vm = makeVM(Body.oneRow)
+        await started(vm)
+        wire.fail(HTTPError(statusCode: 423, code: "APP_LOCKED", message: "Locked"))
+        await eventually { vm.notice == .locked }
+        #expect(vm.notice == .locked)
+        await vm.resume()
+        await eventually { wire.connects.withLock { $0 } == 2 }
+        #expect(wire.connects.withLock { $0 } == 2)
+        await eventually { vm.notice == nil }
         #expect(vm.notice == nil)
         vm.stop()
     }
