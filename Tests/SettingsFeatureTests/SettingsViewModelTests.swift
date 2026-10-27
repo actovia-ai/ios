@@ -300,9 +300,8 @@ struct SettingsViewModelTests {
         #expect(snapshot["contextWindow"] as? Double == 200_000)
         #expect(snapshot["maxOutputTokens"] as? Double == 64_000)
         #expect(snapshot["reasoningLevels"] as? [String] == ["low", "high"])
-        let cost = try #require(snapshot["cost"] as? [String: Any])
-        #expect(cost["input"] as? Double == 3)
-        #expect(cost["output"] as? Double == 15)
+        // An older desktop's price is read past and not written back.
+        #expect(snapshot["cost"] == nil)
     }
 
     @Test("save() sends the snapshot of the catalog entry the user picked, not the stale loaded one")

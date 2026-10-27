@@ -68,7 +68,6 @@ struct SettingsTests {
         #expect(snapshot.reasoningLevels == [])
         #expect(snapshot.contextWindow == nil)
         #expect(snapshot.maxOutputTokens == nil)
-        #expect(snapshot.cost == nil)
     }
 
     @Test("a snapshot whose every field is null decodes to the defaults")
@@ -80,23 +79,31 @@ struct SettingsTests {
 
     @Test("a snapshot with only some keys keeps those values and defaults the rest")
     func partialModelSnapshotKeepsWhatIsThere() throws {
-        let json = #"{"contextWindow":200000,"cost":{"input":3,"output":15}}"#
+        let json = #"{"contextWindow":200000}"#
         let snapshot = try JSONDecoder().decode(ModelSnapshot.self, from: Data(json.utf8))
         #expect(snapshot.contextWindow == 200000)
-        #expect(snapshot.cost == ModelCost(input: 3, output: 15))
         #expect(snapshot.maxOutputTokens == nil)
         #expect(snapshot.reasoningLevels == [])
     }
 
-    @Test("a full snapshot round-trips through encode and decode unchanged, with all four keys on the wire")
+    @Test("a full snapshot round-trips through encode and decode unchanged, with all three keys on the wire")
     func fullModelSnapshotRoundTrips() throws {
-        let original = ModelSnapshot(
-            contextWindow: 200000, maxOutputTokens: 8192, reasoningLevels: ["off", "low", "high"],
-            cost: ModelCost(input: 3, output: 15))
+        let original = ModelSnapshot(contextWindow: 200000, maxOutputTokens: 8192, reasoningLevels: ["off", "low", "high"])
         let data = try JSONEncoder().encode(original)
         let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
-        #expect(Set(object.keys) == ["contextWindow", "maxOutputTokens", "reasoningLevels", "cost"])
+        #expect(Set(object.keys) == ["contextWindow", "maxOutputTokens", "reasoningLevels"])
         #expect(try JSONDecoder().decode(ModelSnapshot.self, from: data) == original)
+    }
+
+    @Test("a snapshot an older desktop wrote with a cost decodes, and encoding writes no cost back")
+    func snapshotCostIsDropped() throws {
+        let json = #"{"contextWindow":200000,"maxOutputTokens":8192,"reasoningLevels":["low"],"cost":{"input":3,"output":15}}"#
+        let snapshot = try JSONDecoder().decode(ModelSnapshot.self, from: Data(json.utf8))
+        #expect(snapshot.contextWindow == 200000)
+        #expect(snapshot.reasoningLevels == ["low"])
+        let data = try JSONEncoder().encode(snapshot)
+        let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(Set(object.keys) == ["contextWindow", "maxOutputTokens", "reasoningLevels"])
     }
 
     @Test("a default snapshot still encodes reasoningLevels as an empty array and round-trips")

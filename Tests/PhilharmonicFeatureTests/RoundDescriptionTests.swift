@@ -55,7 +55,7 @@ struct RoundDescriptionTests {
                     tool: "createPlan", args: ["steps": .array([.object(["title": .string("x")])])],
                     result: "Plan created", isError: true, refused: false),
                 .call(tool: "askUser", args: ["question": .string("?")], result: "yes", isError: false, refused: false),
-                .usage(inputTokens: 10, outputTokens: 5, costUsd: 0.01),
+                .usage(inputTokens: 10, outputTokens: 5),
                 .error(message: "boom", aborted: false),
             ])
     }
@@ -71,7 +71,15 @@ struct RoundDescriptionTests {
                         "cacheWriteTokens": .number(100), "costUsd": .number(0.1),
                     ])
             ], bubbleText: "")
-        #expect(lines == [.usage(inputTokens: 32612, outputTokens: 3727, costUsd: 0.1)])
+        #expect(lines == [.usage(inputTokens: 32612, outputTokens: 3727)])
+    }
+
+    @Test("a usage event an older desktop sent with costUsd is tokens only")
+    func usageIgnoresCost() {
+        let lines = RoundDescription.lines(
+            [ev("usage", ["inputTokens": .number(100), "outputTokens": .number(20), "costUsd": .number(0.12)])],
+            bubbleText: "")
+        #expect(lines == [.usage(inputTokens: 100, outputTokens: 20)])
     }
 
     @Test("a call without a result has result nil")

@@ -20,7 +20,7 @@ public enum RoundLine: Sendable, Equatable {
     case thinking(String)
     case text(String)
     case call(tool: String, args: [String: JSONValue], result: String?, isError: Bool, refused: Bool)
-    case usage(inputTokens: Int, outputTokens: Int, costUsd: Double)
+    case usage(inputTokens: Int, outputTokens: Int)
     case error(message: String, aborted: Bool)
 
     /// A call the coordinator turned away.
@@ -74,7 +74,7 @@ public enum RoundDescription {
                     .usage(
                         inputTokens: number(p["inputTokens"]) + number(p["cacheReadTokens"])
                             + number(p["cacheWriteTokens"]),
-                        outputTokens: number(p["outputTokens"]), costUsd: double(p["costUsd"])))
+                        outputTokens: number(p["outputTokens"])))
             case "error":
                 lines.append(.error(message: string(p["message"]), aborted: p["aborted"] == .bool(true)))
             default:

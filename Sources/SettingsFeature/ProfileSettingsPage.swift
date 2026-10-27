@@ -3,8 +3,8 @@ import Models
 import SwiftUI
 
 /// Settings → Profile: the desktop's `profile.tsx`, read-only and sized for a phone — the four stat tiles, token
-/// activity over the last 30 days (the desktop's 52-week heatmap does not fit), activity insights with the total
-/// cost, and the top models with their cost.
+/// activity over the last 30 days (the desktop's 52-week heatmap does not fit), activity insights, and the top models
+/// by tokens. No money anywhere: the desktop sends none.
 struct ProfileSettingsPage: View {
     @Bindable var viewModel: ProfileViewModel
 
@@ -103,15 +103,7 @@ struct ProfileSettingsPage: View {
                 .padding(.vertical, 4)
         } header: {
             Text("settings:profile.activity.heading")
-        } footer: {
-            Text(verbatim: Self.windowFooter(cost: UsageFormat.cost(stats.windowCost)))
         }
-    }
-
-    private static func windowFooter(cost: String) -> String {
-        String(
-            localized: "ios:settings.profile.windowFooter", defaultValue: "Last 30 days · \(cost) spent",
-            comment: "Footer under the token activity chart. %@ is the cost of those 30 days, in US dollars.")
     }
 
     private func insightsSection(_ usage: UsageSummary) -> some View {
@@ -121,7 +113,6 @@ struct ProfileSettingsPage: View {
             InsightRow(
                 label: Text("settings:profile.insights.modelRequests"),
                 value: UsageFormat.tokens(Double(usage.totalRequests)))
-            InsightRow(label: Text("ios:settings.profile.totalCost"), value: UsageFormat.cost(usage.totalCost))
             InsightRow(
                 label: Text("settings:profile.insights.installedSkills"), value: viewModel.skills.map { String($0.count) })
             InsightRow(
@@ -145,11 +136,7 @@ struct ProfileSettingsPage: View {
                         }
                     }
                     Spacer(minLength: 8)
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(verbatim: UsageFormat.tokens(model.tokens)).monospacedDigit()
-                        Text(verbatim: UsageFormat.cost(model.cost)).font(.footnote).monospacedDigit()
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(verbatim: UsageFormat.tokens(model.tokens)).monospacedDigit()
                 }
                 .accessibilityElement(children: .combine)
             }

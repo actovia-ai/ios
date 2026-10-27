@@ -133,17 +133,17 @@ private final class GalleryURLProtocol: URLProtocol, @unchecked Sendable {
                 let date = calendar.date(byAdding: .day, value: offset - pattern.count + 1, to: today)
             else { return nil }
             let date10 = UsageStats.dayString(date, calendar: calendar)
-            return #"{"date":"\#(date10)","cost":\#(tokens / 250_000),"tokens":\#(tokens)}"#
+            return #"{"date":"\#(date10)","tokens":\#(tokens)}"#
         }
         return #"""
-            {"totalCost":58.73,"totalTokens":48250000,"totalRequests":3184,"daily":[\#(days.joined(separator: ","))],
+            {"totalTokens":48250000,"totalRequests":3184,"daily":[\#(days.joined(separator: ","))],
              "models":[
-              {"model":"claude-sonnet-5","provider":"anthropic","cost":31.2,"inputTokens":21000000,"outputTokens":3100000,"cacheReadTokens":9000000,"requests":1402},
-              {"model":"gpt-5.6","provider":"openai","cost":14.05,"inputTokens":9800000,"outputTokens":1400000,"cacheReadTokens":0,"requests":803},
-              {"model":"gemini-3-pro","provider":"google","cost":8.9,"inputTokens":6100000,"outputTokens":900000,"cacheReadTokens":0,"requests":512},
-              {"model":"grok-5","provider":"xai","cost":3.1,"inputTokens":2400000,"outputTokens":350000,"cacheReadTokens":0,"requests":270},
-              {"model":"qwen3:32b","provider":"ollama","cost":0,"inputTokens":1800000,"outputTokens":400000,"cacheReadTokens":0,"requests":150},
-              {"model":"claude-haiku-5","provider":"anthropic","cost":0.0042,"inputTokens":9000,"outputTokens":1000,"cacheReadTokens":0,"requests":47}]}
+              {"model":"claude-sonnet-5","provider":"anthropic","inputTokens":21000000,"outputTokens":3100000,"cacheReadTokens":9000000,"requests":1402},
+              {"model":"gpt-5.6","provider":"openai","inputTokens":9800000,"outputTokens":1400000,"cacheReadTokens":0,"requests":803},
+              {"model":"gemini-3-pro","provider":"google","inputTokens":6100000,"outputTokens":900000,"cacheReadTokens":0,"requests":512},
+              {"model":"grok-5","provider":"xai","inputTokens":2400000,"outputTokens":350000,"cacheReadTokens":0,"requests":270},
+              {"model":"qwen3:32b","provider":"ollama","inputTokens":1800000,"outputTokens":400000,"cacheReadTokens":0,"requests":150},
+              {"model":"claude-haiku-5","provider":"anthropic","inputTokens":9000,"outputTokens":1000,"cacheReadTokens":0,"requests":47}]}
             """#
     }
 
@@ -209,7 +209,7 @@ private final class GalleryURLProtocol: URLProtocol, @unchecked Sendable {
             }
         case ("GET", "/api/v1/usage"):
             if failing { return (500, failure) }
-            return (200, empty ? #"{"totalCost":0,"totalTokens":0,"totalRequests":0,"daily":[],"models":[]}"# : usageJSON)
+            return (200, empty ? #"{"totalTokens":0,"totalRequests":0,"daily":[],"models":[]}"# : usageJSON)
         case ("GET", "/api/v1/history"):
             return (200, "[" + Array(repeating: #"{"id":"c"}"#, count: empty ? 0 : 42).joined(separator: ",") + "]")
         case ("GET", "/api/v1/skills/installed"):

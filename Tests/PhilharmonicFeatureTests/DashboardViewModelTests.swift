@@ -32,9 +32,6 @@ final class DashboardMockURLProtocol: URLProtocol, @unchecked Sendable {
 }
 
 private enum Body {
-    static let costs =
-        #"{"totalCost":1.5,"totalTokens":1200,"byConversation":[{"conversationId":"c1","cost":1.5,"tokens":1200}],"byAgent":[{"agentId":"a1","cost":1.0,"tokens":800},{"agentId":"a2","cost":0.5,"tokens":400}],"daily":[]}"#
-
     static func task(_ id: String, cron: String? = nil, runAt: String? = nil) -> String {
         let cronValue = cron.map { "\"\($0)\"" } ?? "null"
         let runAtValue = runAt.map { "\"\($0)\"" } ?? "null"
@@ -51,7 +48,6 @@ struct DashboardViewModelTests {
                 if method == "PATCH" {
                     return cancelFails ? (500, #"{"error":{"code":"X","message":"no"}}"#) : (200, Body.task("k1"))
                 }
-                if path.hasSuffix("/costs") { return (200, Body.costs) }
                 if path.hasSuffix("/tasks/upcoming") { return (200, "[\(Body.task("k1", runAt: "2026-10-24T09:00:00.000Z"))]") }
                 if path.hasSuffix("/tasks/recurring") { return (200, "[\(Body.task("k2", cron: "0 3 * * *"))]") }
                 if path.hasSuffix("/agents") { return (200, "[]") }
@@ -67,14 +63,14 @@ struct DashboardViewModelTests {
         return DashboardViewModel(api: api)
     }
 
-    @Test func costsAreThirtyDays() async {
+    /// The desktop no longer serves `/costs` (404 here, as every unknown path): the schedule loads on its own.
+    @Test func loadsTheScheduleWithoutCosts() async {
         let vm = makeVM()
         await vm.load()
-        let query = DashboardMockURLProtocol.seen.withLock { $0.first { $0.path.hasSuffix("/costs") }?.query }
-        #expect(query == "days=30")
-        #expect(vm.costs?.totalCost == 1.5)
         #expect(vm.upcoming.map(\.id) == ["k1"])
         #expect(vm.recurring.map(\.id) == ["k2"])
+        #expect(vm.errorMessage == nil)
+        #expect(!DashboardMockURLProtocol.seen.withLock { $0.contains { $0.path.hasSuffix("/costs") } })
     }
 
     @Test func cancelRemovesTheTask() async throws {

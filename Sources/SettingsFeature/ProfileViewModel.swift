@@ -85,14 +85,11 @@ public struct UsageStats: Equatable, Sendable {
     /// Running total over the same window, starting from zero as the desktop's does over its window.
     public let cumulative: [Point]
     public let topModels: [UsageSummary.ModelUsage]
-    /// Cost of the days in the window.
-    public let windowCost: Double
 
     public init(usage: UsageSummary, today: Date, calendar: Calendar) {
         var byDay: [String: UsageSummary.Day] = [:]
         for day in usage.daily {
             byDay[day.date, default: UsageSummary.Day(date: day.date, tokens: 0)].tokens += day.tokens
-            byDay[day.date]?.cost += day.cost
         }
         peakDay = byDay.values.map(\.tokens).max().map { max(0, $0) } ?? 0
 
@@ -104,20 +101,18 @@ public struct UsageStats: Equatable, Sendable {
         var daily: [Point] = []
         var cumulative: [Point] = []
         var running = 0.0
-        var cost = 0.0
         for offset in stride(from: Self.windowDays - 1, through: 0, by: -1) {
             guard let date = calendar.date(byAdding: .day, value: -offset, to: start) else { continue }
             let day = byDay[Self.dayString(date, calendar: calendar)]
             let tokens = day?.tokens ?? 0
             running += tokens
-            cost += day?.cost ?? 0
             daily.append(Point(date: date, tokens: tokens))
             cumulative.append(Point(date: date, tokens: running))
         }
         self.daily = daily
         self.cumulative = cumulative
-        windowCost = cost
-        topModels = Array(usage.models.prefix(Self.topModelCount))
+        // By tokens, as the desktop now sends them; an older desktop sent them by cost.
+        topModels = Array(usage.models.sorted { $0.tokens > $1.tokens }.prefix(Self.topModelCount))
     }
 
     /// The desktop's `computeStreaks`: the longest run of consecutive active days, and the latest run when it
@@ -166,14 +161,6 @@ public enum UsageFormat {
     /// The whole count, grouped for the locale: VoiceOver reads `12,345` as a number, where `12K` reads as letters.
     public static func spokenTokens(_ value: Double, locale: Locale = .current) -> String {
         value.formatted(.number.precision(.fractionLength(0)).locale(locale))
-    }
-
-    /// US dollars; a sub-dollar amount keeps two significant digits so a cheap month does not read as $0.00.
-    public static func cost(_ value: Double, locale: Locale = .current) -> String {
-        if value > 0 && value < 1 {
-            return value.formatted(.currency(code: "USD").precision(.significantDigits(1...2)).locale(locale))
-        }
-        return value.formatted(.currency(code: "USD").precision(.fractionLength(2)).locale(locale))
     }
 
     /// `3d`: the desktop's streak label, localized.

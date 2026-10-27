@@ -453,7 +453,7 @@ public final class SettingsViewModel {
     }
 
     /// `POST /api/v1/settings` replaces `providerConfig` wholesale and the desktop feeds
-    /// `providerConfig.modelSnapshot` (context window, max output, reasoning levels, cost) to
+    /// `providerConfig.modelSnapshot` (context window, max output, reasoning levels) to
     /// its model resolver, so never send `nil` for a model the desktop already knows: prefer
     /// the picked catalog entry; else keep the loaded snapshot only if provider AND model are
     /// unchanged (a snapshot for a different model would be wrong data); else none.

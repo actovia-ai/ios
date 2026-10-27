@@ -116,15 +116,6 @@ struct PhilharmonicAPITests {
         }
     }
 
-    @Test("the dashboard's costs are the last thirty days")
-    func costsAskForThirtyDays() async throws {
-        let api = makeAPI(body: #"{"totalCost":0,"totalTokens":0,"byConversation":[],"byAgent":[],"daily":[]}"#)
-        _ = try await api.costs(days: 30)
-        let url = try #require(last?.url)
-        #expect(url.path == "/api/v1/philharmonic/costs")
-        #expect(url.query == "days=30")
-    }
-
     @Test("interrupt says whether a round was running")
     func interruptReportsWasRunning() async throws {
         let api = makeAPI(body: #"{"success":true,"wasRunning":true}"#)

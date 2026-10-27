@@ -14,11 +14,30 @@ struct UsageSkillsBackupTests {
             """#
         let usage = try JSONDecoder().decode(UsageSummary.self, from: Data(json.utf8))
         #expect(usage.totalRequests == 4)
-        #expect(usage.daily == [.init(date: "2026-09-24", cost: 1.25, tokens: 3000), .init(date: "2026-09-23", tokens: 0)])
+        #expect(usage.daily == [.init(date: "2026-09-24", tokens: 3000), .init(date: "2026-09-23", tokens: 0)])
         #expect(usage.models[0].tokens == 3000)
         #expect(usage.models[1].model == "unknown")
         #expect(!usage.isEmpty)
         #expect(try JSONDecoder().decode(UsageSummary.self, from: Data("{}".utf8)).isEmpty)
+    }
+
+    @Test("an older desktop's cost figures are read past: the tokens decode and no cost is kept")
+    func olderDesktopCostIsIgnored() throws {
+        let json = #"""
+            {"totalCost":58.73,"totalTokens":48250000,"totalRequests":3184,
+             "daily":[{"date":"2026-10-26","cost":2.5,"tokens":120000}],
+             "models":[{"model":"claude-sonnet-5","provider":"anthropic","cost":31.2,"inputTokens":21000000,
+               "outputTokens":3100000,"cacheReadTokens":9000000,"requests":1402}]}
+            """#
+        let usage = try JSONDecoder().decode(UsageSummary.self, from: Data(json.utf8))
+        #expect(usage.totalTokens == 48_250_000)
+        #expect(usage.totalRequests == 3184)
+        #expect(usage.daily.map(\.tokens) == [120_000])
+        #expect(usage.models.first?.tokens == 24_100_000)
+        let labels = { (value: Any) in Mirror(reflecting: value).children.compactMap(\.label) }
+        #expect(!labels(usage).contains { $0.lowercased().contains("cost") })
+        #expect(!labels(usage.daily[0]).contains { $0.lowercased().contains("cost") })
+        #expect(!labels(usage.models[0]).contains { $0.lowercased().contains("cost") })
     }
 
     @Test("an installed skill decodes; one without a source is legacy")

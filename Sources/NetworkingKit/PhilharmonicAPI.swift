@@ -102,11 +102,6 @@ public struct PhilharmonicAPI: Sendable {
 
     // MARK: Dashboard and workforce
 
-    /// `days`: 7 or 30; nil is all time.
-    public func costs(days: Int?) async throws -> PhilharmonicCosts {
-        try await client.get("\(Self.base)/costs", query: days.map { [URLQueryItem(name: "days", value: "\($0)")] } ?? [])
-    }
-
     public func upcomingTasks() async throws -> [ScheduledTask] {
         try await client.get("\(Self.base)/tasks/upcoming")
     }

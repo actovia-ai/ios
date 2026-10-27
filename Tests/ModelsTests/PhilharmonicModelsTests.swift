@@ -128,7 +128,7 @@ struct PhilharmonicModelsTests {
         #expect(quota.asOf == 1_761_190_000_000)
     }
 
-    @Test("a conversation, an employee, a task and the costs decode")
+    @Test("a conversation, an employee and a task decode")
     func listsDecode() throws {
         let conversation = try decode(
             GroupConversation.self,
@@ -140,11 +140,6 @@ struct PhilharmonicModelsTests {
             #"{"id":"a1","name":"Ada","description":null,"teamId":"t1","avatarSeed":"ada","avatarStyle":null,"model":"opus","provider":null,"runtime":"claude-code","isActive":true,"systemPrompt":"x"}"#
         )
         #expect(employee.runtime == "claude-code")
-        let costs = try decode(
-            PhilharmonicCosts.self,
-            #"{"totalCost":1.5,"totalTokens":1200,"byConversation":[{"conversationId":"c1","cost":1.5,"tokens":1200}],"byAgent":[{"agentId":"a1","cost":1.5,"tokens":1200}],"daily":[{"date":"2026-10-23","cost":1.5,"tokens":1200}]}"#
-        )
-        #expect(costs.daily.first?.date == "2026-10-23")
         let task = try decode(
             ScheduledTask.self,
             #"{"id":"k1","conversationId":"c1","title":"Nightly","description":null,"status":"pending","priority":"medium","assignedAgentId":null,"cronExpression":"0 3 * * *","runAt":null,"lastRunAt":null,"lastRunStatus":null,"createdAt":"t"}"#

@@ -1,20 +1,9 @@
 import Foundation
 
-public struct ModelCost: Codable, Equatable, Sendable {
-    public var input: Double
-    public var output: Double
-
-    public init(input: Double, output: Double) {
-        self.input = input
-        self.output = output
-    }
-}
-
 public struct ModelSnapshot: Codable, Equatable, Sendable {
     public var contextWindow: Double?
     public var maxOutputTokens: Double?
     public var reasoningLevels: [String]
-    public var cost: ModelCost?
     /// Keys the phone does not model, written back as read: `providerConfig` is replaced whole on save.
     public var unmodelledFields: [String: JSONValue]
 
@@ -22,32 +11,33 @@ public struct ModelSnapshot: Codable, Equatable, Sendable {
         contextWindow: Double? = nil,
         maxOutputTokens: Double? = nil,
         reasoningLevels: [String] = [],
-        cost: ModelCost? = nil,
         unmodelledFields: [String: JSONValue] = [:]
     ) {
         self.contextWindow = contextWindow
         self.maxOutputTokens = maxOutputTokens
         self.reasoningLevels = reasoningLevels
-        self.cost = cost
         self.unmodelledFields = unmodelledFields
     }
 
     private enum CodingKeys: String, CodingKey, CaseIterable {
-        case contextWindow, maxOutputTokens, reasoningLevels, cost
+        case contextWindow, maxOutputTokens, reasoningLevels
     }
+
+    /// Keys an older desktop wrote that Actovia no longer has: read past and never written back, so a save from the
+    /// phone does not carry them on. `cost` was the model's price, dropped with every money figure (ISSUE-235).
+    private static let retiredKeys: Set<String> = ["cost"]
 
     /// Tolerant on purpose: the desktop's schema defaults `reasoningLevels` to `[]` and its server
     /// stores whatever settings are posted, so a stored snapshot can lack any key. A strict decode
     /// would fail the whole `SettingsSnapshot`, and the phone could then never load or save
-    /// settings. Encoding writes the four keys (`nil` optionals omitted) plus any key it did not model.
+    /// settings. Encoding writes the three keys (`nil` optionals omitted) plus any key it did not model.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         contextWindow = try container.decodeIfPresent(Double.self, forKey: .contextWindow)
         maxOutputTokens = try container.decodeIfPresent(Double.self, forKey: .maxOutputTokens)
         reasoningLevels = try container.decodeIfPresent([String].self, forKey: .reasoningLevels) ?? []
-        cost = try container.decodeIfPresent(ModelCost.self, forKey: .cost)
         unmodelledFields = try decoder.container(keyedBy: AnyCodingKey.self)
-            .unmodelledFields(except: Set(CodingKeys.allCases.map(\.rawValue)))
+            .unmodelledFields(except: Set(CodingKeys.allCases.map(\.rawValue)).union(Self.retiredKeys))
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -57,7 +47,6 @@ public struct ModelSnapshot: Codable, Equatable, Sendable {
         try container.encodeIfPresent(contextWindow, forKey: .contextWindow)
         try container.encodeIfPresent(maxOutputTokens, forKey: .maxOutputTokens)
         try container.encode(reasoningLevels, forKey: .reasoningLevels)
-        try container.encodeIfPresent(cost, forKey: .cost)
     }
 }
 

@@ -9,10 +9,10 @@ import Testing
 @Suite("Profile")
 struct ProfileViewModelTests {
     private static let usage = #"""
-        {"totalCost":12.5,"totalTokens":1500000,"totalRequests":321,
-         "daily":[{"date":"2026-09-20","cost":1,"tokens":1000},{"date":"2026-09-23","cost":2,"tokens":5000}],
-         "models":[{"model":"a","provider":"anthropic","cost":9,"inputTokens":800,"outputTokens":200,"cacheReadTokens":5,"requests":10},
-                   {"model":"b","provider":"openai","cost":3.5,"inputTokens":100,"outputTokens":50,"cacheReadTokens":0,"requests":2}]}
+        {"totalTokens":1500000,"totalRequests":321,
+         "daily":[{"date":"2026-09-20","tokens":1000},{"date":"2026-09-23","tokens":5000}],
+         "models":[{"model":"a","provider":"anthropic","inputTokens":800,"outputTokens":200,"cacheReadTokens":5,"requests":10},
+                   {"model":"b","provider":"openai","inputTokens":100,"outputTokens":50,"cacheReadTokens":0,"requests":2}]}
         """#
     private static let skills = #"""
         [{"slug":"pdf","displayName":"PDF","version":"1.0.0","isActive":true,"installPath":"/x","installedAt":1756000000000,"source":"skills.sh"},
@@ -64,7 +64,7 @@ struct ProfileViewModelTests {
         await vm.load()
         await vm.load()
         #expect(vm.state == .loaded)
-        #expect(vm.usage?.totalCost == 12.5)
+        #expect(vm.usage?.totalTokens == 1_500_000)
         #expect(vm.refreshError == "usage down")
     }
 
@@ -84,7 +84,7 @@ struct ProfileViewModelTests {
 
     @Test("an account with no usage reads as empty")
     func emptyUsage() async {
-        let server = server(usage: [(200, #"{"totalCost":0,"totalTokens":0,"totalRequests":0,"daily":[],"models":[]}"#)])
+        let server = server(usage: [(200, #"{"totalTokens":0,"totalRequests":0,"daily":[],"models":[]}"#)])
         let vm = ProfileViewModel(apiClient: server.makeClient().0)
         await vm.load()
         #expect(vm.usage?.isEmpty == true)
@@ -105,16 +105,16 @@ struct UsageStatsTests {
         try! Date.ISO8601FormatStyle().parse(text + "T12:00:00Z")
     }
 
-    @Test("peak, streaks, the 30-day window, its cost and the top five follow the desktop's Profile")
+    @Test("peak, streaks, the 30-day window and the top five follow the desktop's Profile")
     func derivesDesktopFigures() {
         let usage = UsageSummary(
             daily: [
-                .init(date: "2026-08-01", cost: 9, tokens: 900),
-                .init(date: "2026-09-20", cost: 1, tokens: 100),
-                .init(date: "2026-09-21", cost: 1, tokens: 300),
-                .init(date: "2026-09-23", cost: 0.5, tokens: 50),
-                .init(date: "2026-09-24", cost: 0.25, tokens: 25),
-                .init(date: "2026-09-22", cost: 0, tokens: 0),
+                .init(date: "2026-08-01", tokens: 900),
+                .init(date: "2026-09-20", tokens: 100),
+                .init(date: "2026-09-21", tokens: 300),
+                .init(date: "2026-09-23", tokens: 50),
+                .init(date: "2026-09-24", tokens: 25),
+                .init(date: "2026-09-22", tokens: 0),
             ],
             models: (1...7).map { .init(model: "m\($0)") })
         let stats = UsageStats(usage: usage, today: Self.date("2026-09-24"), calendar: Self.utc)
@@ -127,8 +127,17 @@ struct UsageStatsTests {
         #expect(stats.daily.map(\.tokens).reduce(0, +) == 475)
         #expect(stats.cumulative.last?.tokens == 475)
         #expect(stats.cumulative.map(\.tokens) == stats.cumulative.map(\.tokens).sorted())
-        #expect(stats.windowCost == 2.75)
         #expect(stats.topModels.map(\.model) == ["m1", "m2", "m3", "m4", "m5"])
+    }
+
+    @Test("the top models are the most tokens, whatever order an older desktop sent them in (it sorted by cost)")
+    func topModelsByTokens() {
+        let usage = UsageSummary(models: [
+            .init(model: "pricey", inputTokens: 10), .init(model: "busy", inputTokens: 900, outputTokens: 100),
+            .init(model: "middle", inputTokens: 300),
+        ])
+        let stats = UsageStats(usage: usage, today: Self.date("2026-09-24"), calendar: Self.utc)
+        #expect(stats.topModels.map(\.model) == ["busy", "middle", "pricey"])
     }
 
     @Test(
@@ -156,17 +165,12 @@ struct UsageStatsTests {
         #expect(UsageStats.dayNumber("nonsense") == nil)
     }
 
-    @Test("tokens, cost and streaks are formatted for the locale")
+    @Test("tokens and streaks are formatted for the locale")
     func formats() {
         let en = Locale(identifier: "en_US")
-        let de = Locale(identifier: "de_DE")
         #expect(UsageFormat.tokens(950, locale: en) == "950")
         #expect(UsageFormat.tokens(1234, locale: en) == "1.2K")
         #expect(UsageFormat.tokens(48_250_000, locale: en) == "48.2M")
-        #expect(UsageFormat.cost(0, locale: en) == "$0.00")
-        #expect(UsageFormat.cost(0.0034, locale: en) == "$0.0034")
-        #expect(UsageFormat.cost(1234.5, locale: en) == "$1,234.50")
-        #expect(UsageFormat.cost(1234.5, locale: de).hasPrefix("1.234,50"))
         #expect(UsageFormat.days(3, locale: en) == "3d")
         #expect(UsageFormat.days(0, locale: en) == "0d")
     }

@@ -45,9 +45,8 @@ public struct AgentCard: Decodable, Sendable, Equatable {
     /// The text block being written now.
     public let pending: String
     public let prompts: [AgentPrompt]
-    /// The CLI's notices, verbatim (rate limit, cost).
+    /// The CLI's notices, verbatim (a rate limit, …).
     public let notices: [String]
-    public let costUsd: Double?
     /// Tools the owner denied in this run.
     public let denials: Int
     public let error: String?
@@ -58,7 +57,7 @@ public struct AgentCard: Decodable, Sendable, Equatable {
     public init(
         sessionId: String, agentId: String, runtime: String, model: String? = nil, projectName: String, cwd: String,
         branch: String? = nil, state: State, steps: [Step] = [], blocks: [String] = [], pending: String = "",
-        prompts: [AgentPrompt] = [], notices: [String] = [], costUsd: Double? = nil, denials: Int = 0,
+        prompts: [AgentPrompt] = [], notices: [String] = [], denials: Int = 0,
         error: String? = nil, continuedInTerminal: Bool = false, queued: Bool = false
     ) {
         self.sessionId = sessionId
@@ -74,7 +73,6 @@ public struct AgentCard: Decodable, Sendable, Equatable {
         self.pending = pending
         self.prompts = prompts
         self.notices = notices
-        self.costUsd = costUsd
         self.denials = denials
         self.error = error
         self.continuedInTerminal = continuedInTerminal
@@ -83,7 +81,7 @@ public struct AgentCard: Decodable, Sendable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case sessionId, agentId, runtime, model, projectName, cwd, branch, state, steps, blocks, pending, prompts
-        case notices, costUsd, denials, error, continuedInTerminal, queued
+        case notices, denials, error, continuedInTerminal, queued
     }
 
     public init(from decoder: Decoder) throws {
@@ -101,7 +99,6 @@ public struct AgentCard: Decodable, Sendable, Equatable {
         pending = c.lenient(String.self, forKey: .pending) ?? ""
         prompts = c.lenient([AgentPrompt].self, forKey: .prompts) ?? []
         notices = c.lenient([String].self, forKey: .notices) ?? []
-        costUsd = c.lenient(Double.self, forKey: .costUsd)
         denials = c.lenient(Int.self, forKey: .denials) ?? 0
         error = c.lenient(String.self, forKey: .error)
         continuedInTerminal = c.lenient(Bool.self, forKey: .continuedInTerminal) ?? false

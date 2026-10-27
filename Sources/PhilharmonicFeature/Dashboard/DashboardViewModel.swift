@@ -3,14 +3,12 @@ import Models
 import NetworkingKit
 import Observation
 
-/// The Dashboard: what the last 30 days cost, and the tasks waiting to run. Cancelling a task shows at once and comes
-/// back if the computer refused it.
+/// The Dashboard: the tasks waiting to run (the desktop's Schedule tab; there is no Costs page). Cancelling a task
+/// shows at once and comes back if the computer refused it.
 @MainActor @Observable
 public final class DashboardViewModel {
-    public private(set) var costs: PhilharmonicCosts?
     public private(set) var upcoming: [ScheduledTask] = []
     public private(set) var recurring: [ScheduledTask] = []
-    public private(set) var employees: [String: Employee] = [:]
     public private(set) var isLoading = false
     public private(set) var hasLoaded = false
     public var errorMessage: String?
@@ -27,21 +25,14 @@ public final class DashboardViewModel {
             isLoading = false
             hasLoaded = true
         }
-        async let costs = api.costs(days: 30)
         async let upcoming = api.upcomingTasks()
         async let recurring = api.recurringTasks()
-        async let employees = api.employees()
         do {
-            self.costs = try await costs
             self.upcoming = try await upcoming
             self.recurring = try await recurring
         } catch {
             guard !(error is CancellationError) else { return }
             errorMessage = error.localizedDescription
-        }
-        // Names only: the figures stand without them.
-        if let people = try? await employees {
-            self.employees = Dictionary(people.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         }
     }
 

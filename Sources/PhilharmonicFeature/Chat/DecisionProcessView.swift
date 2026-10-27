@@ -112,11 +112,11 @@ private struct RoundLineView: View {
                         .textSelection(.enabled)
                 }
             }
-        case .usage(let input, let output, let cost):
+        case .usage(let input, let output):
             Text(
                 String(
                     localized: "philharmonic:chat.decision.usage",
-                    defaultValue: "\(input.formatted()) in · \(output.formatted()) out · $\(cost.formatted(.number.precision(.fractionLength(4))))"))
+                    defaultValue: "\(input.formatted()) in · \(output.formatted()) out"))
         case .error(let message, let aborted):
             if aborted {
                 Text("philharmonic:chat.decision.interrupted")
