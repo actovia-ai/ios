@@ -21,6 +21,13 @@ enum TranscriptRules {
         old > 0 && new > old
     }
 
+    /// Whether the end is followed while the rows take their real heights (`settleAtEnd`): when a chat opens, and when
+    /// the transcript shrinks — choosing one answer of a regenerate group takes a turn away, and a single jump lands
+    /// on the old layout's end, leaving a blank band under the last answer (ISSUE-68). An emptied transcript has no end.
+    static func settlesAtEnd(fromSegmentCount old: Int, to new: Int) -> Bool {
+        old == 0 || (new > 0 && new < old)
+    }
+
     /// The desktop's `isLoading && isLastSegment`: only the last turn streams, and only while a turn is in flight.
     static func streamingTurnId(segments: [Segment], isTurnInFlight: Bool) -> String? {
         guard isTurnInFlight, case .assistantTurn(let turn)? = segments.last else { return nil }

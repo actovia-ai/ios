@@ -129,6 +129,17 @@ struct ScrollKeyTests {
         #expect(TranscriptRules.animatesScroll(fromSegmentCount: 2, to: 3))
     }
 
+    /// ISSUE-68: choosing one answer of a regenerate group takes a turn away, and the rows that stood below the end
+    /// are re-measured after the jump — the transcript was left past its end, a blank band under the last answer.
+    /// A shrinking transcript settles at its end again, as an opening one does; a growing one only glides.
+    @Test("a transcript that opens or shrinks settles at its end; one that grows does not")
+    func settlesWhenShrinking() {
+        #expect(TranscriptRules.settlesAtEnd(fromSegmentCount: 0, to: 240))
+        #expect(TranscriptRules.settlesAtEnd(fromSegmentCount: 5, to: 4))
+        #expect(!TranscriptRules.settlesAtEnd(fromSegmentCount: 4, to: 5))
+        #expect(!TranscriptRules.settlesAtEnd(fromSegmentCount: 4, to: 0))
+    }
+
     @Test("the key changes as the last turn's body, steps, cards or dots change, and not otherwise")
     func followsGrowth() {
         let base = TranscriptRules.scrollKey(segments: segments(answered), showsTypingIndicator: false, liveError: nil)

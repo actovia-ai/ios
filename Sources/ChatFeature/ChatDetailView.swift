@@ -145,7 +145,7 @@ public struct ChatDetailView: View {
                     return
                 }
                 scrollToBottom(proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
-                if old == 0 { settleAtEnd(proxy) }
+                if TranscriptRules.settlesAtEnd(fromSegmentCount: old, to: new) { settleAtEnd(proxy) }
             }
             // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
             // the reader has scrolled up — the button over the composer brings them back.
