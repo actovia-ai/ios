@@ -62,6 +62,7 @@ struct ProviderSettingsPage: View {
                         fetchLabel
                     }
                     .disabled(!viewModel.canFetchModels || viewModel.isLoadingModels)
+                    .sensoryFeedback(.success, trigger: viewModel.refreshedModelCount) { _, new in new != nil }
                 }
             } header: {
                 Text("settings:providers.model.label")
@@ -363,8 +364,29 @@ struct ProviderSettingsPage: View {
                 } else if !viewModel.hasCatalog && !viewModel.modelText.isEmpty {
                     Text("settings:providers.model.refreshHint")
                 }
+                if let count = viewModel.refreshedModelCount {
+                    refreshedLabel(count)
+                }
             }
         }
+    }
+
+    /// The desktop's success toast after a Refresh, as a line under the picker (this app has no toasts).
+    private func refreshedLabel(_ count: Int) -> some View {
+        let total = count.formatted()
+        return Label {
+            Text("settings:providers.model.refreshedTitle")
+                + Text(verbatim: " · ")
+                + Text(
+                    verbatim: String(
+                        localized: "settings:providers.model.refreshedDescription",
+                        defaultValue: "\(total) models available",
+                        comment: "Under the model picker after a Refresh. %@ is the number of models."))
+        } icon: {
+            Image(systemName: "checkmark.circle.fill")
+        }
+        .foregroundStyle(.green)
+        .transition(.opacity)
     }
 
     /// The desktop's placeholders (`providers/*.tsx`).

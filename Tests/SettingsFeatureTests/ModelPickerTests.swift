@@ -178,4 +178,17 @@ struct ModelPickerTests {
         await vm.refresh()
         #expect(vm.availableModels.map(\.id) == ["claude-haiku-5", "claude-sonnet-5"])
     }
+
+    @Test("a Refresh says how many models came back; a quiet fetch and a provider switch say nothing (ISSUE-250)")
+    func refreshSaysItWorked() async throws {
+        let server = SettingsPageTestServer(rows: [Self.withoutCatalog])
+        server.route("POST", "/api/v1/settings/models", [(200, Self.fetched), (200, Self.fetched)])
+        let vm = await loadedViewModel(server)
+        await vm.fetchModelsIfStale()
+        #expect(vm.refreshedModelCount == nil)
+        await vm.fetchModels()
+        #expect(vm.refreshedModelCount == 2)
+        vm.select(provider: .openAiGpt)
+        #expect(vm.refreshedModelCount == nil)
+    }
 }

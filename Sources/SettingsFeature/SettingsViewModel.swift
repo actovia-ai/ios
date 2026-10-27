@@ -34,6 +34,9 @@ public final class SettingsViewModel {
     public var isLoading = false
     public var isSaving = false
     public var isLoadingModels = false
+    /// How many models the last Refresh brought back, shown under the picker as the desktop's success toast;
+    /// nil after a quiet fetch, a failure, or a switch to another provider.
+    public var refreshedModelCount: Int?
     public var errorMessage: String?
     public var didSave = false
     /// The keys the last successful save cleared for a new address: the page stays open to ask for them.
@@ -195,6 +198,7 @@ public final class SettingsViewModel {
         selectedProvider = provider
         apiKeyText = typedKey(for: provider)
         keyReentryMessage = nil
+        refreshedModelCount = nil
         modelText = provider.rawValue == loadedProviderConfig?.provider ? (loadedProviderConfig?.model ?? "") : ""
     }
 
@@ -340,6 +344,7 @@ public final class SettingsViewModel {
     public func fetchModels(quietly: Bool = false) async {
         isLoadingModels = true
         if !quietly { errorMessage = nil }
+        refreshedModelCount = nil
         defer { isLoadingModels = false }
         // A catalog belongs to the provider, key and address it was requested for. If any changed while the
         // request was in flight, its outcome (models or error) is stale and must not reach the form.
@@ -359,6 +364,7 @@ public final class SettingsViewModel {
             catalogs[requestedProvider] = response.models
             catalogKeys[requestedProvider] = Self.fingerprint(requestedKey)
             fetchedProviders.insert(requestedProvider)
+            if !quietly { refreshedModelCount = response.models.count }
             await storeCatalog(response.models, for: requestedProvider)
         } catch {
             guard isCurrent(provider: requestedProvider, apiKey: requestedKey, baseURL: requestedBaseURL) else { return }
