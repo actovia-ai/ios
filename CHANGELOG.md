@@ -1,3 +1,46 @@
+# [1.5.0](https://github.com/actovia-ai/ios/compare/v1.4.0...v1.5.0) (2026-10-28)
+
+
+### Bug Fixes
+
+* **chat:** choosing a regenerated answer leaves no blank space below ([e71047b](https://github.com/actovia-ai/ios/commit/e71047bb55b3f4fa533196c7c5c195dd122af520))
+* clear the build warnings (ISSUE-289) ([0377b19](https://github.com/actovia-ai/ios/commit/0377b1960f46bb90551d76a0dc1f1c63e32cc91c))
+* **health:** the hero's Back to now stays clear of a Duo's side strip ([2335b0c](https://github.com/actovia-ai/ios/commit/2335b0c3b16cae3ee9d22a5b5b75834069381895))
+* **layout:** the sidebar page only on a folded Duo, the drawer elsewhere; Health's sky and ask panel reach the side strip ([d42b045](https://github.com/actovia-ai/ios/commit/d42b045ea8626b568901db271ceb277823c43fb8))
+* **offline:** a cached list or chat shows at once, before the fetch (ISSUE-242) ([9c5a4e0](https://github.com/actovia-ai/ios/commit/9c5a4e06ea327677144fe4fca6b392864658977b))
+* **offline:** evict by file date, save off the main actor, refresh the page after a turn, never write to another computer's folder (ISSUE-242) ([61d5d92](https://github.com/actovia-ai/ios/commit/61d5d92f28f0398bc9a08c42c42103d4d0864d99))
+* **offline:** no answers sent offline, and reconnect keeps the runs you scrolled back to (ISSUE-242) ([eacd348](https://github.com/actovia-ai/ios/commit/eacd348516c806947e86717ed6f2e91c0fe8eb97))
+* **philharmonic:** a group is read when it opens, not on the stream's first byte ([993da83](https://github.com/actovia-ai/ios/commit/993da834c54ce180f593e36b2a8bf5437c97bd56))
+* **philharmonic:** a group's state after a reconnect, the foreground and a lock ([0ede9da](https://github.com/actovia-ai/ios/commit/0ede9da921c39f97294fcf1bb1e9ef34e0eb3466))
+* **settings:** the refresh note as one verbatim string, not a new catalog key (ISSUE-289) ([9d24673](https://github.com/actovia-ai/ios/commit/9d24673a134e44c576cdc291f02a071b1d8958a7))
+* **wide:** the docked sidebar's search field keeps clear of the screen's top edge ([e7d1281](https://github.com/actovia-ai/ios/commit/e7d128195c6d0422cca3f05372a3a1cc476632ce))
+* **wide:** the pairing welcome keeps to a 560 pt column on a wide screen ([0dde890](https://github.com/actovia-ai/ios/commit/0dde89021ce1cbb16dad4da80fd1a78ae65e2a4a))
+
+
+### Features
+
+* **chat:** the running thinking step shimmers, as on the desktop (ISSUE-288) ([3833495](https://github.com/actovia-ai/ios/commit/383349506c7e735f0302a8eb846eb4440b121a62))
+* **l10n:** Simplified Chinese and Russian ([5c7fb08](https://github.com/actovia-ai/ios/commit/5c7fb0891301c6d5627161bd63020b084418a804))
+* **layout:** a docked sidebar and reading columns on a wide screen (iPhone Duo unfolded, landscape) ([35c4401](https://github.com/actovia-ai/ios/commit/35c44015b95ceb65da75e2b3b15d8db87d19f219))
+* **layout:** the sidebar is a page of its own on a narrow screen; the bar stands beside the Duo's camera ([4573cf2](https://github.com/actovia-ai/ios/commit/4573cf2a96dce8d9ee9eb76f72365e376f66a2b6))
+* **models:** Philharmonic's wire types and events ([0c108ab](https://github.com/actovia-ai/ios/commit/0c108ab9ce49400879984a74b4b3f9654c2ac7a0))
+* **networking:** the Philharmonic API ([1a9bc88](https://github.com/actovia-ai/ios/commit/1a9bc8834009928b409e284a8aa2e9b8883f505a))
+* **offline:** a computer's cache leaves with the computer (ISSUE-242) ([96540c1](https://github.com/actovia-ai/ios/commit/96540c144210717fc2f7d9f8f7fce2aad2dc989c))
+* **offline:** a per-computer store for the chat list and opened chats (ISSUE-242) ([c12d5a4](https://github.com/actovia-ai/ios/commit/c12d5a4fd40b1522c373aa1b82c00bf204fe7fba))
+* **offline:** an opened chat can be read without the computer (ISSUE-242) ([e8c6e60](https://github.com/actovia-ai/ios/commit/e8c6e60ef48e57886caa44641a2760defa61a374))
+* **offline:** know from requests whether the computer answers (ISSUE-242) ([d6c6587](https://github.com/actovia-ai/ios/commit/d6c65877fc47b9566eca32a8455f505d64fc2cc9))
+* **offline:** say when the computer is away and keep chats readable (ISSUE-242) ([00f2f40](https://github.com/actovia-ai/ios/commit/00f2f401cae40174e36bbfcfb50f6d00d5556409))
+* **offline:** the chat list survives a computer that doesn't answer (ISSUE-242) ([149e7d5](https://github.com/actovia-ai/ios/commit/149e7d588eed4091179159610f1db046829f5bb6))
+* **philharmonic:** a group stream that comes back on its own ([bc81e0c](https://github.com/actovia-ai/ios/commit/bc81e0cd684f1b8ca59bae47cdb6a051f8055989))
+* **philharmonic:** members with quota, the dashboard and the workforce ([03ecb43](https://github.com/actovia-ai/ios/commit/03ecb4337f824bdc7e558eb43d12f5c4e8b9a56f))
+* **philharmonic:** one view model per open group ([7a08ef3](https://github.com/actovia-ai/ios/commit/7a08ef3b93f6143f9dfae0481190a2a2cefc4507))
+* **philharmonic:** the desktop's merge, plan, busy, quota and round rules ([6b7e30a](https://github.com/actovia-ai/ios/commit/6b7e30ad659cb1b679c8b577e007b33ad4a0ca41))
+* **philharmonic:** the group chat, live ([43a3414](https://github.com/actovia-ai/ios/commit/43a3414385175121e05d8c68a30ae42c6a9e9f05))
+* **philharmonic:** the workspace lists its groups ([72f6971](https://github.com/actovia-ai/ios/commit/72f69710f48ab24e71ed417b9a637fc2979df89c))
+* **settings:** a model list Refresh says it worked ([5b2b712](https://github.com/actovia-ai/ios/commit/5b2b712e228d5eb27e76367afdabac1366835c4c))
+* **sidebar:** search takes the screen, Hikki's way ([56f3b26](https://github.com/actovia-ai/ios/commit/56f3b26a02b3f76d93bc5fb7890e7d9c501ddb6b))
+* **wide:** vertical bar when docked, tinted docked sidebar, no chat title, open chats at their end ([3b1f1c3](https://github.com/actovia-ai/ios/commit/3b1f1c315cb25ee85c5e5d31fa2ab8eb5091dec2))
+
 # [1.4.0](https://github.com/actovia-ai/ios/compare/v1.3.2...v1.4.0) (2026-10-21)
 
 
