@@ -16,7 +16,7 @@ public final class ChatDetailViewModel {
     }
     /// Whether runs older than the first one shown exist, and where the next older page starts.
     public private(set) var hasOlder = false
-    private var olderCursor: String?
+    private(set) var olderCursor: String?
     public private(set) var isLoadingOlder = false
     /// Bumped when a page of older runs went in above the transcript: the view keeps the reader's place.
     public private(set) var olderPageCount = 0
@@ -344,7 +344,8 @@ public final class ChatDetailViewModel {
     }
 
     /// The computer answers again: reads the newest page once more and stores it, without emptying the screen. A turn
-    /// in flight is left alone, and so is a transcript the reader has already scrolled back (older runs stay).
+    /// in flight is left alone. When the reader has scrolled back, the older runs they loaded stay and only the newest
+    /// page's span is replaced.
     public func refreshAfterReconnect() async {
         guard !isTurnInFlight, !(await streamManager.isStreaming(chatId)) else { return }
         guard let page: ChatHistoryPage = try? await apiClient.get("/api/v1/chat/\(chatId)/page") else { return }
@@ -356,7 +357,17 @@ public final class ChatDetailViewModel {
         offlineStore?.savePage(page, chatId: chatId, at: savedAt)
         lastSyncedAt = savedAt
         showsCached = false
-        show(page: page, built: built)
+        if olderPageCount > 0 && hasLoadedHistory {
+            // The reader has scrolled back: only the newest page's span is replaced. Loaded rows that are not in the
+            // new page stay in front of it, and the older state (`hasOlder`, cursor, sources) is theirs, not the page's.
+            let fresh = Set(built.map(\.id))
+            let kept = messages.filter { !fresh.contains($0.id) }
+            messages = kept + built
+            if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
+            fillTruncated(rows)
+        } else {
+            show(page: page, built: built)
+        }
         clearRunError()
         if !hasLoadedHistory { openedWithMessages = !messages.isEmpty }
         hasLoadedHistory = true
@@ -530,8 +541,8 @@ public final class ChatDetailViewModel {
     }
 
     /// Whether a block in the transcript may be answered now: as the composer, once the history is known and
-    /// while nothing is in flight.
-    public var canAnswer: Bool { hasLoadedHistory && !isTurnInFlight }
+    /// while nothing is in flight and the computer is reachable.
+    public var canAnswer: Bool { hasLoadedHistory && !isReadOnly && !isTurnInFlight }
 
     /// A questionnaire's or a confirmation's answer (`InteractiveAnswer`), sent as a typed message is but past the
     /// composer: what is being typed there, its quote and its pictures stay for the next message. Returns whether it

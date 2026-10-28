@@ -174,8 +174,47 @@ struct ChatDetailViewModelOfflineTests {
         #expect(recorder.requests == before)
         #expect(vm.composerText == "hello again")
         #expect(vm.messages.map(\.id) == ["u1", "a1"])
+        // An interactive answer (questionnaire / confirmation) is a write too.
+        #expect(vm.canAnswer == false)
+        let sent = await vm.sendText("yes")
+        #expect(sent == false)
+        #expect(recorder.requests == before)
+        #expect(vm.messages.map(\.id) == ["u1", "a1"])
+        #expect(vm.composerText == "hello again")
         status.markOnline()
         #expect(vm.canSend)
+        #expect(vm.canAnswer)
+    }
+
+    @Test func refreshAfterReconnectKeepsOlderRuns() async throws {
+        func row(_ id: String, _ role: String, _ text: String, _ at: String) -> String {
+            role == "user"
+                ? #"{"id":"\#(id)","chatId":"c1","role":"user","content":"\#(text)","searchText":"\#(text)","createdAt":"\#(at)"}"#
+                : #"{"id":"\#(id)","chatId":"c1","role":"assistant","content":[{"type":"text","text":"\#(text)"}],"usage":{"input":3},"api":"anthropic-messages","provider":"anthropic","model":"claude-x","stopReason":"stop","createdAt":"\#(at)"}"#
+        }
+        let u1 = row("u1", "user", "one", "2026-09-18T12:00:00.000Z")
+        let a1 = row("a1", "assistant", "uno", "2026-09-18T12:00:05.000Z")
+        let u2 = row("u2", "user", "two", "2026-09-19T12:00:00.000Z")
+        let a2 = row("a2", "assistant", "dos", "2026-09-19T12:00:05.000Z")
+        let u3 = row("u3", "user", "three", "2026-09-20T12:00:00.000Z")
+        let a3 = row("a3", "assistant", "tres", "2026-09-20T12:00:05.000Z")
+        let vm = make(store: makeStore(), status: ConnectionStatus())
+        serve(
+            rows: ChatPageFixture.page("[\(u2),\(a2)]", hasOlder: true, olderCursor: "cur-newest"), recorder: Recorder())
+        await vm.loadHistory()
+        serve(
+            rows: ChatPageFixture.page("[\(u1),\(a1)]", hasOlder: true, olderCursor: "cur-older"), recorder: Recorder())
+        await vm.loadOlder()
+        #expect(vm.messages.map(\.id) == ["u1", "a1", "u2", "a2"])
+        #expect(vm.olderCursor == "cur-older")
+
+        serve(
+            rows: ChatPageFixture.page("[\(u2),\(a2),\(u3),\(a3)]", hasOlder: true, olderCursor: "cur-newest"),
+            recorder: Recorder())
+        await vm.refreshAfterReconnect()
+        #expect(vm.messages.map(\.id) == ["u1", "a1", "u2", "a2", "u3", "a3"])
+        #expect(vm.olderCursor == "cur-older")
+        #expect(vm.hasOlder)
     }
 
     @Test func refreshAfterReconnectKeepsScreenAndWritesStore() async throws {
