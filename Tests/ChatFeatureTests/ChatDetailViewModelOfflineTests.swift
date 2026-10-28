@@ -9,11 +9,29 @@ import Testing
 private final class OfflineDetailMockURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var handler: (@Sendable (URLRequest) throws -> (Int, Data))?
     nonisolated(unsafe) static var holdsChatPostOpen = false
+    /// While true a request is not answered; it waits in `held` until `releaseHeld()`.
+    nonisolated(unsafe) static var holds = false
+    nonisolated(unsafe) static var held: [OfflineDetailMockURLProtocol] = []
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
+    static func releaseHeld() {
+        holds = false
+        let pending = held
+        held = []
+        for call in pending { call.answer() }
+    }
+
     override func startLoading() {
+        if Self.holds {
+            Self.held.append(self)
+            return
+        }
+        answer()
+    }
+
+    private func answer() {
         let holdsOpen = Self.holdsChatPostOpen
         guard let handler = Self.handler else {
             client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
@@ -130,6 +148,41 @@ struct ChatDetailViewModelOfflineTests {
         await vm.loadOlder()
         await vm.flushOfflineWrites()
         #expect(try #require(store.loadPage(chatId: chatId)).page.messages.map(\.id) == ["u1", "a1"])
+    }
+
+    @Test func cachedPageShowsBeforeTheFetchAnswers() async throws {
+        let store = makeStore()
+        store.savePage(try cachedPage(), chatId: chatId, at: seeded)
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus())
+        OfflineDetailMockURLProtocol.holds = true
+        let loading = Task { await vm.loadHistory() }
+        for _ in 0..<500 where OfflineDetailMockURLProtocol.held.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(OfflineDetailMockURLProtocol.held.count == 1)  // the request is still pending
+        for _ in 0..<500 where !vm.hasLoadedHistory { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(vm.hasLoadedHistory)
+        #expect(vm.messages.map(\.id) == ["k1"])
+        #expect(vm.lastSyncedAt == seeded)
+        OfflineDetailMockURLProtocol.releaseHeld()
+        await loading.value
+        #expect(vm.messages.map(\.id) == ["u1", "a1"])
+        #expect(vm.showsCached == false)
+        #expect(vm.lastSyncedAt != seeded)
+        #expect(vm.errorMessage == nil)
+    }
+
+    @Test func cachedPageOfAnotherComputerIsNotShownEarly() async throws {
+        let store = makeStore()  // computer "A"
+        store.savePage(try cachedPage(), chatId: chatId, at: seeded)
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus(), active: "B")
+        OfflineDetailMockURLProtocol.holds = true
+        let loading = Task { await vm.loadHistory() }
+        for _ in 0..<500 where OfflineDetailMockURLProtocol.held.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(vm.hasLoadedHistory == false)
+        #expect(vm.messages.isEmpty)
+        OfflineDetailMockURLProtocol.releaseHeld()
+        await loading.value
     }
 
     @Test func fallsBackToCachedPage() async throws {

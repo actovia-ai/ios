@@ -63,6 +63,7 @@ public final class ChatListViewModel {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
+        let preloaded = showStoredCopyFirst()
         do {
             let page = try await fetchPage(before: nil)
             apply(firstPage: page)
@@ -71,6 +72,14 @@ public final class ChatListViewModel {
         } catch {
             // SwiftUI cancels a view's `.task` when the view goes away; that is not a failure.
             guard !isCancellation(error) else { return }
+            if preloaded, !isUnreachable(error) {
+                // The computer answered with an error: the stored copy it was shown in place of is not its word.
+                chats = []
+                favorites = []
+                olderCursor = nil
+                showsCached = false
+                lastSyncedAt = nil
+            }
             if isUnreachable(error) {
                 // The computer did not answer: a list already on screen stays; with none, the stored copy is shown.
                 if !chats.isEmpty { hasLoaded = true; return }
@@ -89,6 +98,23 @@ public final class ChatListViewModel {
             hasLoaded = true
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// With nothing on screen, puts the stored copy there at once — before the fetch, which can take many seconds to fail
+    /// when the computer is away. The fetched list replaces it as soon as it arrives. Only this computer's store is
+    /// read. True when it did.
+    private func showStoredCopyFirst() -> Bool {
+        guard chats.isEmpty, !hasLoaded, let store = offlineStore, apiClient.activeFingerprint == store.fingerprint,
+            let cached = store.loadList()
+        else { return false }
+        chats = cached.chats.filter { !deletedIDs.contains($0.id) }
+        favorites = cached.favorites.filter { !deletedIDs.contains($0.id) }
+        olderCursor = nil
+        lastSyncedAt = cached.savedAt
+        showsCached = true
+        loadFailed = false
+        hasLoaded = true
+        return true
     }
 
     /// Reloads in the background (the drawer opened, Settings closed). While a list is on screen a

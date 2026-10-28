@@ -291,6 +291,9 @@ public final class ChatDetailViewModel {
     /// newest page. The memory foot keeps every run's usage: it is read for the whole chat, loaded or not.
     public func loadHistory(holdUntil: ContinuousClock.Instant? = nil) async {
         guard !isTurnInFlight else { return }  // a reload would replace the reply that is being streamed
+        // With nothing on screen the stored copy goes up at once; the fetch can take many seconds to fail when the
+        // computer is away, and the fetched page replaces the copy when it arrives.
+        let preloaded = await showStoredPageFirst()
         do {
             let page: ChatHistoryPage = try await apiClient.get("/api/v1/chat/\(chatId)/page")
             let rows = page.messages
@@ -311,6 +314,18 @@ public final class ChatDetailViewModel {
         } catch {
             // SwiftUI cancels a view's `.task` when the view goes away; that is not a failure.
             guard !isCancellation(error) else { return }
+            // The computer did not answer: the copy already on screen stays.
+            if preloaded {
+                if isUnreachable(error) { return }
+                // The computer answered with an error: the stored copy is not its word, and the page is as if empty.
+                messages = []
+                olderSources = []
+                hasOlder = false
+                olderCursor = nil
+                showsCached = false
+                lastSyncedAt = nil
+                hasLoadedHistory = false
+            }
             // The computer did not answer: the stored copy of the newest page is shown, if there is one.
             if isUnreachable(error), !hasLoadedHistory, let cached = offlineStore?.loadPage(chatId: chatId) {
                 let rows = cached.page.messages
@@ -326,6 +341,23 @@ public final class ChatDetailViewModel {
             errorMessage = error.localizedDescription
             failureCount += 1
         }
+    }
+
+    /// Shows this computer's stored copy of the newest page, if the chat is still empty on screen. True when it did.
+    private func showStoredPageFirst() async -> Bool {
+        guard !hasLoadedHistory, messages.isEmpty, let store = offlineStore,
+            apiClient.activeFingerprint == store.fingerprint, let cached = store.loadPage(chatId: chatId)
+        else { return false }
+        let rows = cached.page.messages
+        let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
+        // The fetch may have answered while the rows were made: its page wins.
+        guard !Task.isCancelled, !hasLoadedHistory, messages.isEmpty, !isTurnInFlight else { return false }
+        show(page: cached.page, built: built)
+        lastSyncedAt = cached.savedAt
+        showsCached = true
+        openedWithMessages = !messages.isEmpty
+        hasLoadedHistory = true
+        return true
     }
 
     /// Stores a page for offline reading, off the main actor and in order. Dropped when the active computer is no

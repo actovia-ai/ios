@@ -8,11 +8,29 @@ import Testing
 
 private final class OfflineListMockURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var handler: (@Sendable (URLRequest) throws -> (Int, Data))?
+    /// While true a request is not answered; it waits in `held` until `releaseHeld()`.
+    nonisolated(unsafe) static var holds = false
+    nonisolated(unsafe) static var held: [OfflineListMockURLProtocol] = []
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
+    static func releaseHeld() {
+        holds = false
+        let pending = held
+        held = []
+        for call in pending { call.answer() }
+    }
+
     override func startLoading() {
+        if Self.holds {
+            Self.held.append(self)
+            return
+        }
+        answer()
+    }
+
+    private func answer() {
         guard let handler = Self.handler else {
             client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
             return
@@ -134,6 +152,42 @@ struct ChatListViewModelOfflineTests {
         #expect(vm.lastSyncedAt == seeded)
         #expect(vm.hasLoaded)
         #expect(vm.hasMore == false)
+    }
+
+    @Test func cachedListShowsBeforeTheFetchAnswers() async throws {
+        let store = makeStore()
+        store.saveList(chats: cachedChats, favorites: [cachedChats[1]], at: seeded)
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus())
+        OfflineListMockURLProtocol.holds = true
+        let loading = Task { await vm.load() }
+        for _ in 0..<500 where OfflineListMockURLProtocol.held.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(OfflineListMockURLProtocol.held.count == 1)  // the request is still pending
+        #expect(vm.chats == cachedChats)
+        #expect(vm.favorites == [cachedChats[1]])
+        #expect(vm.hasLoaded)
+        #expect(vm.loadFailed == false)
+        #expect(vm.lastSyncedAt == seeded)
+        OfflineListMockURLProtocol.releaseHeld()
+        await loading.value
+        #expect(vm.chats.map(\.id) == ["c1", "c2"])
+        #expect(vm.favorites.isEmpty)
+        #expect(vm.showsCached == false)
+        #expect(vm.lastSyncedAt != seeded)
+        #expect(vm.hasMore)
+    }
+
+    @Test func cachedListOfAnotherComputerIsNotShownEarly() async throws {
+        let store = makeStore()  // computer "A"
+        store.saveList(chats: cachedChats, favorites: [], at: seeded)
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus(), active: "B")
+        OfflineListMockURLProtocol.holds = true
+        let loading = Task { await vm.load() }
+        for _ in 0..<500 where OfflineListMockURLProtocol.held.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(vm.chats.isEmpty)
+        OfflineListMockURLProtocol.releaseHeld()
+        await loading.value
     }
 
     @Test func noCacheStillShowsCantLoad() async throws {
