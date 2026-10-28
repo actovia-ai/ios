@@ -5,7 +5,7 @@ import SwiftUI
 
 /// The Health home's named coordinate space; the hero reports where the bindle is in it.
 enum HealthCoordinateSpace {
-    static let home = "healthHome"
+    nonisolated static let home = "healthHome"
 }
 
 /// The home's head: the sky at an hour, and Ody living through it. Drag left to go back through last night — the

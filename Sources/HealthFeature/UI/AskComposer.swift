@@ -8,7 +8,7 @@ import SwiftUI
 /// changed first.
 /// Health's pages keep to one column on a wide screen (an unfolded Duo, landscape): the cards and the ask box.
 enum HealthLayout {
-    static let columnWidth: CGFloat = 560
+    nonisolated static let columnWidth: CGFloat = 560
 }
 
 struct AskComposer: View {
