@@ -374,15 +374,17 @@ struct ProviderSettingsPage: View {
     /// The desktop's success toast after a Refresh, as a line under the picker (this app has no toasts).
     private func refreshedLabel(_ count: Int) -> some View {
         let total = count.formatted()
-        let title = Text("settings:providers.model.refreshedTitle")
-        let separator = Text(verbatim: " · ")
-        let description = Text(
-            verbatim: String(
-                localized: "settings:providers.model.refreshedDescription",
-                defaultValue: "\(total) models available",
-                comment: "Under the model picker after a Refresh. %@ is the number of models."))
+        // One verbatim string of the two catalog entries: an interpolated `Text("\(a)\(b)")` would itself be a
+        // catalog key ("%@%@%@") with no translations.
+        let title = String(
+            localized: "settings:providers.model.refreshedTitle", defaultValue: "Model list refreshed",
+            comment: "Under the model picker after a Refresh, before the count.")
+        let description = String(
+            localized: "settings:providers.model.refreshedDescription",
+            defaultValue: "\(total) models available",
+            comment: "Under the model picker after a Refresh. %@ is the number of models.")
         return Label {
-            Text("\(title)\(separator)\(description)")
+            Text(verbatim: "\(title) · \(description)")
         } icon: {
             Image(systemName: "checkmark.circle.fill")
         }
