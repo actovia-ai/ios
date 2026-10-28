@@ -171,6 +171,16 @@ public struct ChatDetailView: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: viewModel.showsEmptyState)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if viewModel.isReadOnly {
+                OfflineBanner(lastSyncedAt: viewModel.lastSyncedAt) { Task { await viewModel.refreshAfterReconnect() } }
+                    .padding(.top, 4)
+            }
+        }
+        // The computer answers again: read what the chat missed, keeping the runs scrolled back to.
+        .onChange(of: viewModel.isReadOnly) { _, readOnly in
+            if !readOnly { Task { await viewModel.refreshAfterReconnect() } }
+        }
         .safeAreaBar(edge: .bottom) {
             NoticeStack(notice: viewModel.notice, onDismiss: viewModel.dismissNotice) { composer }
         }
@@ -363,10 +373,11 @@ public struct ChatDetailView: View {
             ) { items in
                 Task { await viewModel.addPictures(items) }
             }
+            .disabled(viewModel.isReadOnly)
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.
             .padding(.leading, ComposerRowLayout.inset - 16)
             .composerRole(.leading)
-            TextField("ios:chat.composer.placeholder", text: $viewModel.composerText, axis: .vertical)
+            TextField(composerPlaceholder, text: $viewModel.composerText, axis: .vertical)
                 .lineLimit(1...5)
                 .focused($isComposerFocused)
                 .accessibilityIdentifier("composerField")
@@ -451,7 +462,10 @@ public struct ChatDetailView: View {
         // arrow (a white arrow on the soft fill is 1.6:1 in yellow, and a dark one read as a blot), in dark the fill
         // and its glyph.
         .tint(TurnButtonLabel.fill(state, scheme: colorScheme, toneFill: toneFillColor, toneInk: toneInk))
-        .disabled(state == .transcribing || (state == .send && !viewModel.canSend))
+        .disabled(
+            state == .transcribing || (state == .send && !viewModel.canSend)
+                // Offline there is nothing to send to and nothing to transcribe with; Stop and a running recording stay.
+                || (viewModel.isReadOnly && (state == .send || state == .mic)))
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.6).onEnded { _ in
                 guard case .recording = viewModel.recording else { return }
@@ -464,6 +478,12 @@ public struct ChatDetailView: View {
             }
         }
         .accessibilityIdentifier(state.identifier)
+    }
+
+    /// The offline hint takes the placeholder's place: typing still works, sending waits for the computer.
+    private var composerPlaceholder: LocalizedStringKey {
+        if viewModel.isReadOnly { return "ios:offline.composerHint" }
+        return "ios:chat.composer.placeholder"
     }
 
     private var turnState: TurnButtonState {
@@ -480,8 +500,8 @@ public struct ChatDetailView: View {
 
     private var transcriptActions: TranscriptActions {
         TranscriptActions(
-            regenerableTurnId: viewModel.regenerableTurnId,
-            canRetryOrphan: viewModel.canRetryOrphanError,
+            regenerableTurnId: viewModel.isReadOnly ? nil : viewModel.regenerableTurnId,
+            canRetryOrphan: !viewModel.isReadOnly && viewModel.canRetryOrphanError,
             regenerate: { [viewModel] in Task { await viewModel.regenerate() } },
             showSources: { [viewModel] turnId, marker in
                 sourcesSheet = viewModel.sourcesSheet(forTurn: turnId, marker: marker)

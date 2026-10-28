@@ -116,6 +116,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     @State private var renameText = ""
     /// Bumped when a conversation's id has been put on the pasteboard: the only sign that it was.
     @State private var copiedTrigger = 0
+    /// Raised by a tap on a chat that was never stored on this iPhone while the computer is away.
+    @State private var showsUnavailable = false
 
     private let activeChatId: String
     private let isOpen: Bool
@@ -173,6 +175,13 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     public var body: some View {
         NavigationStack {
             List {
+                if !list.canEdit {
+                    OfflineBanner(lastSyncedAt: list.lastSyncedAt) { Task { await list.refresh() } }
+                        .padding(.horizontal, -12)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                }
                 // On the rows, not on the `Section`: a section passes the hidden separator down
                 // but keeps the insets to itself.
                 Section {
@@ -207,6 +216,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             // Recents block only when a load finishes, search on every phase it can be in while a
             // query is live (apple-design: preventing a jarring change).
             .animation(.easeOut(duration: 0.15), value: list.chats.isEmpty)
+            .animation(.easeOut(duration: 0.15), value: list.canEdit)
             .animation(.easeOut(duration: 0.15), value: search.phase)
             .animation(.easeOut(duration: 0.15), value: search.isSearching)
             // Blank always: the system's own inline title centres itself and stays small, neither
@@ -229,12 +239,21 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 if let chats { onRecentsChange(chats) }
             }
             .refreshable { await list.load() }
+            // The computer is back: read the list again, so the greyed rows and the banner clear.
+            .onChange(of: list.canEdit) { _, canEdit in
+                if canEdit { Task { await list.refresh() } }
+            }
             .onChange(of: isOpen) { _, nowOpen in
                 if nowOpen {
                     Task { await list.refresh() }
                 } else {
                     leaveSearch()
                 }
+            }
+            .alert("ios:offline.unavailableTitle", isPresented: $showsUnavailable) {
+                Button("ios:app.alert.ok") {}
+            } message: {
+                Text("ios:offline.unavailableMessage")
             }
             .alert(
                 "ios:chat.alert.errorTitle",
@@ -294,7 +313,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     // MARK: - Rows
 
     private func row(for chat: ChatSummary) -> some View {
-        HStack(spacing: 8) {
+        let available = list.isAvailableOffline(chat.id)
+        return HStack(spacing: 8) {
             Text(chat.title.collapsedWhitespace)
                 .lineLimit(1)
             Spacer(minLength: 8)
@@ -312,22 +332,34 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         // The long-press menu is the row's own, shown without lifting anything (see `SidebarRowTouchSurface`);
         // VoiceOver gets the same four as named actions. Both close over this row's chat, so nothing indexes
         // `list.chats` after a concurrent load.
+        // Greyed while the computer is away and this chat was never stored here.
+        .foregroundStyle(available ? .primary : .secondary)
         .modifier(
             SidebarRow(isSelected: chat.id == activeChatId, menu: { menu(for: chat) }) {
-                select(chat.id, chat.title)
+                if available { select(chat.id, chat.title) } else { showsUnavailable = true }
             })
-        .accessibilityAction(named: favoriteActionName(for: chat)) {
-            Task { await list.toggleFavorite(chat) }
+        .accessibilityActions {
+            // Offline only Copy Chat ID is left: the others would change something on the computer.
+            if list.canEdit {
+                Button { Task { await list.toggleFavorite(chat) } } label: { favoriteActionName(for: chat) }
+                Button { beginRename(chat) } label: { Text("chat:sidebar.history.rename") }
+            }
+            Button { copyID(of: chat) } label: { Text("ios:chat.sidebar.copyConversationId") }
+            if list.canEdit {
+                Button { delete(chat) } label: { Text("common:action.delete") }
+            }
         }
-        .accessibilityAction(named: Text("chat:sidebar.history.rename")) { beginRename(chat) }
-        .accessibilityAction(named: Text("ios:chat.sidebar.copyConversationId")) { copyID(of: chat) }
-        .accessibilityAction(named: Text("common:action.delete")) { delete(chat) }
         // A leading swipe stars the chat (the desktop's star on hover); the row moves to Favorites at once.
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
-            favoriteButton(for: chat)
-                .tint(.yellow)
+            if list.canEdit {
+                favoriteButton(for: chat)
+                    .tint(.yellow)
+            }
         }
     }
+
+    /// Greyed out while the computer is away: what the entry changes lives there.
+    private var editAttributes: UIMenuElement.Attributes { list.canEdit ? [] : .disabled }
 
     /// Favorite (or Unfavorite), Rename, Copy Chat ID, Delete.
     private func menu(for chat: ChatSummary) -> UIMenu {
@@ -335,17 +367,17 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             chat.favorite == true
             ? UIAction(
                 title: String(localized: "ios:chat.sidebar.unfavorite", defaultValue: "Unfavorite"),
-                image: UIImage(systemName: "star.slash")
+                image: UIImage(systemName: "star.slash"), attributes: editAttributes
             ) { _ in Task { await list.toggleFavorite(chat) } }
             : UIAction(
                 title: String(localized: "ios:chat.sidebar.favorite", defaultValue: "Favorite"),
-                image: UIImage(systemName: "star")
+                image: UIImage(systemName: "star"), attributes: editAttributes
             ) { _ in Task { await list.toggleFavorite(chat) } }
         return UIMenu(children: [
             favorite,
             UIAction(
                 title: String(localized: "chat:sidebar.history.rename", defaultValue: "Rename"),
-                image: UIImage(systemName: "pencil")
+                image: UIImage(systemName: "pencil"), attributes: editAttributes
             ) { _ in beginRename(chat) },
             UIAction(
                 title: String(localized: "ios:chat.sidebar.copyConversationId", defaultValue: "Copy Chat ID"),
@@ -353,7 +385,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             ) { _ in copyID(of: chat) },
             UIAction(
                 title: String(localized: "common:action.delete", defaultValue: "Delete"),
-                image: UIImage(systemName: "trash"), attributes: .destructive
+                image: UIImage(systemName: "trash"),
+                attributes: list.canEdit ? .destructive : [.destructive, .disabled]
             ) { _ in delete(chat) },
         ])
     }
