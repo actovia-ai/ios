@@ -53,6 +53,10 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
                 with: [
+                    // Tuist's default plist hardcodes "1.0" / "1"; the version lives in Configs/Version.xcconfig
+                    // and the widget extension's CFBundleVersion must equal the app's.
+                    "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+                    "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                     // Ody on a plain background; LaunchSplash (Sources/App)
                     // picks up from this exact frame and animates it away.
                     "UILaunchScreen": [

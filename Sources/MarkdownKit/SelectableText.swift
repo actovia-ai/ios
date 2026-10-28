@@ -539,8 +539,8 @@ struct MarkdownSelectableText: View {
         let requests = styled.iconRequests
         let baselines = baselines
         SelectableText(text: text, baselines: baselines)
-            .alignmentGuide(.firstTextBaseline) { dimensions in baselines.first ?? dimensions[.bottom] }
-            .alignmentGuide(.lastTextBaseline) { dimensions in baselines.last ?? dimensions[.bottom] }
+            .alignmentGuide(.firstTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.first } ?? dimensions[.bottom] }
+            .alignmentGuide(.lastTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.last } ?? dimensions[.bottom] }
             .task(id: requests) {
                 for request in requests where icons[request.url] == nil {
                     guard
@@ -591,7 +591,7 @@ public struct SelectableBodyText: View {
             spec: .body, color: isSecondary ? .secondaryLabel : .label,
             alignment: MarkdownTextStyle.alignment(alignment, in: direction), lineSpacing: lineSpacing, fonts: fonts)
         return SelectableText(text: MarkdownAttributedText.plain(text, style: style), baselines: baselines)
-            .alignmentGuide(.firstTextBaseline) { dimensions in baselines.first ?? dimensions[.bottom] }
-            .alignmentGuide(.lastTextBaseline) { dimensions in baselines.last ?? dimensions[.bottom] }
+            .alignmentGuide(.firstTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.first } ?? dimensions[.bottom] }
+            .alignmentGuide(.lastTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.last } ?? dimensions[.bottom] }
     }
 }

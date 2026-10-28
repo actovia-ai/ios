@@ -622,7 +622,7 @@ struct MapItineraryFullView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     static let peekBase: CGFloat = 170
-    private static let space = "MapItineraryFullView"  // l10n:ignore: a coordinate space's name
+    private nonisolated static let space = "MapItineraryFullView"  // l10n:ignore: a coordinate space's name
     @ScaledMetric(relativeTo: .body) private var peekHeight: CGFloat = MapItineraryFullView.peekBase
 
     init(model: MapItineraryCardModel, start: MapItineraryFocus) {

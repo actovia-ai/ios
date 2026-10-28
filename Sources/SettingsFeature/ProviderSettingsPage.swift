@@ -374,14 +374,15 @@ struct ProviderSettingsPage: View {
     /// The desktop's success toast after a Refresh, as a line under the picker (this app has no toasts).
     private func refreshedLabel(_ count: Int) -> some View {
         let total = count.formatted()
+        let title = Text("settings:providers.model.refreshedTitle")
+        let separator = Text(verbatim: " · ")
+        let description = Text(
+            verbatim: String(
+                localized: "settings:providers.model.refreshedDescription",
+                defaultValue: "\(total) models available",
+                comment: "Under the model picker after a Refresh. %@ is the number of models."))
         return Label {
-            Text("settings:providers.model.refreshedTitle")
-                + Text(verbatim: " · ")
-                + Text(
-                    verbatim: String(
-                        localized: "settings:providers.model.refreshedDescription",
-                        defaultValue: "\(total) models available",
-                        comment: "Under the model picker after a Refresh. %@ is the number of models."))
+            Text("\(title)\(separator)\(description)")
         } icon: {
             Image(systemName: "checkmark.circle.fill")
         }

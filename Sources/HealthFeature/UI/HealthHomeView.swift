@@ -7,7 +7,7 @@ import UIKit
 /// The daily report: the hero, the note, four coloured cards, a memory suggestion, and a question box. Pull down to
 /// stretch Ody and write the note again.
 struct HealthHomeView: View {
-    static let space = HealthCoordinateSpace.home
+    nonisolated static let space = HealthCoordinateSpace.home
     /// How far a pull goes before letting go writes the note again.
     static let pullThreshold: CGFloat = 70
 
@@ -200,7 +200,7 @@ struct HealthHomeView: View {
     private static let heroID = "hero"
     /// Narrower than a chat's column: the hero is as tall as it is wide, and on a landscape screen the cards under it
     /// should start above the fold.
-    private static let columnWidth = HealthLayout.columnWidth
+    private nonisolated static let columnWidth = HealthLayout.columnWidth
 
     /// An empty day, for the cards' placeholder shapes.
     private static let placeholderSnapshot = HealthSnapshot(

@@ -342,8 +342,8 @@ struct MarkdownRunView: View, Equatable {
         let run = run(requests: requests)
         let baselines = baselines
         return SelectableText(text: run.text, baselines: baselines, quotes: run.quotes, fillsWidth: true, snapsBlocks: true)
-            .alignmentGuide(.firstTextBaseline) { dimensions in baselines.first ?? dimensions[.bottom] }
-            .alignmentGuide(.lastTextBaseline) { dimensions in baselines.last ?? dimensions[.bottom] }
+            .alignmentGuide(.firstTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.first } ?? dimensions[.bottom] }
+            .alignmentGuide(.lastTextBaseline) { dimensions in MainActor.assumeIsolated { baselines.last } ?? dimensions[.bottom] }
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityActions {
                 ForEach(chips, id: \.self) { number in
