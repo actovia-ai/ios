@@ -32,13 +32,31 @@ public final class ChatListViewModel {
     /// reload while chats are on screen.
     public var showsErrorAlert: Bool { errorMessage != nil && !(chats.isEmpty && loadFailed) }
 
+    /// When the rows on screen were last read from the computer (or, with `showsCached`, when the stored copy was).
+    public private(set) var lastSyncedAt: Date?
+    /// True while the list shown is the stored copy, because the computer did not answer.
+    public private(set) var showsCached = false
+    /// Whether the app may change anything on the computer: not while it does not answer.
+    public var canEdit: Bool { !status.isOffline }
+
     private let apiClient: APIClient
+    private let offlineStore: OfflineChatStore?
+    private let status: ConnectionStatus
     /// Chats whose DELETE succeeded. A load that started before the delete can finish after it
     /// with a list that still contains the chat; filtering here keeps it from coming back.
     private var deletedIDs: Set<String> = []
 
-    public init(apiClient: APIClient) {
+    public init(
+        apiClient: APIClient, offlineStore: OfflineChatStore? = nil, status: ConnectionStatus = .shared
+    ) {
         self.apiClient = apiClient
+        self.offlineStore = offlineStore
+        self.status = status
+    }
+
+    /// Whether a chat can be opened right now: always while the computer answers, else only if its page is stored.
+    public func isAvailableOffline(_ chatId: String) -> Bool {
+        !status.isOffline || (offlineStore?.cachedChatIds().contains(chatId) ?? false)
     }
 
     public func load() async {
@@ -53,6 +71,20 @@ public final class ChatListViewModel {
         } catch {
             // SwiftUI cancels a view's `.task` when the view goes away; that is not a failure.
             guard !isCancellation(error) else { return }
+            if isUnreachable(error) {
+                // The computer did not answer: a list already on screen stays; with none, the stored copy is shown.
+                if !chats.isEmpty { hasLoaded = true; return }
+                if let cached = offlineStore?.loadList() {
+                    chats = cached.chats.filter { !deletedIDs.contains($0.id) }
+                    favorites = cached.favorites.filter { !deletedIDs.contains($0.id) }
+                    olderCursor = nil
+                    lastSyncedAt = cached.savedAt
+                    showsCached = true
+                    loadFailed = false
+                    hasLoaded = true
+                    return
+                }
+            }
             loadFailed = true
             hasLoaded = true
             errorMessage = error.localizedDescription
@@ -70,6 +102,13 @@ public final class ChatListViewModel {
         guard let page = try? await fetchPage(before: nil) else { return }
         apply(firstPage: page)
         loadFailed = false
+    }
+
+    /// The same classification `APIClient` uses to mark the computer offline: no response at all.
+    private func isUnreachable(_ error: Error) -> Bool {
+        if let url = error as? URLError { return url.code != .cancelled }
+        if let http = error as? HTTPError { return http.statusCode == 0 }
+        return false
     }
 
     /// Appends the next page when the list's end comes into view. Nothing happens while a load is
@@ -92,6 +131,7 @@ public final class ChatListViewModel {
     /// server refused. True only when the server confirmed it.
     @discardableResult
     public func toggleFavorite(_ chat: ChatSummary) async -> Bool {
+        guard canEdit else { return false }
         let starred = chat.favorite != true
         setFavorite(chat.id, starred)
         do {
@@ -116,6 +156,9 @@ public final class ChatListViewModel {
         chats = page.chats.filter { !deletedIDs.contains($0.id) }
         favorites = (page.favorites ?? []).filter { !deletedIDs.contains($0.id) }
         olderCursor = page.olderCursor
+        lastSyncedAt = Date()
+        showsCached = false
+        offlineStore?.saveList(chats: chats, favorites: favorites, at: lastSyncedAt ?? Date())
     }
 
     private func setFavorite(_ id: String, _ starred: Bool) {
@@ -136,6 +179,7 @@ public final class ChatListViewModel {
     /// was when the computer refuses: waiting for it left the row on screen with nothing said.
     @discardableResult
     public func delete(_ chat: ChatSummary) async -> Bool {
+        guard canEdit else { return false }
         let chatIndex = chats.firstIndex { $0.id == chat.id }
         let favoriteIndex = favorites.firstIndex { $0.id == chat.id }
         let removedChat = chatIndex.map { chats[$0] }
@@ -166,7 +210,7 @@ public final class ChatListViewModel {
     @discardableResult
     public func rename(_ chat: ChatSummary, to title: String) async -> Bool {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
+        guard !trimmed.isEmpty, canEdit else { return false }
         let previous = chats.first { $0.id == chat.id }?.title ?? favorites.first { $0.id == chat.id }?.title ?? chat.title
         setTitle(chat.id, trimmed)
         do {
