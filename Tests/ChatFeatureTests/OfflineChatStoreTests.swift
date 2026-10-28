@@ -104,4 +104,22 @@ struct OfflineChatStoreTests {
         store.clear()
         #expect(store.loadList() == nil && store.cachedChatIds().isEmpty)
     }
+
+    @Test func evictionOrdersByFileDateWithoutDecoding() throws {
+        let store = store(root())
+        let ids = (0..<50).map { _ in UUID().uuidString }
+        // Fifty files that are not decodable, dated an hour apart; the 51st page is saved over them.
+        try FileManager.default.createDirectory(at: store.chatsFolder, withIntermediateDirectories: true)
+        for (i, id) in ids.enumerated() {
+            let url = store.chatsFolder.appending(path: "\(id).json")
+            try Data("not json".utf8).write(to: url)
+            try FileManager.default.setAttributes(
+                [.modificationDate: t.addingTimeInterval(Double(i) * 3600)], ofItemAtPath: url.path)
+        }
+        let newest = UUID().uuidString
+        store.savePage(try fixturePage(), chatId: newest, at: t.addingTimeInterval(100 * 3600))
+        let cached = store.cachedChatIds()
+        // The oldest by date goes; an undecodable file that is recent enough stays (it was never decoded).
+        #expect(cached.count == 50 && !cached.contains(ids[0]) && cached.contains(ids[1]) && cached.contains(newest))
+    }
 }

@@ -124,6 +124,8 @@ public final class ChatDetailViewModel {
     private let noticeSleep: @Sendable (Duration) async throws -> Void
     @ObservationIgnored private var noticeClearTask: Task<Void, Never>?
     @ObservationIgnored private var sentInitial = false
+    @ObservationIgnored private var offlineWrites: Task<Void, Never>?
+    @ObservationIgnored private var cacheRefresh: Task<Void, Never>?
 
     /// `noticeLifetime` is how long a notice stays up; `noticeSleep` waits it out — a test hands in one it controls.
     public convenience init(
@@ -297,7 +299,7 @@ public final class ChatDetailViewModel {
             if let holdUntil { try? await Task.sleep(until: holdUntil, clock: .continuous) }
             guard !Task.isCancelled else { return }
             let savedAt = Date()
-            offlineStore?.savePage(page, chatId: chatId, at: savedAt)
+            cache(page, at: savedAt)
             lastSyncedAt = savedAt
             showsCached = false
             show(page: page, built: built)
@@ -324,6 +326,38 @@ public final class ChatDetailViewModel {
             errorMessage = error.localizedDescription
             failureCount += 1
         }
+    }
+
+    /// Stores a page for offline reading, off the main actor and in order. Dropped when the active computer is no
+    /// longer the one this view's store belongs to: a cache write never lands in another computer's folder.
+    private func cache(_ page: ChatHistoryPage, at date: Date) {
+        guard let store = offlineStore, apiClient.activeFingerprint == store.fingerprint else { return }
+        let chatId = chatId
+        let previous = offlineWrites
+        offlineWrites = Task.detached(priority: .utility) {
+            await previous?.value
+            store.savePage(page, chatId: chatId, at: date)
+        }
+    }
+
+    /// After a turn: the stored page learns the exchange just had, so it reads the same offline later. The screen
+    /// is left alone.
+    private func refreshCachedPage() {
+        guard offlineStore != nil else { return }
+        let previous = cacheRefresh
+        cacheRefresh = Task { [weak self] in
+            await previous?.value
+            guard let self,
+                let page: ChatHistoryPage = try? await apiClient.get("/api/v1/chat/\(chatId)/page")
+            else { return }
+            cache(page, at: Date())
+        }
+    }
+
+    /// Waits for the pending cache writes (tests).
+    func flushOfflineWrites() async {
+        await cacheRefresh?.value
+        await offlineWrites?.value
     }
 
     private func show(page: ChatHistoryPage, built: [ChatMessage]) {
@@ -354,7 +388,7 @@ public final class ChatDetailViewModel {
         let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
         guard !Task.isCancelled, !isTurnInFlight else { return }
         let savedAt = Date()
-        offlineStore?.savePage(page, chatId: chatId, at: savedAt)
+        cache(page, at: savedAt)
         lastSyncedAt = savedAt
         showsCached = false
         if olderPageCount > 0 && hasLoadedHistory {
@@ -713,7 +747,10 @@ public final class ChatDetailViewModel {
             case .finished(let messages):
                 self.messages = messages
                 status = .idle
-                if !turnWasStopped { completedTurnCount += 1 }
+                if !turnWasStopped {
+                    completedTurnCount += 1
+                    refreshCachedPage()
+                }
             case .unreachable:
                 connection.markOffline()
             case .failed(let message):

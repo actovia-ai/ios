@@ -158,7 +158,10 @@ public final class ChatListViewModel {
         olderCursor = page.olderCursor
         lastSyncedAt = Date()
         showsCached = false
-        offlineStore?.saveList(chats: chats, favorites: favorites, at: lastSyncedAt ?? Date())
+        // A refresh begun on one computer can finish after a switch to another: its list is not this store's.
+        if let store = offlineStore, apiClient.activeFingerprint == store.fingerprint {
+            store.saveList(chats: chats, favorites: favorites, at: lastSyncedAt ?? Date())
+        }
     }
 
     private func setFavorite(_ id: String, _ starred: Bool) {

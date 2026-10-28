@@ -24,8 +24,11 @@ public struct OfflineChatStore: Sendable {
     static let currentVersion = 1
 
     let folder: URL
+    /// The computer this store belongs to; a writer checks it still is the active one (M1).
+    public let fingerprint: String
 
     public init(root: URL, fingerprint: String) {
+        self.fingerprint = fingerprint
         folder = root.appending(path: Self.folderName(fingerprint), directoryHint: .isDirectory)
     }
 
@@ -75,6 +78,8 @@ public struct OfflineChatStore: Sendable {
     func savePage(_ page: ChatHistoryPage, chatId: String, at date: Date) {
         guard let url = pageURL(chatId) else { return }
         write(CachedChatPage(version: Self.currentVersion, savedAt: date, page: page), to: url)
+        // Eviction orders by modification date, so it is the save date and needs no decoding.
+        try? FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: url.path)
         evict()
     }
 
@@ -109,15 +114,17 @@ public struct OfflineChatStore: Sendable {
         return files.filter { $0.pathExtension == "json" }
     }
 
-    /// Keeps the `maxChats` newest pages by `savedAt`. A file that does not decode is dated by its modification date
-    /// and, being unreadable, deleted.
+    /// Keeps the `maxChats` newest pages by modification date (every save sets it to `savedAt`), without decoding
+    /// any of them. A file with no readable date is deleted.
     private func evict() {
-        let files = pageFiles()
-        guard files.count > Self.maxChats else { return }
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: chatsFolder, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
+        let pages = files.filter { $0.pathExtension == "json" }
+        guard pages.count > Self.maxChats else { return }
         var dated: [(url: URL, date: Date)] = []
-        for url in files {
-            if let cached: CachedChatPage = read(url) {
-                dated.append((url, cached.savedAt))
+        for url in pages {
+            if let date = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
+                dated.append((url, date))
             } else {
                 try? FileManager.default.removeItem(at: url)
             }

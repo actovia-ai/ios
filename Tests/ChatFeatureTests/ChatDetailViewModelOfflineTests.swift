@@ -65,13 +65,26 @@ struct ChatDetailViewModelOfflineTests {
             fingerprint: "A")
     }
 
-    private func make(store: OfflineChatStore?, status: ConnectionStatus, _ suite: String = #function)
-        -> ChatDetailViewModel
+    /// Pairs `fingerprint` as the active computer on `config`, its requests going through `session`.
+    private func pair(_ config: ServerConfigStore, session: URLSession, fingerprint: String?) async throws {
+        guard let fingerprint else { return }
+        let computer = PairedServer(
+            hosts: ["10.0.0.2"], port: 63129, fingerprint: fingerprint, name: "Mac", deviceId: "d", token: "T")
+        let connection = ServerConnection(
+            store: InMemoryCredentialStore(computers: PairedComputers(servers: [computer], activeFingerprint: fingerprint)),
+            sessionFactory: { _ in session })
+        try await connection.unlock(reason: "test")
+        config.connection = connection
+    }
+
+    private func make(store: OfflineChatStore?, status: ConnectionStatus, active: String? = "A", _ suite: String = #function)
+        async throws -> ChatDetailViewModel
     {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
         let config = ServerConfigStore(userDefaults: defaults)
         let session = OfflineDetailMockURLProtocol.makeSession()
+        try await pair(config, session: session, fingerprint: active)
         let client = APIClient(session: session, serverConfig: config, status: status)
         return ChatDetailViewModel(
             chatId: chatId, apiClient: client, streamManager: ChatStreamManager(sseClient: SSEClient(session: session)),
@@ -80,7 +93,7 @@ struct ChatDetailViewModelOfflineTests {
 
     private func serve(
         rows: String = rowsJSON, failure: URLError? = nil, status: Int = 200, holdOpen: Bool = false,
-        failChatPost: URLError? = nil, recorder: Recorder
+        failChatPost: URLError? = nil, chatReply: String = "", recorder: Recorder
     ) {
         OfflineDetailMockURLProtocol.holdsChatPostOpen = holdOpen
         OfflineDetailMockURLProtocol.handler = { request in
@@ -88,7 +101,7 @@ struct ChatDetailViewModelOfflineTests {
             let path = request.url?.path ?? ""
             recorder.record("\(method) \(path)")
             if method == "POST", path == "/api/v1/chat", let failChatPost { throw failChatPost }
-            if method == "POST", path == "/api/v1/chat" { return (200, Data()) }
+            if method == "POST", path == "/api/v1/chat" { return (200, Data(chatReply.utf8)) }
             if let failure { throw failure }
             return (status, ChatPageFixture.wrap(Data(rows.utf8), path: path))
         }
@@ -102,8 +115,9 @@ struct ChatDetailViewModelOfflineTests {
     @Test func savesNewestPage() async throws {
         let store = makeStore()
         serve(recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.loadHistory()
+        await vm.flushOfflineWrites()
         let saved = try #require(store.loadPage(chatId: chatId))
         #expect(saved.page.messages.map(\.id) == ["u1", "a1"])
         #expect(vm.showsCached == false)
@@ -114,6 +128,7 @@ struct ChatDetailViewModelOfflineTests {
             rows: #"[{"id":"u0","chatId":"c1","role":"user","content":"old","searchText":"old","createdAt":"2026-09-17T12:00:00.000Z"}]"#,
             recorder: Recorder())
         await vm.loadOlder()
+        await vm.flushOfflineWrites()
         #expect(try #require(store.loadPage(chatId: chatId)).page.messages.map(\.id) == ["u1", "a1"])
     }
 
@@ -121,7 +136,7 @@ struct ChatDetailViewModelOfflineTests {
         let store = makeStore()
         store.savePage(try cachedPage(), chatId: chatId, at: seeded)
         serve(failure: URLError(.notConnectedToInternet), recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.loadHistory()
         #expect(vm.messages.map(\.displayText) == ["cached question"])
         #expect(vm.hasLoadedHistory)
@@ -131,9 +146,9 @@ struct ChatDetailViewModelOfflineTests {
         #expect(vm.showsErrorAlert == false)
     }
 
-    @Test func noCachedPageShowsError() async {
+    @Test func noCachedPageShowsError() async throws {
         serve(failure: URLError(.notConnectedToInternet), recorder: Recorder())
-        let vm = make(store: makeStore(), status: ConnectionStatus())
+        let vm = try await make(store: makeStore(), status: ConnectionStatus())
         await vm.loadHistory()
         #expect(vm.hasLoadedHistory == false)
         #expect(vm.showsCached == false)
@@ -145,7 +160,7 @@ struct ChatDetailViewModelOfflineTests {
         let store = makeStore()
         store.savePage(try cachedPage(), chatId: chatId, at: seeded)
         serve(rows: #"{"type":"error","error":{"code":"X","message":"boom"}}"#, status: 500, recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.loadHistory()
         #expect(vm.showsCached == false)
         #expect(vm.messages.isEmpty)
@@ -156,7 +171,7 @@ struct ChatDetailViewModelOfflineTests {
         let recorder = Recorder()
         serve(recorder: recorder)
         let status = ConnectionStatus()
-        let vm = make(store: makeStore(), status: status)
+        let vm = try await make(store: makeStore(), status: status)
         await vm.loadHistory()
         #expect(vm.canSend == false)  // empty draft
         vm.composerText = "hello again"
@@ -198,7 +213,7 @@ struct ChatDetailViewModelOfflineTests {
         let a2 = row("a2", "assistant", "dos", "2026-09-19T12:00:05.000Z")
         let u3 = row("u3", "user", "three", "2026-09-20T12:00:00.000Z")
         let a3 = row("a3", "assistant", "tres", "2026-09-20T12:00:05.000Z")
-        let vm = make(store: makeStore(), status: ConnectionStatus())
+        let vm = try await make(store: makeStore(), status: ConnectionStatus())
         serve(
             rows: ChatPageFixture.page("[\(u2),\(a2)]", hasOlder: true, olderCursor: "cur-newest"), recorder: Recorder())
         await vm.loadHistory()
@@ -222,12 +237,13 @@ struct ChatDetailViewModelOfflineTests {
         store.savePage(try cachedPage(), chatId: chatId, at: seeded)
         serve(failure: URLError(.timedOut), recorder: Recorder())
         let status = ConnectionStatus()
-        let vm = make(store: store, status: status)
+        let vm = try await make(store: store, status: status)
         await vm.loadHistory()
         #expect(vm.showsCached)
         let recorder = Recorder()
         serve(recorder: recorder)
         await vm.refreshAfterReconnect()
+        await vm.flushOfflineWrites()
         #expect(recorder.requests == ["GET /api/v1/chat/\(chatId)/page"])
         #expect(vm.showsCached == false)
         #expect(vm.messages.map(\.id) == ["u1", "a1"])
@@ -238,7 +254,7 @@ struct ChatDetailViewModelOfflineTests {
     @Test func refreshAfterReconnectWaitsForStream() async throws {
         let recorder = Recorder()
         serve(holdOpen: true, recorder: recorder)
-        let vm = make(store: makeStore(), status: ConnectionStatus())
+        let vm = try await make(store: makeStore(), status: ConnectionStatus())
         await vm.loadHistory()
         vm.composerText = "go"
         let sending = Task { await vm.sendMessage() }
@@ -260,12 +276,43 @@ struct ChatDetailViewModelOfflineTests {
         let recorder = Recorder()
         serve(failChatPost: URLError(.networkConnectionLost), recorder: recorder)
         let status = ConnectionStatus()
-        let vm = make(store: makeStore(), status: status)
+        let vm = try await make(store: makeStore(), status: status)
         await vm.loadHistory()
         vm.composerText = "go"
         await vm.sendMessage()
         #expect(status.isOffline)
         #expect(vm.errorMessage != nil)
         #expect(vm.liveRunError != nil)
+    }
+
+    @Test func finishedTurnUpdatesStoredPage() async throws {
+        let store = makeStore()
+        let recorder = Recorder()
+        serve(recorder: recorder)
+        let vm = try await make(store: store, status: ConnectionStatus())
+        await vm.loadHistory()
+        await vm.flushOfflineWrites()
+        #expect(try #require(store.loadPage(chatId: chatId)).page.messages.map(\.id) == ["u1", "a1"])
+        // The turn is answered, and the page the computer holds now has the exchange.
+        let after = rowsJSON.dropLast() + #",{"id":"u2","chatId":"c1","role":"user","content":"more","searchText":"more","createdAt":"2026-09-18T12:01:00.000Z"}]"#
+        serve(
+            rows: String(after), chatReply: """
+                data: {"type":"done","messages":[{"id":"u2","role":"user","content":"more"}]}\n\n
+                """, recorder: recorder)
+        vm.composerText = "more"
+        await vm.sendMessage()
+        await vm.flushOfflineWrites()
+        #expect(try #require(store.loadPage(chatId: chatId)).page.messages.map(\.id) == ["u1", "a1", "u2"])
+    }
+
+    @Test func writeForAnotherComputerIsDropped() async throws {
+        let store = makeStore()  // computer "A"
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus(), active: "B")
+        await vm.loadHistory()
+        await vm.flushOfflineWrites()
+        #expect(vm.messages.map(\.id) == ["u1", "a1"])
+        #expect(store.loadPage(chatId: chatId) == nil)
+        #expect(FileManager.default.fileExists(atPath: store.folder.path) == false)
     }
 }

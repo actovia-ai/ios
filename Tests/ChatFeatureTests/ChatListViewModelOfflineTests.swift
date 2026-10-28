@@ -65,14 +65,27 @@ struct ChatListViewModelOfflineTests {
             fingerprint: "A")
     }
 
-    private func make(store: OfflineChatStore?, status: ConnectionStatus, _ suite: String = #function)
-        -> ChatListViewModel
+    /// Pairs `fingerprint` as the active computer on `config`, its requests going through `session`.
+    private func pair(_ config: ServerConfigStore, session: URLSession, fingerprint: String?) async throws {
+        guard let fingerprint else { return }
+        let computer = PairedServer(
+            hosts: ["10.0.0.2"], port: 63129, fingerprint: fingerprint, name: "Mac", deviceId: "d", token: "T")
+        let connection = ServerConnection(
+            store: InMemoryCredentialStore(computers: PairedComputers(servers: [computer], activeFingerprint: fingerprint)),
+            sessionFactory: { _ in session })
+        try await connection.unlock(reason: "test")
+        config.connection = connection
+    }
+
+    private func make(store: OfflineChatStore?, status: ConnectionStatus, active: String? = "A", _ suite: String = #function)
+        async throws -> ChatListViewModel
     {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
-        let client = APIClient(
-            session: OfflineListMockURLProtocol.makeSession(),
-            serverConfig: ServerConfigStore(userDefaults: defaults), status: status)
+        let config = ServerConfigStore(userDefaults: defaults)
+        let session = OfflineListMockURLProtocol.makeSession()
+        try await pair(config, session: session, fingerprint: active)
+        let client = APIClient(session: session, serverConfig: config, status: status)
         return ChatListViewModel(apiClient: client, offlineStore: store, status: status)
     }
 
@@ -91,10 +104,10 @@ struct ChatListViewModelOfflineTests {
         ChatSummary(id: "k2", title: "Cached two", createdAt: "2026-08-01T00:00:00.000Z", favorite: true),
     ]
 
-    @Test func savesFirstPageOnSuccess() async {
+    @Test func savesFirstPageOnSuccess() async throws {
         let store = makeStore()
         serve(recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.load()
         #expect(store.loadList()?.chats.map(\.id) == ["c1", "c2"])
         #expect(vm.lastSyncedAt != nil)
@@ -107,11 +120,11 @@ struct ChatListViewModelOfflineTests {
         #expect(store.loadList()?.chats.map(\.id) == ["c1", "c2"])
     }
 
-    @Test func fallsBackToCacheWhenUnreachable() async {
+    @Test func fallsBackToCacheWhenUnreachable() async throws {
         let store = makeStore()
         store.saveList(chats: cachedChats, favorites: [cachedChats[1]], at: seeded)
         serve(failure: URLError(.notConnectedToInternet), recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.load()
         #expect(vm.chats == cachedChats)
         #expect(vm.favorites == [cachedChats[1]])
@@ -123,32 +136,32 @@ struct ChatListViewModelOfflineTests {
         #expect(vm.hasMore == false)
     }
 
-    @Test func noCacheStillShowsCantLoad() async {
+    @Test func noCacheStillShowsCantLoad() async throws {
         serve(failure: URLError(.notConnectedToInternet), recorder: Recorder())
-        let vm = make(store: makeStore(), status: ConnectionStatus())
+        let vm = try await make(store: makeStore(), status: ConnectionStatus())
         await vm.load()
         #expect(vm.loadFailed)
         #expect(vm.showsCached == false)
         #expect(vm.chats.isEmpty)
     }
 
-    @Test func serverErrorDoesNotFallBackToCache() async {
+    @Test func serverErrorDoesNotFallBackToCache() async throws {
         let store = makeStore()
         store.saveList(chats: cachedChats, favorites: [], at: seeded)
         serve(history: #"{"type":"error","error":{"code":"X","message":"boom"}}"#, status: 500, recorder: Recorder())
-        let vm = make(store: store, status: ConnectionStatus())
+        let vm = try await make(store: store, status: ConnectionStatus())
         await vm.load()
         #expect(vm.loadFailed)
         #expect(vm.showsCached == false)
         #expect(vm.chats.isEmpty)
     }
 
-    @Test func successAfterCacheClearsShowsCached() async {
+    @Test func successAfterCacheClearsShowsCached() async throws {
         let store = makeStore()
         store.saveList(chats: cachedChats, favorites: [], at: seeded)
         serve(failure: URLError(.timedOut), recorder: Recorder())
         let status = ConnectionStatus()
-        let vm = make(store: store, status: status)
+        let vm = try await make(store: store, status: status)
         await vm.load()
         #expect(vm.showsCached)
         serve(recorder: Recorder())
@@ -162,7 +175,7 @@ struct ChatListViewModelOfflineTests {
         let recorder = Recorder()
         serve(recorder: recorder)
         let status = ConnectionStatus()
-        let vm = make(store: makeStore(), status: status)
+        let vm = try await make(store: makeStore(), status: status)
         await vm.load()
         let chat = try #require(vm.chats.first)
         status.markOffline()
@@ -179,7 +192,7 @@ struct ChatListViewModelOfflineTests {
         #expect(vm.canEdit)
     }
 
-    @Test func isAvailableOfflineFollowsCache() throws {
+    @Test func isAvailableOfflineFollowsCache() async throws {
         let store = makeStore()
         let cachedId = UUID().uuidString
         let page = try JSONDecoder().decode(
@@ -187,10 +200,19 @@ struct ChatListViewModelOfflineTests {
             from: Data(ChatPageFixture.page("[]", hasOlder: false, olderCursor: nil).utf8))
         store.savePage(page, chatId: cachedId, at: seeded)
         let status = ConnectionStatus()
-        let vm = make(store: store, status: status)
+        let vm = try await make(store: store, status: status)
         #expect(vm.isAvailableOffline("other"))  // online: everything is
         status.markOffline()
         #expect(vm.isAvailableOffline(cachedId))
         #expect(vm.isAvailableOffline("other") == false)
+    }
+
+    @Test func listFromAnotherComputerIsNotStored() async throws {
+        let store = makeStore()  // computer "A"
+        serve(recorder: Recorder())
+        let vm = try await make(store: store, status: ConnectionStatus(), active: "B")
+        await vm.load()
+        #expect(vm.hasLoaded)
+        #expect(store.loadList() == nil)
     }
 }

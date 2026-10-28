@@ -9,6 +9,9 @@ public struct APIClient: Sendable {
     /// Told whether the computer answers: online on any HTTP response, offline when no address did.
     private let status: ConnectionStatus?
 
+    /// The paired computer requests go to right now; nil while none.
+    public var activeFingerprint: String? { serverConfig.route.fingerprint }
+
     public init(
         session: URLSession = .shared, serverConfig: ServerConfigStore, reporter: LogReporter? = nil,
         status: ConnectionStatus? = .shared
