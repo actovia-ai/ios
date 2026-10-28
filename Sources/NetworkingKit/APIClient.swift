@@ -6,11 +6,17 @@ public struct APIClient: Sendable {
     private let serverConfig: ServerConfigStore
     /// Where this app's own errors go; also told of every answered request, so waiting reports flush.
     public let reporter: LogReporter?
+    /// Told whether the computer answers: online on any HTTP response, offline when no address did.
+    private let status: ConnectionStatus?
 
-    public init(session: URLSession = .shared, serverConfig: ServerConfigStore, reporter: LogReporter? = nil) {
+    public init(
+        session: URLSession = .shared, serverConfig: ServerConfigStore, reporter: LogReporter? = nil,
+        status: ConnectionStatus? = .shared
+    ) {
         self.session = session
         self.serverConfig = serverConfig
         self.reporter = reporter
+        self.status = status
     }
 
     public func get<T: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> T {
@@ -74,14 +80,39 @@ public struct APIClient: Sendable {
                 path: path, query: query, method: method, body: body, decodeResponse: decodeResponse,
                 timeout: timeout)
             reporter?.noteReachable()
+            await noteConnection(answered: true)
             return result
         } catch let error as AttemptsError {
             reportFailure(error.underlying, path: path, attempts: error.attempts)
+            await noteConnection(error.underlying)
             throw error.underlying
         } catch {
             reportFailure(error, path: path)
+            await noteConnection(error)
             throw error
         }
+    }
+
+    /// An HTTP response (or a body that arrived and would not decode) means the computer answered; a `URLError` or an
+    /// unusable address means nothing did. Cancellation says nothing either way.
+    private func noteConnection(_ error: Error) async {
+        if error is CancellationError { return }
+        switch error {
+        case let url as URLError:
+            if url.code == .cancelled { return }
+            await noteConnection(answered: false)
+        case let http as HTTPError:
+            await noteConnection(answered: http.statusCode > 0)
+        case is DecodingError:
+            await noteConnection(answered: true)
+        default:
+            break
+        }
+    }
+
+    private func noteConnection(answered: Bool) async {
+        guard let status else { return }
+        await MainActor.run { answered ? status.markOnline() : status.markOffline() }
     }
 
     /// Status and path only: never the query, a body, or the server's message (it can echo what was sent).
