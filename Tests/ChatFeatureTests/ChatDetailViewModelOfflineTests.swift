@@ -211,6 +211,10 @@ struct ChatDetailViewModelOfflineTests {
         #expect(recorder.requests == before)
         await vm.stop()
         await sending.value
+        // Once the turn is over, the same call does fetch: the guard above is what held it back, not a no-op.
+        await vm.refreshAfterReconnect()
+        #expect(recorder.requests.last == "GET /api/v1/chat/\(chatId)/page")
+        #expect(recorder.requests.count == before.count + 1)
     }
 
     @Test func streamTransportFailureMarksOffline() async throws {
