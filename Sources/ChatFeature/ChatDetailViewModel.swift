@@ -117,6 +117,9 @@ public final class ChatDetailViewModel {
     @ObservationIgnored let readAloud: ReadAloudModel
     private let streamManager: ChatStreamManager
     private let serverConfig: ServerConfigStore
+    private let offlineStore: OfflineChatStore?
+    /// Whether the computer answers (named so it does not read as the turn's `status`).
+    private let connection: ConnectionStatus
     private let noticeLifetime: Duration
     private let noticeSleep: @Sendable (Duration) async throws -> Void
     @ObservationIgnored private var noticeClearTask: Task<Void, Never>?
@@ -126,19 +129,24 @@ public final class ChatDetailViewModel {
     public convenience init(
         chatId: String, title: String? = nil, apiClient: APIClient, streamManager: ChatStreamManager,
         serverConfig: ServerConfigStore, noticeLifetime: Duration = .seconds(6),
-        noticeSleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+        noticeSleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
+        offlineStore: OfflineChatStore? = nil, status: ConnectionStatus = .shared
     ) {
         self.init(
             chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager,
-            serverConfig: serverConfig, noticeLifetime: noticeLifetime, noticeSleep: noticeSleep, readAloud: nil)
+            serverConfig: serverConfig, noticeLifetime: noticeLifetime, noticeSleep: noticeSleep, readAloud: nil,
+            offlineStore: offlineStore, status: status)
     }
 
     /// `readAloud`: a test's stand-in for the computer's speech and the phone's audio.
     init(
         chatId: String, title: String?, apiClient: APIClient, streamManager: ChatStreamManager,
         serverConfig: ServerConfigStore, noticeLifetime: Duration,
-        noticeSleep: @escaping @Sendable (Duration) async throws -> Void, readAloud: ReadAloudModel?
+        noticeSleep: @escaping @Sendable (Duration) async throws -> Void, readAloud: ReadAloudModel?,
+        offlineStore: OfflineChatStore? = nil, status: ConnectionStatus = .shared
     ) {
+        self.offlineStore = offlineStore
+        self.connection = status
         self.chatId = chatId
         self.chatTitle = Self.oneLine(title)
         self.apiClient = apiClient
@@ -198,9 +206,16 @@ public final class ChatDetailViewModel {
     /// A stream failure is shown at the foot of its run, so the alert is kept for everything else.
     public var showsErrorAlert: Bool { errorMessage != nil && liveRunError == nil }
 
+    /// True while the stored copy of this chat is what is shown, because the computer did not answer.
+    public private(set) var showsCached = false
+    /// When the rows on screen were last read from the computer (or, with `showsCached`, when the stored copy was).
+    public private(set) var lastSyncedAt: Date?
+    /// Nothing is sent to a computer that does not answer.
+    public var isReadOnly: Bool { connection.isOffline }
+
     public var canSend: Bool {
         // A message may be pictures alone, as on the desktop; one picked but not ready yet would be left out of it.
-        hasLoadedHistory && !isTurnInFlight && !isPreparingPictures
+        hasLoadedHistory && !isReadOnly && !isTurnInFlight && !isPreparingPictures
             && (!composerText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty)
     }
 
@@ -217,7 +232,7 @@ public final class ChatDetailViewModel {
             isTurnInFlight: isTurnInFlight)
     }
 
-    public var canRegenerate: Bool { regenerableTurnId != nil || canRetryOrphanError }
+    public var canRegenerate: Bool { !isReadOnly && (regenerableTurnId != nil || canRetryOrphanError) }
 
     /// True for a loaded, empty chat with nothing in flight: the view shows its greeting. Never true
     /// before the history is known, so opening a chat does not flash the greeting.
@@ -281,12 +296,11 @@ public final class ChatDetailViewModel {
             let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
             if let holdUntil { try? await Task.sleep(until: holdUntil, clock: .continuous) }
             guard !Task.isCancelled else { return }
-            olderSources = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
-            hasOlder = page.hasOlder
-            olderCursor = page.olderCursor
-            messages = built
-            if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
-            fillTruncated(rows)
+            let savedAt = Date()
+            offlineStore?.savePage(page, chatId: chatId, at: savedAt)
+            lastSyncedAt = savedAt
+            showsCached = false
+            show(page: page, built: built)
             clearRunError()
             // Only the first load says what this chat was; a later pull-to-refresh sees the turns
             // that have happened since and must not turn a new chat into an old one.
@@ -295,9 +309,57 @@ public final class ChatDetailViewModel {
         } catch {
             // SwiftUI cancels a view's `.task` when the view goes away; that is not a failure.
             guard !isCancellation(error) else { return }
+            // The computer did not answer: the stored copy of the newest page is shown, if there is one.
+            if isUnreachable(error), !hasLoadedHistory, let cached = offlineStore?.loadPage(chatId: chatId) {
+                let rows = cached.page.messages
+                let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
+                guard !Task.isCancelled else { return }
+                show(page: cached.page, built: built)
+                lastSyncedAt = cached.savedAt
+                showsCached = true
+                openedWithMessages = !messages.isEmpty
+                hasLoadedHistory = true
+                return
+            }
             errorMessage = error.localizedDescription
             failureCount += 1
         }
+    }
+
+    private func show(page: ChatHistoryPage, built: [ChatMessage]) {
+        let rows = page.messages
+        olderSources = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
+        hasOlder = page.hasOlder
+        olderCursor = page.olderCursor
+        messages = built
+        if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
+        fillTruncated(rows)
+    }
+
+    /// The same classification `APIClient` uses to mark the computer offline: no response at all.
+    private func isUnreachable(_ error: Error) -> Bool {
+        if let url = error as? URLError { return url.code != .cancelled }
+        if let http = error as? HTTPError { return http.statusCode == 0 }
+        return false
+    }
+
+    /// The computer answers again: reads the newest page once more and stores it, without emptying the screen. A turn
+    /// in flight is left alone, and so is a transcript the reader has already scrolled back (older runs stay).
+    public func refreshAfterReconnect() async {
+        guard !isTurnInFlight, !(await streamManager.isStreaming(chatId)) else { return }
+        guard let page: ChatHistoryPage = try? await apiClient.get("/api/v1/chat/\(chatId)/page") else { return }
+        guard !isTurnInFlight else { return }
+        let rows = page.messages
+        let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
+        guard !Task.isCancelled, !isTurnInFlight else { return }
+        let savedAt = Date()
+        offlineStore?.savePage(page, chatId: chatId, at: savedAt)
+        lastSyncedAt = savedAt
+        showsCached = false
+        show(page: page, built: built)
+        clearRunError()
+        if !hasLoadedHistory { openedWithMessages = !messages.isEmpty }
+        hasLoadedHistory = true
     }
 
     /// The page before the first run shown, put in above it. Does nothing while one loads or when there is none; a
@@ -502,7 +564,7 @@ public final class ChatDetailViewModel {
     }
 
     /// Whether a compared answer may be kept now.
-    public var canChoose: Bool { hasLoadedHistory && !isTurnInFlight }
+    public var canChoose: Bool { hasLoadedHistory && !isTurnInFlight && !isReadOnly }
 
     /// Keeps one answer of a comparison (or swaps in the folded one): shown at once, and put back as it was when the
     /// computer refuses. A 409 means a later message exists; a 404 that the run is gone. Either way the transcript is
@@ -641,6 +703,8 @@ public final class ChatDetailViewModel {
                 self.messages = messages
                 status = .idle
                 if !turnWasStopped { completedTurnCount += 1 }
+            case .unreachable:
+                connection.markOffline()
             case .failed(let message):
                 if let run = messages.last(where: { $0.role == "user" }) {
                     liveRunError = LiveRunError(runId: run.runId ?? run.id, message: message)

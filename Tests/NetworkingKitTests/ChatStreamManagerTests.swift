@@ -118,6 +118,7 @@ private final class UpdateLog: Sendable {
                 case .approval(.resolved(_, let toolCallId, let outcome)): "approval:resolved:\(toolCallId):\(outcome)"
                 case .memoriesUsed(let runId, let memories): "memories:\(runId):\(memories.map(\.key).joined(separator: ","))"
                 case .memoryChanged: "memoryChanged"
+                case .unreachable: "unreachable"
                 }
             }
         }

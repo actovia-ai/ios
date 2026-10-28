@@ -30,6 +30,9 @@ public enum ChatStreamUpdate: Sendable {
     case title(String)
     case finished([ChatMessage])
     case failed(String)
+    /// The turn's stream failed because no address answered (not an HTTP status): sent just before `.failed`, so a
+    /// client can tell the computer is away.
+    case unreachable
     case notice(StreamNotice)
     /// A tool call paused for the user's answer, or how it was settled.
     case approval(ApprovalEvent)
@@ -141,7 +144,7 @@ public actor ChatStreamManager {
             } catch {
                 await self?.fail(
                     chatId: chatId, generation: generation,
-                    message: error.localizedDescription)
+                    message: error.localizedDescription, unreachable: Self.isUnreachable(error))
             }
         }
         streams[chatId]?.task = task
@@ -238,8 +241,16 @@ public actor ChatStreamManager {
         streams[chatId] = nil
     }
 
-    private func fail(chatId: String, generation: UUID, message: String) {
+    /// The classification `APIClient` marks the computer offline by: no response at all.
+    nonisolated static func isUnreachable(_ error: Error) -> Bool {
+        if let url = error as? URLError { return url.code != .cancelled }
+        if let http = error as? HTTPError { return http.statusCode == 0 }
+        return false
+    }
+
+    private func fail(chatId: String, generation: UUID, message: String, unreachable: Bool = false) {
         guard let stream = streams[chatId], stream.generation == generation else { return }
+        if unreachable { stream.continuation?.yield(.unreachable) }
         stream.continuation?.yield(.status(.error))
         stream.continuation?.yield(.failed(message))
         stream.continuation?.finish()
