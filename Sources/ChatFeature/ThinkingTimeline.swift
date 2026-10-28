@@ -52,6 +52,7 @@ struct ThinkingTimeline: View {
             Text(verbatim: headerText)
                 .fontWeight(.medium)
                 .lineLimit(1)
+                .shimmering(isLive, length: headerText.count)
                 .contentTransition(.opacity)
             Image(systemName: "chevron.right")
                 .imageScale(.small)
@@ -227,9 +228,12 @@ private struct TimelineStepRow: View {
     }
 
     private func callText(_ call: AssistantTurn.ToolCallStep) -> some View {
-        Text(verbatim: ToolPresentation.callText(call))
+        let running = Shimmer.isRunning(step, isActive: isActive)
+        return Text(verbatim: ToolPresentation.callText(call))
             .font(.subheadline)
-            .foregroundStyle(isActive ? .primary : .secondary)
+            // The band is the primary colour, so a running step rests on secondary and the band lights it.
+            .foregroundStyle(isActive && !running ? .primary : .secondary)
+            .shimmering(running, length: ToolPresentation.callText(call).count)
     }
 
     /// Inline emphasis only, every newline kept: a reasoning step is prose, and its `**title**` should read bold.
