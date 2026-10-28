@@ -1,3 +1,21 @@
+# [1.4.0](https://github.com/actovia-ai/ios/compare/v1.3.2...v1.4.0) (2026-10-21)
+
+
+### Bug Fixes
+
+* **map:** Close on the full-screen map no longer hangs the app (YAN-108 follow-up) ([db6035d](https://github.com/actovia-ai/ios/commit/db6035d08e504a3c723b8000163440ef1630476c))
+* **map:** stop times centred on their row; native day chips in the card and over the full map (YAN-108) ([2b67ac5](https://github.com/actovia-ai/ios/commit/2b67ac57f8c46066a513f79eb2e2f1d496e3816f))
+* **sidebar:** a long-pressed chat lifts a clean preview card and never closes the drawer (YAN-107) ([5fa6b1c](https://github.com/actovia-ai/ios/commit/5fa6b1cae784c3cc81981ee1db588e7548b5ca31))
+* **sidebar:** a long-pressed chat shows only its menu — no lifted card (YAN-107 follow-up) ([37ca986](https://github.com/actovia-ai/ios/commit/37ca98669a7e6c0e003cf81f816c6d2aac04ac5b))
+* **sidebar:** the chat list scrolls again — row touches read in UIKit, not by a zero-distance drag ([08f4caa](https://github.com/actovia-ai/ios/commit/08f4caa2024d9a4fe90b3ae039cba692a8878e7f))
+* **ui:** batch A of the design pass — approval contrast, close buttons, hero fade, composer wash, stock states ([1cc9c4d](https://github.com/actovia-ai/ios/commit/1cc9c4de4815a7276fcf7c509a233acf8ade36de))
+* **ui:** batch C of the design pass — rows, Health headline, code ([d4e100c](https://github.com/actovia-ai/ios/commit/d4e100cfa0dfe804c083ad34df310c00cfb7e59f))
+
+
+### Features
+
+* **ui:** Ody greets a new chat and the pairing welcome (batch B of the design pass) ([569f416](https://github.com/actovia-ai/ios/commit/569f416b3624d4898b738f2fc300198bf6d14232))
+
 ## [1.3.2](https://github.com/actovia-ai/ios/compare/v1.3.1...v1.3.2) (2026-10-21)
 
 
