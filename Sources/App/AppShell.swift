@@ -149,6 +149,12 @@ struct AppShell: View {
         }
     }
 
+    /// The paired computer's offline copy of its chats; nil while no computer is paired (the Simulator's manual
+    /// address). The shell starts again on a switch (`PairingGate`), so it is read afresh for the new computer.
+    private var offlineStore: OfflineChatStore? {
+        serverConfig.connection?.route?.fingerprint.map { OfflineChatStore.standard(fingerprint: $0) }
+    }
+
     private var sidebar: some View {
         ChatSidebarView(
             apiClient: apiClient,
@@ -169,7 +175,8 @@ struct AppShell: View {
                 if id == activeChat.id { activeChat.title = title }
             },
             onRecentsChange: { widgetWriter.recentsChanged($0) },
-            showsRecents: workspace != .philharmonic
+            showsRecents: workspace != .philharmonic,
+            offlineStore: offlineStore
         ) {
             ForEach(AppWorkspace.listed) { option in
                 WorkspaceRow(option: option, isSelected: option == workspace) {
@@ -246,7 +253,8 @@ struct AppShell: View {
                 initialDraft: draft?.chatId == activeChat.id ? draft?.text : nil,
                 onInitialDraftUsed: { draft = nil },
                 initialOpening: opening?.chatId == activeChat.id ? opening?.opening : nil,
-                onInitialOpeningUsed: { opening = nil }
+                onInitialOpeningUsed: { opening = nil },
+                offlineStore: offlineStore
             )
             // A different chat is a different view model.
             .id(activeChat.id)

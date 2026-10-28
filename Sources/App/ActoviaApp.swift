@@ -26,6 +26,7 @@ struct ActoviaApp: App {
         // requests go to the plain manual address.
         let connection = ServerConnection(store: KeychainCredentialStore())
         connection.onComputerChange { Task { @MainActor in ChatCaches.clearAll() } }
+        OfflineCacheLifecycle.install(on: connection)
         // Nothing of the old computer stays on the Home Screen.
         let widgetWriter = WidgetSnapshotWriter()
         connection.onComputerChange { Task { @MainActor in widgetWriter.computerChanged() } }

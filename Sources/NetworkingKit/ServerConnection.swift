@@ -46,6 +46,7 @@ public final class ServerConnection: @unchecked Sendable {
     /// The pin to trust while pairing, before there is a stored server.
     private var pendingPin: String?
     private var computerChangeHandlers: [@Sendable () -> Void] = []
+    private var computerRemovedHandlers: [@Sendable () -> Void] = []
     /// One pinned session per computer, by fingerprint; made on first use, invalidated when it is unpaired.
     private var sessions: [String: URLSession] = [:]
     private let makeSession: @Sendable (String) -> URLSession
@@ -316,6 +317,7 @@ public final class ServerConnection: @unchecked Sendable {
             try? store.clear()
             lock()
             computerChanged()
+            computerRemoved()
             return
         }
         remove(fingerprint: fingerprint, keepSession: false)
@@ -330,18 +332,31 @@ public final class ServerConnection: @unchecked Sendable {
 
     /// Takes a computer off the list; its session goes too unless `forget` still has to tell it.
     private func remove(fingerprint: String, keepSession: Bool) {
-        let (remaining, wasActive, session): (PairedComputers?, Bool, URLSession?) = state.withLock {
+        let (remaining, wasActive, session, removed): (PairedComputers?, Bool, URLSession?, Bool) = state.withLock {
             guard var current = computers, current.servers.contains(where: { $0.fingerprint == fingerprint })
-            else { return (computers, false, nil) }
+            else { return (computers, false, nil, false) }
             let wasActive = current.active?.fingerprint == fingerprint
             current.remove(fingerprint)
             computers = current.isEmpty ? nil : current
-            return (computers, wasActive, keepSession ? nil : sessions.removeValue(forKey: fingerprint))
+            return (computers, wasActive, keepSession ? nil : sessions.removeValue(forKey: fingerprint), true)
         }
         if keepSession { state.withLock { _ = sessions.removeValue(forKey: fingerprint) } }
         session?.invalidateAndCancel()
         if let remaining { try? store.save(remaining) } else { try? store.clear() }
         if wasActive { computerChanged() }
+        // After `computerChanged`, so a handler of both finds the screens already told.
+        if removed { computerRemoved() }
+    }
+
+    /// Runs `handler` whenever a computer is taken off the list — the current one or not (unpaired, forgotten,
+    /// revoked) — so what this device kept for that computer alone goes with it. Unlike `onComputerChange` it does
+    /// not mean the screens start again.
+    public func onComputerRemoved(_ handler: @escaping @Sendable () -> Void) {
+        state.withLock { computerRemovedHandlers.append(handler) }
+    }
+
+    private func computerRemoved() {
+        for handler in state.withLock({ computerRemovedHandlers }) { handler() }
     }
 
     /// Runs `handler` whenever the paired computer goes (unpaired, revoked) or another is paired, so what was kept in

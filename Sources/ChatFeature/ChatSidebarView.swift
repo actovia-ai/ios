@@ -149,10 +149,11 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         onRenameChat: @escaping (String, String) -> Void,
         onRecentsChange: @escaping ([ChatSummary]) -> Void = { _ in },
         showsRecents: Bool = true,
+        offlineStore: OfflineChatStore? = nil,
         @ViewBuilder workspaces: () -> Workspaces,
         @ViewBuilder lists: () -> Lists
     ) {
-        _list = State(initialValue: ChatListViewModel(apiClient: apiClient))
+        _list = State(initialValue: ChatListViewModel(apiClient: apiClient, offlineStore: offlineStore))
         _search = State(initialValue: ChatSearchViewModel(apiClient: apiClient))
         self.activeChatId = activeChatId
         self.isOpen = isOpen

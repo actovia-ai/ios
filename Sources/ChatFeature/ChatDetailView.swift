@@ -69,7 +69,8 @@ public struct ChatDetailView: View {
         streamManager: ChatStreamManager, serverConfig: ServerConfigStore, initialMessage: String? = nil,
         onInitialMessageSent: (() -> Void)? = nil,
         initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil,
-        initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil
+        initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil,
+        offlineStore: OfflineChatStore? = nil
     ) {
         self.title = title
         self.isNew = isNew
@@ -81,7 +82,8 @@ public struct ChatDetailView: View {
         self.onInitialMessageSent = onInitialMessageSent
         makeObjects = {
             ChatScreenObjects(
-                chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig)
+                chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
+                offlineStore: offlineStore)
         }
     }
 
@@ -590,10 +592,11 @@ final class ChatScreenObjects {
 
     init(
         chatId: String, title: String?, apiClient: APIClient, streamManager: ChatStreamManager,
-        serverConfig: ServerConfigStore
+        serverConfig: ServerConfigStore, offlineStore: OfflineChatStore?
     ) {
         viewModel = ChatDetailViewModel(
-            chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig)
+            chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
+            offlineStore: offlineStore)
         imageLoader = GeneratedImageLoader(apiClient: apiClient)
         computerUseRemote = ComputerUseRemote(apiClient: apiClient)
         researchJobs = DeepResearchStore(apiClient: apiClient)
