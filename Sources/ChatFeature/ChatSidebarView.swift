@@ -185,6 +185,9 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     /// they cannot disagree about whether it is on screen.
     @State private var renamingChat: ChatSummary?
     @State private var renameText = ""
+    /// The chat a delete is waiting on the person to confirm (ISSUE-112): a menu released on Delete by a dragging
+    /// finger used to delete at once.
+    @State private var deletingChat: ChatSummary?
     /// Bumped when a conversation's id has been put on the pasteboard: the only sign that it was.
     @State private var copiedTrigger = 0
     /// Raised by a tap on a chat that was never stored on this iPhone while the computer is away.
@@ -371,6 +374,17 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 .disabled(renameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 Button("common:action.cancel", role: .cancel) {}
             }
+            .confirmationDialog(
+                "chat:sidebar.deleteDialog.title",
+                isPresented: Binding(get: { deletingChat != nil }, set: { if !$0 { deletingChat = nil } }),
+                titleVisibility: .visible,
+                presenting: deletingChat
+            ) { chat in
+                Button("common:action.delete", role: .destructive) { delete(chat) }
+                Button("common:action.cancel", role: .cancel) {}
+            } message: { chat in
+                Text(ChatDeleteConfirmation.message(for: chat))
+            }
             // Haptics: the causal event only — the alert's own appearance, and a delete once the
             // row is actually gone (apple-design §13). Neither fires for the tap that opens the
             // context menu, and a failed delete gets only the error haptic above.
@@ -428,7 +442,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             }
             Button { copyID(of: chat) } label: { Text("ios:chat.sidebar.copyConversationId") }
             if list.canEdit {
-                Button { delete(chat) } label: { Text("common:action.delete") }
+                Button { deletingChat = chat } label: { Text("common:action.delete") }
             }
         }
         // A leading swipe stars the chat (the desktop's star on hover); the row moves to Favorites at once.
@@ -469,7 +483,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 title: String(localized: "common:action.delete", defaultValue: "Delete"),
                 image: UIImage(systemName: "trash"),
                 attributes: list.canEdit ? .destructive : [.destructive, .disabled]
-            ) { _ in delete(chat) },
+            ) { _ in deletingChat = chat },
         ])
     }
 
@@ -801,5 +815,16 @@ private struct SidebarFooterButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.primary.opacity(configuration.isPressed ? sidebarPressedFill : 0)))
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+/// The words of the confirmation before a chat is deleted (ISSUE-112).
+enum ChatDeleteConfirmation {
+    static func message(for chat: ChatSummary) -> String {
+        let title = chat.title.collapsedWhitespace
+        return String(
+            localized: "ios:chat.sidebar.deleteMessage",
+            defaultValue: "“\(title)” and its messages will be deleted. This can’t be undone.",
+            comment: "Message of the confirmation before deleting a chat from the sidebar's long-press menu. %@ is the chat's title.")
     }
 }
