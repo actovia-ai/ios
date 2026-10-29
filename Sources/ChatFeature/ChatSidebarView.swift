@@ -2,10 +2,76 @@ import Models
 import NetworkingKit
 import SwiftUI
 
-/// Tighter than the system's 16 pt: a row is about 44 pt at the default text size instead of 52,
-/// which is still the 44 pt touch target and fits more chats on screen. With the separators hidden
-/// the list reads as one column of titles, like the ChatGPT app's sidebar.
-private let sidebarRowInsets = EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+/// Tighter than the system's 16 pt: a one-line row is the 44 pt touch target at the default text size and no
+/// taller, so more of the list fits on screen. With the separators hidden the list reads as one column of titles,
+/// like the ChatGPT app's sidebar.
+private let sidebarRowInsets = EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
+
+/// The width of the icon column every icon row shares, so the titles line up whatever the glyph (ISSUE-297).
+private let sidebarIconColumn: CGFloat = 26
+
+/// A sidebar row's icon and title: the glyph at the text's size and one weight, centred in a fixed column, the
+/// title beside it. Workspaces, Philharmonic's pages and Settings all use it, so no glyph sets its own size.
+public struct SidebarLabel: View {
+    let title: LocalizedStringResource
+    let systemImage: String
+    @ScaledMetric(relativeTo: .body) private var column = sidebarIconColumn
+
+    public init(_ title: LocalizedStringResource, systemImage: String) {
+        self.title = title
+        self.systemImage = systemImage
+    }
+
+    public var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.body)
+                .imageScale(.medium)
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(.secondary)
+                .frame(width: column)
+                .accessibilityHidden(true)
+            Text(title)
+                .lineLimit(1)
+        }
+    }
+}
+
+/// A section's title in the sidebar (Favorites, Recents, Groups): small, quiet, aligned with the rows' text.
+public struct SidebarSectionHeader: View {
+    let title: LocalizedStringResource
+
+    public init(_ title: LocalizedStringResource) { self.title = title }
+
+    public var body: some View {
+        Text(title)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .textCase(nil)
+            .padding(.top, 14)
+            .padding(.bottom, 2)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// A hairline between the workspace switch and the workspace's own pages, so a page never reads as a workspace.
+/// A section's header, not a row: a row is never shorter than the list's 44 pt.
+public struct SidebarDivider: View {
+    @Environment(\.displayScale) private var displayScale
+
+    public init() {}
+
+    public var body: some View {
+        // A drawn hairline: `Divider` takes the axis of the stack it lands in, and a list row's is horizontal, which
+        // stood it on end.
+        Rectangle()
+            .fill(Color(uiColor: .separator))
+            .frame(maxWidth: .infinity)
+            .frame(height: 1 / displayScale)
+            .padding(.vertical, 8)
+            .accessibilityHidden(true)
+    }
+}
 
 extension EnvironmentValues {
     /// The sidebar stands docked beside the content (a wide screen) rather than sliding over it: it then takes a
@@ -42,6 +108,11 @@ private let dockedSidebarSurface = Color(uiColor: UIColor { traits in
 /// `SidebarRowTouchSurface`, whose tap fails as soon as the finger moves, which leaves the swipe to the
 /// drawer and the scroll to the list — and what the `Button` gave VoiceOver is spelled out instead,
 /// the trait plus an activation action.
+/// The selected row's fill: a quiet tint that says "here", not a slab (ISSUE-297; it was 8 %).
+public let sidebarSelectedFill = 0.055
+/// A finger down on a row: a touch darker than the selection, so pressing the selected row still shows.
+public let sidebarPressedFill = 0.08
+
 private struct SidebarRow: ViewModifier {
     let isSelected: Bool
     var menu: (() -> UIMenu)? = nil
@@ -65,13 +136,13 @@ private struct SidebarRow: ViewModifier {
             // square-cornered bounds edge to edge. Padding the shape itself insets it into a pill
             // within that space instead.
             .listRowBackground(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(
-                        isPressed ? Color.primary.opacity(0.06)
-                            : isSelected ? Color.primary.opacity(0.08) : Color.clear
+                        isPressed ? Color.primary.opacity(sidebarPressedFill)
+                            : isSelected ? Color.primary.opacity(sidebarSelectedFill) : Color.clear
                     )
                     .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, 1)
             )
             .animation(.easeOut(duration: 0.1), value: isPressed)
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
@@ -186,17 +257,21 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 // On the rows, not on the `Section`: a section passes the hidden separator down
                 // but keeps the insets to itself.
                 Section {
+                    // Each row is a `sidebarRow`, which brings its own insets and fill.
                     workspaces
                         .listRowSeparator(.hidden)
-                        .listRowInsets(sidebarRowInsets)
                 }
+                .listSectionSeparator(.hidden)
                 if showsRecents {
                     if !list.favorites.isEmpty {
-                        Section("ios:chat.sidebar.favorites") {
+                        Section {
                             ForEach(list.favorites) { chat in
                                 row(for: chat)
                             }
+                        } header: {
+                            SidebarSectionHeader("ios:chat.sidebar.favorites")
                         }
+                        .listSectionSeparator(.hidden)
                     }
                     recentsSection
                 } else {
@@ -209,6 +284,12 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             // The insets alone do not shrink a row below the list's own minimum, which is what held
             // the rows at 52 pt. 44 pt is the touch-target floor, never less.
             .environment(\.defaultMinListRowHeight, 44)
+            // A section header is as tall as its own padding says, not the plain list's roomy default, which left a
+            // gap above Recents and Groups the size of a row.
+            .environment(\.defaultMinListHeaderHeight, 0)
+            // Sections follow each other at their header's own spacing; the plain list's default put a row's height
+            // of air between Favorites and Recents (ISSUE-297).
+            .listSectionSpacing(0)
             // The bottom bar is not a system `.bottomBar`, so it does not get the scroll edge
             // effect for free: without it the rows print through the pill and the gear, and at
             // an accessibility text size a title is chopped mid-word by them.
@@ -594,34 +675,38 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     }
 
     /// A bar of its own, not `ToolbarItem(placement: .bottomBar)`: a bottom-bar item ignores
-    /// `.labelStyle(.titleAndIcon)` and rendered New chat as a bare compose glyph, while the design
-    /// asks for a labelled pill next to the round gear.
+    /// `.labelStyle(.titleAndIcon)` and rendered New chat as a bare compose glyph. Settings is the footer's row, in
+    /// the rows' own icon column (the account row of ChatGPT's drawer), not a glass pill floating on its own; New
+    /// chat stays the one prominent button, at the trailing end (ISSUE-297).
     private var bottomBar: some View {
-        HStack {
+        HStack(spacing: 12) {
+            Button(action: onOpenSettings) {
+                SidebarLabel("common:nav.settings", systemImage: "gearshape")
+                    .padding(.horizontal, 8)
+                    .frame(minHeight: 44)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(SidebarFooterButtonStyle())
+            .accessibilityIdentifier("sidebarSettings")
+            Spacer(minLength: 0)
             if showsRecents {
                 Button(action: onNewChat) {
                     Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
                         .labelStyle(.titleAndIcon)
-                        // The longest translation ("Nouvelle conversation") must fit on one line next to
-                        // the gear, in a sidebar that is a fraction of the screen wide.
+                        // The longest translation ("Nouvelle conversation") must fit on one line beside Settings,
+                        // in a sidebar that is a fraction of the screen wide.
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                 }
                 .buttonStyle(.glassProminent)
                 .accessibilityIdentifier("sidebarNewChat")
             }
-            Spacer(minLength: 12)
-            Button(action: onOpenSettings) {
-                Label("common:nav.settings", systemImage: "gearshape")
-                    .labelStyle(.iconOnly)
-            }
-            .buttonStyle(.glass)
-            .accessibilityIdentifier("sidebarSettings")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.leading, 8)
+        .padding(.trailing, 16)
+        .padding(.vertical, 6)
         // A bar, like a toolbar: it stops growing where a toolbar would. The sidebar is a fixed
-        // fraction of the screen, and "Nouvelle conversation" next to the gear only fits on one line
+        // fraction of the screen, and "Nouvelle conversation" beside Settings only fits on one line
         // up to about this size; past it the title would truncate. The list itself still scales.
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
@@ -634,7 +719,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
 
     /// Recents, in the sidebar and in the search sheet before anything is typed.
     private var recentsSection: some View {
-        Section("ios:chat.sidebar.recents") {
+        Section {
             ForEach(list.recents) { chat in
                 row(for: chat)
             }
@@ -642,7 +727,10 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 loadMoreRow
             }
             recentsStateRow
+        } header: {
+            SidebarSectionHeader("ios:chat.sidebar.recents")
         }
+        .listSectionSeparator(.hidden)
     }
 
     /// Whether search is open in the presentation for this width: one of the two, never both.
@@ -701,5 +789,17 @@ extension ChatSidebarView where Lists == EmptyView {
             onSelectChat: onSelectChat, onNewChat: onNewChat, onOpenSettings: onOpenSettings,
             onDeleteChat: onDeleteChat, onRenameChat: onRenameChat, onRecentsChange: onRecentsChange,
             workspaces: workspaces, lists: { EmptyView() })
+    }
+}
+
+/// The footer's Settings row: the row's own ink and, while pressed, the rows' pressed tint.
+private struct SidebarFooterButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.primary)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.primary.opacity(configuration.isPressed ? sidebarPressedFill : 0)))
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
