@@ -5,7 +5,7 @@ import Models
 enum ToolPresentation {
     // MARK: Tool names
 
-    /// A built-in's user-facing name; an MCP or unknown tool keeps its own name.
+    /// A built-in's user-facing name; an MCP or unknown tool reads as the desktop's `toolLabel` writes it.
     static func displayName(_ name: String) -> String {
         switch name {
         case "computer_use":
@@ -57,8 +57,36 @@ enum ToolPresentation {
         case "":
             String(localized: "ios:chat.message.tool.fallback", defaultValue: "Tool", comment: "Name shown for a tool whose name is unknown.")
         default:
-            name
+            capitalWords(name)
         }
+    }
+
+    /// The desktop's `toolLabel` (change-case's `capitalCase`, an MCP kept whole): `drawio_create` → "Drawio Create",
+    /// `getHTTPResponse` → "Get Http Response", `fetch_mcp_docs` → "Fetch MCP Docs".
+    static func capitalWords(_ name: String) -> String {
+        var words: [String] = []
+        var word = ""
+        let chars = Array(name)
+        for (i, c) in chars.enumerated() {
+            guard c.isLetter || c.isNumber else {
+                if !word.isEmpty { words.append(word); word = "" }
+                continue
+            }
+            if c.isUppercase, let prev = word.last {
+                let next = i + 1 < chars.count ? chars[i + 1] : nil
+                // camelCase ("getHttp") and the end of an acronym ("HTTPResponse").
+                if prev.isLowercase || prev.isNumber || (prev.isUppercase && next?.isLowercase == true) {
+                    words.append(word)
+                    word = ""
+                }
+            }
+            word.append(c)
+        }
+        if !word.isEmpty { words.append(word) }
+        return words
+            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+            .map { $0 == "Mcp" ? "MCP" : $0 }
+            .joined(separator: " ")
     }
 
     /// Every tool name `displayName` knows. A name outside it is a tool this app has not caught up with.

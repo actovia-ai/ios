@@ -2,7 +2,7 @@ import Models
 import SwiftUI
 
 /// A tool call drawn as one line, as the desktop's AI Elements Trace draws it (ISSUE-301): an icon and what happened —
-/// "Ran ls", "swift test exited with code 1", "Called drawio_create" — that opens on its detail. A failure is drawn in
+/// "Ran ls", "swift test exited with code 1", "Called Drawio Create" — that opens on its detail. A failure is drawn in
 /// the destructive colour and opens by itself; a success stays one closed line, since the answer is what is read.
 /// Decided here, out of the views, so it can be tested.
 struct ToolTrace: Equatable, Sendable {

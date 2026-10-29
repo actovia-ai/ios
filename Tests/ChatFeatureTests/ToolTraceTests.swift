@@ -39,7 +39,7 @@ struct ToolTraceTests {
     @Test("a generic call: \"Called …\" when done, its name while it runs, \"… failed\" open in red when it failed")
     func generic() {
         let done = ToolTrace.generic(ToolCard(id: "1", toolName: "drawio_create", kind: .generic))
-        #expect(done.title == "Called drawio_create")
+        #expect(done.title == "Called Drawio Create")
         #expect(done.status == .done)
         #expect(!done.startsOpen)
         #expect(done.systemImage == "wrench.and.screwdriver")
