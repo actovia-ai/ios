@@ -40,7 +40,9 @@ struct GroupComposer: View {
                 .composerRole(.leading)
                 ComposerTextView(
                     text: $text, isFocused: $isFocused, placeholder: placeholder, tint: toneInk,
-                    accessibilityIdentifier: "groupComposerField"
+                    accessibilityIdentifier: "groupComposerField",
+                    // A hardware keyboard's Return sends as the button does, and the field keeps the keyboard.
+                    onReturnKey: { if state == .send && canSend { send(keepsFocus: true) } }
                 ) { pictures in
                     // A pasted picture joins the message as a picked one does (ISSUE-299).
                     Task { await add(pictures.map { data in { data } }) }
@@ -110,9 +112,9 @@ struct GroupComposer: View {
         .accessibilityIdentifier(state.identifier)
     }
 
-    private func send() {
+    private func send(keepsFocus: Bool = false) {
         let words = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        isFocused = false
+        if !keepsFocus { isFocused = false }
         if model.askUser != nil {
             guard !words.isEmpty else { return }
             text = ""

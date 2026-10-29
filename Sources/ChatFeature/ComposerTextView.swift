@@ -51,6 +51,18 @@ enum ComposerPaste {
     }
 }
 
+/// What Return does on a hardware keyboard (an iPad's, or a Mac's through the Simulator): a plain Return sends, as in
+/// ChatGPT's and Claude's apps on an iPad, and Shift-, Option- or Control-Return is the text view's own newline. A
+/// Return that commits an input method's composition (Pinyin, kana) is the input method's. The on-screen keyboard's
+/// Return is not a key press and keeps inserting a newline.
+enum ComposerReturnKey {
+    static func sends(keyCode: UIKeyboardHIDUsage, modifiers: UIKeyModifierFlags, composing: Bool) -> Bool {
+        guard keyCode == .keyboardReturnOrEnter || keyCode == .keypadEnter, !composing else { return false }
+        // Caps Lock and the keypad flag say nothing about intent.
+        return modifiers.subtracting([.alphaShift, .numericPad]).isEmpty
+    }
+}
+
 /// The composer's field: a `UITextView`, because a SwiftUI `TextField` takes only the text of a paste — a picture
 /// copied on the Mac came through as its file name (ISSUE-299). A paste that carries pictures adds them to the
 /// message, as the photo picker does, and inserts nothing; a paste of text is the text view's own.
@@ -65,11 +77,13 @@ public struct ComposerTextView: UIViewRepresentable {
     var tint: Color
     var maxLines = 5
     var accessibilityIdentifier: String
+    /// A hardware keyboard's plain Return (`ComposerReturnKey`); nil keeps Return a newline.
+    var onReturnKey: (() -> Void)?
     var onPasteImages: ([Data]) -> Void
 
     public init(
         text: Binding<String>, isFocused: Binding<Bool>, placeholder: String, tint: Color, maxLines: Int = 5,
-        accessibilityIdentifier: String, onPasteImages: @escaping ([Data]) -> Void
+        accessibilityIdentifier: String, onReturnKey: (() -> Void)? = nil, onPasteImages: @escaping ([Data]) -> Void
     ) {
         _text = text
         _isFocused = isFocused
@@ -77,6 +91,7 @@ public struct ComposerTextView: UIViewRepresentable {
         self.tint = tint
         self.maxLines = maxLines
         self.accessibilityIdentifier = accessibilityIdentifier
+        self.onReturnKey = onReturnKey
         self.onPasteImages = onPasteImages
     }
 
@@ -89,6 +104,7 @@ public struct ComposerTextView: UIViewRepresentable {
         view.text = text
         view.placeholderLabel.text = placeholder
         view.onPasteImages = onPasteImages
+        view.onReturnKey = onReturnKey
         return view
     }
 
@@ -101,6 +117,7 @@ public struct ComposerTextView: UIViewRepresentable {
         }
         view.placeholderLabel.text = placeholder
         view.onPasteImages = onPasteImages
+        view.onReturnKey = onReturnKey
         view.tintColor = UIColor(tint)
         let enabled = context.environment.isEnabled
         view.isEditable = enabled
@@ -152,6 +169,9 @@ public struct ComposerTextView: UIViewRepresentable {
 
 public final class PastingTextView: UITextView {
     var onPasteImages: (([Data]) -> Void)?
+    var onReturnKey: (() -> Void)?
+    /// Return presses taken for `onReturnKey`: their end and cancel are not the text view's either.
+    private var takenPresses: Set<UIPress> = []
     /// The general pasteboard; a test hands in a private one (reading the general one outside a person's paste asks
     /// them first).
     var pasteboard: UIPasteboard = .general
@@ -204,6 +224,34 @@ public final class PastingTextView: UITextView {
     func updatePlaceholder() {
         placeholderLabel.isHidden = !text.isEmpty
         accessibilityLabel = text.isEmpty ? placeholderLabel.text : nil
+    }
+
+    override public func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        var rest = presses
+        if let onReturnKey {
+            for press in presses {
+                guard let key = press.key,
+                    ComposerReturnKey.sends(
+                        keyCode: key.keyCode, modifiers: key.modifierFlags, composing: markedTextRange != nil)
+                else { continue }
+                takenPresses.insert(press)
+                rest.remove(press)
+                onReturnKey()
+            }
+        }
+        if !rest.isEmpty { super.pressesBegan(rest, with: event) }
+    }
+
+    override public func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        let rest = presses.subtracting(takenPresses)
+        takenPresses.subtract(presses)
+        if !rest.isEmpty { super.pressesEnded(rest, with: event) }
+    }
+
+    override public func pressesCancelled(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        let rest = presses.subtracting(takenPresses)
+        takenPresses.subtract(presses)
+        if !rest.isEmpty { super.pressesCancelled(rest, with: event) }
     }
 
     override public func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
