@@ -151,9 +151,6 @@ struct AssistantTurnView: View, Equatable {
                     }
                 }
                 answer
-                if TranscriptRules.showsSearchMedia(turn, error: error) {
-                    RunFootView(foot: turn.foot, section: .media)
-                }
                 if let error {
                     RunErrorLine(text: error, onRetry: offersRetry ? regenerate : nil)
                 }
@@ -260,8 +257,9 @@ extension View {
 }
 
 extension AssistantTurnView {
-    /// The answer in the run's own order, as on the desktop: text, the card of a tool where the model called it,
-    /// text (a command's or a file's card opens from its step in the timeline instead). Every text block reads the
+    /// The answer in the run's own order, as on the desktop: text, the card of a tool where the model called it, a
+    /// search's pictures and videos where it was made, text (a command's or a file's card opens from its step in the
+    /// timeline instead). Every text block reads the
     /// turn's one list of citations, and only the last block can be the one that streams.
     @ViewBuilder
     fileprivate var answer: some View {
@@ -294,6 +292,8 @@ extension AssistantTurnView {
                 .environment(\.markdownFencedBlocks, holdsBlock ? fenced : nil)
             case .card(let card):
                 ToolCardView(card: card)
+            case .media(let media):
+                SearchMediaSection(gallery: media.gallery)
             }
         }
         .environment(\.editDiffsStartOpen, FileCardRules.editsStartOpen(editCount: FileCardRules.editCount(in: turn)))

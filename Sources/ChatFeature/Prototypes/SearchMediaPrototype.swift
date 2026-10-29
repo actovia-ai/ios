@@ -3,8 +3,8 @@ import Models
 import SwiftUI
 import UIKit
 
-/// The search media foot is real: this group draws `RunFootView(.media)` from a turn the grouper built out of a
-/// desktop-shaped `web_search` result, with a stand-in loader serving drawn images. `-CardPrototypesMediaViewer` opens
+/// The search media are real: this group draws the media block the grouper built out of a desktop-shaped
+/// `web_search` result, with a stand-in loader serving drawn images. `-CardPrototypesMediaViewer` opens
 /// the viewer on launch.
 struct ProtoSearchMediaSection: View {
     @State private var loader: SearchMediaLoader?
@@ -19,11 +19,11 @@ struct ProtoSearchMediaSection: View {
                 ProtoInReply(state: "Six images and three videos (tap an image; a video opens the browser)") {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(verbatim: "The aurora is strongest over Tromsø between September and March, on clear nights away from the city lights.")
-                        RunFootView(foot: Self.foot(), section: .media)
+                        SearchMediaSection(gallery: Self.gallery())
                     }
                 }
                 ProtoInReply(state: "One image from a host the run's results did not carry (waits for a tap); one that fails") {
-                    RunFootView(foot: Self.foot(trustedHost: "pages.example", count: 2), section: .media)
+                    SearchMediaSection(gallery: Self.gallery(trustedHost: "pages.example", count: 2))
                 }
             }
         }
@@ -35,7 +35,7 @@ struct ProtoSearchMediaSection: View {
         }
     }
 
-    private static func foot(trustedHost: String? = nil, count: Int = 6) -> RunFoot {
+    private static func gallery(trustedHost: String? = nil, count: Int = 6) -> SearchGallery {
         let images = (0..<count).map { index in
             let host = index == 0 && trustedHost != nil ? "tracker.example" : "pages.example"  // l10n:ignore: fixture URLs
             let title = ["Aurora over the fjord", "Green curtains above Tromsø", "Lights over the cathedral", "Kvaløya beach at night", "Reflections in the harbour", "Aurora corona"][index]
@@ -56,13 +56,14 @@ struct ProtoSearchMediaSection: View {
         let turn = RunGrouper.group(messages, cache: &cache).compactMap { segment -> AssistantTurn? in
             if case .assistantTurn(let turn) = segment { turn } else { nil }
         }.first
-        var foot = turn?.foot ?? RunFoot()
-        if let trustedHost { foot.gallery.trustedURLs = foot.gallery.trustedURLs.filter { $0.host() == trustedHost } }
-        return foot
+        var gallery = turn?.blocks.lazy.compactMap { if case .media(let media) = $0 { media.gallery } else { nil } }
+            .first ?? SearchGallery()
+        if let trustedHost { gallery.trustedURLs = gallery.trustedURLs.filter { $0.host() == trustedHost } }
+        return gallery
     }
 
     private static var pages: [ImageViewerPage.Content] {
-        foot().gallery.images.enumerated().map { index, picture in
+        gallery().images.enumerated().map { index, picture in
             ImageViewerPage.Content(id: index, source: .search(picture), caption: picture.title, link: picture.sourceURL)
         }
     }

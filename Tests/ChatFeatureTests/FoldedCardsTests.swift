@@ -60,6 +60,7 @@ private func shape(_ blocks: [AssistantTurn.Block]) -> [String] {
         switch $0 {
         case .text(let text): "T(\(text.text))"
         case .card(let card): "C(\(card.toolName))"
+        case .media(let media): "M(\(media.id))"
         }
     }
 }

@@ -222,18 +222,6 @@ struct MessageGalleryFixtureTests {
 }
 #endif
 
-@Suite("Transcript rules: search media sit in the answer's section")
-struct SearchMediaSectionTests {
-    @Test("a run with no answer and no error shows no gallery, as on the desktop; an answer or an error does")
-    func mediaNeedsBodyOrError() throws {
-        let bodyless = AssistantTurn(runId: "r", steps: [.thinking(.init(text: "x"))])
-        let answered = AssistantTurn(runId: "r", body: "Done")
-        #expect(!TranscriptRules.showsSearchMedia(bodyless, error: nil))
-        #expect(TranscriptRules.showsSearchMedia(bodyless, error: "Rate limited"))
-        #expect(TranscriptRules.showsSearchMedia(answered, error: nil))
-    }
-}
-
 @MainActor
 @Suite("Chat screen: its objects are built once (m9)")
 struct ChatScreenObjectsTests {

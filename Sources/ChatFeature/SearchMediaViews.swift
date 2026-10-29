@@ -7,8 +7,8 @@ extension EnvironmentValues {
     @Entry var searchMediaLoader: SearchMediaLoader = .shared
 }
 
-/// The media a run's searches found, under its answer as on the desktop: three thumbnails (the last one counting the
-/// rest) that open the viewer, then a row of video cards that open in the browser.
+/// The media one search found, where it was made in the answer as on the desktop: three thumbnails (the last one
+/// counting the rest) that open the viewer, then a row of video cards that open in the browser.
 struct SearchMediaSection: View {
     let gallery: SearchGallery
 

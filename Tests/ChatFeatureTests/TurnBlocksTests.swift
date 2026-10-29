@@ -40,12 +40,13 @@ private func turn(_ messages: [ChatMessage]) throws -> AssistantTurn {
 
 private struct TurnMissing: Error {}
 
-/// A turn's blocks as one line: `T(text)` and `C(render key)`.
+/// A turn's blocks as one line: `T(text)`, `C(render key)` and `M(media id)`.
 private func shape(_ blocks: [AssistantTurn.Block]) -> [String] {
     blocks.map {
         switch $0 {
         case .text(let text): "T(\(text.text))"
         case .card(let card): "C(\(card.renderKey))"
+        case .media(let media): "M(\(media.id))"
         }
     }
 }
