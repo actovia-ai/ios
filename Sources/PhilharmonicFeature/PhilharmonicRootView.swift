@@ -45,7 +45,7 @@ public struct PhilharmonicRootView: View {
                     .buttonStyle(.glassProminent)
             }
         case .group(let id, _):
-            GroupChatView(conversationId: id, api: api, stream: Self.stream(id, api: api), onGone: onGroupGone)
+            GroupChatView(conversationId: id, api: api, makeStream: { Self.stream(id, api: api) }, onGone: onGroupGone)
                 .id(id)
         case .dashboard:
             DashboardView(api: api)

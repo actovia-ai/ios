@@ -56,6 +56,8 @@ final class GroupMockURLProtocol: URLProtocol, @unchecked Sendable {
 private final class Wire: Sendable {
     typealias Item = SSEItem<PhilharmonicSseEvent>
     let connects = Mutex(0)
+    /// Connections whose consumer let go (or that ended).
+    let closed = Mutex(0)
     private let open = Mutex<[AsyncThrowingStream<Item, Error>.Continuation]>([])
 
     var connect: GroupStream.Connect {
@@ -63,6 +65,7 @@ private final class Wire: Sendable {
             let (stream, continuation) = AsyncThrowingStream.makeStream(of: Item.self)
             open.withLock { $0.append(continuation) }
             connects.withLock { $0 += 1 }
+            continuation.onTermination = { [self] _ in closed.withLock { $0 += 1 } }
             return stream
         }
     }
@@ -406,6 +409,51 @@ struct GroupChatViewModelTests {
         #expect(wire.connects.withLock { $0 } == 2)
         await eventually { vm.notice == nil }
         #expect(vm.notice == nil)
+        vm.stop()
+    }
+
+    @Test("a screen gone while its stream was being made leaves no connection open (ISSUE-249 M2)")
+    func stopDuringStartClosesTheStream() async {
+        let vm = makeVM(Body.oneRow)
+        let starting = Task { await vm.start() }
+        await Task.yield()
+        vm.stop()
+        await starting.value
+        try? await Task.sleep(for: .milliseconds(150))
+        #expect(wire.connects.withLock { $0 } == wire.closed.withLock { $0 })
+    }
+
+    @Test("starting twice at once opens one stream")
+    func doubleStartOpensOne() async {
+        let vm = makeVM(Body.oneRow)
+        async let first: Void = vm.start()
+        async let second: Void = vm.start()
+        _ = await (first, second)
+        await eventually { wire.connects.withLock { $0 } >= 1 }
+        try? await Task.sleep(for: .milliseconds(100))
+        #expect(wire.connects.withLock { $0 } == 1)
+        vm.stop()
+    }
+
+    @Test("member_joined shows the join's row and asks for the members again, without waiting for a message_end (M4)")
+    func memberJoinedReadsAfter() async {
+        let joined = Flag()
+        let vm = makeVM { _, path, query in
+            if path.hasSuffix("/plan") { return (200, "null") }
+            if path.hasSuffix("/messages") {
+                if query == nil { return (200, "[\(Body.row("m1"))]") }
+                return (200, joined.isOn ? "[\(Body.row("m2", role: "system", content: "Kai joined"))]" : "[]")
+            }
+            return (404, "{}")
+        }
+        await started(vm)
+        #expect(vm.memberJoins == 0)
+        joined.isOn = true
+        wire.send(.event(.memberJoined(conversationId: "c1", agentId: "a1")))
+        await eventually { vm.bubbles.count == 2 }
+        #expect(vm.bubbles.map(\.id) == ["m1", "m2"])
+        #expect(vm.memberJoins == 1)
+        #expect(afterReads() == 1)
         vm.stop()
     }
 }
