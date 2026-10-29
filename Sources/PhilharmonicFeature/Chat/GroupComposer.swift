@@ -80,8 +80,8 @@ struct GroupComposer: View {
 
     private var placeholder: String {
         model.askUser != nil
-            ? String(localized: "philharmonic:chat.groupChat.askUser.replyPlaceholder")
-            : String(localized: "philharmonic:chat.composer.placeholder")
+            ? String(localized: "philharmonic:chat.groupChat.askUser.replyPlaceholder", defaultValue: "Reply to PM…")
+            : String(localized: "philharmonic:chat.composer.placeholder", defaultValue: "Message your team…")
     }
 
     private var state: TurnButtonState { model.pmRunning && model.askUser == nil ? .stop : .send }
