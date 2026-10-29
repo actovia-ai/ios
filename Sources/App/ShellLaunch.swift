@@ -14,6 +14,15 @@ enum ShellLaunch {
         #endif
     }
 
+    /// `-OpenSettings`: Settings is up on launch (to see a lock cover a sheet).
+    static var settingsOpen: Bool {
+        #if DEBUG
+            ProcessInfo.processInfo.arguments.contains("-OpenSettings")
+        #else
+            false
+        #endif
+    }
+
     static var workspace: AppWorkspace {
         switch value(after: "-Workspace") {
         case "health": .health

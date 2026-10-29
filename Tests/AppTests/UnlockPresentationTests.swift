@@ -37,4 +37,19 @@ struct UnlockPresentationTests {
         #expect(gate.mountsContent)
         #expect(!gate.coversContent)
     }
+
+    @Test("the cover window goes up only over a mounted app — over its sheets and keyboard — and down on unlock")
+    func coverWindow() {
+        var gate = UnlockPresentation(isLocked: true)
+        #expect(!gate.needsCoverWindow)  // cold start: nothing under the in-tree lock screen
+        gate.settle(stillLocked: false)
+        #expect(!gate.needsCoverWindow)
+        gate.lock()
+        #expect(gate.needsCoverWindow)
+        gate.settle(stillLocked: true)  // Face ID cancelled: stays up
+        #expect(gate.needsCoverWindow)
+        gate.settle(stillLocked: false)
+        #expect(!gate.needsCoverWindow)
+        #expect(!UnlockPresentation(isLocked: false).needsCoverWindow)
+    }
 }

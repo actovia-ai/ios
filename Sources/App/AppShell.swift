@@ -40,7 +40,7 @@ struct AppShell: View {
     @State private var workspace: AppWorkspace = ShellLaunch.workspace
     /// Settings, and the page it opens on. One value, so the page arrives with the presentation itself: two flags let
     /// the first presentation read a stale page and open on the root.
-    @State private var settings: SettingsRoute?
+    @State private var settings: SettingsRoute? = ShellLaunch.settingsOpen ? .root : nil
     /// Bumped when Settings closes so the sidebar reloads Recents from the (possibly new) server.
     @State private var recentsReloadToken = 0
     /// A question from Health waiting for its new chat to open and send it.
