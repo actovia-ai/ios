@@ -10,7 +10,8 @@ struct GroupComposer: View {
     @State private var attachments = ComposerAttachments()
     @State private var preparing = 0
     @State private var sending = false
-    @FocusState private var isFocused: Bool
+    /// The field is a UIKit text view (it takes a pasted picture), so its focus is plain state it keeps in step.
+    @State private var isFocused = false
     @ScaledMetric(relativeTo: .body) private var lineHeight: CGFloat = 22
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accentGlyph) private var accentGlyph
@@ -37,16 +38,13 @@ struct GroupComposer: View {
                 // with the next message instead (ISSUE-249 M5).
                 .disabled(model.askUser != nil)
                 .composerRole(.leading)
-                Group {
-                    if model.askUser != nil {
-                        TextField("philharmonic:chat.groupChat.askUser.replyPlaceholder", text: $text, axis: .vertical)
-                    } else {
-                        TextField("philharmonic:chat.composer.placeholder", text: $text, axis: .vertical)
-                    }
+                ComposerTextView(
+                    text: $text, isFocused: $isFocused, placeholder: placeholder, tint: toneInk,
+                    accessibilityIdentifier: "groupComposerField"
+                ) { pictures in
+                    // A pasted picture joins the message as a picked one does (ISSUE-299).
+                    Task { await add(pictures.map { data in { data } }) }
                 }
-                .lineLimit(1...5)
-                .focused($isFocused)
-                .accessibilityIdentifier("groupComposerField")
                 .composerRole(.field)
                 turnButton
                     .composerRole(.trailing)
@@ -78,6 +76,12 @@ struct GroupComposer: View {
             }
         }
         .padding(.trailing, 16 - ComposerRowLayout.inset)
+    }
+
+    private var placeholder: String {
+        model.askUser != nil
+            ? String(localized: "philharmonic:chat.groupChat.askUser.replyPlaceholder")
+            : String(localized: "philharmonic:chat.composer.placeholder")
     }
 
     private var state: TurnButtonState { model.pmRunning && model.askUser == nil ? .stop : .send }
