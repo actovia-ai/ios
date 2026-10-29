@@ -18,32 +18,27 @@ struct ToolCardView: View {
     }
 }
 
+/// A command the model ran, as one line that opens on its output (`ToolTrace.terminal`): closed after a success,
+/// open after a failure.
 struct TerminalCard: View {
+    let output: ToolPresentation.TerminalOutput
+
+    var body: some View {
+        ToolTraceLine(trace: .terminal(output)) {
+            TerminalOutputBlock(output: output)
+        }
+    }
+}
+
+/// What a command printed: its output, its errors (red after a failure), the folder it ran in. Cut at twelve lines,
+/// with a button to show the rest.
+private struct TerminalOutputBlock: View {
     let output: ToolPresentation.TerminalOutput
     @State private var showsAll = false
     private static let collapsedLines = 12
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Image(systemName: "terminal")
-                    .foregroundStyle(.secondary)
-                Text(verbatim: output.command)
-                    .lineLimit(showsAll ? nil : 2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                if let code = output.exitCode {
-                    Label {
-                        Text(verbatim: ToolPresentation.exitText(code))
-                    } icon: {
-                        Image(systemName: output.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")  // l10n:ignore: SF Symbol names
-                    }
-                    .labelStyle(.titleAndIcon)
-                    .foregroundStyle(output.succeeded ? Color.green : Color.red)
-                    .fixedSize()
-                }
-            }
-            .cardHeader()
-            Divider()
             outputBody
             if isLong {
                 Divider()
@@ -67,7 +62,7 @@ struct TerminalCard: View {
 
     private var isLong: Bool { ToolPresentation.terminalOutputIsLong(output, collapsedLines: Self.collapsedLines) }
 
-    // A button of its own: a tap on the card must stay free for selecting text.
+    // A button of its own: a tap on the output must stay free for selecting text.
     private var expandButton: some View {
         Button {
             showsAll.toggle()
@@ -107,61 +102,68 @@ struct TerminalCard: View {
                         .foregroundStyle(output.succeeded ? Color.orange : Color.red)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, CardStyle.inset)
             .padding(.vertical, 8)
         }
     }
 }
 
+/// A tool with no card of its own, as one line (`ToolTrace.generic`) that opens on what it was called with and what
+/// it gave back; a failure opens on its error. A line with neither does not open.
 private struct GenericToolCard: View {
     let card: ToolCard
-    @State private var openState: Bool?
-    @Environment(\.timelineStartsExpanded) private var startsExpanded
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var isOpen: Bool { openState ?? startsExpanded }
-
-    private static let maxLines = 200
 
     var body: some View {
-        let hasPayload = ToolPresentation.hasPayload(card.payload)
-        VStack(alignment: .leading, spacing: 0) {
-            Button {
-                withAnimation(reduceMotion ? nil : .snappy(duration: 0.2)) { openState = !isOpen }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: ToolPresentation.systemImage(for: card.toolName))
-                        .foregroundStyle(.secondary)
-                    Text(verbatim: ToolPresentation.displayName(card.toolName))
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                    if hasPayload {
-                        Image(systemName: "chevron.right")
-                            .imageScale(.small)
-                            .foregroundStyle(.secondary)
-                            .rotationEffect(.degrees(isOpen ? 90 : 0))
-                    }
+        let parts = GenericTraceDetail(card: card)
+        ToolTraceLine(trace: .generic(card), opens: !parts.isEmpty) {
+            VStack(alignment: .leading, spacing: 10) {
+                if let arguments = parts.arguments {
+                    section(Text("ios:chat.message.trace.arguments"), arguments)
                 }
-                .font(.subheadline)
-                .padding(.horizontal, CardStyle.inset)
-                .padding(.vertical, 9)
-                .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .disabled(!hasPayload)
-            .accessibilityValue(isOpen ? Text("ios:chat.message.timeline.expanded") : Text("ios:chat.message.timeline.collapsed"))
-            if isOpen && hasPayload {
-                Divider()
-                Text(verbatim: ToolPresentation.prettyPayload(card.payload, maxLines: Self.maxLines))
-                    .font(.caption2.monospaced())
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, CardStyle.inset)
-                    .padding(.vertical, 8)
-                    .transition(.opacity)
+                if let result = parts.result {
+                    section(Text("ios:chat.message.trace.result"), result, isError: card.isError)
+                }
             }
         }
-        .modifier(CardSurface())
+    }
+
+    private func section(_ title: Text, _ body: String, isError: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            title
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+            Text(verbatim: body)
+                .font(.caption2.monospaced())
+                .foregroundStyle(isError ? Color.red : Color.primary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, CardStyle.inset)
+                .padding(.vertical, 8)
+                .modifier(CardSurface())
+        }
+    }
+}
+
+/// What a generic tool line opens on, as text: the call's arguments (an empty object is none) and its result — the
+/// error for a failure, nothing while it runs.
+struct GenericTraceDetail: Equatable {
+    let arguments: String?
+    let result: String?
+
+    var isEmpty: Bool { arguments == nil && result == nil }
+
+    init(card: ToolCard, maxLines: Int = 200) {
+        let isEmptyObject: Bool = if case .object(let fields)? = card.arguments { fields.isEmpty } else { false }
+        arguments =
+            ToolPresentation.hasPayload(card.arguments) && !isEmptyObject
+            ? ToolPresentation.prettyPayload(card.arguments, maxLines: maxLines) : nil
+        if card.isError {
+            result = card.errorText.flatMap { $0.isEmpty ? nil : $0 }
+        } else if ToolPresentation.hasPayload(card.payload) {
+            result = ToolPresentation.prettyPayload(card.payload, maxLines: maxLines)
+        } else {
+            result = nil
+        }
     }
 }

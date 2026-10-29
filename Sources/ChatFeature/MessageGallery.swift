@@ -429,6 +429,25 @@ enum MessageGalleryFixtures {
              {"id":"u21","runId":"u21","role":"user","content":[{"type":"text","text":"Which of these is warmest?"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemOrange, width: 300, height: 400))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemIndigo, width: 400, height: 400))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemPink, width: 300, height: 300))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemGreen, width: 500, height: 200))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemYellow, width: 200, height: 500))"},{"type":"image","mimeType":"image/png","data":"\#(picture(.systemRed, width: 300, height: 300))"}],"timestamp":1300},
              {"id":"a21","runId":"u21","role":"assistant","content":[{"type":"text","text":"The orange one."}],"stopReason":"stop","timestamp":1500}]
             """#),
+        Run(title: "Each search's pictures where it was made", json: #"""
+            [{"id":"u30","runId":"u30","role":"user","content":"Show me Tromsø in winter, and its harbour at night.","timestamp":1000},
+             {"id":"a30","runId":"u30","role":"assistant","content":[{"type":"text","text":"Tromsø sits on an island inside the Arctic Circle; in winter the sun does not rise for weeks."}],"stopReason":"toolUse","timestamp":1500},
+             {"id":"a31","runId":"u30","role":"assistant","content":[{"type":"toolCall","id":"k30","name":"web_search","arguments":{"query":"Tromsø winter"}}],"stopReason":"toolUse","timestamp":2000},
+             {"id":"t30","runId":"u30","role":"toolResult","toolCallId":"k30","toolName":"web_search","content":[{"type":"text","text":"ok"}],"details":[
+               {"rank":1,"link":"https://visitnorway.example/tromso","title":"Tromsø in winter","hostname":"visitnorway.example","snippet":"Polar night and the aurora.","media":[
+                 {"kind":"image","title":"The cathedral in snow","url":"https://visitnorway.example/full/1.jpg","sourceUrl":"https://visitnorway.example/tromso","thumbnailUrl":"https://teal.example/t1.jpg"},
+                 {"kind":"image","title":"Polar night","url":"https://visitnorway.example/full/2.jpg","sourceUrl":"https://visitnorway.example/tromso","thumbnailUrl":"https://indigo.example/t2.jpg"},
+                 {"kind":"image","title":"The bridge","url":"https://visitnorway.example/full/3.jpg","sourceUrl":"https://visitnorway.example/tromso","thumbnailUrl":"https://orange.example/t3.jpg"},
+                 {"kind":"image","title":"Aurora","url":"https://visitnorway.example/full/4.jpg","sourceUrl":"https://visitnorway.example/tromso","thumbnailUrl":"https://pink.example/t4.jpg"}]}],"isError":false,"timestamp":3000},
+             {"id":"a32","runId":"u30","role":"assistant","content":[{"type":"text","text":"The harbour is lit all night through the dark months."}],"stopReason":"toolUse","timestamp":3500},
+             {"id":"a33","runId":"u30","role":"assistant","content":[{"type":"toolCall","id":"k31","name":"web_search","arguments":{"query":"Tromsø harbour at night"}}],"stopReason":"toolUse","timestamp":4000},
+             {"id":"t31","runId":"u30","role":"toolResult","toolCallId":"k31","toolName":"web_search","content":[{"type":"text","text":"ok"}],"details":[
+               {"rank":2,"link":"https://harbour.example/night","title":"The harbour at night","hostname":"harbour.example","snippet":"Lights on the water.","media":[
+                 {"kind":"image","title":"Aurora","url":"https://visitnorway.example/full/4.jpg","sourceUrl":"https://visitnorway.example/tromso","thumbnailUrl":"https://pink.example/t4.jpg"},
+                 {"kind":"image","title":"Boats at the quay","url":"https://harbour.example/full/5.jpg","sourceUrl":"https://harbour.example/night","thumbnailUrl":"https://green.example/t5.jpg"},
+                 {"kind":"video","title":"Tromsø harbour, a winter night in 4K","url":"https://www.youtube.com/watch?v=harbour","sourceUrl":"https://www.youtube.com/watch?v=harbour","thumbnailUrl":"https://blue.example/v1.jpg","duration":"6:12","creator":"Arctic Skies","views":84000}]}],"isError":false,"timestamp":5000},
+             {"id":"a34","runId":"u30","role":"assistant","content":[{"type":"text","text":"Go between November and January for the longest nights \#u{3010}1-source\#u{3011}."}],"stopReason":"stop","durationMs":6200,"timestamp":6000}]
+            """#),
     ] + bubbleRuns + codeRuns + interactiveRuns
 
     /// A flat picture as the desktop stores one: a PNG data URL.

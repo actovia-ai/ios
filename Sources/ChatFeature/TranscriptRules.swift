@@ -94,11 +94,6 @@ enum TranscriptRules {
         return text.id
     }
 
-    /// The search media belong to the answer's section, as on the desktop: a run with no answer and no error shows none.
-    static func showsSearchMedia(_ turn: AssistantTurn, error: String?) -> Bool {
-        turn.hasBody || error != nil
-    }
-
     /// Changes whenever the bottom of the transcript grows, so the view can follow it.
     static func scrollKey(segments: [Segment], showsTypingIndicator: Bool, liveError: LiveRunError?) -> ScrollKey {
         var key = ScrollKey(segmentId: segments.last?.id, showsTypingIndicator: showsTypingIndicator)
@@ -108,6 +103,7 @@ enum TranscriptRules {
             key.stepCount = turn.steps.count
             key.settledStepCount = turn.steps.count - turn.pendingToolCalls.count
             key.cardCount = turn.toolCards.count
+            key.mediaCount = turn.blocks.count { if case .media = $0 { true } else { false } }
             if case .thinking(let thinking)? = turn.steps.last { key.lastStepLength = thinking.text.utf8.count }
             key.hasError = turn.error != nil
         }
@@ -121,6 +117,7 @@ enum TranscriptRules {
         var stepCount = 0
         var settledStepCount = 0
         var cardCount = 0
+        var mediaCount = 0
         var lastStepLength = 0
         var hasError = false
         var hasLiveError = false

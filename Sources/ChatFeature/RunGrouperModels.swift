@@ -67,17 +67,20 @@ public struct AssistantTurn: Equatable, Sendable, Identifiable {
         }
     }
 
-    /// A piece of the answer: the model's text, or the card of a tool it called.
+    /// A piece of the answer: the model's text, the card of a tool it called, or the pictures and videos a search
+    /// brought back.
     public enum Block: Equatable, Sendable, Identifiable {
         case text(TextBlock)
         case card(ToolCard)
+        case media(MediaBlock)
 
-        /// A card is known by its call, so a running card becomes its result in place; a text by its place among the
-        /// texts, so the one that streams stays the same view while it grows.
+        /// A card is known by its call, so a running card becomes its result in place; a search's media by its call
+        /// too; a text by its place among the texts, so the one that streams stays the same view while it grows.
         public var id: String {
             switch self {
             case .text(let text): text.id
             case .card(let card): card.renderKey
+            case .media(let media): media.id
             }
         }
 
@@ -111,6 +114,20 @@ public struct AssistantTurn: Equatable, Sendable, Identifiable {
 
         public let id: String
         public let text: String
+    }
+
+    /// A `web_search`'s pictures and videos, where the search was made in the run (the desktop's `media` block,
+    /// ISSUE-300): less what an earlier search of the run already showed, and only when something is left — an empty
+    /// one is never made, so it never splits the text around it.
+    public struct MediaBlock: Equatable, Sendable, Identifiable {
+        /// `media:<callId>`.
+        public let id: String
+        let gallery: SearchGallery
+
+        init(callId: String, gallery: SearchGallery) {
+            id = "media:\(callId)"
+            self.gallery = gallery
+        }
     }
 
     public let runId: String
@@ -259,14 +276,14 @@ public struct ToolCard: Equatable, Sendable, Identifiable {
     public var renderKey: String { toolCallId.map { "call:\($0)" } ?? "row:\(id)" }
 }
 
-/// What a run shows under its answer: its memory changes and the media its searches found. Built with the turn; the
-/// views only read it.
+/// What a run shows under its answer: its memory changes. Built with the turn; the views only read it. The media its
+/// searches found are drawn where each search was made (`AssistantTurn.MediaBlock`), not here; `searchMedia` is kept
+/// for what a reply's steps may picture (`StepsPictures`).
 public struct RunFoot: Equatable, Sendable {
     /// Every `update_memory` call of the run that ran, in order (a call in an aborted or failed message never ran).
     public var memoryUpdates: [MemoryUpdate]
+    /// Every media result of the run's sources, as they came.
     public var searchMedia: [WebSearchMedia]
-    /// `searchMedia` ready to draw: images and videos, de-duplicated, capped, with the hosts that load without a tap.
-    var gallery = SearchGallery()
 
     public init(memoryUpdates: [MemoryUpdate] = [], searchMedia: [WebSearchMedia] = []) {
         self.memoryUpdates = memoryUpdates

@@ -112,7 +112,7 @@ struct CombinedRenderGuardTests {
             #expect(ToolCardRegistry.canDraw(card), "\(card.toolName) fell back to the generic card")
         }
         #expect(settled.foot.memoryUpdates.count == 1)
-        #expect(!settled.foot.gallery.isEmpty)
+        #expect(settled.blocks.contains { if case .media(let media) = $0 { !media.gallery.isEmpty } else { false } })
 
         let approvals = RunApprovalStore(allowDelay: .zero) { _, _, _ in .allowed }
         let memory = MemoryFootStore(

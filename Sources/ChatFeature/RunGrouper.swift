@@ -80,6 +80,8 @@ public enum RunGrouper {
         var timestamp: Double?
         var callArguments: [String: JSONValue] = [:]
         var memoryUpdates: [MemoryUpdate] = []
+        // The media URLs the run's searches have shown so far.
+        var shownMedia: Set<String> = []
 
         func settleMemoryUpdate(_ update: MemoryUpdate) {
             if let index = memoryUpdates.firstIndex(where: { $0.id == update.id && $0.status == .pending }) {
@@ -169,6 +171,13 @@ public enum RunGrouper {
                         $0.status = .succeeded
                         $0.results = results
                     }
+                    // A search's pictures go where it was made; its sources are the timeline's.
+                    let gallery = SearchGallery(
+                        media: results.flatMap { $0.media.compactMap(WebSearchMedia.init(json:)) }, excluding: shownMedia)
+                    if !gallery.isEmpty {
+                        layout.media(.init(callId: message.toolCallId ?? message.id, gallery: gallery))
+                        shownMedia.formUnion(gallery.shownKeys)
+                    }
                     continue
                 }
                 if hadStep { settle(message) { $0.status = .succeeded } }
@@ -216,12 +225,14 @@ public enum RunGrouper {
     /// The answer as it is laid out while the run's rows are walked: the model's text and the places of its calls,
     /// in order. A card takes the place of its call — where the model asked, not where the result landed — so
     /// results that come back out of order, or late, move nothing; a call that gets no card leaves no gap, and the
-    /// text on either side of it is one block.
+    /// text on either side of it is one block. A search's media stand where its result came back, as on the desktop:
+    /// after the text that asked for it, before the text that follows — only ever added at the end.
     private struct TurnLayout {
         private enum Piece {
             case text(String)
             case call(String)
             case card(ToolCard)
+            case media(AssistantTurn.MediaBlock)
         }
 
         private var pieces: [Piece] = []
@@ -229,6 +240,8 @@ public enum RunGrouper {
         private var cards: [String: ToolCard] = [:]
 
         mutating func text(_ text: String) { pieces.append(.text(text)) }
+
+        mutating func media(_ media: AssistantTurn.MediaBlock) { pieces.append(.media(media)) }
 
         mutating func call(_ id: String) {
             guard calls.insert(id).inserted else { return }
@@ -251,16 +264,15 @@ public enum RunGrouper {
                     case .text(let text): .text(AssistantTurn.TextBlock(id: "", text: text))
                     case .call(let id): cards[id].map(AssistantTurn.Block.card)
                     case .card(let card): .card(card)
+                    case .media(let media): .media(media)
                     }
                 })
         }
     }
 
     private static func foot(memoryUpdates: [MemoryUpdate], sources: [CitationSource]) -> RunFoot {
-        let media = sources.flatMap { $0.media.compactMap(WebSearchMedia.init(json:)) }
-        var foot = RunFoot(memoryUpdates: memoryUpdates, searchMedia: media)
-        if !media.isEmpty { foot.gallery = SearchGallery(media: media) }
-        return foot
+        RunFoot(
+            memoryUpdates: memoryUpdates, searchMedia: sources.flatMap { $0.media.compactMap(WebSearchMedia.init(json:)) })
     }
 
     /// Built-ins that only fetch or read something: the text the model writes beside calls to these alone is it at

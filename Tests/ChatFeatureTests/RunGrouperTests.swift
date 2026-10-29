@@ -721,3 +721,111 @@ struct RunGrouperFixRoundTests {
         #expect(cache.builtTurnCount == built)
     }
 }
+
+private func mediaSources(_ urls: [String], videos: [String] = []) -> String {
+    let images = urls.map {
+        #"{"kind":"image","title":"I","url":"\#($0)","sourceUrl":"https://pages.example/a","thumbnailUrl":"\#($0)?thumb"}"#
+    }
+    let clips = videos.map { #"{"kind":"video","title":"V","url":"\#($0)","sourceUrl":"\#($0)"}"# }
+    return #"[{"rank":1,"link":"https://pages.example/a","title":"A","snippet":"a","media":[\#((images + clips).joined(separator: ","))]}]"#
+}
+
+private func blockIds(_ turn: AssistantTurn) -> [String] { turn.blocks.map(\.id) }
+
+@Suite("RunGrouper: a search's media where it was made (ISSUE-300)")
+struct RunGrouperSearchMediaTests {
+    private static func run(searchDetails: String, tail: String? = "Part two.") -> [ChatMessage] {
+        var rows = [
+            user("u"),
+            text("a1", "u", "Part one.", stopReason: "toolUse"),
+            assistant("a2", runId: "u", blocks: toolCall("c1", "web_search", #"{"query":"q"}"#), stopReason: "toolUse"),
+            toolResult("t1", "u", callId: "c1", name: "web_search", details: searchDetails),
+        ]
+        if let tail { rows.append(text("a3", "u", tail)) }
+        return rows
+    }
+
+    @Test("the media stand after the text that asked for the search and before the text that follows")
+    func placedAfterItsSearch() throws {
+        let turn = try #require(turns(group(Self.run(searchDetails: mediaSources(["https://img.example/1.jpg"])))).first)
+        #expect(blockIds(turn) == ["text:0", "media:c1", "text:1"])
+        guard case .media(let media) = turn.blocks[1] else {
+            Issue.record("no media block")
+            return
+        }
+        #expect(media.gallery.images.map { $0.url?.absoluteString } == ["https://img.example/1.jpg"])
+        #expect(turn.body == "Part one.\n\nPart two.")
+        #expect(turn.toolCards.isEmpty)
+    }
+
+    @Test("a search with no media to show adds no block and does not split the text around it")
+    func emptyMediaKeepsTextWhole() throws {
+        let turn = try #require(turns(group(Self.run(searchDetails: sourcesAB))).first)
+        #expect(blockIds(turn) == ["text:0"])
+        #expect(turn.body == "Part one.\n\nPart two.")
+    }
+
+    @Test("a second search shows only what the first did not; one with nothing new adds no block")
+    func deduplicatedAcrossSearches() throws {
+        let first = mediaSources(["https://img.example/1.jpg"])
+        let second = mediaSources(["https://img.example/1.jpg", "https://img.example/2.jpg"], videos: ["https://v.example/1"])
+        let turn = try #require(
+            turns(
+                group([
+                    user("u"),
+                    assistant("a1", runId: "u", blocks: toolCall("c1", "web_search"), stopReason: "toolUse"),
+                    toolResult("t1", "u", callId: "c1", name: "web_search", details: first),
+                    assistant("a2", runId: "u", blocks: toolCall("c2", "web_search"), stopReason: "toolUse"),
+                    toolResult("t2", "u", callId: "c2", name: "web_search", details: second),
+                    assistant("a3", runId: "u", blocks: toolCall("c3", "web_search"), stopReason: "toolUse"),
+                    toolResult("t3", "u", callId: "c3", name: "web_search", details: first),
+                    text("a4", "u", "Done."),
+                ])
+            ).first)
+        #expect(blockIds(turn) == ["media:c1", "media:c2", "text:0"])
+        let galleries = turn.blocks.compactMap { if case .media(let media) = $0 { media.gallery } else { nil } }
+        #expect(galleries[1].images.map { $0.url?.absoluteString } == ["https://img.example/2.jpg"])
+        #expect(galleries[1].videos.map(\.url.absoluteString) == ["https://v.example/1"])
+    }
+
+    @Test("each search is capped on its own: 24 images and 12 videos")
+    func capped() throws {
+        let images = (0..<30).map { "https://img.example/\($0).jpg" }
+        let videos = (0..<15).map { "https://v.example/\($0)" }
+        let turn = try #require(turns(group(Self.run(searchDetails: mediaSources(images, videos: videos)))).first)
+        guard case .media(let media) = turn.blocks[1] else {
+            Issue.record("no media block")
+            return
+        }
+        #expect(media.gallery.images.count == 24)
+        #expect(media.gallery.videos.count == 12)
+    }
+
+    @Test("a failed search adds no media")
+    func failedSearch() throws {
+        let rows = Self.run(searchDetails: mediaSources(["https://img.example/1.jpg"])).map { row in
+            row.id == "t1"
+                ? toolResult("t1", "u", callId: "c1", name: "web_search", details: mediaSources(["https://img.example/1.jpg"]), isError: true)
+                : row
+        }
+        let turn = try #require(turns(group(rows)).first)
+        #expect(!turn.blocks.contains { if case .media = $0 { true } else { false } })
+    }
+
+    @Test("while the run streams, blocks are only added at the end and the last text grows in place")
+    func stableWhileStreaming() throws {
+        let details = mediaSources(["https://img.example/1.jpg"])
+        var cache = RunGrouper.Cache()
+        func frame(_ tail: String?) throws -> AssistantTurn {
+            try #require(turns(RunGrouper.group(Self.run(searchDetails: details, tail: tail), cache: &cache)).first)
+        }
+        let before = try frame(nil)
+        #expect(blockIds(before) == ["text:0", "media:c1"])
+        let growing = try frame("Pa")
+        let grown = try frame("Part two.")
+        #expect(blockIds(growing) == ["text:0", "media:c1", "text:1"])
+        #expect(blockIds(grown) == blockIds(growing))
+        #expect(Array(grown.blocks.prefix(2)) == before.blocks)
+        #expect(TranscriptRules.streamingBlockId(grown.blocks, isStreaming: true) == "text:1")
+    }
+}

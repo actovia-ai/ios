@@ -5,8 +5,9 @@ import Models
 import UIKit
 import UniformTypeIdentifiers
 
-/// The images and videos a run's searches found, as the desktop's `collectGalleryImages` / `collectGalleryVideos`:
-/// by kind, de-duplicated by URL, in result order. Built once with the turn.
+/// The images and videos one search found, as the desktop's `searchMedia`: by kind, de-duplicated by URL, in result
+/// order, less what an earlier search of the run already showed. Built once with the turn, one per search with
+/// something to show (`AssistantTurn.MediaBlock`).
 struct SearchGallery: Equatable, Sendable {
     struct Picture: Equatable, Sendable, Identifiable {
         /// The site's own file, when it is an https URL: which picture this is, never loaded — it may refuse a
@@ -45,9 +46,15 @@ struct SearchGallery: Equatable, Sendable {
 
     var isEmpty: Bool { images.isEmpty && videos.isEmpty }
 
+    /// The media URLs, as the results gave them, of what this gallery puts on screen: what a later search of the run
+    /// is de-duplicated against.
+    private(set) var shownKeys: Set<String> = []
+
     init() {}
 
-    init(media: [WebSearchMedia]) {
+    /// `shown`: the media URLs (an image's own URL, a video's watch page — the desktop's key) an earlier search of the
+    /// run put on screen; they are left out here. The caps count what this search shows.
+    init(media: [WebSearchMedia], excluding shown: Set<String> = []) {
         // An image's own URL and its thumbnail; a video's thumbnail only (its URL is a page, never an image).
         trustedURLs = Set(
             media.flatMap { item in
@@ -55,14 +62,15 @@ struct SearchGallery: Equatable, Sendable {
                     .compactMap { $0.flatMap(SearchMediaPolicy.fetchableURL) }
             })
 
-        var seenImages = Set<String>()
-        var seenVideos = Set<String>()
+        var seenImages = shown
+        var seenVideos = shown
         for item in media {
             switch item.kind {
             case .image:
                 guard images.count < Self.imageCap, seenImages.insert(item.url).inserted else { continue }
                 // No thumbnail, nothing to show: the site's own file is never fetched.
                 guard let preview = item.thumbnailUrl.flatMap(SearchMediaPolicy.fetchableURL) else { continue }
+                shownKeys.insert(item.url)
                 images.append(
                     Picture(
                         url: SearchMediaPolicy.fetchableURL(item.url), preview: preview, title: item.title,
@@ -71,6 +79,7 @@ struct SearchGallery: Equatable, Sendable {
                 guard videos.count < Self.videoCap, seenVideos.insert(item.url).inserted,
                     let url = ExternalLinkPolicy.openableURL(item.url)
                 else { continue }
+                shownKeys.insert(item.url)
                 videos.append(
                     Video(
                         url: url, thumbnail: item.thumbnailUrl.flatMap(SearchMediaPolicy.fetchableURL), title: item.title,

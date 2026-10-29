@@ -33,9 +33,19 @@ struct ToolDisplayNameTests {
         #expect(ToolPresentation.displayName(name) == expected)
     }
 
-    @Test("an MCP or unknown tool keeps its own name; an empty one is \"Tool\"")
-    func others() {
-        #expect(ToolPresentation.displayName("drawio_create") == "drawio_create")
+    @Test(
+        "an MCP or unknown tool reads as the desktop's toolLabel does: words in capitals, MCP kept whole",
+        arguments: [
+            ("drawio_create", "Drawio Create"), ("search_repositories", "Search Repositories"),
+            ("getHTTPResponse", "Get Http Response"), ("list-issues", "List Issues"), ("fetch_mcp_docs", "Fetch MCP Docs"),
+            ("resolve-library-id", "Resolve Library Id"), ("read_page_v2", "Read Page V2"), ("ping", "Ping"),
+        ])
+    func others(name: String, expected: String) {
+        #expect(ToolPresentation.displayName(name) == expected)
+    }
+
+    @Test("an empty tool name is \"Tool\"")
+    func empty() {
         #expect(ToolPresentation.displayName("") == "Tool")
     }
 
@@ -130,7 +140,6 @@ struct ToolCardPresentationTests {
         #expect(failed.cwd == nil)
         let signal = try #require(ToolPresentation.terminalOutput(json(#"{"command":"sleep 9","exitCode":"ETIMEDOUT"}"#)))
         #expect(signal.exitCode == "ETIMEDOUT")
-        #expect(ToolPresentation.exitText("0") == "exit 0")
     }
 
     @Test("terminal payload given as a JSON string still parses; anything without a command does not")
