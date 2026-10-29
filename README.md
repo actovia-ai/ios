@@ -1,6 +1,6 @@
 # Actovia iOS
 
-A native iPhone client for the desktop Actovia app (the `actovia` checkout at `../actovia`): a ChatGPT-style slide-out drawer lists your
+A native iPhone and iPad client for the desktop Actovia app (the `actovia` checkout at `../actovia`): a ChatGPT-style slide-out drawer lists your
 Recents and searches them, and the chat beside it sends messages, streams the replies and edits the
 AI-provider settings, all through the desktop's local HTTP server. It stores nothing but the server address.
 Swift 6 and SwiftUI: prefer native frameworks as much as possible and reach for a third-party library only
@@ -73,6 +73,17 @@ matches nothing and still prints `** TEST SUCCEEDED **`, so look for a `Test run
 - `PhilharmonicFeature`: placeholder for a later phase.
 - `App`: composition root, the drawer shell (`SideDrawer`, `AppShell`, and `DrawerPhysics` — the
   drawer's gesture, spring and rubber-band math, tested on its own) and the workspace list.
+
+## iPad
+
+The iPad runs the same app (ISSUE-291), laid out as an unfolded iPhone Duo is — no layout of its own. One rule,
+`ReadingColumn` (OdyKit): a window at least 700 pt wide docks the sidebar (300 pt) beside the content, and a chat's
+transcript and composer keep a 680 pt column centred in what is left; a narrower window (Split View, Slide Over, a
+small Stage Manager window) is laid out as a phone, with the drawer. The app supports every orientation and
+multitasking (no `UIRequiresFullScreen`), one window at a time (`UIApplicationSupportsMultipleScenes` is off). With a
+hardware keyboard Return sends and Shift-Return is a new line (`ComposerReturnKey`); ⌘N starts a new chat (a new
+group in Philharmonic). A sentence that names the device has an iPad wording (a device variation in the catalog).
+DEBUG builds open a chat with `-OpenChat <id>` for screenshots.
 
 ## Connecting to the desktop
 
