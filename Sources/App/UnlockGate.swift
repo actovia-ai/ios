@@ -7,27 +7,38 @@ import SwiftUI
 /// background. The token lives in the Keychain behind biometrics and is only
 /// ever held in memory between those moments. An unpaired app (the Simulator)
 /// has nothing to unlock and goes straight through.
+///
+/// Locking again covers the app; it does not take it down (ISSUE-298). The content used to be swapped out for the
+/// lock screen, which destroyed the shell and everything it held — the chat on screen, the workspace, the group — so
+/// every Face ID after a while in the background landed on a new chat. Now the content, once it has been shown, stays
+/// mounted under an opaque cover, hidden from touches and VoiceOver, and is where it was when the cover lifts.
 struct UnlockGate<Content: View>: View {
     let connection: ServerConnection
     @ViewBuilder let content: () -> Content
 
     @Environment(\.scenePhase) private var scenePhase
-    @State private var isLocked: Bool
+    @State private var presentation: UnlockPresentation
     @State private var isUnlocking = false
     @State private var backgroundedAt: Date?
 
     init(connection: ServerConnection, @ViewBuilder content: @escaping () -> Content) {
         self.connection = connection
         self.content = content
-        _isLocked = State(initialValue: connection.isPaired && !connection.isUnlocked)
+        _presentation = State(initialValue: UnlockPresentation(isLocked: connection.isPaired && !connection.isUnlocked))
     }
 
+    private var isLocked: Bool { presentation.isLocked }
+
     var body: some View {
-        Group {
-            if isLocked {
-                lockedView
-            } else {
+        ZStack {
+            if presentation.mountsContent {
                 content()
+                    .allowsHitTesting(!presentation.coversContent)
+                    .accessibilityHidden(presentation.coversContent)
+            }
+            if presentation.coversContent {
+                lockedView
+                    .background(Color(.systemBackground).ignoresSafeArea())
             }
         }
         .task { await unlockIfNeeded() }
@@ -41,7 +52,7 @@ struct UnlockGate<Content: View>: View {
                    connection.isPaired
                 {
                     connection.lock()
-                    isLocked = true
+                    presentation.lock()
                 }
                 backgroundedAt = nil
                 Task { await unlockIfNeeded() }
@@ -79,9 +90,33 @@ struct UnlockGate<Content: View>: View {
                     localized: "ios:app.lock.biometricReason", defaultValue: "Unlock the connection to your computer",
                     comment: "The reason shown in the Face ID / passcode prompt."))
             // Unpaired meanwhile (revoked, then cleared): nothing left to guard.
-            isLocked = connection.isPaired && !connection.isUnlocked
+            presentation.settle(stillLocked: connection.isPaired && !connection.isUnlocked)
         } catch {
             // Cancelled or failed: stay locked; the button tries again.
         }
+    }
+}
+
+/// What the gate shows: whether the app is mounted at all and whether the lock covers it. The app is not built before
+/// the first unlock (nothing could load), and once built it is never taken down by a lock again, only covered.
+struct UnlockPresentation: Equatable {
+    private(set) var isLocked: Bool
+    /// The app has been on screen this launch, so a later lock keeps it.
+    private(set) var hasShownContent: Bool
+
+    init(isLocked: Bool) {
+        self.isLocked = isLocked
+        hasShownContent = !isLocked
+    }
+
+    var mountsContent: Bool { hasShownContent }
+    var coversContent: Bool { isLocked }
+
+    mutating func lock() { isLocked = true }
+
+    /// After an unlock attempt: still locked (cancelled, failed) or open.
+    mutating func settle(stillLocked: Bool) {
+        isLocked = stillLocked
+        if !stillLocked { hasShownContent = true }
     }
 }
