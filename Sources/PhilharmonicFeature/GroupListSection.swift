@@ -145,7 +145,7 @@ public struct GroupListSection: View {
     }
 
     private func preview(of group: GroupConversation) -> Text {
-        let latest = group.latestMessage?.content.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        let latest = GroupPreview.text(group.latestMessage?.content ?? "")
         return latest.isEmpty ? Text("philharmonic:chat.conversationList.noMessagesYetPreview") : Text(latest)
     }
 
