@@ -130,7 +130,6 @@ struct ToolCardPresentationTests {
         #expect(failed.cwd == nil)
         let signal = try #require(ToolPresentation.terminalOutput(json(#"{"command":"sleep 9","exitCode":"ETIMEDOUT"}"#)))
         #expect(signal.exitCode == "ETIMEDOUT")
-        #expect(ToolPresentation.exitText("0") == "exit 0")
     }
 
     @Test("terminal payload given as a JSON string still parses; anything without a command does not")

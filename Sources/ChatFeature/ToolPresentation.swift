@@ -203,10 +203,6 @@ enum ToolPresentation {
 
     static func terminalOutput(_ payload: JSONValue?) -> TerminalOutput? { payload.flatMap(TerminalResult.init(json:)) }
 
-    static func exitText(_ code: String) -> String {
-        String(localized: "ios:chat.message.terminal.exitCode", defaultValue: "exit \(code)", comment: "A terminal command's exit status. %@ is the code, such as 0 or 127.")
-    }
-
     static func hasPayload(_ payload: JSONValue?) -> Bool {
         switch payload {
         case nil, .null?: false
