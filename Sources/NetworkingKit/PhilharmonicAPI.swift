@@ -123,6 +123,15 @@ public struct PhilharmonicAPI: Sendable {
         try await client.get("\(Self.base)/teams")
     }
 
+    /// An employee's DiceBear face as a transparent PNG of `size` pixels, drawn by the desktop exactly as it draws it
+    /// (`GET /api/v1/philharmonic/avatar`, ISSUE-296). A desktop from before it answers 404.
+    public func avatar(seed: String?, style: String?, size: Int) async throws -> Data {
+        var query = [URLQueryItem(name: "size", value: String(size))]
+        if let seed { query.append(URLQueryItem(name: "seed", value: seed)) }
+        if let style { query.append(URLQueryItem(name: "style", value: style)) }
+        return try await client.data("\(Self.base)/avatar", query: query)
+    }
+
     // MARK: Coding agents
 
     /// What each CLI last reported of the owner's quota.

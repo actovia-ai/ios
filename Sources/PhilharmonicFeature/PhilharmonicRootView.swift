@@ -27,6 +27,13 @@ public struct PhilharmonicRootView: View {
     }
 
     public var body: some View {
+        content
+            // Employees' faces, wherever this workspace draws them: the transcript, the plan, members, Workforce.
+            .environment(\.employeeAvatars, EmployeeAvatars(api: api))
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch selection {
         case .none:
             ContentUnavailableView {
