@@ -27,6 +27,13 @@ public struct PhilharmonicRootView: View {
     }
 
     public var body: some View {
+        content
+            // Employees' faces, wherever this workspace draws them: the transcript, the plan, members, Workforce.
+            .environment(\.employeeAvatars, EmployeeAvatars(api: api))
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch selection {
         case .none:
             ContentUnavailableView {
@@ -38,7 +45,7 @@ public struct PhilharmonicRootView: View {
                     .buttonStyle(.glassProminent)
             }
         case .group(let id, _):
-            GroupChatView(conversationId: id, api: api, stream: Self.stream(id, api: api), onGone: onGroupGone)
+            GroupChatView(conversationId: id, api: api, makeStream: { Self.stream(id, api: api) }, onGone: onGroupGone)
                 .id(id)
         case .dashboard:
             DashboardView(api: api)

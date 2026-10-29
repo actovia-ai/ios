@@ -48,6 +48,8 @@ private final class Sleeps: Sendable {
 private enum Body {
     static let employees =
         #"[{"id":"a1","name":"Kai","teamId":null,"runtime":"claude-code","model":"opus"},{"id":"a2","name":"Nora","teamId":null,"runtime":"actovia"},{"id":"a3","name":"Rin","teamId":null,"runtime":"codex"}]"#
+    static let groups =
+        #"[{"id":"c1","title":"Atlas","createdAt":"t","updatedAt":"t","lastMessageAt":"t","memberAgentIds":["a3","a1"]}]"#
     /// Claude Code stopped on its 5-hour window, which resets at 2026-10-23 12:00 UTC.
     static let quota =
         #"[{"cli":"claude-code","windows":[{"name":"five_hour","usedPercent":100,"resetsAt":1792756800000,"rejected":true},{"name":"seven_day","usedPercent":41.6,"resetsAt":1793000000000}],"state":"rejected","rejectedWindow":"five_hour","overage":false,"asOf":1792750000000}]"#
@@ -58,11 +60,15 @@ private enum Body {
 struct MembersViewModelTests {
     private let sleeps = Sleeps()
 
-    private func makeVM(memberIds: [String] = ["a1", "a2"]) -> MembersViewModel {
+    private func makeVM(
+        memberIds: [String]? = ["a1", "a2"], conversationId: String? = nil,
+        sleep: (@Sendable (Duration) async throws -> Void)? = nil
+    ) -> MembersViewModel {
         MembersMockURLProtocol.route.withLock {
             $0 = { path in
                 if path.hasSuffix("/agents/quota") { return (200, Body.quota) }
                 if path.hasSuffix("/agents") { return (200, Body.employees) }
+                if path.hasSuffix("/conversations") { return (200, Body.groups) }
                 return (404, "{}")
             }
         }
@@ -72,7 +78,8 @@ struct MembersViewModelTests {
         let store = ServerConfigStore(userDefaults: UserDefaults(suiteName: "MembersViewModelTests")!)
         let api = PhilharmonicAPI(
             client: APIClient(session: URLSession(configuration: config), serverConfig: store), serverConfig: store)
-        return MembersViewModel(api: api, memberIds: memberIds, sleep: sleeps.sleep)
+        return MembersViewModel(
+            api: api, memberIds: memberIds, conversationId: conversationId, sleep: sleep ?? sleeps.sleep)
     }
 
     private func quotaReads() -> Int {
@@ -126,5 +133,30 @@ struct MembersViewModelTests {
         let line = try #require(vm.quotaLine(for: kai, now: Date(timeIntervalSince1970: 1_792_760_000)))
         #expect(!line.isLimited)
         #expect(line.text == "5h 100% · week 42%")
+    }
+
+    @Test("opened before the screen had the group's members, the sheet reads them itself (ISSUE-249 M3)")
+    func readsTheGroupWhenNotGivenMembers() async {
+        let vm = makeVM(memberIds: nil, conversationId: "c1")
+        vm.start()
+        await eventually { vm.hasLoaded }
+        #expect(vm.members.map(\.id) == ["a3", "a1"])
+        vm.stop()
+    }
+
+    @Test("dropped without stop(), the model goes and its quota loop ends (ISSUE-249 M1)")
+    func loopEndsWithTheModel() async {
+        weak var gone: MembersViewModel?
+        do {
+            let vm = makeVM(sleep: { _ in try await Task.sleep(for: .milliseconds(10)) })
+            gone = vm
+            vm.start()
+            await eventually { quotaReads() >= 2 }
+        }
+        await eventually { gone == nil }
+        #expect(gone == nil)
+        let reads = quotaReads()
+        try? await Task.sleep(for: .milliseconds(100))
+        #expect(quotaReads() == reads)
     }
 }

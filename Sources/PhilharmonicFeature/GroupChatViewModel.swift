@@ -38,6 +38,8 @@ public final class GroupChatViewModel {
     public private(set) var isLoading = true
     /// Prompts answered from here, or found answered elsewhere: drawn settled, never asked again.
     public private(set) var settledPrompts: Set<String> = []
+    /// Counts the members who joined while open: the screen reads the group's members again on each.
+    public private(set) var memberJoins = 0
 
     @ObservationIgnored private let api: PhilharmonicAPI
     @ObservationIgnored private let stream: GroupStream
@@ -56,10 +58,16 @@ public final class GroupChatViewModel {
     /// Reads the group and starts listening. The group is read whole again each time the stream connects (missed
     /// events are not replayed). The first read does not wait for the stream: URLSession hands over a stream's
     /// response only with its first byte, which a quiet group may not send for 15 s.
+    ///
+    /// The listening task is in place before anything is awaited and makes the stream itself, so a `stop()` at any
+    /// moment ends it, and a second `start()` meanwhile finds it and returns. The stream used to be made first, and a
+    /// screen gone during that wait left its connection open (ISSUE-249 M2).
     public func start() async {
         guard listening == nil else { return }
-        let updates = await stream.updates()
-        listening = Task { [weak self] in
+        listening = Task { [weak self, stream] in
+            let updates = await stream.updates()
+            // Stopped while the stream was made: dropping it unread ends its connection.
+            guard !Task.isCancelled else { return }
             for await update in updates {
                 guard let self, !Task.isCancelled else { return }
                 await self.handle(update)
@@ -203,6 +211,12 @@ public final class GroupChatViewModel {
         case .agentCard(_, let messageId, let card):
             liveCards[messageId] = card
         case .messageEnd:
+            await readAfter()
+            return
+        case .memberJoined:
+            // The join's system row is saved with it, and the members panel is out of date: neither waits for the
+            // next message_end (ISSUE-249 M4).
+            memberJoins += 1
             await readAfter()
             return
         case .planCreated, .planStepUpdated, .planStepAppended, .planStatusChanged:

@@ -29,7 +29,7 @@ struct AppShell: View {
     let pendingLink: PendingLink
 
     @State private var activeChat = ActiveChat.new()
-    @State private var isSidebarOpen = false
+    @State private var isSidebarOpen = ShellLaunch.drawerOpen
     /// The screen is wide enough for the sidebar to stay beside the content (an unfolded iPhone Duo, landscape), as
     /// Claude's app does there; the toolbar button then hides and shows it instead of sliding a drawer.
     @State private var isDocked = false
@@ -37,10 +37,10 @@ struct AppShell: View {
     @State private var usesSidebarPage = false
     /// Whether the docked sidebar is showing. Its own value, so a drawer closed on a phone does not hide it later.
     @State private var isDockedSidebarShown = true
-    @State private var workspace: AppWorkspace = .chat
+    @State private var workspace: AppWorkspace = ShellLaunch.workspace
     /// Settings, and the page it opens on. One value, so the page arrives with the presentation itself: two flags let
     /// the first presentation read a stale page and open on the root.
-    @State private var settings: SettingsRoute?
+    @State private var settings: SettingsRoute? = ShellLaunch.settingsOpen ? .root : nil
     /// Bumped when Settings closes so the sidebar reloads Recents from the (possibly new) server.
     @State private var recentsReloadToken = 0
     /// A question from Health waiting for its new chat to open and send it.
@@ -56,7 +56,7 @@ struct AppShell: View {
     @State private var composerTools = ComposerTools()
     /// The Philharmonic workspace's groups, made the first time the shell appears.
     @State private var groupList: GroupListViewModel?
-    @State private var philharmonicSelection: PhilharmonicSelection = .none
+    @State private var philharmonicSelection: PhilharmonicSelection = ShellLaunch.philharmonicSelection
     @State private var showsNewGroup = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase

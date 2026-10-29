@@ -47,7 +47,7 @@ CJK_RE = re.compile("[⺀-鿿가-힯＀-￯]")
 CALL_RE = re.compile(
     r"(?:\bText\(|\bLabel\(|\bButton\(|\bTextField\(|\bSecureField\(|\bSection\(|\bPicker\("
     r"|\bToggle\(|\bContentUnavailableView\(|\.navigationTitle\(|\.accessibility(?:Label|Hint|Value)\("
-    r"|\.alert\(|\bString\(\s*localized:\s*|\bLocalizedStringResource\()\s*\""
+    r"|\.alert\(|\bString\(\s*localized:\s*|\bLocalizedStringResource\(|\bSidebar(?:Label|SectionHeader)\()\s*\""
 )
 # `cond ? "A" : "B"` handed to a SwiftUI text initializer may resolve to the non-localizing String overload.
 TERNARY_RE = re.compile(r'\?\s*"(?:[^"\\]|\\.)*"\s*:\s*"')

@@ -33,6 +33,9 @@ struct GroupComposer: View {
                     Task { await add(loaders) }
                 }
                 .padding(.leading, ComposerRowLayout.inset - 16)
+                // An answer to the PM is words only: a picture added then never went with it and was sent later
+                // with the next message instead (ISSUE-249 M5).
+                .disabled(model.askUser != nil)
                 .composerRole(.leading)
                 Group {
                     if model.askUser != nil {
@@ -80,8 +83,9 @@ struct GroupComposer: View {
     private var state: TurnButtonState { model.pmRunning && model.askUser == nil ? .stop : .send }
 
     private var canSend: Bool {
-        !sending && preparing == 0
-            && (!text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty)
+        GroupComposerRule.canSend(
+            hasWords: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, hasPictures: !attachments.isEmpty,
+            preparing: preparing, sending: sending, answering: model.askUser != nil)
     }
 
     private var turnButton: some View {
@@ -180,5 +184,16 @@ struct FlowLayout: Layout {
         }
         if !current.indices.isEmpty { rows.append(current) }
         return rows
+    }
+}
+
+/// When the composer's send button is live.
+enum GroupComposerRule {
+    /// Answering the PM, pictures do not count: the answer carries none (the picture button is off meanwhile), and
+    /// any already added stay for the next message (ISSUE-249 M5).
+    static func canSend(hasWords: Bool, hasPictures: Bool, preparing: Int, sending: Bool, answering: Bool) -> Bool {
+        if sending { return false }
+        if answering { return hasWords }
+        return preparing == 0 && (hasWords || hasPictures)
     }
 }

@@ -23,8 +23,9 @@ enum AppWorkspace: CaseIterable, Identifiable {
 
     var systemImage: String {
         switch self {
-        case .chat: "bubble.left.and.bubble.right"
-        case .health: "heart.text.square"
+        // Glyphs of one optical width, so the column reads as one (ISSUE-297: the double bubble was twice as wide).
+        case .chat: "bubble.left"
+        case .health: "heart"
         case .philharmonic: "music.note.list"
         }
     }

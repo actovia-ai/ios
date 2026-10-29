@@ -2,6 +2,7 @@ import ChatFeature
 import MarkdownKit
 import Models
 import SwiftUI
+import UIKit
 
 /// Who is who in a group: the employees and teams a bubble's header names.
 struct GroupRoster: Equatable {
@@ -104,13 +105,17 @@ struct GroupBubbleView: View {
     }
 }
 
-/// The PM's badge, or an employee's initials.
+/// The PM's badge, or an employee's face — the desktop's: its DiceBear avatar on the hue its seed picks, ringed
+/// (`EmployeeAvatar`). Until the face is fetched, or from a desktop that cannot draw one, the initials on that hue.
 struct GroupAvatar: View {
     let role: GroupRole
     let employee: Employee?
     @Environment(\.toneAccent) private var toneAccent
     @Environment(\.accentGlyph) private var accentGlyph
+    @Environment(\.employeeAvatars) private var avatars
     @ScaledMetric(relativeTo: .body) private var side: CGFloat = 32
+    /// The face fetched for `key`; a row reused for another employee does not show the last one's.
+    @State private var face: (key: EmployeeAvatarKey, image: UIImage)?
 
     var body: some View {
         Group {
@@ -121,15 +126,36 @@ struct GroupAvatar: View {
                     .frame(width: side, height: side)
                     .background(toneAccent, in: .circle)
             } else {
-                Text(verbatim: GroupTime.initials(employee?.name))
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .frame(width: side, height: side)
-                    .background(.fill.secondary, in: .circle)
+                HueDisc(hue: .pick(employee?.avatarSeed), side: side) {
+                    if let image = shownFace {
+                        Image(uiImage: image)
+                            .resizable()
+                            .interpolation(.high)
+                            .scaledToFill()
+                            .transition(.opacity)
+                    } else {
+                        Text(verbatim: GroupTime.initials(employee?.name))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .animation(.easeOut(duration: 0.15), value: face?.key)
+                .task(id: key) {
+                    guard let employee, let key, let avatars, shownFace == nil else { return }
+                    if let image = await avatars.load(employee) { face = (key, image) }
+                }
             }
         }
         .accessibilityHidden(true)
     }
+
+    /// Already in memory: drawn on the first frame, so a face seen before never flashes its initials.
+    private var shownFace: UIImage? {
+        if let face, face.key == key { return face.image }
+        return employee.flatMap { avatars?.cached($0) }
+    }
+
+    private var key: EmployeeAvatarKey? { employee.map(EmployeeAvatarKey.init) }
 }
 
 enum GroupTime {

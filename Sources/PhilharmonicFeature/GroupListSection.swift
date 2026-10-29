@@ -13,7 +13,8 @@ public enum PhilharmonicSelection: Hashable, Sendable {
     var groupId: String? { if case .group(let id, _) = self { id } else { nil } }
 }
 
-/// The groups in the drawer, where Chat lists Recents, then Dashboard and Workforce.
+/// Philharmonic's part of the drawer, where Chat lists Recents: its own pages (Dashboard, Workforce) first, then its
+/// groups — the pages used to trail the list as if they were groups too (ISSUE-297).
 public struct GroupListSection: View {
     let model: GroupListViewModel
     let selection: PhilharmonicSelection
@@ -23,6 +24,7 @@ public struct GroupListSection: View {
     @State private var renameText = ""
     @State private var deleting: GroupConversation?
     @State private var deletedTrigger = 0
+    @ScaledMetric(relativeTo: .body) private var avatarSide: CGFloat = 36
 
     public init(
         model: GroupListViewModel, selection: PhilharmonicSelection,
@@ -34,6 +36,17 @@ public struct GroupListSection: View {
     }
 
     public var body: some View {
+        Section {
+            SidebarLabel("philharmonic:chat.conversationList.configNav.dashboard", systemImage: "chart.bar")
+                .sidebarRow(isSelected: selection == .dashboard) { onSelect(.dashboard) }
+            SidebarLabel("philharmonic:chat.conversationList.configNav.workforce", systemImage: "person.2")
+                .sidebarRow(isSelected: selection == .workforce) { onSelect(.workforce) }
+        } header: {
+            SidebarDivider()
+        }
+        // The row's own ink, as the workspace rows above: the list's tint would draw the icons in blue.
+        .foregroundStyle(.primary)
+        .listSectionSeparator(.hidden)
         Section {
             if model.groups.isEmpty {
                 if model.hasLoaded {
@@ -51,16 +64,9 @@ public struct GroupListSection: View {
                 row(for: group)
             }
         } header: {
-            Text("ios:philharmonic.list.groups")
+            SidebarSectionHeader("ios:philharmonic.list.groups")
         }
-        Section {
-            Label("philharmonic:chat.conversationList.configNav.dashboard", systemImage: "chart.bar")
-                .sidebarRow(isSelected: selection == .dashboard) { onSelect(.dashboard) }
-            Label("philharmonic:chat.conversationList.configNav.workforce", systemImage: "person.3")
-                .sidebarRow(isSelected: selection == .workforce) { onSelect(.workforce) }
-        }
-        // The row's own ink, as the workspace rows above: the list's tint would draw the icons in blue.
-        .foregroundStyle(.primary)
+        .listSectionSeparator(.hidden)
         .task { await model.load() }
         .alert(
             "philharmonic:chat.conversationList.renameDialog.title",
@@ -109,11 +115,13 @@ public struct GroupListSection: View {
         .sensoryFeedback(.impact(weight: .medium), trigger: deletedTrigger)
     }
 
+    /// The desktop's group row (ISSUE-272/297): the emoji on its hue disc, the title and when it last spoke, the last
+    /// message under them.
     private func row(for group: GroupConversation) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            GroupIcon(icon: group.icon)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 8) {
+        HStack(alignment: .center, spacing: 12) {
+            GroupEmojiAvatar(id: group.id, icon: group.icon, side: avatarSide)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(group.title)
                         .lineLimit(1)
                     Spacer(minLength: 8)
@@ -126,7 +134,7 @@ public struct GroupListSection: View {
                     }
                 }
                 preview(of: group)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -137,7 +145,7 @@ public struct GroupListSection: View {
     }
 
     private func preview(of group: GroupConversation) -> Text {
-        let latest = group.latestMessage?.content.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        let latest = GroupPreview.text(group.latestMessage?.content ?? "")
         return latest.isEmpty ? Text("philharmonic:chat.conversationList.noMessagesYetPreview") : Text(latest)
     }
 
@@ -155,19 +163,5 @@ public struct GroupListSection: View {
                 image: UIImage(systemName: "trash"), attributes: .destructive
             ) { _ in deleting = group },
         ])
-    }
-}
-
-/// A group's emoji, or the workspace's symbol when it has none.
-struct GroupIcon: View {
-    let icon: String?
-
-    var body: some View {
-        if let icon, !icon.isEmpty {
-            Text(icon)
-        } else {
-            Image(systemName: "person.2")
-                .foregroundStyle(.secondary)
-        }
     }
 }
