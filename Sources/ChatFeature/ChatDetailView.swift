@@ -23,7 +23,8 @@ public struct ChatDetailView: View {
     @ScaledMetric(relativeTo: .body) private var composerLineHeight: CGFloat = 22
     /// Return inserts a newline in the multi-line composer, so the keyboard needs somewhere else to
     /// go: the composer's hide-keyboard button and a tap on the transcript both clear this.
-    @FocusState private var isComposerFocused: Bool
+    /// The composer's field is a `UITextView` (`ComposerTextView`), which reports focus through this.
+    @State private var isComposerFocused = false
     /// The Sources sheet, from an answer's Sources button or a tapped citation chip.
     @State private var sourcesSheet: SourcesSheetModel?
     /// The entity link tapped in an answer, whose Wikipedia summary a sheet shows.
@@ -379,10 +380,12 @@ public struct ChatDetailView: View {
             // Reaches into the composer's padding, so its circle sits as far from the edge as Send's on the other side.
             .padding(.leading, ComposerRowLayout.inset - 16)
             .composerRole(.leading)
-            TextField(composerPlaceholder, text: $viewModel.composerText, axis: .vertical)
-                .lineLimit(1...5)
-                .focused($isComposerFocused)
-                .accessibilityIdentifier("composerField")
+            ComposerTextView(
+                text: $viewModel.composerText, isFocused: $isComposerFocused, placeholder: composerPlaceholder,
+                tint: toneInk, accessibilityIdentifier: "composerField"
+            ) { pictures in
+                Task { await viewModel.addPictures(pictures.map(Optional.some)) }
+            }
                 // While recording, and until its text is in, nothing is typed; the meter takes the field's place.
                 .disabled(viewModel.recording != .idle)
                 .opacity(isRecording ? 0 : 1)
@@ -483,9 +486,14 @@ public struct ChatDetailView: View {
     }
 
     /// The offline hint takes the placeholder's place: typing still works, sending waits for the computer.
-    private var composerPlaceholder: LocalizedStringKey {
-        if viewModel.isReadOnly { return "ios:offline.composerHint" }
-        return "ios:chat.composer.placeholder"
+    private var composerPlaceholder: String {
+        if viewModel.isReadOnly {
+            return String(
+                localized: "ios:offline.composerHint", defaultValue: "Offline — you can send once you're connected",
+                comment: "The composer's placeholder while the computer is away.")
+        }
+        return String(
+            localized: "ios:chat.composer.placeholder", defaultValue: "Ask Actovia", comment: "The composer's placeholder.")
     }
 
     private var turnState: TurnButtonState {
