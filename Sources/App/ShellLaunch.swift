@@ -2,7 +2,7 @@ import Foundation
 import PhilharmonicFeature
 
 /// Where the shell starts. Release builds always start on a closed drawer over a new chat; DEBUG builds take
-/// `-DrawerOpen` (the drawer open), `-Workspace chat|health|philharmonic` and, in Philharmonic,
+/// `-DrawerOpen` (the drawer open), `-OpenChat <id>`, `-Workspace chat|health|philharmonic` and, in Philharmonic,
 /// `-PhilharmonicSelection dashboard|workforce|<group id>` — for screenshots of the drawer and of a group without a
 /// finger on the Simulator.
 enum ShellLaunch {
@@ -21,6 +21,11 @@ enum ShellLaunch {
         #else
             false
         #endif
+    }
+
+    /// `-OpenChat <id>`: the shell opens on that chat, as a widget's link to it would (screenshots of a transcript).
+    static var chat: ActiveChat {
+        value(after: "-OpenChat").map { ActiveChat(id: $0, title: nil) } ?? .new()
     }
 
     static var workspace: AppWorkspace {
