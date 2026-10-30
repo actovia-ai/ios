@@ -130,8 +130,8 @@ struct ChatDetailViewModelAnswerTests {
         await model.loadHistory()
         let first = Task { await model.sendText(answer) }
         let deadline = ContinuousClock.now.advanced(by: .seconds(10))
-        while !model.isTurnInFlight {
-            try #require(ContinuousClock.now < deadline, "timed out waiting for the turn")
+        while !model.isTurnInFlight || posts.bodies.count != 1 {
+            try #require(ContinuousClock.now < deadline, "timed out waiting for the turn to post")
             try await Task.sleep(for: .milliseconds(2))
         }
         #expect(!model.canAnswer)
