@@ -1,3 +1,28 @@
+# [1.6.0](https://github.com/actovia-ai/ios/compare/v1.5.0...v1.6.0) (2026-10-30)
+
+
+### Bug Fixes
+
+* **app:** Face ID after the background returns to the page you left (ISSUE-298) ([6e05422](https://github.com/actovia-ai/ios/commit/6e054223132658b425d4bf8a771454cb67134051))
+* **app:** the lock covers every presentation, from a window of its own (ISSUE-298) ([2343ba5](https://github.com/actovia-ai/ios/commit/2343ba51d15806f246775942e3e7ccc5e0fe6874))
+* **chat:** a file copied in the Finder pastes as the picture, and Philharmonic takes a paste (ISSUE-299) ([d5409b4](https://github.com/actovia-ai/ios/commit/d5409b4ca3497a143ad68b7079410c7eea68bda8))
+* **chat:** a pasted picture joins the message instead of typing its file name (ISSUE-299) ([9edeaa9](https://github.com/actovia-ai/ios/commit/9edeaa9434cbcdfe55f6faea20d0a71ce2c98d02))
+* **chat:** confirm before deleting a chat from the sidebar (ISSUE-112) ([f635477](https://github.com/actovia-ai/ios/commit/f635477943bbf250315b47898aa6f7c730900d69))
+* **philharmonic:** plain-text last message in the group list (ISSUE-286) ([b24a262](https://github.com/actovia-ai/ios/commit/b24a2628d039dfbe82221a0495110a4945c19497))
+* **philharmonic:** the composer's placeholders carry their English text (ISSUE-299) ([2026f4a](https://github.com/actovia-ai/ios/commit/2026f4a81164814a4cc3e1b0e7524e08f4ea6608))
+* **philharmonic:** the review's minor items (ISSUE-249 M1–M7) ([36d3b3a](https://github.com/actovia-ai/ios/commit/36d3b3aef0d5dd6bf2bc4a2b01f165baad6ad981))
+
+
+### Features
+
+* **app:** a quieter, tighter drawer (ISSUE-297) ([2f5ea1b](https://github.com/actovia-ai/ios/commit/2f5ea1b7673300c567b21d78df19f44b24ef524c))
+* **chat:** a web search's pictures and videos where the search was made (ISSUE-300) ([e3d6aa6](https://github.com/actovia-ai/ios/commit/e3d6aa671a272c3b117588393b965f69808a36e0))
+* **chat:** an MCP tool's name reads as the desktop writes it (ISSUE-301) ([78f3f40](https://github.com/actovia-ai/ios/commit/78f3f406686281b9388505ba267f6c26ff5c6704))
+* **chat:** terminal and generic tool calls as one-line trace rows (ISSUE-301) ([2621842](https://github.com/actovia-ai/ios/commit/26218422b230f9da65742584e077bba970b4b998))
+* **ipad:** Return sends from a hardware keyboard, ⌘N starts a chat (ISSUE-291) ([b2132c1](https://github.com/actovia-ai/ios/commit/b2132c159a8984a5f5d93d21d206ce42590ff5e6))
+* **ipad:** say iPad on an iPad, keep Health's first page to a column (ISSUE-291) ([663154f](https://github.com/actovia-ai/ios/commit/663154fea98e4407bc3d07a715e11b5057113401))
+* **philharmonic:** employees wear the desktop's DiceBear faces (ISSUE-296) ([98b5fad](https://github.com/actovia-ai/ios/commit/98b5fad9cc024c624e2c117812556c156f8d4a8e))
+
 # [1.5.0](https://github.com/actovia-ai/ios/compare/v1.4.0...v1.5.0) (2026-10-28)
 
 
