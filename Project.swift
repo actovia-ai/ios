@@ -3,6 +3,9 @@ import ProjectDescription
 private let bundleIdRoot = "app.yancey.actovia.ios"
 private let developmentTeam = "YLF27G9ZMT"
 private let deploymentTargets = DeploymentTargets.iOS("26.0")
+/// iPhone and iPad (ISSUE-291). The iPad is laid out as an unfolded iPhone Duo is: the same width rules
+/// (OdyKit's `ReadingColumn`), no layout of its own. Every target the app links runs on both.
+private let appDestinations: Destinations = [.iPhone, .iPad]
 
 private func moduleTarget(
     name: String,
@@ -10,7 +13,7 @@ private func moduleTarget(
 ) -> Target {
     .target(
         name: name,
-        destinations: [.iPhone],
+        destinations: appDestinations,
         product: .staticFramework,
         bundleId: "\(bundleIdRoot).\(name)",
         deploymentTargets: deploymentTargets,
@@ -46,7 +49,7 @@ let project = Project(
     targets: [
         .target(
             name: "App",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .app,
             productName: "Actovia",
             bundleId: bundleIdRoot,
@@ -62,6 +65,15 @@ let project = Project(
                     "UILaunchScreen": [
                         "UIColorName": "LaunchBackground",
                         "UIImageName": "LaunchLogo"
+                    ],
+                    // iPad: every orientation, so the app takes part in Split View, Slide Over and Stage Manager
+                    // (iPadOS requires all four for multitasking; `UIRequiresFullScreen` is deliberately not set).
+                    // A window narrower than `ReadingColumn.dockedSidebarFrom` is laid out as a phone.
+                    "UISupportedInterfaceOrientations~ipad": [
+                        "UIInterfaceOrientationPortrait",
+                        "UIInterfaceOrientationPortraitUpsideDown",
+                        "UIInterfaceOrientationLandscapeLeft",
+                        "UIInterfaceOrientationLandscapeRight"
                     ],
                     // What the app is showing, published as the current activity so a screenshot is titled after
                     // it (ActoviaActivity and screenTitle in Models).
@@ -129,7 +141,7 @@ let project = Project(
         // keychain; it reads the App Group snapshot the app writes. The App's string catalog is a member too.
         .target(
             name: "ActoviaWidgets",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .appExtension,
             productName: "ActoviaWidgets",
             bundleId: "\(bundleIdRoot).widgets",
@@ -148,7 +160,7 @@ let project = Project(
         ),
         .target(
             name: "AppTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).AppTests",
             deploymentTargets: deploymentTargets,
@@ -158,7 +170,7 @@ let project = Project(
         moduleTarget(name: "Models"),
         .target(
             name: "ModelsTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).ModelsTests",
             deploymentTargets: deploymentTargets,
@@ -168,7 +180,7 @@ let project = Project(
         moduleTarget(name: "NetworkingKit", dependencies: [.target(name: "Models")]),
         .target(
             name: "NetworkingKitTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).NetworkingKitTests",
             deploymentTargets: deploymentTargets,
@@ -181,7 +193,7 @@ let project = Project(
         ),
         .target(
             name: "MarkdownKitTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).MarkdownKitTests",
             deploymentTargets: deploymentTargets,
@@ -197,7 +209,7 @@ let project = Project(
         ),
         .target(
             name: "ChatFeatureTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).ChatFeatureTests",
             deploymentTargets: deploymentTargets,
@@ -212,7 +224,7 @@ let project = Project(
         ),
         .target(
             name: "SettingsFeatureTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).SettingsFeatureTests",
             deploymentTargets: deploymentTargets,
@@ -230,7 +242,7 @@ let project = Project(
         ),
         .target(
             name: "PhilharmonicFeatureTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).PhilharmonicFeatureTests",
             deploymentTargets: deploymentTargets,
@@ -245,7 +257,7 @@ let project = Project(
         moduleTarget(name: "WidgetUI", dependencies: [.target(name: "WidgetKitShared"), .target(name: "OdyKit")]),
         .target(
             name: "WidgetKitSharedTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).WidgetKitSharedTests",
             deploymentTargets: deploymentTargets,
@@ -254,7 +266,7 @@ let project = Project(
         ),
         .target(
             name: "OdyKitTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).OdyKitTests",
             deploymentTargets: deploymentTargets,
@@ -270,7 +282,7 @@ let project = Project(
         ),
         .target(
             name: "HealthFeatureTests",
-            destinations: [.iPhone],
+            destinations: appDestinations,
             product: .unitTests,
             bundleId: "\(bundleIdRoot).HealthFeatureTests",
             deploymentTargets: deploymentTargets,

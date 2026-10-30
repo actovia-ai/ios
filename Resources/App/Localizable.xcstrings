@@ -11154,157 +11154,589 @@
       }
     },
     "ios:chat.artifact.fallback.failed" : {
-      "comment" : "Shown instead of an artifact preview when its code did not render on the phone.",
+      "comment" : "Shown instead of an artifact preview when its code did not render on the phone. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Artefakt kann auf dem iPhone nicht angezeigt werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieses Artefakt kann auf dem iPad nicht angezeigt werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieses Artefakt kann auf dem iPhone nicht angezeigt werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieses Artefakt kann auf dem iPhone nicht angezeigt werden. Öffne diesen Chat in Actovia auf deinem Computer, um es zu sehen."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This artifact can't be shown on iPhone. Open this chat in Actovia on your computer to see it."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This artifact can't be shown on iPad. Open this chat in Actovia on your computer to see it."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This artifact can't be shown on iPhone. Open this chat in Actovia on your computer to see it."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This artifact can't be shown on iPhone. Open this chat in Actovia on your computer to see it."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este artefacto no se puede mostrar en el iPhone. Abre este chat en Actovia en tu ordenador para verlo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefacto no se puede mostrar en el iPad. Abre este chat en Actovia en tu ordenador para verlo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefacto no se puede mostrar en el iPhone. Abre este chat en Actovia en tu ordenador para verlo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefacto no se puede mostrar en el iPhone. Abre este chat en Actovia en tu ordenador para verlo."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cet artefact ne peut pas s’afficher sur iPhone. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cet artefact ne peut pas s’afficher sur iPad. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cet artefact ne peut pas s’afficher sur iPhone. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cet artefact ne peut pas s’afficher sur iPhone. Ouvrez cette conversation dans Actovia sur votre ordinateur pour le voir."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questo artefatto non può essere mostrato su iPhone. Apri questa chat in Actovia sul computer per vederlo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questo artefatto non può essere mostrato su iPad. Apri questa chat in Actovia sul computer per vederlo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questo artefatto non può essere mostrato su iPhone. Apri questa chat in Actovia sul computer per vederlo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questo artefatto non può essere mostrato su iPhone. Apri questa chat in Actovia sul computer per vederlo."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアーティファクトは iPhone では表示できません。コンピュータの Actovia でこのチャットを開いて確認してください。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このアーティファクトは iPad では表示できません。コンピュータの Actovia でこのチャットを開いて確認してください。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このアーティファクトは iPhone では表示できません。コンピュータの Actovia でこのチャットを開いて確認してください。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このアーティファクトは iPhone では表示できません。コンピュータの Actovia でこのチャットを開いて確認してください。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 아티팩트는 iPhone에서 표시할 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 아티팩트는 iPad에서 표시할 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 아티팩트는 iPhone에서 표시할 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 아티팩트는 iPhone에서 표시할 수 없습니다. 컴퓨터의 Actovia에서 이 채팅을 열어 확인하세요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este artefato não pode ser exibido no iPhone. Abra esta conversa no Actovia do seu computador para vê-lo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefato não pode ser exibido no iPad. Abra esta conversa no Actovia do seu computador para vê-lo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefato não pode ser exibido no iPhone. Abra esta conversa no Actovia do seu computador para vê-lo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este artefato não pode ser exibido no iPhone. Abra esta conversa no Actovia do seu computador para vê-lo."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Этот артефакт нельзя показать на iPhone. Откройте этот чат в Actovia на компьютере, чтобы его увидеть."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот артефакт нельзя показать на iPad. Откройте этот чат в Actovia на компьютере, чтобы его увидеть."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот артефакт нельзя показать на iPhone. Откройте этот чат в Actovia на компьютере, чтобы его увидеть."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот артефакт нельзя показать на iPhone. Откройте этот чат в Actovia на компьютере, чтобы его увидеть."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPad 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这个成品无法在 iPhone 上显示。请在电脑上的 Actovia 中打开此对话查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这个成品无法在 iPad 上显示。请在电脑上的 Actovia 中打开此对话查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这个成品无法在 iPhone 上显示。请在电脑上的 Actovia 中打开此对话查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这个成品无法在 iPhone 上显示。请在电脑上的 Actovia 中打开此对话查看。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPad 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這個成品無法在 iPhone 上顯示。請在電腦上的 Actovia 開啟這個對話查看。"
+                }
+              }
+            }
           }
         }
       }
     },
     "ios:chat.artifact.fallback.outdated" : {
-      "comment" : "Shown instead of an artifact preview when the computer's Actovia is too old to serve it.",
+      "comment" : "Shown instead of an artifact preview when the computer's Actovia is too old to serve it. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktualisiere Actovia auf deinem Computer, um Artefakte auf dem iPhone in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aktualisiere Actovia auf deinem Computer, um Artefakte auf dem iPad in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aktualisiere Actovia auf deinem Computer, um Artefakte auf dem iPhone in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aktualisiere Actovia auf deinem Computer, um Artefakte auf dem iPhone in der Vorschau zu sehen. Bis dahin öffne diesen Chat dort."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Actovia on your computer to preview artifacts on iPhone. Until then, open this chat there to see it."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Update Actovia on your computer to preview artifacts on iPad. Until then, open this chat there to see it."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Update Actovia on your computer to preview artifacts on iPhone. Until then, open this chat there to see it."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Update Actovia on your computer to preview artifacts on iPhone. Until then, open this chat there to see it."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actualiza Actovia en tu ordenador para previsualizar artefactos en el iPhone. Mientras tanto, abre este chat allí para verlo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actualiza Actovia en tu ordenador para previsualizar artefactos en el iPad. Mientras tanto, abre este chat allí para verlo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actualiza Actovia en tu ordenador para previsualizar artefactos en el iPhone. Mientras tanto, abre este chat allí para verlo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actualiza Actovia en tu ordenador para previsualizar artefactos en el iPhone. Mientras tanto, abre este chat allí para verlo."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mettez à jour Actovia sur votre ordinateur pour prévisualiser les artefacts sur iPhone. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mettez à jour Actovia sur votre ordinateur pour prévisualiser les artefacts sur iPad. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mettez à jour Actovia sur votre ordinateur pour prévisualiser les artefacts sur iPhone. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mettez à jour Actovia sur votre ordinateur pour prévisualiser les artefacts sur iPhone. En attendant, ouvrez cette conversation sur l’ordinateur pour le voir."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiorna Actovia sul computer per vedere l’anteprima degli artefatti su iPhone. Nel frattempo, apri questa chat lì per vederlo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aggiorna Actovia sul computer per vedere l’anteprima degli artefatti su iPad. Nel frattempo, apri questa chat lì per vederlo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aggiorna Actovia sul computer per vedere l’anteprima degli artefatti su iPhone. Nel frattempo, apri questa chat lì per vederlo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aggiorna Actovia sul computer per vedere l’anteprima degli artefatti su iPhone. Nel frattempo, apri questa chat lì per vederlo."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iPhone でアーティファクトをプレビューするには、コンピュータの Actovia をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPad でアーティファクトをプレビューするには、コンピュータの Actovia をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPhone でアーティファクトをプレビューするには、コンピュータの Actovia をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPhone でアーティファクトをプレビューするには、コンピュータの Actovia をアップデートしてください。それまではコンピュータでこのチャットを開いて確認してください。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iPhone에서 아티팩트를 미리 보려면 컴퓨터의 Actovia를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPad에서 아티팩트를 미리 보려면 컴퓨터의 Actovia를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPhone에서 아티팩트를 미리 보려면 컴퓨터의 Actovia를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "iPhone에서 아티팩트를 미리 보려면 컴퓨터의 Actovia를 업데이트하세요. 그 전까지는 컴퓨터에서 이 채팅을 열어 확인하세요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Atualize o Actovia no seu computador para visualizar artefatos no iPhone. Até lá, abra esta conversa no computador para vê-lo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atualize o Actovia no seu computador para visualizar artefatos no iPad. Até lá, abra esta conversa no computador para vê-lo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atualize o Actovia no seu computador para visualizar artefatos no iPhone. Até lá, abra esta conversa no computador para vê-lo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atualize o Actovia no seu computador para visualizar artefatos no iPhone. Até lá, abra esta conversa no computador para vê-lo."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обновите Actovia на компьютере, чтобы просматривать артефакты на iPhone. А пока откройте этот чат там."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Обновите Actovia на компьютере, чтобы просматривать артефакты на iPad. А пока откройте этот чат там."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Обновите Actovia на компьютере, чтобы просматривать артефакты на iPhone. А пока откройте этот чат там."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Обновите Actovia на компьютере, чтобы просматривать артефакты на iPhone. А пока откройте этот чат там."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPad 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请更新电脑上的 Actovia，以便在 iPhone 上预览成品。在此之前，请在电脑上打开此对话查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "请更新电脑上的 Actovia，以便在 iPad 上预览成品。在此之前，请在电脑上打开此对话查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "请更新电脑上的 Actovia，以便在 iPhone 上预览成品。在此之前，请在电脑上打开此对话查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "请更新电脑上的 Actovia，以便在 iPhone 上预览成品。在此之前，请在电脑上打开此对话查看。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPad 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "請更新電腦上的 Actovia，即可在 iPhone 上預覽成品。在此之前，請在電腦上開啟這個對話查看。"
+                }
+              }
+            }
           }
         }
       }
@@ -30048,79 +30480,295 @@
       }
     },
     "ios:health.archive.confirmMessage" : {
-      "comment" : "Confirmation message before deleting every kept daily note and period report.",
+      "comment" : "Confirmation message before deleting every kept daily note and period report. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Damit werden alle auf diesem iPhone gespeicherten Tagesnotizen und Berichte gelöscht. Die heutige Notiz und deine Gesundheitsdaten bleiben erhalten."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Damit werden alle auf diesem iPad gespeicherten Tagesnotizen und Berichte gelöscht. Die heutige Notiz und deine Gesundheitsdaten bleiben erhalten."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Damit werden alle auf diesem iPhone gespeicherten Tagesnotizen und Berichte gelöscht. Die heutige Notiz und deine Gesundheitsdaten bleiben erhalten."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Damit werden alle auf diesem iPhone gespeicherten Tagesnotizen und Berichte gelöscht. Die heutige Notiz und deine Gesundheitsdaten bleiben erhalten."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This deletes every daily note and report kept on this iPhone. Today's note and your health data stay."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This deletes every daily note and report kept on this iPad. Today's note and your health data stay."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This deletes every daily note and report kept on this iPhone. Today's note and your health data stay."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This deletes every daily note and report kept on this iPhone. Today's note and your health data stay."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se eliminarán todas las notas diarias y los informes guardados en este iPhone. La nota de hoy y tus datos de salud se conservan."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se eliminarán todas las notas diarias y los informes guardados en este iPad. La nota de hoy y tus datos de salud se conservan."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se eliminarán todas las notas diarias y los informes guardados en este iPhone. La nota de hoy y tus datos de salud se conservan."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se eliminarán todas las notas diarias y los informes guardados en este iPhone. La nota de hoy y tus datos de salud se conservan."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toutes les notes quotidiennes et tous les bilans conservés sur cet iPhone seront supprimés. La note du jour et tes données de santé restent."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Toutes les notes quotidiennes et tous les bilans conservés sur cet iPad seront supprimés. La note du jour et tes données de santé restent."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Toutes les notes quotidiennes et tous les bilans conservés sur cet iPhone seront supprimés. La note du jour et tes données de santé restent."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Toutes les notes quotidiennes et tous les bilans conservés sur cet iPhone seront supprimés. La note du jour et tes données de santé restent."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verranno eliminati tutte le note giornaliere e i resoconti conservati su questo iPhone. La nota di oggi e i tuoi dati sulla salute restano."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verranno eliminati tutte le note giornaliere e i resoconti conservati su questo iPad. La nota di oggi e i tuoi dati sulla salute restano."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verranno eliminati tutte le note giornaliere e i resoconti conservati su questo iPhone. La nota di oggi e i tuoi dati sulla salute restano."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verranno eliminati tutte le note giornaliere e i resoconti conservati su questo iPhone. La nota di oggi e i tuoi dati sulla salute restano."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このiPhoneに保存されている毎日のメモとレポートがすべて削除されます。今日のメモとヘルスケアのデータはそのまま残ります。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このiPadに保存されている毎日のメモとレポートがすべて削除されます。今日のメモとヘルスケアのデータはそのまま残ります。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このiPhoneに保存されている毎日のメモとレポートがすべて削除されます。今日のメモとヘルスケアのデータはそのまま残ります。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このiPhoneに保存されている毎日のメモとレポートがすべて削除されます。今日のメモとヘルスケアのデータはそのまま残ります。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 iPhone에 보관된 모든 일일 노트와 리포트가 삭제돼요. 오늘의 노트와 건강 데이터는 그대로 남아요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPad에 보관된 모든 일일 노트와 리포트가 삭제돼요. 오늘의 노트와 건강 데이터는 그대로 남아요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPhone에 보관된 모든 일일 노트와 리포트가 삭제돼요. 오늘의 노트와 건강 데이터는 그대로 남아요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPhone에 보관된 모든 일일 노트와 리포트가 삭제돼요. 오늘의 노트와 건강 데이터는 그대로 남아요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Isso apaga todas as notas diárias e relatórios guardados neste iPhone. A nota de hoje e seus dados de saúde continuam."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Isso apaga todas as notas diárias e relatórios guardados neste iPad. A nota de hoje e seus dados de saúde continuam."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Isso apaga todas as notas diárias e relatórios guardados neste iPhone. A nota de hoje e seus dados de saúde continuam."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Isso apaga todas as notas diárias e relatórios guardados neste iPhone. A nota de hoje e seus dados de saúde continuam."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Будут удалены все ежедневные заметки и отчёты, сохранённые на этом iPhone. Сегодняшняя заметка и ваши данные о здоровье останутся."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Будут удалены все ежедневные заметки и отчёты, сохранённые на этом iPad. Сегодняшняя заметка и ваши данные о здоровье останутся."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Будут удалены все ежедневные заметки и отчёты, сохранённые на этом iPhone. Сегодняшняя заметка и ваши данные о здоровье останутся."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Будут удалены все ежедневные заметки и отчёты, сохранённые на этом iPhone. Сегодняшняя заметка и ваши данные о здоровье останутся."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "咁會刪除呢部 iPhone 上面保存嘅所有每日小記同報告。今日嘅小記同你嘅健康資料會保留。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "咁會刪除呢部 iPad 上面保存嘅所有每日小記同報告。今日嘅小記同你嘅健康資料會保留。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "咁會刪除呢部 iPhone 上面保存嘅所有每日小記同報告。今日嘅小記同你嘅健康資料會保留。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "咁會刪除呢部 iPhone 上面保存嘅所有每日小記同報告。今日嘅小記同你嘅健康資料會保留。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这会删除这台 iPhone 上保存的所有每日小记和报告。今天的小记和你的健康数据会保留。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这会删除这台 iPad 上保存的所有每日小记和报告。今天的小记和你的健康数据会保留。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这会删除这台 iPhone 上保存的所有每日小记和报告。今天的小记和你的健康数据会保留。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "这会删除这台 iPhone 上保存的所有每日小记和报告。今天的小记和你的健康数据会保留。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "這會刪除這部 iPhone 上保存的所有每日小記和報告。今天的小記和你的健康資料都會保留。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這會刪除這部 iPad 上保存的所有每日小記和報告。今天的小記和你的健康資料都會保留。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這會刪除這部 iPhone 上保存的所有每日小記和報告。今天的小記和你的健康資料都會保留。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "這會刪除這部 iPhone 上保存的所有每日小記和報告。今天的小記和你的健康資料都會保留。"
+                }
+              }
+            }
           }
         }
       }
@@ -35508,79 +36156,295 @@
       }
     },
     "ios:health.onboarding.body" : {
-      "comment" : "Health onboarding, step 1 body: what stays on the phone and what may be sent.",
+      "comment" : "Health onboarding, step 1 body: what stays on the phone and what may be sent. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Gesundheitsdaten bleiben auf diesem iPhone. Eine kurze tägliche Zusammenfassung geht nur mit deiner Erlaubnis an den KI-Anbieter auf deinem Computer. Deine Fragen können die Zahlen des Tages enthalten – die kannst du entfernen."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deine Gesundheitsdaten bleiben auf diesem iPad. Eine kurze tägliche Zusammenfassung geht nur mit deiner Erlaubnis an den KI-Anbieter auf deinem Computer. Deine Fragen können die Zahlen des Tages enthalten – die kannst du entfernen."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deine Gesundheitsdaten bleiben auf diesem iPhone. Eine kurze tägliche Zusammenfassung geht nur mit deiner Erlaubnis an den KI-Anbieter auf deinem Computer. Deine Fragen können die Zahlen des Tages enthalten – die kannst du entfernen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deine Gesundheitsdaten bleiben auf diesem iPhone. Eine kurze tägliche Zusammenfassung geht nur mit deiner Erlaubnis an den KI-Anbieter auf deinem Computer. Deine Fragen können die Zahlen des Tages enthalten – die kannst du entfernen."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your health data stays on this iPhone. A short daily summary goes to the AI provider set up on your computer only if you allow it. Questions you ask can include the day's numbers, which you can remove."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your health data stays on this iPad. A short daily summary goes to the AI provider set up on your computer only if you allow it. Questions you ask can include the day's numbers, which you can remove."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your health data stays on this iPhone. A short daily summary goes to the AI provider set up on your computer only if you allow it. Questions you ask can include the day's numbers, which you can remove."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your health data stays on this iPhone. A short daily summary goes to the AI provider set up on your computer only if you allow it. Questions you ask can include the day's numbers, which you can remove."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus datos de salud se quedan en este iPhone. Solo si lo permites se envía un breve resumen diario al proveedor de IA configurado en tu ordenador. Tus preguntas pueden incluir las cifras del día, que puedes quitar."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tus datos de salud se quedan en este iPad. Solo si lo permites se envía un breve resumen diario al proveedor de IA configurado en tu ordenador. Tus preguntas pueden incluir las cifras del día, que puedes quitar."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tus datos de salud se quedan en este iPhone. Solo si lo permites se envía un breve resumen diario al proveedor de IA configurado en tu ordenador. Tus preguntas pueden incluir las cifras del día, que puedes quitar."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tus datos de salud se quedan en este iPhone. Solo si lo permites se envía un breve resumen diario al proveedor de IA configurado en tu ordenador. Tus preguntas pueden incluir las cifras del día, que puedes quitar."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tes données de santé restent sur cet iPhone. Un court résumé quotidien n'est envoyé au fournisseur d'IA configuré sur ton ordinateur que si tu l'autorises. Tes questions peuvent inclure les chiffres du jour, que tu peux retirer."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tes données de santé restent sur cet iPad. Un court résumé quotidien n'est envoyé au fournisseur d'IA configuré sur ton ordinateur que si tu l'autorises. Tes questions peuvent inclure les chiffres du jour, que tu peux retirer."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tes données de santé restent sur cet iPhone. Un court résumé quotidien n'est envoyé au fournisseur d'IA configuré sur ton ordinateur que si tu l'autorises. Tes questions peuvent inclure les chiffres du jour, que tu peux retirer."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tes données de santé restent sur cet iPhone. Un court résumé quotidien n'est envoyé au fournisseur d'IA configuré sur ton ordinateur que si tu l'autorises. Tes questions peuvent inclure les chiffres du jour, que tu peux retirer."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I tuoi dati sulla salute restano su questo iPhone. Un breve riepilogo giornaliero va al fornitore di IA configurato sul tuo computer solo se lo permetti. Le tue domande possono includere i numeri del giorno, che puoi togliere."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "I tuoi dati sulla salute restano su questo iPad. Un breve riepilogo giornaliero va al fornitore di IA configurato sul tuo computer solo se lo permetti. Le tue domande possono includere i numeri del giorno, che puoi togliere."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "I tuoi dati sulla salute restano su questo iPhone. Un breve riepilogo giornaliero va al fornitore di IA configurato sul tuo computer solo se lo permetti. Le tue domande possono includere i numeri del giorno, che puoi togliere."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "I tuoi dati sulla salute restano su questo iPhone. Un breve riepilogo giornaliero va al fornitore di IA configurato sul tuo computer solo se lo permetti. Le tue domande possono includere i numeri del giorno, che puoi togliere."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ヘルスケアデータはこの iPhone に残ります。許可した場合のみ、毎日の短い要約をコンピュータで設定した AI プロバイダに送ります。質問にはその日の数値を添付できます（外すこともできます）。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "ヘルスケアデータはこの iPad に残ります。許可した場合のみ、毎日の短い要約をコンピュータで設定した AI プロバイダに送ります。質問にはその日の数値を添付できます（外すこともできます）。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "ヘルスケアデータはこの iPhone に残ります。許可した場合のみ、毎日の短い要約をコンピュータで設定した AI プロバイダに送ります。質問にはその日の数値を添付できます（外すこともできます）。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "ヘルスケアデータはこの iPhone に残ります。許可した場合のみ、毎日の短い要約をコンピュータで設定した AI プロバイダに送ります。質問にはその日の数値を添付できます（外すこともできます）。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건강 데이터는 이 iPhone에 남아요. 허용한 경우에만 하루 한 번 짧은 요약을 컴퓨터에 설정된 AI 제공업체로 보내요. 질문에는 그날의 수치를 첨부할 수 있고, 뺄 수도 있어요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "건강 데이터는 이 iPad에 남아요. 허용한 경우에만 하루 한 번 짧은 요약을 컴퓨터에 설정된 AI 제공업체로 보내요. 질문에는 그날의 수치를 첨부할 수 있고, 뺄 수도 있어요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "건강 데이터는 이 iPhone에 남아요. 허용한 경우에만 하루 한 번 짧은 요약을 컴퓨터에 설정된 AI 제공업체로 보내요. 질문에는 그날의 수치를 첨부할 수 있고, 뺄 수도 있어요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "건강 데이터는 이 iPhone에 남아요. 허용한 경우에만 하루 한 번 짧은 요약을 컴퓨터에 설정된 AI 제공업체로 보내요. 질문에는 그날의 수치를 첨부할 수 있고, 뺄 수도 있어요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seus dados de saúde ficam neste iPhone. Um resumo diário curto só vai para o provedor de IA configurado no seu computador se você permitir. Suas perguntas podem incluir os números do dia, que você pode remover."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Seus dados de saúde ficam neste iPad. Um resumo diário curto só vai para o provedor de IA configurado no seu computador se você permitir. Suas perguntas podem incluir os números do dia, que você pode remover."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Seus dados de saúde ficam neste iPhone. Um resumo diário curto só vai para o provedor de IA configurado no seu computador se você permitir. Suas perguntas podem incluir os números do dia, que você pode remover."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Seus dados de saúde ficam neste iPhone. Um resumo diário curto só vai para o provedor de IA configurado no seu computador se você permitir. Suas perguntas podem incluir os números do dia, que você pode remover."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ваши данные о здоровье остаются на этом iPhone. Краткая сводка за день отправляется AI-провайдеру, настроенному на компьютере, только с вашего разрешения. В ваши вопросы могут входить показатели за день — их можно убрать."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ваши данные о здоровье остаются на этом iPad. Краткая сводка за день отправляется AI-провайдеру, настроенному на компьютере, только с вашего разрешения. В ваши вопросы могут входить показатели за день — их можно убрать."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ваши данные о здоровье остаются на этом iPhone. Краткая сводка за день отправляется AI-провайдеру, настроенному на компьютере, только с вашего разрешения. В ваши вопросы могут входить показатели за день — их можно убрать."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ваши данные о здоровье остаются на этом iPhone. Краткая сводка за день отправляется AI-провайдеру, настроенному на компьютере, только с вашего разрешения. В ваши вопросы могут входить показатели за день — их можно убрать."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你嘅健康資料會留喺呢部 iPhone。要你允許，先會將每日一份簡短摘要傳去你電腦設定好嘅 AI 供應商。你問嘅問題可以附上當日嘅數字，亦都可以剔走。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你嘅健康資料會留喺呢部 iPad。要你允許，先會將每日一份簡短摘要傳去你電腦設定好嘅 AI 供應商。你問嘅問題可以附上當日嘅數字，亦都可以剔走。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你嘅健康資料會留喺呢部 iPhone。要你允許，先會將每日一份簡短摘要傳去你電腦設定好嘅 AI 供應商。你問嘅問題可以附上當日嘅數字，亦都可以剔走。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你嘅健康資料會留喺呢部 iPhone。要你允許，先會將每日一份簡短摘要傳去你電腦設定好嘅 AI 供應商。你問嘅問題可以附上當日嘅數字，亦都可以剔走。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的健康数据会保留在这台 iPhone 上。只有在你允许时，每日一份简短摘要才会发送给你电脑上设置的 AI 服务商。你提出的问题可以附上当天的数据，你也可以移除它们。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康数据会保留在这台 iPad 上。只有在你允许时，每日一份简短摘要才会发送给你电脑上设置的 AI 服务商。你提出的问题可以附上当天的数据，你也可以移除它们。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康数据会保留在这台 iPhone 上。只有在你允许时，每日一份简短摘要才会发送给你电脑上设置的 AI 服务商。你提出的问题可以附上当天的数据，你也可以移除它们。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康数据会保留在这台 iPhone 上。只有在你允许时，每日一份简短摘要才会发送给你电脑上设置的 AI 服务商。你提出的问题可以附上当天的数据，你也可以移除它们。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的健康資料會留在這部 iPhone 上。只有在你允許時，才會把每日一份簡短摘要傳給你電腦上設定的 AI 供應商。你提出的問題可以附上當天的數字，也可以移除。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康資料會留在這部 iPad 上。只有在你允許時，才會把每日一份簡短摘要傳給你電腦上設定的 AI 供應商。你提出的問題可以附上當天的數字，也可以移除。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康資料會留在這部 iPhone 上。只有在你允許時，才會把每日一份簡短摘要傳給你電腦上設定的 AI 供應商。你提出的問題可以附上當天的數字，也可以移除。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "你的健康資料會留在這部 iPhone 上。只有在你允許時，才會把每日一份簡短摘要傳給你電腦上設定的 AI 供應商。你提出的問題可以附上當天的數字，也可以移除。"
+                }
+              }
+            }
           }
         }
       }
@@ -41376,79 +42240,295 @@
       }
     },
     "ios:offline.unavailableMessage" : {
-      "comment" : "Message of the alert when an unopened chat is tapped while offline.",
+      "comment" : "Message of the alert when an unopened chat is tapped while offline. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Chat wurde auf diesem iPhone noch nicht geöffnet. Er lässt sich öffnen, sobald dein Computer erreichbar ist."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieser Chat wurde auf diesem iPad noch nicht geöffnet. Er lässt sich öffnen, sobald dein Computer erreichbar ist."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieser Chat wurde auf diesem iPhone noch nicht geöffnet. Er lässt sich öffnen, sobald dein Computer erreichbar ist."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dieser Chat wurde auf diesem iPhone noch nicht geöffnet. Er lässt sich öffnen, sobald dein Computer erreichbar ist."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This chat hasn't been opened on this iPhone yet. It will open once your computer is reachable."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This chat hasn't been opened on this iPad yet. It will open once your computer is reachable."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This chat hasn't been opened on this iPhone yet. It will open once your computer is reachable."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This chat hasn't been opened on this iPhone yet. It will open once your computer is reachable."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este chat aún no se ha abierto en este iPhone. Se abrirá cuando tu ordenador esté accesible."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este chat aún no se ha abierto en este iPad. Se abrirá cuando tu ordenador esté accesible."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este chat aún no se ha abierto en este iPhone. Se abrirá cuando tu ordenador esté accesible."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Este chat aún no se ha abierto en este iPhone. Se abrirá cuando tu ordenador esté accesible."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette conversation n'a pas encore été ouverte sur cet iPhone. Elle s'ouvrira dès que votre ordinateur sera joignable."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cette conversation n'a pas encore été ouverte sur cet iPad. Elle s'ouvrira dès que votre ordinateur sera joignable."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cette conversation n'a pas encore été ouverte sur cet iPhone. Elle s'ouvrira dès que votre ordinateur sera joignable."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cette conversation n'a pas encore été ouverte sur cet iPhone. Elle s'ouvrira dès que votre ordinateur sera joignable."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questa chat non è ancora stata aperta su questo iPhone. Si aprirà quando il computer sarà raggiungibile."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questa chat non è ancora stata aperta su questo iPad. Si aprirà quando il computer sarà raggiungibile."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questa chat non è ancora stata aperta su questo iPhone. Si aprirà quando il computer sarà raggiungibile."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Questa chat non è ancora stata aperta su questo iPhone. Si aprirà quando il computer sarà raggiungibile."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このチャットはまだこのiPhoneで開かれていません。コンピュータに接続できるようになると開けます。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このチャットはまだこのiPadで開かれていません。コンピュータに接続できるようになると開けます。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このチャットはまだこのiPhoneで開かれていません。コンピュータに接続できるようになると開けます。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "このチャットはまだこのiPhoneで開かれていません。コンピュータに接続できるようになると開けます。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 대화는 아직 이 iPhone에서 열린 적이 없습니다. 컴퓨터에 연결되면 열 수 있습니다."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 대화는 아직 이 iPad에서 열린 적이 없습니다. 컴퓨터에 연결되면 열 수 있습니다."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 대화는 아직 이 iPhone에서 열린 적이 없습니다. 컴퓨터에 연결되면 열 수 있습니다."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 대화는 아직 이 iPhone에서 열린 적이 없습니다. 컴퓨터에 연결되면 열 수 있습니다."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esta conversa ainda não foi aberta neste iPhone. Ela abrirá quando o seu computador estiver acessível."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esta conversa ainda não foi aberta neste iPad. Ela abrirá quando o seu computador estiver acessível."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esta conversa ainda não foi aberta neste iPhone. Ela abrirá quando o seu computador estiver acessível."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esta conversa ainda não foi aberta neste iPhone. Ela abrirá quando o seu computador estiver acessível."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Этот чат ещё не открывался на этом iPhone. Он откроется, как только компьютер станет доступен."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот чат ещё не открывался на этом iPad. Он откроется, как только компьютер станет доступен."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот чат ещё не открывался на этом iPhone. Он откроется, как только компьютер станет доступен."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Этот чат ещё не открывался на этом iPhone. Он откроется, как только компьютер станет доступен."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此對話尚未在這部 iPhone 上開啟過。電腦可連線後即可開啟。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這部 iPad 上開啟過。電腦可連線後即可開啟。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這部 iPhone 上開啟過。電腦可連線後即可開啟。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這部 iPhone 上開啟過。電腦可連線後即可開啟。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此对话尚未在这台 iPhone 上打开过。电脑可连接后即可打开。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此对话尚未在这台 iPad 上打开过。电脑可连接后即可打开。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此对话尚未在这台 iPhone 上打开过。电脑可连接后即可打开。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此对话尚未在这台 iPhone 上打开过。电脑可连接后即可打开。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此對話尚未在這支 iPhone 上開啟過。電腦可連線後即可開啟。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這支 iPad 上開啟過。電腦可連線後即可開啟。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這支 iPhone 上開啟過。電腦可連線後即可開啟。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "此對話尚未在這支 iPhone 上開啟過。電腦可連線後即可開啟。"
+                }
+              }
+            }
           }
         }
       }
@@ -41610,157 +42690,589 @@
       }
     },
     "ios:onboarding.message" : {
-      "comment" : "Under the title of the first screen of an unpaired iPhone; the pairing steps follow.",
+      "comment" : "Under the title of the first screen of an unpaired iPhone; the pairing steps follow. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPad einmal, dann greift es darauf zu."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia läuft auf Ihrem Computer: Chats, Erinnerungen und Werkzeuge liegen dort. Koppeln Sie dieses iPhone einmal, dann greift es darauf zu."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia runs on your computer: your chats, memory and tools live there. Pair this iPad once and it becomes a window onto it."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia runs on your computer: your chats, memory and tools live there. Pair this iPhone once and it becomes a window onto it."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPad una vez y tendrá acceso."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia se ejecuta en tu ordenador: tus chats, tu memoria y tus herramientas están allí. Vincula este iPhone una vez y tendrá acceso."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPad une fois et il y aura accès."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia tourne sur votre ordinateur : vos conversations, votre mémoire et vos outils s’y trouvent. Associez cet iPhone une fois et il y aura accès."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPad una volta e potrà accedervi."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia gira sul tuo computer: chat, memoria e strumenti sono lì. Abbina questo iPhone una volta e potrà accedervi."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPad を一度ペアリングすれば、いつでもつながります。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia はコンピュータ上で動きます。会話、メモリ、ツールはすべてそこにあります。この iPhone を一度ペアリングすれば、いつでもつながります。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPad를 한 번 페어링하면 언제든 연결됩니다."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia는 컴퓨터에서 실행되며 대화, 메모리, 도구가 모두 그곳에 있습니다. 이 iPhone을 한 번 페어링하면 언제든 연결됩니다."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Actovia roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "O Actovia roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPad uma vez e ele terá acesso."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "O Actovia roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "O Actovia roda no seu computador: suas conversas, memória e ferramentas ficam lá. Pareie este iPhone uma vez e ele terá acesso."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia работает на вашем компьютере: там хранятся ваши чаты, память и инструменты. Сопрягите этот iPhone один раз — и он станет окном в него."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia работает на вашем компьютере: там хранятся ваши чаты, память и инструменты. Сопрягите этот iPad один раз — и он станет окном в него."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia работает на вашем компьютере: там хранятся ваши чаты, память и инструменты. Сопрягите этот iPhone один раз — и он станет окном в него."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia работает на вашем компьютере: там хранятся ваши чаты, память и инструменты. Сопрягите этот iPhone один раз — и он станет окном в него."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPad 配對一次，它就能隨時連上。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上運行：對話、記憶和工具都在那裡。將這部 iPhone 配對一次，它就能隨時連上。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia 运行在你的电脑上：你的聊天、记忆和工具都在那里。将这台 iPhone 配对一次，它就成了通往电脑的窗口。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 运行在你的电脑上：你的聊天、记忆和工具都在那里。将这台 iPad 配对一次，它就成了通往电脑的窗口。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 运行在你的电脑上：你的聊天、记忆和工具都在那里。将这台 iPhone 配对一次，它就成了通往电脑的窗口。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 运行在你的电脑上：你的聊天、记忆和工具都在那里。将这台 iPhone 配对一次，它就成了通往电脑的窗口。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPad 配對一次，它就能隨時連上。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia 在你的電腦上執行：對話、記憶和工具都在那裡。將這支 iPhone 配對一次，它就能隨時連上。"
+                }
+              }
+            }
           }
         }
       }
     },
     "ios:onboarding.noActoviaYet" : {
-      "comment" : "Under the website link on the welcome screen of an unpaired iPhone.",
+      "comment" : "Under the website link on the welcome screen of an unpaired iPhone. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia ist noch nicht auf Ihrem Computer? Installieren Sie es von actovia.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia ist noch nicht auf Ihrem Computer? Installieren Sie es von actovia.yancey.app und koppeln Sie dieses iPad dann in den Einstellungen."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia ist noch nicht auf Ihrem Computer? Installieren Sie es von actovia.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia ist noch nicht auf Ihrem Computer? Installieren Sie es von actovia.yancey.app und koppeln Sie dieses iPhone dann in den Einstellungen."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Don’t have Actovia on your computer yet? Install it from actovia.yancey.app, then pair this iPhone from its Settings."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Don’t have Actovia on your computer yet? Install it from actovia.yancey.app, then pair this iPad from its Settings."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Don’t have Actovia on your computer yet? Install it from actovia.yancey.app, then pair this iPhone from its Settings."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Don’t have Actovia on your computer yet? Install it from actovia.yancey.app, then pair this iPhone from its Settings."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Aún no tienes Actovia en tu ordenador? Instálalo desde actovia.yancey.app y vincula este iPhone desde sus ajustes."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Aún no tienes Actovia en tu ordenador? Instálalo desde actovia.yancey.app y vincula este iPad desde sus ajustes."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Aún no tienes Actovia en tu ordenador? Instálalo desde actovia.yancey.app y vincula este iPhone desde sus ajustes."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Aún no tienes Actovia en tu ordenador? Instálalo desde actovia.yancey.app y vincula este iPhone desde sus ajustes."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actovia n’est pas encore sur votre ordinateur ? Installez-le depuis actovia.yancey.app, puis associez cet iPhone depuis ses réglages."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia n’est pas encore sur votre ordinateur ? Installez-le depuis actovia.yancey.app, puis associez cet iPad depuis ses réglages."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia n’est pas encore sur votre ordinateur ? Installez-le depuis actovia.yancey.app, puis associez cet iPhone depuis ses réglages."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Actovia n’est pas encore sur votre ordinateur ? Installez-le depuis actovia.yancey.app, puis associez cet iPhone depuis ses réglages."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non hai ancora Actovia sul computer? Installalo da actovia.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non hai ancora Actovia sul computer? Installalo da actovia.yancey.app, poi abbina questo iPad dalle sue impostazioni."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non hai ancora Actovia sul computer? Installalo da actovia.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non hai ancora Actovia sul computer? Installalo da actovia.yancey.app, poi abbina questo iPhone dalle sue impostazioni."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コンピュータにまだ Actovia がありませんか？actovia.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "コンピュータにまだ Actovia がありませんか？actovia.yancey.app からインストールし、その設定からこの iPad をペアリングしてください。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "コンピュータにまだ Actovia がありませんか？actovia.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "コンピュータにまだ Actovia がありませんか？actovia.yancey.app からインストールし、その設定からこの iPhone をペアリングしてください。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "컴퓨터에 아직 Actovia가 없나요? actovia.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "컴퓨터에 아직 Actovia가 없나요? actovia.yancey.app에서 설치한 뒤 설정에서 이 iPad를 페어링하세요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "컴퓨터에 아직 Actovia가 없나요? actovia.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "컴퓨터에 아직 Actovia가 없나요? actovia.yancey.app에서 설치한 뒤 설정에서 이 iPhone을 페어링하세요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ainda não tem o Actovia no computador? Instale em actovia.yancey.app e depois pareie este iPhone nas configurações dele."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ainda não tem o Actovia no computador? Instale em actovia.yancey.app e depois pareie este iPad nas configurações dele."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ainda não tem o Actovia no computador? Instale em actovia.yancey.app e depois pareie este iPhone nas configurações dele."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ainda não tem o Actovia no computador? Instale em actovia.yancey.app e depois pareie este iPhone nas configurações dele."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "На компьютере ещё нет Actovia? Установите её с actovia.yancey.app, затем сопрягите этот iPhone в её настройках."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "На компьютере ещё нет Actovia? Установите её с actovia.yancey.app, затем сопрягите этот iPad в её настройках."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "На компьютере ещё нет Actovia? Установите её с actovia.yancey.app, затем сопрягите этот iPhone в её настройках."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "На компьютере ещё нет Actovia? Установите её с actovia.yancey.app, затем сопрягите этот iPhone в её настройках."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這部 iPhone。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這部 iPad。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這部 iPhone。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這部 iPhone。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "电脑上还没有 Actovia？请从 actovia.yancey.app 安装，然后在它的设置中配对这台 iPhone。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "电脑上还没有 Actovia？请从 actovia.yancey.app 安装，然后在它的设置中配对这台 iPad。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "电脑上还没有 Actovia？请从 actovia.yancey.app 安装，然后在它的设置中配对这台 iPhone。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "电脑上还没有 Actovia？请从 actovia.yancey.app 安装，然后在它的设置中配对这台 iPhone。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這支 iPhone。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這支 iPad。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這支 iPhone。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "電腦上還沒有 Actovia？到 actovia.yancey.app 安裝，再從它的設定配對這支 iPhone。"
+                }
+              }
+            }
           }
         }
       }
@@ -44964,79 +46476,295 @@
       }
     },
     "ios:settings.pairing.instructions" : {
-      "comment" : "Settings → Computer, shown while unpaired. 'Settings → Devices' and 'Pair a device' are the desktop app's labels.",
+      "comment" : "Settings → Computer, shown while unpaired. 'Settings → Devices' and 'Pair a device' are the desktop app's labels. The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Koppeln Sie dieses iPhone mit Actovia auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Koppeln Sie dieses iPad mit Actovia auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Koppeln Sie dieses iPhone mit Actovia auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Koppeln Sie dieses iPhone mit Actovia auf Ihrem Computer: Öffnen Sie dort Einstellungen → Geräte und wählen Sie „Gerät koppeln“."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pair this iPhone with Actovia on your computer: open Settings → Devices there and choose Pair a device."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pair this iPad with Actovia on your computer: open Settings → Devices there and choose Pair a device."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pair this iPhone with Actovia on your computer: open Settings → Devices there and choose Pair a device."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pair this iPhone with Actovia on your computer: open Settings → Devices there and choose Pair a device."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vincula este iPhone con Actovia en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vincula este iPad con Actovia en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vincula este iPhone con Actovia en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vincula este iPhone con Actovia en tu ordenador: abre allí Ajustes → Dispositivos y elige Vincular un dispositivo."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jumelez cet iPhone avec Actovia sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jumelez cet iPad avec Actovia sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jumelez cet iPhone avec Actovia sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jumelez cet iPhone avec Actovia sur votre ordinateur : ouvrez-y Réglages → Appareils et choisissez Jumeler un appareil."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbina questo iPhone a Actovia sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Abbina questo iPad a Actovia sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Abbina questo iPhone a Actovia sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Abbina questo iPhone a Actovia sul tuo computer: apri lì Impostazioni → Dispositivi e scegli Abbina un dispositivo."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この iPhone をコンピュータの Actovia とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "この iPad をコンピュータの Actovia とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "この iPhone をコンピュータの Actovia とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "この iPhone をコンピュータの Actovia とペアリングします。コンピュータ側で「設定 → デバイス」を開き、「デバイスをペアリング」を選んでください。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 iPhone을 컴퓨터의 Actovia와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPad를 컴퓨터의 Actovia와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPhone을 컴퓨터의 Actovia와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "이 iPhone을 컴퓨터의 Actovia와 페어링하세요. 컴퓨터에서 ‘설정 → 기기’를 열고 ‘기기 페어링’을 선택하면 됩니다."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pareie este iPhone com o Actovia no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pareie este iPad com o Actovia no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pareie este iPhone com o Actovia no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pareie este iPhone com o Actovia no seu computador: abra lá Ajustes → Dispositivos e escolha Parear um dispositivo."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сопрягите этот iPhone с Actovia на компьютере: откройте там «Настройки → Устройства» и выберите «Сопрячь устройство»."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Сопрягите этот iPad с Actovia на компьютере: откройте там «Настройки → Устройства» и выберите «Сопрячь устройство»."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Сопрягите этот iPhone с Actovia на компьютере: откройте там «Настройки → Устройства» и выберите «Сопрячь устройство»."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Сопрягите этот iPhone с Actovia на компьютере: откройте там «Настройки → Устройства» и выберите «Сопрячь устройство»."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPad 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "将这台 iPhone 与电脑上的 Actovia 配对：在电脑上打开“设置 → 设备”，然后选择“配对设备”。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "将这台 iPad 与电脑上的 Actovia 配对：在电脑上打开“设置 → 设备”，然后选择“配对设备”。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "将这台 iPhone 与电脑上的 Actovia 配对：在电脑上打开“设置 → 设备”，然后选择“配对设备”。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "将这台 iPhone 与电脑上的 Actovia 配对：在电脑上打开“设置 → 设备”，然后选择“配对设备”。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPad 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "將這部 iPhone 與電腦上的 Actovia 配對：在電腦上開啟「設定 → 裝置」，然後選擇「配對裝置」。"
+                }
+              }
+            }
           }
         }
       }
@@ -45978,79 +47706,295 @@
       }
     },
     "ios:settings.pairing.unpairedThereMessage" : {
-      "comment" : "Settings → Computer, after checking each paired computer. %@ is the computer's name (or several, joined).",
+      "comment" : "Settings → Computer, after checking each paired computer. %@ is the computer's name (or several, joined). The iPad says iPad (a device variation).",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ hat dieses iPhone aus seinen Geräten entfernt, daher wurde die Kopplung auch hier aufgehoben. Um es wieder zu nutzen, kopple es über Einstellungen → Geräte dort."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ hat dieses iPad aus seinen Geräten entfernt, daher wurde die Kopplung auch hier aufgehoben. Um es wieder zu nutzen, kopple es über Einstellungen → Geräte dort."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ hat dieses iPhone aus seinen Geräten entfernt, daher wurde die Kopplung auch hier aufgehoben. Um es wieder zu nutzen, kopple es über Einstellungen → Geräte dort."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ hat dieses iPhone aus seinen Geräten entfernt, daher wurde die Kopplung auch hier aufgehoben. Um es wieder zu nutzen, kopple es über Einstellungen → Geräte dort."
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ removed this iPhone from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removed this iPad from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removed this iPhone from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removed this iPhone from its devices, so it was unpaired here too. To use it again, pair from its Settings → Devices."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ quitó este iPhone de sus dispositivos, así que también se desvinculó aquí. Para volver a usarlo, vincúlalo desde Ajustes → Dispositivos allí."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ quitó este iPad de sus dispositivos, así que también se desvinculó aquí. Para volver a usarlo, vincúlalo desde Ajustes → Dispositivos allí."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ quitó este iPhone de sus dispositivos, así que también se desvinculó aquí. Para volver a usarlo, vincúlalo desde Ajustes → Dispositivos allí."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ quitó este iPhone de sus dispositivos, así que también se desvinculó aquí. Para volver a usarlo, vincúlalo desde Ajustes → Dispositivos allí."
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ a retiré cet iPhone de ses appareils, il a donc aussi été dissocié ici. Pour l’utiliser à nouveau, associez-le depuis Réglages → Appareils sur l’ordinateur."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ a retiré cet iPad de ses appareils, il a donc aussi été dissocié ici. Pour l’utiliser à nouveau, associez-le depuis Réglages → Appareils sur l’ordinateur."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ a retiré cet iPhone de ses appareils, il a donc aussi été dissocié ici. Pour l’utiliser à nouveau, associez-le depuis Réglages → Appareils sur l’ordinateur."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ a retiré cet iPhone de ses appareils, il a donc aussi été dissocié ici. Pour l’utiliser à nouveau, associez-le depuis Réglages → Appareils sur l’ordinateur."
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ ha rimosso questo iPhone dai suoi dispositivi, quindi l'abbinamento è stato annullato anche qui. Per usarlo di nuovo, abbinalo da Impostazioni → Dispositivi sul computer."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ ha rimosso questo iPad dai suoi dispositivi, quindi l'abbinamento è stato annullato anche qui. Per usarlo di nuovo, abbinalo da Impostazioni → Dispositivi sul computer."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ ha rimosso questo iPhone dai suoi dispositivi, quindi l'abbinamento è stato annullato anche qui. Per usarlo di nuovo, abbinalo da Impostazioni → Dispositivi sul computer."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ ha rimosso questo iPhone dai suoi dispositivi, quindi l'abbinamento è stato annullato anche qui. Per usarlo di nuovo, abbinalo da Impostazioni → Dispositivi sul computer."
+                }
+              }
+            }
           }
         },
         "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ がこの iPhone をデバイスから削除したため、こちらでもペアリングを解除しました。再び使うには、そのコンピュータの設定 → デバイスからペアリングしてください。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ がこの iPad をデバイスから削除したため、こちらでもペアリングを解除しました。再び使うには、そのコンピュータの設定 → デバイスからペアリングしてください。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ がこの iPhone をデバイスから削除したため、こちらでもペアリングを解除しました。再び使うには、そのコンピュータの設定 → デバイスからペアリングしてください。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ がこの iPhone をデバイスから削除したため、こちらでもペアリングを解除しました。再び使うには、そのコンピュータの設定 → デバイスからペアリングしてください。"
+                }
+              }
+            }
           }
         },
         "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@에서 이 iPhone을 기기 목록에서 제거하여 여기서도 페어링을 해제했습니다. 다시 사용하려면 해당 컴퓨터의 설정 → 기기에서 페어링하세요."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@에서 이 iPad를 기기 목록에서 제거하여 여기서도 페어링을 해제했습니다. 다시 사용하려면 해당 컴퓨터의 설정 → 기기에서 페어링하세요."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@에서 이 iPhone을 기기 목록에서 제거하여 여기서도 페어링을 해제했습니다. 다시 사용하려면 해당 컴퓨터의 설정 → 기기에서 페어링하세요."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@에서 이 iPhone을 기기 목록에서 제거하여 여기서도 페어링을 해제했습니다. 다시 사용하려면 해당 컴퓨터의 설정 → 기기에서 페어링하세요."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ removeu este iPhone dos dispositivos, então ele também foi despareado aqui. Para usá-lo de novo, pareie em Ajustes → Dispositivos no computador."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removeu este iPad dos dispositivos, então ele também foi despareado aqui. Para usá-lo de novo, pareie em Ajustes → Dispositivos no computador."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removeu este iPhone dos dispositivos, então ele também foi despareado aqui. Para usá-lo de novo, pareie em Ajustes → Dispositivos no computador."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ removeu este iPhone dos dispositivos, então ele também foi despareado aqui. Para usá-lo de novo, pareie em Ajustes → Dispositivos no computador."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ удалил этот iPhone из своих устройств, поэтому сопряжение разорвано и здесь. Чтобы снова пользоваться им, выполните сопряжение в его «Настройки → Устройства»."
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ удалил этот iPad из своих устройств, поэтому сопряжение разорвано и здесь. Чтобы снова пользоваться им, выполните сопряжение в его «Настройки → Устройства»."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ удалил этот iPhone из своих устройств, поэтому сопряжение разорвано и здесь. Чтобы снова пользоваться им, выполните сопряжение в его «Настройки → Устройства»."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ удалил этот iPhone из своих устройств, поэтому сопряжение разорвано и здесь. Чтобы снова пользоваться им, выполните сопряжение в его «Настройки → Устройства»."
+                }
+              }
+            }
           }
         },
         "zh-HK" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 已將這部 iPhone 從裝置中移除，所以這裡也已取消配對。如要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這部 iPad 從裝置中移除，所以這裡也已取消配對。如要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這部 iPhone 從裝置中移除，所以這裡也已取消配對。如要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這部 iPhone 從裝置中移除，所以這裡也已取消配對。如要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              }
+            }
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 已将这台 iPhone 从其设备中移除，因此这里也已取消配对。如需再次使用，请在该电脑的“设置 → 设备”中重新配对。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已将这台 iPad 从其设备中移除，因此这里也已取消配对。如需再次使用，请在该电脑的“设置 → 设备”中重新配对。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已将这台 iPhone 从其设备中移除，因此这里也已取消配对。如需再次使用，请在该电脑的“设置 → 设备”中重新配对。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已将这台 iPhone 从其设备中移除，因此这里也已取消配对。如需再次使用，请在该电脑的“设置 → 设备”中重新配对。"
+                }
+              }
+            }
           }
         },
         "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 已將這台 iPhone 從裝置中移除，所以這裡也已取消配對。若要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這台 iPad 從裝置中移除，所以這裡也已取消配對。若要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這台 iPhone 從裝置中移除，所以這裡也已取消配對。若要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ 已將這台 iPhone 從裝置中移除，所以這裡也已取消配對。若要再次使用，請在該電腦的「設定 → 裝置」重新配對。"
+                }
+              }
+            }
           }
         }
       }

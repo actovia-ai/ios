@@ -79,19 +79,29 @@ def unit_value(loc):
 
 
 def source_value(loc):
-    """The text a localization is compared against: its plain value, or a plural's `other` form."""
+    """The text a localization is compared against: its plain value, or a plural's or a device variation's `other`
+    form."""
     if loc and "stringUnit" not in loc:
-        return unit_value(loc.get("variations", {}).get("plural", {}).get("other"))
+        variations = loc.get("variations", {})
+        kind = variations.get("plural") or variations.get("device") or {}
+        return unit_value(kind.get("other"))
     return unit_value(loc)
 
 
 def forms(loc):
-    """[(label, stringUnit)] of a localization: one plain unit, or one per plural category.
-    None when it is neither (another kind of variation, a substitution, or an empty plural)."""
+    """[(label, stringUnit)] of a localization: one plain unit, one per plural category, or one per device (the
+    iPad's own wording of a sentence that names the iPhone: `variations.device` with `iphone`, `ipad` and `other`).
+    None when it is none of these (another kind of variation, a substitution, or an empty plural)."""
     if "stringUnit" in loc and "variations" not in loc and "substitutions" not in loc:
         return [("", loc["stringUnit"])]
-    plural = loc.get("variations", {}).get("plural") if set(loc) == {"variations"} else None
-    if not plural or set(loc["variations"]) != {"plural"} or "other" not in plural:
+    variations = loc.get("variations") if set(loc) == {"variations"} else None
+    if variations and set(variations) == {"device"}:
+        device = variations["device"]
+        if "other" not in device or any(d not in DEVICES or "stringUnit" not in f for d, f in device.items()):
+            return None
+        return [(" " + d, device[d]["stringUnit"]) for d in DEVICES if d in device]
+    plural = variations.get("plural") if variations else None
+    if not plural or set(variations) != {"plural"} or "other" not in plural:
         return None
     if any(c not in PLURAL_CATEGORIES or "stringUnit" not in f for c, f in plural.items()):
         return None
@@ -107,6 +117,8 @@ IOS_PREFIX = "ios:"
 # i18next <Trans> markup (`<1>…</1>`, `<strong>`, `<br/>`) and CLDR plural suffixes: neither fits a plain string.
 MARKUP_RE = re.compile(r"</?[A-Za-z0-9]+\s*/?>")
 PLURAL_CATEGORIES = ["zero", "one", "two", "few", "many", "other"]
+# A String Catalog's device variations this app uses (`forms`).
+DEVICES = ["iphone", "ipad", "other"]
 PLURAL_KEY_RE = re.compile(r"_(?:zero|one|two|few|many|other)$")
 PLURAL_COUNT = "count"
 MISSING_HEADING = "shared key not found on the desktop (renamed or removed?)"
@@ -302,7 +314,7 @@ def audit_catalog(path, implicit_source, source_only):
                 continue
             units = forms(loc)
             if units is None:
-                errors.append("%s: %r [%s] must be a plain stringUnit or a plural with an `other` form" % (rel, key, lang))
+                errors.append("%s: %r [%s] must be a plain stringUnit, or a plural or device variation with an `other` form" % (rel, key, lang))
                 continue
             for label, unit in units:
                 value = unit.get("value", "")

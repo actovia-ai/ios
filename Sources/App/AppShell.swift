@@ -28,7 +28,7 @@ struct AppShell: View {
     /// A widget's link, waiting for the shell: it is taken as soon as the shell is on screen.
     let pendingLink: PendingLink
 
-    @State private var activeChat = ActiveChat.new()
+    @State private var activeChat = ShellLaunch.chat
     @State private var isSidebarOpen = ShellLaunch.drawerOpen
     /// The screen is wide enough for the sidebar to stay beside the content (an unfolded iPhone Duo, landscape), as
     /// Claude's app does there; the toolbar button then hides and shows it instead of sliding a drawer.
@@ -223,6 +223,7 @@ struct AppShell: View {
                             } label: {
                                 Label("philharmonic:chat.conversationList.newGroupMenuItem", systemImage: "square.and.pencil")
                             }
+                            .keyboardShortcut("n", modifiers: .command)
                             .accessibilityIdentifier("topNewGroup")
                         }
                     } else if workspace != .health {
@@ -232,6 +233,8 @@ struct AppShell: View {
                             } label: {
                                 Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
                             }
+                            // ⌘N on a hardware keyboard (an iPad's), shown in the ⌘ overlay under the button's name.
+                            .keyboardShortcut("n", modifiers: .command)
                             .accessibilityIdentifier("topNewChat")
                         }
                     }

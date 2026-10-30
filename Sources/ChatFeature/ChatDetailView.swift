@@ -382,7 +382,7 @@ public struct ChatDetailView: View {
             .composerRole(.leading)
             ComposerTextView(
                 text: $viewModel.composerText, isFocused: $isComposerFocused, placeholder: composerPlaceholder,
-                tint: toneInk, accessibilityIdentifier: "composerField"
+                tint: toneInk, accessibilityIdentifier: "composerField", onReturnKey: sendFromKeyboard
             ) { pictures in
                 Task { await viewModel.addPictures(pictures.map(Optional.some)) }
             }
@@ -483,6 +483,14 @@ public struct ChatDetailView: View {
             }
         }
         .accessibilityIdentifier(state.identifier)
+    }
+
+    /// A hardware keyboard's Return: sends what the send button would, and keeps the field focused for the next
+    /// question (the keyboard is not on screen to give the reply room back from). Anything else — a reply running,
+    /// nothing typed, offline — does nothing, as the disabled button does.
+    private func sendFromKeyboard() {
+        guard turnState == .send, viewModel.canSend, !viewModel.isReadOnly else { return }
+        Task { await viewModel.sendMessage() }
     }
 
     /// The offline hint takes the placeholder's place: typing still works, sending waits for the computer.

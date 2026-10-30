@@ -54,6 +54,8 @@ struct HealthOnboardingView: View {
             }
         }
         .padding(24)
+        // On an iPad or an unfolded Duo the words and the button keep a phone's measure, centred.
+        .readingColumn(HealthLayout.columnWidth)
     }
 
     // Resources, not bare literals: a ternary of literals can pick `Text`'s verbatim overload.

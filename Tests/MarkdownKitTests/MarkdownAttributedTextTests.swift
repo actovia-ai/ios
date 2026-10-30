@@ -11,6 +11,13 @@ import UIKit
 @Suite("MarkdownAttributedText: a block's text for a text view")
 @MainActor
 struct MarkdownAttributedTextTests {
+    /// The text view rounds its size to the screen's pixels — thirds of a point on an iPhone, halves on an iPad — so
+    /// `Text` is drawn at the same scale for the two to be compared.
+    @MainActor static var screenScale: CGFloat {
+        let scale = UITraitCollection.current.displayScale
+        return scale > 0 ? scale : 3
+    }
+
     private let citations: [Int: MarkdownCitation] = [
         1: MarkdownCitation(number: 1, title: "Swift", host: "www.swift.org"),
         2: MarkdownCitation(number: 2, title: "Docs", host: "Apple Developer"),
@@ -213,7 +220,7 @@ struct MarkdownAttributedTextTests {
                 .lineSpacing(spec.pointSize * MarkdownLayoutRules.lineGap(for: spec))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 370, alignment: .leading))
-        renderer.scale = 3
+        renderer.scale = Self.screenScale
         let drawn = try #require(renderer.uiImage)
 
         let view = MarkdownTextView()
@@ -260,7 +267,7 @@ struct MarkdownAttributedTextTests {
         let output = styled(sample)
         let renderer = ImageRenderer(
             content: MarkdownStyledText(styled: output, spec: .body).fixedSize())
-        renderer.scale = 3
+        renderer.scale = Self.screenScale
         let drawn = try #require(renderer.uiImage)
 
         let view = MarkdownTextView()
@@ -312,7 +319,7 @@ struct MarkdownAttributedTextTests {
         view.attributedText = text
         for width: CGFloat in [370, 200, CGFloat.greatestFiniteMagnitude] {
             let set = view.sizeThatFits(CGSize(width: width, height: CGFloat.greatestFiniteMagnitude))
-            let measured = try #require(MarkdownTextMeasure.measure(text, width: width)).reported(scale: 3, within: width)
+            let measured = try #require(MarkdownTextMeasure.measure(text, width: width)).reported(scale: Self.screenScale, within: width)
             #expect(abs(measured.size.height - set.height) < 0.01)
             #expect(abs(measured.size.width - set.width) < 0.01)
             #expect(measured.firstBaseline > 0 && measured.firstBaseline <= measured.lastBaseline)
@@ -343,7 +350,7 @@ struct MarkdownAttributedTextTests {
             content: MarkdownStyledText(styled: output, spec: .body)
                 .lineSpacing(MarkdownFontSpec.body.pointSize * MarkdownLayoutRules.lineGap(for: .body))
                 .fixedSize())
-        renderer.scale = 3
+        renderer.scale = Self.screenScale
         let drawn = try #require(renderer.uiImage)
         let measured = try #require(MarkdownTextMeasure.measure(text, width: 370)).reported(scale: 3, within: 370)
         #expect(abs(measured.size.height - drawn.size.height) < 0.01)
