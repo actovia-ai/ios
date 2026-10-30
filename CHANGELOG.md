@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/actovia-ai/ios/compare/v1.6.0...v1.6.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **ios:** improve App Store welcome and health readability (ISSUE-312, ISSUE-313) ([3168351](https://github.com/actovia-ai/ios/commit/316835156d06daf942579818150e3541b424d575))
+
 # [1.6.0](https://github.com/actovia-ai/ios/compare/v1.5.0...v1.6.0) (2026-10-30)
 
 
