@@ -20,4 +20,10 @@ struct HeroAtNowTests {
         #expect(!HealthHero.isAtNow(hour: 14.9, scrub: scrub))
         #expect(!HealthHero.isAtNow(hour: 3, scrub: scrub))
     }
+
+    @Test func headlineUsesLightInkFromDusk() {
+        #expect(!HealthHero.usesLightHeadline(atClockHour: 18))
+        #expect(HealthHero.usesLightHeadline(atClockHour: 18.5))
+        #expect(HealthHero.usesLightHeadline(atClockHour: 19.5))
+    }
 }

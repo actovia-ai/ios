@@ -208,9 +208,12 @@ struct PairingSection: View {
             }
         }
         .controlSize(.large)
+        .frame(maxWidth: .infinity)
         .navigationDestination(isPresented: $isScanning) { scannerScreen }
         .listRowBackground(Color.clear)
-        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+        // Native glass buttons draw a little beyond their label. Keep the row inside the Form's readable bounds so
+        // the prominent Paste action is not clipped on a narrow welcome screen.
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
     }
 
     private func openScanner() async {
