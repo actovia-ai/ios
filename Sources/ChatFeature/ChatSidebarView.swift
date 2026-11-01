@@ -3,16 +3,15 @@ import Models
 import NetworkingKit
 import SwiftUI
 
-/// Tighter than the system's 16 pt: a one-line row is the 44 pt touch target at the default text size and no
-/// taller, so more of the list fits on screen. With the separators hidden the list reads as one column of titles,
-/// like the ChatGPT app's sidebar.
-private let sidebarRowInsets = EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
+/// Room for body-sized titles without the system's full 16 pt vertical padding. With separators hidden,
+/// conversations read as one column, aligned with the sidebar's navigation and section headings.
+private let sidebarRowInsets = EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 16)
 
 /// The width of the icon column every icon row shares, so the titles line up whatever the glyph (ISSUE-297).
 private let sidebarIconColumn: CGFloat = 26
 
 /// A sidebar row's icon and title: the glyph at the text's size and one weight, centred in a fixed column, the
-/// title beside it. Workspaces, Philharmonic's pages and Settings all use it, so no glyph sets its own size.
+/// title beside it. Workspaces and Philharmonic's pages share it, so no row sets its own glyph size.
 public struct SidebarLabel: View {
     let title: LocalizedStringResource
     let systemImage: String
@@ -27,9 +26,8 @@ public struct SidebarLabel: View {
         HStack(spacing: 12) {
             Image(systemName: systemImage)
                 .font(.body)
-                .imageScale(.medium)
+                .imageScale(.large)
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(.secondary)
                 .frame(width: column)
                 .accessibilityHidden(true)
             Text(title)
@@ -38,7 +36,7 @@ public struct SidebarLabel: View {
     }
 }
 
-/// A section's title in the sidebar (Favorites, Recents, Groups): small, quiet, aligned with the rows' text.
+/// Section titles carry the navigation hierarchy; all align with the conversation rows.
 public struct SidebarSectionHeader: View {
     let title: LocalizedStringResource
 
@@ -46,11 +44,12 @@ public struct SidebarSectionHeader: View {
 
     public var body: some View {
         Text(title)
-            .font(.footnote.weight(.semibold))
-            .foregroundStyle(.secondary)
+            .font(.headline)
+            .foregroundStyle(Color(uiColor: .label))
             .textCase(nil)
-            .padding(.top, 14)
-            .padding(.bottom, 2)
+            .padding(.leading, 8)
+            .padding(.top, 20)
+            .padding(.bottom, 6)
             .accessibilityAddTraits(.isHeader)
     }
 }
@@ -303,7 +302,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background {
-                (isDocked ? dockedSurface : Color(.secondarySystemBackground)).ignoresSafeArea()
+                (isDocked ? dockedSurface : Color(.systemBackground)).ignoresSafeArea()
             }
             // The insets alone do not shrink a row below the list's own minimum, which is what held
             // the rows at 52 pt. 44 pt is the touch-target floor, never less.
@@ -330,6 +329,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             // instead, left-aligned and a size up from that.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(isDocked ? dockedSurface : Color(.systemBackground), for: .navigationBar)
+            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
             .toolbar { sidebarToolbar }
             // Hidden while searching so it cannot ghost through the keyboard.
             .safeAreaBar(edge: .bottom) {
@@ -448,7 +449,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         let available = list.isAvailableOffline(chat.id)
         return HStack(spacing: 8) {
             Text(chat.title.collapsedWhitespace)
-                .font(.callout.weight(chat.id == activeChatId ? .medium : .regular))
+                .font(.body.weight(chat.id == activeChatId ? .medium : .regular))
                 .lineLimit(1)
             Spacer(minLength: 8)
             if let timestamp = RecentTimestamp.format(chat.createdAt) {
@@ -714,6 +715,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 // instead of centred, on the same line as Search either way.
                 Text(Self.appName)
                     .font(.title2.weight(.semibold))
+                    .padding(.leading, 8)
                     // The toolbar proposes this item a width tighter than "Actovia" needs (it
                     // truncated to "Ex…" with room to spare) — this is six fixed characters,
                     // never user content, so laying out at its own ideal size is safe.
@@ -745,33 +747,21 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
             }
     }
 
-    /// A bar of its own, not `ToolbarItem(placement: .bottomBar)`: a bottom-bar item ignores
-    /// `.labelStyle(.titleAndIcon)` and rendered New chat as a bare compose glyph. Settings is the footer's row, in
-    /// the rows' own icon column (the account row of ChatGPT's drawer), not a glass pill floating on its own; New
-    /// chat stays the one prominent button, at the trailing end (ISSUE-297).
+    /// A primary compose action on the left and compact Settings on the right, like the drawer's search control.
+    /// Both stay native buttons; their accessibility names and identifiers are independent of the visual labels.
     private var bottomBar: some View {
         HStack(spacing: 12) {
-            Button(action: onOpenSettings) {
-                SidebarLabel("common:nav.settings", systemImage: "gearshape")
-                    .padding(.horizontal, 8)
-                    .frame(minHeight: 44)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(SidebarFooterButtonStyle())
-            .accessibilityIdentifier("sidebarSettings")
-            Spacer(minLength: 0)
             if showsRecents {
                 Button(action: onNewChat) {
                     Label("chat:sidebar.newChat", systemImage: "square.and.pencil")
                         .labelStyle(.titleAndIcon)
-                        // The longest translation ("Nouvelle conversation") must fit on one line beside Settings,
-                        // in a sidebar that is a fraction of the screen wide.
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(0.8)
                 }
-                .font(.subheadline.weight(.medium))
+                .font(.body.weight(.semibold))
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.capsule)
+                .controlSize(.large)
                 .accessibilityIdentifier("sidebarNewChat")
                 .contextMenu {
                     if let onNewWindow {
@@ -779,14 +769,21 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                     }
                 }
             }
+            Spacer(minLength: 0)
+            Button(action: onOpenSettings) {
+                Image(systemName: "gearshape")
+                    .font(.body)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
+            .accessibilityLabel("common:nav.settings")
+            .accessibilityIdentifier("sidebarSettings")
         }
-        .padding(.leading, 8)
-        .padding(.trailing, 16)
-        .padding(.vertical, 8)
-        .background(isDocked ? dockedSurface : Color(.secondarySystemBackground))
-        // A bar, like a toolbar: it stops growing where a toolbar would. The sidebar is a fixed
-        // fraction of the screen, and "Nouvelle conversation" beside Settings only fits on one line
-        // up to about this size; past it the title would truncate. The list itself still scales.
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(isDocked ? dockedSurface : Color(.systemBackground))
+        // The footer stays toolbar-sized; navigation and conversation text in the list keep their full scaling.
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -869,19 +866,6 @@ extension ChatSidebarView where Lists == EmptyView {
             onSelectChat: onSelectChat, onNewChat: onNewChat, onOpenSettings: onOpenSettings,
             onDeleteChat: onDeleteChat, onRenameChat: onRenameChat, onRecentsChange: onRecentsChange,
             workspaces: workspaces, lists: { EmptyView() })
-    }
-}
-
-/// The footer's Settings row: the row's own ink and, while pressed, the rows' pressed tint.
-private struct SidebarFooterButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(.primary)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.primary.opacity(configuration.isPressed ? sidebarPressedFill : 0))
-            )
-            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

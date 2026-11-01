@@ -259,6 +259,7 @@ versioned on its own (semantic-release on `master`); the two need not match.
 
 ## Current interaction details
 
+- The phone sidebar uses a white/black system surface, primary workspace icons and clear section headings. New chat is the leading footer action; the circular Settings control remains accessible by name. Docked sidebars retain their separate pane surface.
 - A docked sidebar refreshes while visible and active, on foreground, and after local stream/title updates. Opening another workspace clears the old chat selection highlight.
 - Health attachments expand into labeled sections and units. The original attachment remains the message context.
 - A citation chip opens only its source (or exactly the grouped chip's sources); the footer Sources action still opens the turn's full list.
