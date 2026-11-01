@@ -122,7 +122,9 @@ private func noticeReply(level: String, message: String, more: String = "") -> S
 }
 
 @MainActor
-private func waitUntil(_ what: String, timeout: Duration = .seconds(10), _ condition: @MainActor () -> Bool) async throws {
+private func waitUntil(
+    _ what: String, timeout: Duration = .seconds(10), _ condition: @MainActor () -> Bool
+) async throws {
     let deadline = ContinuousClock.now.advanced(by: timeout)
     while !condition() {
         try #require(ContinuousClock.now < deadline, "timed out waiting for \(what)")
@@ -141,7 +143,10 @@ private struct Rig {
     let reply: (String) -> Void
 
     /// Answers `GET /api/v1/chat/c1/page` with `history` as one page and every `POST /api/v1/chat` with `reply`.
-    init(history: String = "[]", reply: String = helloReply, holdsOpen: Bool = false, _ suite: String = #function) {
+    init(
+        history: String = "[]", reply: String = helloReply, holdsOpen: Bool = false,
+        _ suite: String = #function
+    ) {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
         let config = ServerConfigStore(userDefaults: defaults)
@@ -177,7 +182,8 @@ private struct Rig {
         }
         vm = ChatDetailViewModel(
             chatId: "c1", apiClient: APIClient(session: session, serverConfig: config),
-            streamManager: ChatStreamManager(sseClient: SSEClient(session: session)), serverConfig: config,
+            streamManager: ChatStreamManager(sseClient: SSEClient(session: session)),
+            serverConfig: config,
             noticeLifetime: .seconds(6), noticeSleep: { try await sleeper.sleep($0) })
     }
 }
@@ -258,9 +264,10 @@ struct RegenerateTests {
         await rig.vm.regenerate()
         let copy = try rig.posts.question(ofPost: 0)
         #expect(copy["role"] as? String == "user")
-        #expect(copy["content"] as? [[String: String]] == [
+            #expect(
+                copy["content"] as? [[String: String]] == [
             ["type": "text", "text": "what is this?"],
-            ["type": "image", "data": "data:image/png;base64,AAAA", "mimeType": "image/png"]
+                    ["type": "image", "data": "data:image/png;base64,AAAA", "mimeType": "image/png"],
         ])
         #expect(copy["runId"] as? String == copy["id"] as? String)
     }
@@ -280,7 +287,9 @@ struct RegenerateTests {
         await rig.vm.loadHistory()
         rig.vm.composerText = "again"
         let sending = Task { await rig.vm.sendMessage() }
-        try await waitUntil("the turn to be in flight") { rig.vm.isTurnInFlight && rig.posts.count == 1 }
+            try await waitUntil("the turn to be in flight") {
+                rig.vm.isTurnInFlight && rig.posts.count == 1
+            }
 
         #expect(rig.vm.canRegenerate == false)
         #expect(rig.vm.regenerableTurnId == nil)
@@ -294,14 +303,19 @@ struct RegenerateTests {
         #expect(rig.vm.canRegenerate)
     }
 
-    @Test("only the last answer of a loaded chat carries it; not before the history is known; not for an unanswered question")
+        @Test(
+            "only the last answer of a loaded chat carries it; not before the history is known; not for an unanswered question"
+        )
     func whichTurn() async throws {
         let rig = Rig(history: twoRuns)
         #expect(rig.vm.regenerableTurnId == nil)
         await rig.vm.loadHistory()
         #expect(rig.vm.regenerableTurnId == "run:u2")
 
-        let unanswered = Rig(history: #"[{"id":"u1","runId":"u1","chatId":"c1","role":"user","content":"hi","createdAt":"2026-09-18T12:00:00.000Z"}]"#)
+            let unanswered = Rig(
+                history:
+                    #"[{"id":"u1","runId":"u1","chatId":"c1","role":"user","content":"hi","createdAt":"2026-09-18T12:00:00.000Z"}]"#
+            )
         await unanswered.vm.loadHistory()
         #expect(unanswered.vm.canRegenerate == false)
         await unanswered.vm.regenerate()
@@ -310,14 +324,19 @@ struct RegenerateTests {
 
     @Test("nothing to ask again without a user message: no request")
     func noQuestion() async throws {
-        let rig = Rig(history: #"[{"id":"a1","runId":"r","chatId":"c1","role":"assistant","content":[{"type":"text","text":"hello"}],"stopReason":"stop","createdAt":"2026-09-18T12:00:05.000Z"}]"#)
+            let rig = Rig(
+                history:
+                    #"[{"id":"a1","runId":"r","chatId":"c1","role":"assistant","content":[{"type":"text","text":"hello"}],"stopReason":"stop","createdAt":"2026-09-18T12:00:05.000Z"}]"#
+            )
         await rig.vm.loadHistory()
         #expect(rig.vm.canRegenerate == false)
         await rig.vm.regenerate()
         #expect(rig.posts.count == 0)
     }
 
-    @Test("a reply that failed partway can be asked again, and the new turn clears the run's live error")
+        @Test(
+            "a reply that failed partway can be asked again, and the new turn clears the run's live error"
+        )
     func afterAFailure() async throws {
         let rig = Rig(history: history, reply: partialThenError)
         await rig.vm.loadHistory()
@@ -340,7 +359,9 @@ struct RegenerateTests {
 @MainActor
 @Suite("sources sheet")
 struct SourcesSheetViewModelTests {
-    @Test("a turn's sheet lists its own searches; a chip's marker marks its source; a user row or unknown id has none")
+        @Test(
+            "a turn's sheet lists its own searches; a chip's marker marks its source; a user row or unknown id has none"
+        )
     func sheetForATurn() async throws {
         let rig = Rig(history: searchedHistory)
         await rig.vm.loadHistory()
@@ -348,7 +369,8 @@ struct SourcesSheetViewModelTests {
         #expect(plain.entries.map(\.title) == ["One", "Two"])
         #expect(plain.highlightedId == nil)
         let chip = try #require(rig.vm.sourcesSheet(forTurn: "run:u1", marker: 2))
-        #expect(chip.highlightedId == 1)
+            #expect(chip.highlightedId == 0)
+            #expect(chip.entries.count == 1)
         #expect(rig.vm.sourcesSheet(forTurn: "u1") == nil)
         #expect(rig.vm.sourcesSheet(forTurn: "run:nope") == nil)
     }
@@ -537,14 +559,18 @@ struct RunErrorViewModelTests {
         #expect(rig.vm.failureCount == 2)
     }
 
-    @Test("a run that failed before any step offers Regenerate on its error line, sending what the bar's would")
+        @Test(
+            "a run that failed before any step offers Regenerate on its error line, sending what the bar's would"
+        )
     func orphanRetry() async throws {
-        let rig = Rig(history: history, reply: #"data: {"type":"error","error":"Invalid API key"}\#n\#n"#)
+            let rig = Rig(
+                history: history, reply: #"data: {"type":"error","error":"Invalid API key"}\#n\#n"#)
         await rig.vm.loadHistory()
         #expect(rig.vm.canRetryOrphanError == false)
         rig.vm.composerText = "again"
         await rig.vm.sendMessage()
-        #expect(TranscriptRules.orphanRunError(segments: rig.vm.segments, live: rig.vm.liveRunError) != nil)
+            #expect(
+                TranscriptRules.orphanRunError(segments: rig.vm.segments, live: rig.vm.liveRunError) != nil)
         #expect(rig.vm.regenerableTurnId == nil)
         #expect(rig.vm.canRetryOrphanError)
         #expect(rig.vm.canRegenerate)

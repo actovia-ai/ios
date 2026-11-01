@@ -48,6 +48,10 @@ public enum ApprovalEvent: Equatable, Sendable {
     case resolved(runId: String, toolCallId: String, outcome: ApprovalOutcome)
 }
 
+public enum ChatHistoryChanges {
+    public static let notification = Notification.Name("app.yancey.actovia.chatHistoryChanged")
+}
+
 public actor ChatStreamManager {
     private struct ActiveStream {
         /// Identifies one `send`. The stream's task carries it back into
@@ -95,7 +99,9 @@ public actor ChatStreamManager {
         continuation.yield(.messages(stream.messages))
         continuation.yield(.status(stream.status))
         for approval in stream.approvals { continuation.yield(.approval(approval)) }
-        for used in stream.memoriesUsed { continuation.yield(.memoriesUsed(runId: used.runId, memories: used.memories)) }
+        for used in stream.memoriesUsed {
+            continuation.yield(.memoriesUsed(runId: used.runId, memories: used.memories))
+        }
         stream.continuation = continuation
         streams[chatId] = stream
         return output
@@ -117,12 +123,14 @@ public actor ChatStreamManager {
         let generation = UUID()
         let (output, continuation) = AsyncStream<ChatStreamUpdate>.makeStream()
         streams[chatId] = ActiveStream(
-            generation: generation, task: nil, messages: messages, status: .submitted, continuation: continuation)
+            generation: generation, task: nil, messages: messages, status: .submitted,
+            continuation: continuation)
         continuation.yield(.status(.submitted))
 
         // Address, token and session in one piece (see `ServerRoute`).
         let route = serverConfig.route
-        let request = Self.makeRequest(chatId: chatId, messages: messages, route: route, options: options)
+        let request = Self.makeRequest(
+            chatId: chatId, messages: messages, route: route, options: options)
         let sseClient = self.sseClient
 
         let task = Task { [weak self] in
@@ -191,10 +199,13 @@ public actor ChatStreamManager {
             stream.status = .streaming
             stream.continuation?.yield(.messages(stream.messages))
         case .done(let messages, let attempts):
+            NotificationCenter.default.post(name: ChatHistoryChanges.notification, object: nil)
             // Protocol 2: the run as stored, merged into the conversation already held; otherwise the whole of it.
-            stream.messages = attempts.map { RunMerge.merge(stream.messages, run: messages, attempts: $0) } ?? messages
+            stream.messages =
+                attempts.map { RunMerge.merge(stream.messages, run: messages, attempts: $0) } ?? messages
             stream.continuation?.yield(.messages(stream.messages))
         case .title(let title):
+            NotificationCenter.default.post(name: ChatHistoryChanges.notification, object: nil)
             stream.continuation?.yield(.title(title))
         case .error(let message):
             // A server-sent `error` frame is terminal, like a transport error (the
@@ -206,7 +217,9 @@ public actor ChatStreamManager {
             return
         case .notice(let level, let message):
             let notice = StreamNotice(level: level, message: message)
-            if !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, stream.seenNotices.insert(notice).inserted {
+            if !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                stream.seenNotices.insert(notice).inserted
+            {
                 stream.continuation?.yield(.notice(notice))
             }
         case .unknown(let type):
@@ -318,7 +331,8 @@ public actor ChatStreamManager {
             let `protocol`: Int
         }
         request.httpBody = try? JSONEncoder().encode(
-            Body(id: chatId, message: messages.last, advancedTools: options.advancedTools,
+            Body(
+                id: chatId, message: messages.last, advancedTools: options.advancedTools,
                 reasoningEffort: options.wireReasoningEffort, protocol: 2))
         return request
     }

@@ -11,6 +11,10 @@ localization work in its
 [design spec](docs/superpowers/specs/2026-09-19-chatgpt-style-shell-and-i18n-design.md) and
 [implementation plan](docs/superpowers/plans/2026-09-19-chatgpt-style-shell-and-i18n.md).
 
+[Download on the App Store](https://apps.apple.com/app/actovia/id6824829679) · [User guide](https://actovia.yancey.app/docs/iphone) · [Desktop app](https://github.com/actovia-ai/actovia)
+
+The companion uses your computer's models, tools and chat history; keep Actovia running and the computer reachable. Chat, Philharmonic and Health are available workspaces. Health reads Apple Health only after permission and sends selected summaries to your computer and its configured model provider. Remote APNs notifications are not implemented; Group updates stream while the app is active.
+
 ## Requirements
 
 - Xcode 27 with the iOS 27 SDK (every target deploys to iOS 26.0; iOS 27-only APIs go behind `#available`).
@@ -80,18 +84,13 @@ The iPad runs the same app (ISSUE-291), laid out as an unfolded iPhone Duo is �
 `ReadingColumn` (OdyKit): a window at least 700 pt wide docks the sidebar (300 pt) beside the content, and a chat's
 transcript and composer keep a 680 pt column centred in what is left; a narrower window (Split View, Slide Over, a
 small Stage Manager window) is laid out as a phone, with the drawer. The app supports every orientation and
-multitasking (no `UIRequiresFullScreen`), one window at a time (`UIApplicationSupportsMultipleScenes` is off). With a
-hardware keyboard Return sends and Shift-Return is a new line (`ComposerReturnKey`); ⌘N starts a new chat (a new
-group in Philharmonic). A sentence that names the device has an iPad wording (a device variation in the catalog).
+multitasking (no `UIRequiresFullScreen`) and multiple windows. Every scene owns its server connection, stream manager,
+offline status, navigation, draft and lock-cover window. Stored pairing credentials remain in the device's shared Keychain.
+With a hardware keyboard, Return sends, Shift-Return inserts a line, ⌘N starts a new chat (a new group in Philharmonic),
+⌘F opens chat search, ⌘, opens Settings, Escape stops an active reply, and ⇧⌘N opens another window. Long-press New chat
+also offers New window. Drop images into the Chat composer and drag completed generated images to another app.
+Sidebar rows respond to the pointer; transcript messages offer a Copy context menu while selectable text retains the native selection menu. A sentence that names the device has an iPad wording (a device variation in the catalog).
 DEBUG builds open a chat with `-OpenChat <id>` for screenshots.
-
-## Connecting to the desktop
-
-Run the desktop app from `../actovia` (`bun start`); it serves the API on port 60223 under `/api/v1`, the
-versioned prefix this app addresses. The default address, `http://localhost:60223`, works from the Simulator
-on the same Mac. On a real iPhone open Settings (gear),
-then Connection, and enter the Mac's LAN IP or `<name>.local` with the port, e.g. `http://192.168.1.10:60223`.
-iOS asks once for local-network permission.
 
 ## Connecting to the computer
 
@@ -257,6 +256,15 @@ A conventional commit pushed to `main` makes semantic-release run
 `CURRENT_PROJECT_VERSION` (the commit count at the release); the file is
 written only by that script — don't edit it by hand. The desktop app is
 versioned on its own (semantic-release on `master`); the two need not match.
+
+## Current interaction details
+
+- A docked sidebar refreshes while visible and active, on foreground, and after local stream/title updates. Opening another workspace clears the old chat selection highlight.
+- Health attachments expand into labeled sections and units. The original attachment remains the message context.
+- A citation chip opens only its source (or exactly the grouped chip's sources); the footer Sources action still opens the turn's full list.
+- Recents use a time today, a weekday for recent days and an abbreviated date thereafter. Answer timestamps use numeric relative days, avoiding a two-day-old answer reading “yesterday”.
+- Chat and Group composers have opaque surfaces beneath Liquid Glass, so the transcript cannot show through the text field.
+- Card prototypes and the gallery launch arguments are DEBUG-only.
 
 ## Known limits
 

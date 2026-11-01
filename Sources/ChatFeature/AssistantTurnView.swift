@@ -23,7 +23,9 @@ struct TranscriptActions {
     /// history is not known yet).
     var sendAnswer: @MainActor @Sendable (_ text: String) -> Bool = { _ in false }
 
-    static var none: TranscriptActions { TranscriptActions(regenerableTurnId: nil, regenerate: {}, showSources: { _, _ in }) }
+    static var none: TranscriptActions {
+        TranscriptActions(regenerableTurnId: nil, regenerate: {}, showSources: { _, _ in })
+    }
 }
 
 /// The transcript's rows, shared by the chat screen and the DEBUG gallery.
@@ -55,20 +57,24 @@ struct TranscriptRows: View {
                 switch segment {
                 case .user(let message):
                     UserBubble(
-                        text: message.answerText, messageId: message.id, images: UserImages.dataURLs(of: message),
+                        text: message.answerText, messageId: message.id,
+                        images: UserImages.dataURLs(of: message),
                         isExpanded: expandedMessages.contains(message.id),
                         expand: { expandedMessages.insert(message.id) })
                 case .assistantTurn(let turn):
                     let isStreaming = turn.id == streamingTurnId
                     let canRegenerate = turn.id == actions.regenerableTurnId
-                    let error = TranscriptRules.runError(for: turn, live: turn.id == liveErrorTurnId ? liveError : nil)
-                    let bar = TurnActions.bar(for: turn, isStreaming: isStreaming, canRegenerate: canRegenerate)
+                    let error = TranscriptRules.runError(
+                        for: turn, live: turn.id == liveErrorTurnId ? liveError : nil)
+                    let bar = TurnActions.bar(
+                        for: turn, isStreaming: isStreaming, canRegenerate: canRegenerate)
                     AssistantTurnView(
                         turn: turn, isStreaming: isStreaming, error: error, actionBar: bar,
                         offersRetry: TurnActions.showsRetryOnError(
                             hasError: error != nil, bar: bar, canRegenerate: canRegenerate),
                         canChoose: actions.canChoose,
-                        regenerate: actions.regenerate, showSources: actions.showSources, choose: actions.choose,
+                        regenerate: actions.regenerate, showSources: actions.showSources,
+                        choose: actions.choose,
                         showOtherVersion: actions.showOtherVersion, answered: answers[turn.runId],
                         canAnswer: actions.canAnswer, drafts: drafts, sendAnswer: actions.sendAnswer
                     )
@@ -111,6 +117,7 @@ struct AssistantTurnView: View, Equatable {
     /// Where the transcript keeps the answers being made; nil keeps them in the block itself.
     var drafts: InteractiveDrafts?
     var sendAnswer: @MainActor @Sendable (_ text: String) -> Bool = { _ in false }
+    @State private var citationSheet: SourcesSheetModel?
     @Environment(\.searchMediaLoader) private var searchMediaLoader
 
     nonisolated static func == (lhs: AssistantTurnView, rhs: AssistantTurnView) -> Bool {
@@ -124,7 +131,8 @@ struct AssistantTurnView: View, Equatable {
     /// The turn holds a block still waiting for its answer, so whether one may be sent changes how it looks. Read only
     /// when `canAnswer` changed (a turn starting or ending), never per streamed frame. Steps and a chart never wait.
     nonisolated var asks: Bool {
-        answered == nil && (turn.body.contains("```actovia-ask") || turn.body.contains("```actovia-confirm"))  // l10n:ignore: markdown syntax
+        answered == nil
+            && (turn.body.contains("```actovia-ask") || turn.body.contains("```actovia-confirm"))  // l10n:ignore: markdown syntax
     }
 
     /// `canChoose` counts only for a compared answer, so an ordinary turn does not redraw when a turn starts or ends.
@@ -143,10 +151,14 @@ struct AssistantTurnView: View, Equatable {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: TurnFootMetrics.blockGap) {
                 if case .comparing(let position)? = turn.attempt {
-                    CompareHeader(position: position, canChoose: choiceEnabled && !isStreaming) { choose(turn.runId) }
+                    CompareHeader(position: position, canChoose: choiceEnabled && !isStreaming) {
+                        choose(turn.runId)
+                    }
                 }
                 if TranscriptRules.showsTimeline(turn, isStreaming: isStreaming) {
-                    ThinkingTimeline(turn: turn, isLive: TranscriptRules.timelineIsLive(turn, isStreaming: isStreaming)) {
+                    ThinkingTimeline(
+                        turn: turn, isLive: TranscriptRules.timelineIsLive(turn, isStreaming: isStreaming)
+                    ) {
                         showSources(turn.id, nil)
                     }
                 }
@@ -164,12 +176,16 @@ struct AssistantTurnView: View, Equatable {
                     // inputs, as the memory rows are.
                     RunApprovalsView(runId: turn.runId, runIsActive: isStreaming)
                 case .usedMemories:
-                    RunFootView(foot: turn.foot, section: .usedMemories, runId: turn.runId, isStreaming: isStreaming)
+                    RunFootView(
+                        foot: turn.foot, section: .usedMemories, runId: turn.runId, isStreaming: isStreaming)
                 case .memoryChanges:
-                    RunFootView(foot: turn.foot, section: .memoryChanges, runId: turn.runId, isStreaming: isStreaming)
+                    RunFootView(
+                        foot: turn.foot, section: .memoryChanges, runId: turn.runId, isStreaming: isStreaming)
                 case .actionBar:
                     if let actionBar {
-                        TurnActionBarView(bar: actionBar, onRegenerate: regenerate) { showSources(turn.id, nil) }
+                        TurnActionBarView(bar: actionBar, onRegenerate: regenerate) {
+                            showSources(turn.id, nil)
+                        }
                             .equatable()
                             .padding(.top, TurnFootMetrics.barTop)
                             // Over the rows around it, so where the targets meet the bar's buttons are the ones
@@ -187,6 +203,21 @@ struct AssistantTurnView: View, Equatable {
         .frame(maxWidth: .infinity, alignment: .leading)
         // Citation chips draw their sites' icons through the loader the search images use.
         .environment(\.markdownCitationIcons, .searchMedia(searchMediaLoader))
+        .environment(
+            \.markdownCitationGroupTap,
+            { ranks in citationSheet = SourcesSheetModel(turn: turn, markers: ranks) }
+        )
+        .sheet(item: $citationSheet) { SourcesSheet(model: $0) }
+        .contextMenu {
+            if let actionBar, !isStreaming {
+                Button("common:action.copy", systemImage: "doc.on.doc") {
+                    UIPasteboard.general.string = actionBar.copyText
+                }
+                if actionBar.showsSources {
+                    Button("chat:messageAction.sources", systemImage: "link") { showSources(turn.id, nil) }
+                }
+            }
+        }
     }
 }
 
@@ -212,7 +243,8 @@ enum TurnFoot {
     static let showsOtherVersions = false
 
     static func rows(
-        for turn: AssistantTurn, bar: TurnActionBar?, showsOtherVersions: Bool = TurnFoot.showsOtherVersions
+        for turn: AssistantTurn, bar: TurnActionBar?,
+        showsOtherVersions: Bool = TurnFoot.showsOtherVersions
     ) -> [TurnFootRow] {
         var rows: [TurnFootRow] = [.approvals, .usedMemories]
         if RunMemoryChanges(turn.foot.memoryUpdates) != nil { rows.append(.memoryChanges) }
@@ -272,11 +304,14 @@ extension AssistantTurnView {
         let placed = InteractiveRendering.placed(in: texts.map(\.text))
         let placedId = placed.map { texts[$0.index].id }
         // The steps' pictures: only the run's own search thumbnails (StepsPictures); built only for a steps block.
-        let pictures = placed?.fence.kind == .steps
+        let pictures =
+            placed?.fence.kind == .steps
             ? StepsPictures(sources: turn.sources, media: turn.foot.searchMedia) : StepsPictures()
         let fenced = InteractiveRendering.fencedBlocks(
-            fence: placed?.fence, runId: turn.runId, answered: answered, canAnswer: canAnswer && !isStreaming,
-            isAnswerable: answerable && InteractiveRendering.isAnswerable(turn), drafts: drafts, pictures: pictures,
+            fence: placed?.fence, runId: turn.runId, answered: answered,
+            canAnswer: canAnswer && !isStreaming,
+            isAnswerable: answerable && InteractiveRendering.isAnswerable(turn), drafts: drafts,
+            pictures: pictures,
             sendAnswer: sendAnswer)
         ForEach(blocks) { block in
             switch block {
@@ -296,7 +331,10 @@ extension AssistantTurnView {
                 SearchMediaSection(gallery: media.gallery)
             }
         }
-        .environment(\.editDiffsStartOpen, FileCardRules.editsStartOpen(editCount: FileCardRules.editCount(in: turn)))
+        .environment(
+            \.editDiffsStartOpen,
+            FileCardRules.editsStartOpen(editCount: FileCardRules.editCount(in: turn))
+        )
         .environment(\.toolCardsAreLive, isStreaming)
     }
 }
@@ -340,6 +378,11 @@ public struct UserBubble: View {
             // A picture sent alone has no empty bubble under it.
             if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 bubble
+                    .contextMenu {
+                        Button("common:action.copy", systemImage: "doc.on.doc") {
+                            UIPasteboard.general.string = text
+                        }
+                    }
             }
         }
     }
@@ -393,13 +436,18 @@ public struct UserBubble: View {
         let markdown = UserBubbleRules.markdown(written)
         let lineHeight = MarkdownTypography.bodyLineHeight
         let cap = UserBubbleRules.cap(
-            lineHeight: lineHeight, lineSpacing: MarkdownTypography.bodyLineSpacing * Self.lineSpacingScale)
+            lineHeight: lineHeight,
+            lineSpacing: MarkdownTypography.bodyLineSpacing * Self.lineSpacingScale)
         let clipped = UserBubbleRules.isClipped(
             height: fullHeight, cap: cap, lineHeight: lineHeight, isExpanded: isExpanded || expandedHere)
         VStack(alignment: .leading, spacing: 6) {
             rendered(markdown, written: written)
                 .fixedSize(horizontal: false, vertical: true)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
+                .onGeometryChange(for: CGFloat.self) {
+                    $0.size.height
+                } action: {
+                    fullHeight = $0
+                }
                 .frame(height: clipped ? cap : nil, alignment: .top)
                 .clipped()
                 .overlay(alignment: .bottom) {

@@ -16,7 +16,8 @@ struct RecentTimestampTests {
     private func date(_ iso8601: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter.date(from: iso8601) ?? {
+        return formatter.date(from: iso8601)
+            ?? {
             let plain = ISO8601DateFormatter()
             plain.formatOptions = [.withInternetDateTime]
             return plain.date(from: iso8601)!
@@ -67,14 +68,14 @@ struct RecentTimestampTests {
     func sixDaysAgoIsADate() throws {
         let result = try #require(
             format("2026-09-16T12:00:00.000Z", now: "2026-09-22T12:00:00.000Z"))
-        #expect(result == "9/16/2026")
+        #expect(result == "Sep 16")
     }
 
     @Test("a year ago is a plain date")
     func aYearAgo() throws {
         let result = try #require(
             format("2025-01-05T12:00:00.000Z", now: "2026-09-22T12:00:00.000Z"))
-        #expect(result == "1/5/2025")
+        #expect(result == "Jan 5, 2025")
     }
 
     @Test("a clock-skewed timestamp a few minutes in the future still reads as today")
@@ -88,7 +89,7 @@ struct RecentTimestampTests {
     func daysInTheFuture() throws {
         let result = try #require(
             format("2026-09-25T12:00:00.000Z", now: "2026-09-22T12:00:00.000Z"))
-        #expect(result == "9/25/2026")
+        #expect(result == "Sep 25")
     }
 
     @Test("a createdAt with no fractional seconds parses the same way")

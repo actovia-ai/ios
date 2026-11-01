@@ -45,6 +45,8 @@ public final class ChatListViewModel {
     /// Chats whose DELETE succeeded. A load that started before the delete can finish after it
     /// with a list that still contains the chat; filtering here keeps it from coming back.
     private var deletedIDs: Set<String> = []
+    private var isRefreshing = false
+    private var loadGeneration = 0
 
     public init(
         apiClient: APIClient, offlineStore: OfflineChatStore? = nil, status: ConnectionStatus = .shared
@@ -60,18 +62,21 @@ public final class ChatListViewModel {
     }
 
     public func load() async {
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
+        defer { if generation == loadGeneration { isLoading = false } }
         let preloaded = showStoredCopyFirst()
         do {
             let page = try await fetchPage(before: nil)
+            guard generation == loadGeneration, !Task.isCancelled else { return }
             apply(firstPage: page)
             loadFailed = false
             hasLoaded = true
         } catch {
             // SwiftUI cancels a view's `.task` when the view goes away; that is not a failure.
-            guard !isCancellation(error) else { return }
+            guard generation == loadGeneration, !isCancellation(error) else { return }
             if preloaded, !isUnreachable(error) {
                 // The computer answered with an error: the stored copy it was shown in place of is not its word.
                 chats = []
@@ -82,7 +87,10 @@ public final class ChatListViewModel {
             }
             if isUnreachable(error) {
                 // The computer did not answer: a list already on screen stays; with none, the stored copy is shown.
-                if !chats.isEmpty { hasLoaded = true; return }
+                if !chats.isEmpty {
+                    hasLoaded = true
+                    return
+                }
                 if let cached = offlineStore?.loadList() {
                     chats = cached.chats.filter { !deletedIDs.contains($0.id) }
                     favorites = cached.favorites.filter { !deletedIDs.contains($0.id) }
@@ -104,7 +112,8 @@ public final class ChatListViewModel {
     /// when the computer is away. The fetched list replaces it as soon as it arrives. Only this computer's store is
     /// read. True when it did.
     private func showStoredCopyFirst() -> Bool {
-        guard chats.isEmpty, !hasLoaded, let store = offlineStore, apiClient.activeFingerprint == store.fingerprint,
+        guard chats.isEmpty, !hasLoaded, let store = offlineStore,
+            apiClient.activeFingerprint == store.fingerprint,
             let cached = store.loadList()
         else { return false }
         chats = cached.chats.filter { !deletedIDs.contains($0.id) }
@@ -121,12 +130,22 @@ public final class ChatListViewModel {
     /// failure is dropped: a stale list is still useful, and an alert every time the drawer opens
     /// offline would be noise. With nothing on screen it is a plain `load()`.
     public func refresh() async {
+        guard !isLoading, !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         guard hasLoaded, !chats.isEmpty else {
             await load()
             return
         }
         guard let page = try? await fetchPage(before: nil) else { return }
+        let older = Array(chats.dropFirst(Self.pageSize))
+        let cursor = olderCursor
         apply(firstPage: page)
+        if !older.isEmpty {
+            let known = Set(chats.map(\.id))
+            chats += older.filter { !known.contains($0.id) && !deletedIDs.contains($0.id) }
+            olderCursor = cursor
+        }
         loadFailed = false
     }
 
@@ -161,7 +180,8 @@ public final class ChatListViewModel {
         let starred = chat.favorite != true
         setFavorite(chat.id, starred)
         do {
-            try await apiClient.put("/api/v1/chat", body: FavoriteChatPayload(id: chat.id, favorite: starred))
+            try await apiClient.put(
+                "/api/v1/chat", body: FavoriteChatPayload(id: chat.id, favorite: starred))
             return true
         } catch {
             setFavorite(chat.id, !starred)
@@ -240,7 +260,9 @@ public final class ChatListViewModel {
     public func rename(_ chat: ChatSummary, to title: String) async -> Bool {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, canEdit else { return false }
-        let previous = chats.first { $0.id == chat.id }?.title ?? favorites.first { $0.id == chat.id }?.title ?? chat.title
+        let previous =
+            chats.first { $0.id == chat.id }?.title ?? favorites.first { $0.id == chat.id }?.title
+            ?? chat.title
         setTitle(chat.id, trimmed)
         do {
             try await apiClient.put("/api/v1/chat", body: RenameChatPayload(id: chat.id, title: trimmed))

@@ -17,7 +17,9 @@ enum MarkdownLinkPolicy {
     static func action(for url: URL) -> MarkdownLinkAction {
         if let number = MarkdownPreprocessor.citationNumber(from: url) { return .citation(number) }
         if let title = MarkdownEntityLink.title(from: url) { return .entity(title) }
-        guard let scheme = url.scheme?.lowercased(), allowedSchemes.contains(scheme) else { return .discard }
+        guard let scheme = url.scheme?.lowercased(), allowedSchemes.contains(scheme) else {
+            return .discard
+        }
         return .open(url)
     }
 }
@@ -33,7 +35,9 @@ public enum MarkdownEntityLink {
     public static func title(from url: URL) -> String? {
         let string = url.absoluteString
         guard string.hasPrefix(scheme + ":") else { return nil }
-        guard let title = String(string.dropFirst(scheme.count + 1)).removingPercentEncoding else { return nil }
+        guard let title = String(string.dropFirst(scheme.count + 1)).removingPercentEncoding else {
+            return nil
+        }
         return isTitle(title) ? title : nil
     }
 
@@ -60,6 +64,7 @@ public enum MarkdownEntityLink {
 @MainActor
 final class MarkdownLinkRouter {
     var onCitationTap: ((Int) -> Void)?
+    var onCitationGroupTap: (([Int]) -> Void)?
     var openURL: ((URL) -> Void)?
     /// An entity link's title, for the host's panel; nil handles the tap and does nothing.
     var onEntityTap: ((String) -> Void)?
@@ -71,7 +76,15 @@ final class MarkdownLinkRouter {
     func handle(_ url: URL) -> OpenURLAction.Result {
         switch MarkdownLinkPolicy.action(for: url) {
         case .citation(let number):
+            if let onCitationGroupTap {
+                let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first {
+                    $0.name == "sources"
+                }?.value
+                let ranks = raw?.split(separator: ",").compactMap { Int($0) }.filter { $0 > 0 } ?? [number]
+                onCitationGroupTap(ranks.isEmpty ? [number] : Array(ranks.prefix(100)))
+            } else {
             onCitationTap?(number)
+            }
             return .handled
         case .open(let url):
             openURL?(url)

@@ -3,6 +3,7 @@ import Models
 import NetworkingKit
 import OdyKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// What a new chat opens on when a widget's round button started it: the camera, or recording (`ChatDetailView`'s
 /// `initialOpening`). The widget's own link type lives in WidgetKitShared, which this module does not see.
@@ -67,7 +68,8 @@ public struct ChatDetailView: View {
 
     public init(
         chatId: String, title: String? = nil, isNew: Bool = false, apiClient: APIClient,
-        streamManager: ChatStreamManager, serverConfig: ServerConfigStore, initialMessage: String? = nil,
+        streamManager: ChatStreamManager, serverConfig: ServerConfigStore,
+        initialMessage: String? = nil,
         onInitialMessageSent: (() -> Void)? = nil,
         initialDraft: String? = nil, onInitialDraftUsed: (() -> Void)? = nil,
         initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil,
@@ -83,7 +85,8 @@ public struct ChatDetailView: View {
         self.onInitialMessageSent = onInitialMessageSent
         makeObjects = {
             ChatScreenObjects(
-                chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
+                chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager,
+                serverConfig: serverConfig,
                 offlineStore: offlineStore)
         }
     }
@@ -118,8 +121,12 @@ public struct ChatDetailView: View {
                 .environment(\.workspaceFileLoader, objects.workspaceFiles)
                 .environment(\.artifactSandbox, objects.artifactSandbox)
                 .environment(\.readAloud, viewModel.readAloud)
-                .environment(\.markdownAskAbout, MarkdownAskAction { [viewModel] text in viewModel.askAbout(text) })
-                .environment(\.markdownEntityTap, MarkdownEntityAction { title in entity = EntityRequest(title: title) })
+                .environment(
+                    \.markdownAskAbout, MarkdownAskAction { [viewModel] text in viewModel.askAbout(text) }
+                )
+                .environment(
+                    \.markdownEntityTap,
+                    MarkdownEntityAction { title in entity = EntityRequest(title: title) })
             }
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
@@ -147,7 +154,8 @@ public struct ChatDetailView: View {
                     handledOlderPages = viewModel.olderPageCount
                     return
                 }
-                scrollToBottom(proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
+                scrollToBottom(
+                    proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
                 if TranscriptRules.settlesAtEnd(fromSegmentCount: old, to: new) { settleAtEnd(proxy) }
             }
             // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
@@ -176,7 +184,9 @@ public struct ChatDetailView: View {
         .animation(.easeOut(duration: 0.2), value: viewModel.showsEmptyState)
         .safeAreaInset(edge: .top, spacing: 0) {
             if viewModel.isReadOnly {
-                OfflineBanner(lastSyncedAt: viewModel.lastSyncedAt) { Task { await viewModel.refreshAfterReconnect() } }
+                OfflineBanner(lastSyncedAt: viewModel.lastSyncedAt) {
+                    Task { await viewModel.refreshAfterReconnect() }
+                }
                     .padding(.top, 4)
             }
         }
@@ -208,7 +218,9 @@ public struct ChatDetailView: View {
         }
         // The banner goes after a few seconds; VoiceOver would never reach it, so it is spoken when it arrives.
         .onChange(of: viewModel.notice) { _, notice in
-            if let notice { AccessibilityNotification.Announcement(NoticeBanner.announcement(for: notice)).post() }
+            if let notice {
+                AccessibilityNotification.Announcement(NoticeBanner.announcement(for: notice)).post()
+            }
         }
         .navigationTitle(viewModel.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
@@ -284,7 +296,9 @@ public struct ChatDetailView: View {
         .sensoryFeedback(.error, trigger: viewModel.failureCount)
         .sensoryFeedback(.start, trigger: viewModel.recordingStartCount)
         .sensoryFeedback(.success, trigger: viewModel.transcriptionCount)
-        .alert("ios:chat.composer.micDeniedMessage", isPresented: Binding(
+        .alert(
+            "ios:chat.composer.micDeniedMessage",
+            isPresented: Binding(
                 get: { viewModel.explainsMicrophone },
                 set: { viewModel.explainsMicrophone = $0 }
             )
@@ -303,7 +317,8 @@ public struct ChatDetailView: View {
         .tint(toneInk)
         .environment(\.markdownUnderlinesLinks, colorTone == .neutral)
         // While recording the voice rises from the bottom of the screen, as voice-glow's phone demo, over the composer.
-        .screenVoiceGlow(active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
+        .screenVoiceGlow(
+            active: ComposerVoiceGlow.isShown(viewModel.recording), level: viewModel.voiceRecorder.level)
     }
 
     /// A new chat: Ody, still but for a blink (nothing at all under Reduce Motion), over the hour's greeting —
@@ -338,7 +353,8 @@ public struct ChatDetailView: View {
             if !viewModel.attachments.isEmpty || viewModel.isPreparingPictures {
                 ComposerPictureStrip(
                     pictures: viewModel.attachments.pictures, preparing: viewModel.preparingPictures,
-                    onRemove: viewModel.removePicture)
+                    onRemove: viewModel.removePicture
+                )
                     .transition(.opacity)
             }
             if let composerTools, composerTools.isActive {
@@ -350,10 +366,34 @@ public struct ChatDetailView: View {
         .padding(.leading, 16)
         .padding(.trailing, ComposerRowLayout.inset)
         .padding(.vertical, ComposerRowLayout.inset)
+        .background(Color(.systemBackground), in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .glassEffect(ComposerRowLayout.glass, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .readingColumn()
         .padding(.bottom, 4)
+        .onDrop(of: [UTType.image], isTargeted: nil) { providers in
+            guard !viewModel.isReadOnly else { return false }
+            Task {
+                var pictures: [Data?] = []
+                for provider in providers.prefix(8) {
+                    let data: Data? = await withCheckedContinuation { continuation in
+                        provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+                            continuation.resume(returning: data)
+                        }
+                    }
+                    pictures.append(data)
+                }
+                await viewModel.addPictures(pictures)
+            }
+            return true
+        }
+        .background {
+            if turnState == .stop {
+                Button("chat:composer.stop") { Task { await viewModel.stop() } }
+                    .keyboardShortcut(.escape, modifiers: [])
+                    .hidden().accessibilityHidden(true)
+            }
+        }
         // Extends `.snappy`, the curve this app already uses for every other toggle (search mode,
         // the drawer), rather than inventing a new one.
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: isComposerFocused)
@@ -372,7 +412,8 @@ public struct ChatDetailView: View {
         @Bindable var viewModel = viewModel
         return ComposerRowLayout(oneLineHeight: composerLineHeight) {
             ComposerToolsButton(
-                tools: composerTools, attachments: viewModel.attachments, cameraRequest: viewModel.cameraRequest
+                tools: composerTools, attachments: viewModel.attachments,
+                cameraRequest: viewModel.cameraRequest
             ) { items in
                 Task { await viewModel.addPictures(items) }
             }
@@ -381,7 +422,8 @@ public struct ChatDetailView: View {
             .padding(.leading, ComposerRowLayout.inset - 16)
             .composerRole(.leading)
             ComposerTextView(
-                text: $viewModel.composerText, isFocused: $isComposerFocused, placeholder: composerPlaceholder,
+                text: $viewModel.composerText, isFocused: $isComposerFocused,
+                placeholder: composerPlaceholder,
                 tint: toneInk, accessibilityIdentifier: "composerField", onReturnKey: sendFromKeyboard
             ) { pictures in
                 Task { await viewModel.addPictures(pictures.map(Optional.some)) }
@@ -459,24 +501,29 @@ public struct ChatDetailView: View {
             // Stop is neutral whatever the tone, as ChatGPT's: a dark square on a soft tone fill read as a stray
             // blot, and a stop that differs from send says a reply is running. A recording's stop is red.
             TurnButtonLabel(
-                state: state, glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
+                state: state,
+                glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
         // Set on the button itself (an outer `.tint` loses to an inner one): in light the tone's ink with a white
         // arrow (a white arrow on the soft fill is 1.6:1 in yellow, and a dark one read as a blot), in dark the fill
         // and its glyph.
-        .tint(TurnButtonLabel.fill(state, scheme: colorScheme, toneFill: toneFillColor, toneInk: toneInk))
+        .tint(
+            TurnButtonLabel.fill(state, scheme: colorScheme, toneFill: toneFillColor, toneInk: toneInk)
+        )
         .disabled(
             state == .transcribing || (state == .send && !viewModel.canSend)
                 // Offline there is nothing to send to and nothing to transcribe with; Stop and a running recording stay.
-                || (viewModel.isReadOnly && (state == .send || state == .mic)))
+                || (viewModel.isReadOnly && (state == .send || state == .mic))
+        )
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.6).onEnded { _ in
                 guard case .recording = viewModel.recording else { return }
                 recordingDiscardedAt = .now
                 viewModel.cancelRecording()
-            })
+            }
+        )
         .accessibilityActions {
             if state == .recording {
                 Button("common:action.cancel") { viewModel.cancelRecording() }
@@ -497,11 +544,13 @@ public struct ChatDetailView: View {
     private var composerPlaceholder: String {
         if viewModel.isReadOnly {
             return String(
-                localized: "ios:offline.composerHint", defaultValue: "Offline — you can send once you're connected",
+                localized: "ios:offline.composerHint",
+                defaultValue: "Offline — you can send once you're connected",
                 comment: "The composer's placeholder while the computer is away.")
         }
         return String(
-            localized: "ios:chat.composer.placeholder", defaultValue: "Ask Actovia", comment: "The composer's placeholder.")
+            localized: "ios:chat.composer.placeholder", defaultValue: "Ask Actovia",
+            comment: "The composer's placeholder.")
     }
 
     private var turnState: TurnButtonState {
@@ -526,7 +575,8 @@ public struct ChatDetailView: View {
             },
             canChoose: viewModel.canChoose,
             choose: { [viewModel] runId in Task { await viewModel.choose(runId: runId) } },
-            showOtherVersion: { [viewModel] runId in otherVersion = viewModel.otherVersion(runId: runId) },
+            showOtherVersion: { [viewModel] runId in otherVersion = viewModel.otherVersion(runId: runId)
+            },
             canAnswer: viewModel.canAnswer,
             sendAnswer: { [viewModel] text in
                 // Whether it is sent is known now (`canAnswer`); the turn it starts runs on.
@@ -611,8 +661,9 @@ final class ChatScreenObjects {
         serverConfig: ServerConfigStore, offlineStore: OfflineChatStore?
     ) {
         viewModel = ChatDetailViewModel(
-            chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager, serverConfig: serverConfig,
-            offlineStore: offlineStore)
+            chatId: chatId, title: title, apiClient: apiClient, streamManager: streamManager,
+            serverConfig: serverConfig,
+            offlineStore: offlineStore, status: apiClient.status ?? .shared)
         imageLoader = GeneratedImageLoader(apiClient: apiClient)
         computerUseRemote = ComputerUseRemote(apiClient: apiClient)
         researchJobs = DeepResearchStore(apiClient: apiClient)

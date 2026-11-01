@@ -26,7 +26,9 @@ struct GroupComposer: View {
                     .transition(.opacity)
             }
             if !attachments.isEmpty || preparing > 0 {
-                ComposerPictureStrip(pictures: attachments.pictures, preparing: preparing) { attachments.remove($0) }
+                ComposerPictureStrip(pictures: attachments.pictures, preparing: preparing) {
+                    attachments.remove($0)
+                }
                     .transition(.opacity)
             }
             ComposerRowLayout(oneLineHeight: lineHeight) {
@@ -55,9 +57,17 @@ struct GroupComposer: View {
         .padding(.leading, 16)
         .padding(.trailing, ComposerRowLayout.inset)
         .padding(.vertical, ComposerRowLayout.inset)
+        .background(Color(.systemBackground), in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .glassEffect(ComposerRowLayout.glass, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
+        .background {
+            if state == .stop {
+                Button("chat:composer.stop") { Task { await model.interrupt() } }
+                    .keyboardShortcut(.escape, modifiers: [])
+                    .hidden().accessibilityHidden(true)
+            }
+        }
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: model.askUser)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: attachments)
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: text)
@@ -82,15 +92,19 @@ struct GroupComposer: View {
 
     private var placeholder: String {
         model.askUser != nil
-            ? String(localized: "philharmonic:chat.groupChat.askUser.replyPlaceholder", defaultValue: "Reply to PM…")
-            : String(localized: "philharmonic:chat.composer.placeholder", defaultValue: "Message your team…")
+            ? String(
+                localized: "philharmonic:chat.groupChat.askUser.replyPlaceholder",
+                defaultValue: "Reply to PM…")
+            : String(
+                localized: "philharmonic:chat.composer.placeholder", defaultValue: "Message your team…")
     }
 
     private var state: TurnButtonState { model.pmRunning && model.askUser == nil ? .stop : .send }
 
     private var canSend: Bool {
         GroupComposerRule.canSend(
-            hasWords: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, hasPictures: !attachments.isEmpty,
+            hasWords: !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            hasPictures: !attachments.isEmpty,
             preparing: preparing, sending: sending, answering: model.askUser != nil)
     }
 
@@ -103,7 +117,8 @@ struct GroupComposer: View {
             }
         } label: {
             TurnButtonLabel(
-                state: state, glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
+                state: state,
+                glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
@@ -156,7 +171,9 @@ struct FlowLayout: Layout {
         return CGSize(width: proposal.width ?? rows.map(\.width).max() ?? 0, height: height)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    func placeSubviews(
+        in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()
+    ) {
         var y = bounds.minY
         for row in rows(for: subviews, width: bounds.width) {
             var x = bounds.minX
@@ -197,7 +214,9 @@ struct FlowLayout: Layout {
 enum GroupComposerRule {
     /// Answering the PM, pictures do not count: the answer carries none (the picture button is off meanwhile), and
     /// any already added stay for the next message (ISSUE-249 M5).
-    static func canSend(hasWords: Bool, hasPictures: Bool, preparing: Int, sending: Bool, answering: Bool) -> Bool {
+    static func canSend(
+        hasWords: Bool, hasPictures: Bool, preparing: Int, sending: Bool, answering: Bool
+    ) -> Bool {
         if sending { return false }
         if answering { return hasWords }
         return preparing == 0 && (hasWords || hasPictures)

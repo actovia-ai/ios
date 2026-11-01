@@ -1,5 +1,6 @@
 import Models
 import NetworkingKit
+import OdyKit
 import SwiftUI
 
 /// The workforce (the desktop's Workforce page, read-only here): each team and its employees; a tap shows one.
@@ -17,11 +18,14 @@ struct WorkforceView: View {
             } header: {
                 PageHeader(title: Text("philharmonic:chat.conversationList.configNav.workforce")) {
                     if hasLoaded, !employees.isEmpty || !teams.isEmpty {
-                        Text(verbatim: Self.count(employees.count, one: "employee") + " · " + Self.count(teams.count, one: "team"))
+                        Text(
+                            verbatim: Self.count(employees.count, one: "employee") + " · "
+                                + Self.count(teams.count, one: "team"))
                     }
                 }
             }
-            ForEach(teams.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }) { team in
+            ForEach(teams.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }) {
+                team in
                 let members = employees.filter { $0.teamId == team.id }
                 Section {
                     if let description = team.description, !description.isEmpty {
@@ -42,6 +46,7 @@ struct WorkforceView: View {
                 }
             }
         }
+        .readingColumn()
         .overlay {
             if !hasLoaded {
                 ProgressView()
@@ -97,9 +102,12 @@ struct WorkforceView: View {
         case ("team", _):
             String(localized: "philharmonic:workforce.header.teamCount", defaultValue: "\(count) teams")
         case (_, 1):
-            String(localized: "philharmonic:workforce.header.employeeCount", defaultValue: "\(count) employee")
+            String(
+                localized: "philharmonic:workforce.header.employeeCount", defaultValue: "\(count) employee")
         default:
-            String(localized: "philharmonic:workforce.header.employeeCount", defaultValue: "\(count) employees")
+            String(
+                localized: "philharmonic:workforce.header.employeeCount", defaultValue: "\(count) employees"
+            )
         }
     }
 }
@@ -127,14 +135,20 @@ private struct EmployeeDetail: View {
                 }
                 Section {
                     LabeledContent {
-                        Text(verbatim: team.map { ($0.icon.map { "\($0) " } ?? "") + $0.name }
-                            ?? String(localized: "philharmonic:workforce.teamSection.unassignedFallback", defaultValue: "No team"))
+                        Text(
+                            verbatim: team.map { ($0.icon.map { "\($0) " } ?? "") + $0.name }
+                                ?? String(
+                                    localized: "philharmonic:workforce.teamSection.unassignedFallback",
+                                    defaultValue: "No team"))
                     } label: {
                         Text("philharmonic:teams.editor.header.label")
                     }
                     LabeledContent {
-                        Text(verbatim: employee.isCli ? AgentCardWording.cliName(employee.runtime)
-                            : String(localized: "philharmonic:employees.runtime.actovia", defaultValue: "Actovia"))
+                        Text(
+                            verbatim: employee.isCli
+                                ? AgentCardWording.cliName(employee.runtime)
+                                : String(
+                                    localized: "philharmonic:employees.runtime.actovia", defaultValue: "Actovia"))
                     } label: {
                         Text("philharmonic:employees.runtime.label")
                     }

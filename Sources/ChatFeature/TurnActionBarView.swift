@@ -19,7 +19,9 @@ struct TurnActionBarView: View, Equatable {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.readAloud) private var readAloud
 
-    nonisolated static func == (lhs: TurnActionBarView, rhs: TurnActionBarView) -> Bool { lhs.bar == rhs.bar }
+    nonisolated static func == (lhs: TurnActionBarView, rhs: TurnActionBarView) -> Bool {
+        lhs.bar == rhs.bar
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -112,7 +114,9 @@ struct TurnActionBarView: View, Equatable {
     }
 
     private static var copiedAnnouncement: String {
-        String(localized: "common:state.copied", defaultValue: "Copied", comment: "Said aloud after the answer was copied.")
+        String(
+            localized: "common:state.copied", defaultValue: "Copied",
+            comment: "Said aloud after the answer was copied.")
     }
 }
 
@@ -138,7 +142,7 @@ struct GeneratedAtText: View {
     static func short(_ date: Date, now: Date, locale: Locale = .current) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = locale
-        formatter.dateTimeStyle = .named
+        formatter.dateTimeStyle = now.timeIntervalSince(date) < 60 ? .named : .numeric
         formatter.unitsStyle = .abbreviated
         // Under a minute is "now", as on the desktop, not a count of seconds; and a phone whose clock runs behind
         // the computer's would otherwise read a fresh answer as "in 1m".

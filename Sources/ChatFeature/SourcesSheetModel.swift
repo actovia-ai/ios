@@ -26,7 +26,9 @@ struct SourcesSheetModel: Equatable, Identifiable {
             let title = source.title.collapsedWhitespace
             self.title = title.nilIfEmpty ?? siteName ?? host ?? source.link.collapsedWhitespace
             let age = source.age?.collapsedWhitespace ?? ""
-            hostLine = [host, age.isEmpty ? nil : age].compactMap { $0 }.joined(separator: Self.separator).nilIfEmpty
+            hostLine =
+                [host, age.isEmpty ? nil : age].compactMap { $0 }.joined(separator: Self.separator)
+                .nilIfEmpty
             // A snippet is the page's or the search engine's own text, markdown and HTML included: shown as words.
             snippet = MarkdownPlainText.strip(source.snippet).nilIfEmpty
             self.url = url
@@ -61,7 +63,8 @@ struct SourcesSheetModel: Equatable, Identifiable {
 
     /// A chip's number is resolved the way the chip was (`AssistantTurn.citation(forMarker:)`), and its source is
     /// among the cited ones whether the turn found it itself or an earlier turn did (`TurnSources`).
-    init(turn: AssistantTurn, marker: Int? = nil) {
+    init(turn: AssistantTurn, marker: Int? = nil, markers: [Int]? = nil) {
+        let selected = markers ?? marker.map { [$0] }
         let sources = TurnSources(turn: turn, tapped: marker)
         let tapped = marker.flatMap { turn.citation(forMarker: $0) }.map(TurnSources.page)
         var next = 0
@@ -75,9 +78,19 @@ struct SourcesSheetModel: Equatable, Identifiable {
                 return Entry(id: next, source: source, isHighlighted: marked)
             }
         }
-        id = "\(turn.id)#\(marker.map(String.init) ?? "all")"
-        sections = [Section(kind: .cited, entries: entries(sources.cited)), Section(kind: .more, entries: entries(sources.more))]
-            .filter { !$0.entries.isEmpty }
+        id = "\(turn.id)#\(selected?.map(String.init).joined(separator: ",") ?? "all")"
+        if let selected {
+            var pages = Set<String>()
+            let picked = selected.compactMap { turn.citation(forMarker: $0) }.filter {
+                pages.insert(TurnSources.page($0)).inserted
+            }
+            sections = [Section(kind: .cited, entries: entries(picked))].filter { !$0.entries.isEmpty }
+        } else {
+            sections = [
+                Section(kind: .cited, entries: entries(sources.cited)),
+                Section(kind: .more, entries: entries(sources.more)),
+            ].filter { !$0.entries.isEmpty }
+        }
         highlightedId = highlighted
     }
 

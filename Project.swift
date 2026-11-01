@@ -25,7 +25,9 @@ private func moduleTarget(
 let project = Project(
     name: "ActoviaIos",
     options: .options(
-        defaultKnownRegions: ["en", "zh-Hans", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it", "ru"],
+        defaultKnownRegions: [
+            "en", "zh-Hans", "zh-Hant", "zh-HK", "ja", "ko", "fr", "de", "es", "pt-BR", "it", "ru",
+        ],
         developmentRegion: "en"
     ),
     // The composer's glow while recording (Sources/ChatFeature/ComposerVoiceGlow.swift): Jakub Antalik's voice-glow,
@@ -43,7 +45,7 @@ let project = Project(
         base: ["SWIFT_VERSION": "6.0"],
         configurations: [
             .debug(name: .debug, xcconfig: "Configs/Version.xcconfig"),
-            .release(name: .release, xcconfig: "Configs/Version.xcconfig")
+            .release(name: .release, xcconfig: "Configs/Version.xcconfig"),
         ]
     ),
     targets: [
@@ -64,7 +66,7 @@ let project = Project(
                     // picks up from this exact frame and animates it away.
                     "UILaunchScreen": [
                         "UIColorName": "LaunchBackground",
-                        "UIImageName": "LaunchLogo"
+                        "UIImageName": "LaunchLogo",
                     ],
                     // iPad: every orientation, so the app takes part in Split View, Slide Over and Stage Manager
                     // (iPadOS requires all four for multitasking; `UIRequiresFullScreen` is deliberately not set).
@@ -73,10 +75,11 @@ let project = Project(
                         "UIInterfaceOrientationPortrait",
                         "UIInterfaceOrientationPortraitUpsideDown",
                         "UIInterfaceOrientationLandscapeLeft",
-                        "UIInterfaceOrientationLandscapeRight"
+                        "UIInterfaceOrientationLandscapeRight",
                     ],
                     // What the app is showing, published as the current activity so a screenshot is titled after
                     // it (ActoviaActivity and screenTitle in Models).
+                    "UIApplicationSceneManifest": ["UIApplicationSupportsMultipleScenes": true],
                     "NSUserActivityTypes": ["app.yancey.actovia.viewing"],
                     "NSAppTransportSecurity": [
                         "NSAllowsLocalNetworking": true,
@@ -86,9 +89,9 @@ let project = Project(
                         "NSExceptionDomains": [
                             "ts.net": [
                                 "NSIncludesSubdomains": true,
-                                "NSExceptionAllowsInsecureHTTPLoads": true
+                                "NSExceptionAllowsInsecureHTTPLoads": true,
                             ]
-                        ]
+                        ],
                     ],
                     "NSLocalNetworkUsageDescription":
                         "Actovia needs local network access to connect to the Actovia service running on your computer.",
@@ -109,14 +112,14 @@ let project = Project(
                     // actovia:// — the widgets' links (WidgetKitShared.DeepLink).
                     "CFBundleURLTypes": [
                         ["CFBundleURLName": "app.yancey.actovia.link", "CFBundleURLSchemes": ["actovia"]]
-                    ]
+                    ],
                 ]
             ),
             buildableFolders: ["Sources/App", "Resources/App"],
             entitlements: .dictionary([
                 "com.apple.developer.healthkit": .boolean(true),
                 "com.apple.developer.healthkit.access": .array([]),
-                "com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")])
+                "com.apple.security.application-groups": .array([.string("group.app.yancey.actovia")]),
             ]),
             dependencies: [
                 .target(name: "ChatFeature"),
@@ -128,12 +131,12 @@ let project = Project(
                 .target(name: "WidgetUI"),
                 .target(name: "ActoviaWidgets"),
                 .target(name: "NetworkingKit"),
-                .target(name: "MarkdownKit")
+                .target(name: "MarkdownKit"),
             ],
             settings: .settings(
                 base: [
                     "DEVELOPMENT_TEAM": .string(developmentTeam),
-                    "CODE_SIGN_STYLE": "Automatic"
+                    "CODE_SIGN_STYLE": "Automatic",
                 ]
             )
         ),
@@ -154,9 +157,11 @@ let project = Project(
             ]),
             dependencies: [
                 .target(name: "WidgetKitShared"), .target(name: "WidgetUI"), .target(name: "OdyKit"),
-                .sdk(name: "WidgetKit", type: .framework), .sdk(name: "SwiftUI", type: .framework)
+                .sdk(name: "WidgetKit", type: .framework), .sdk(name: "SwiftUI", type: .framework),
             ],
-            settings: .settings(base: ["DEVELOPMENT_TEAM": .string(developmentTeam), "CODE_SIGN_STYLE": "Automatic"])
+            settings: .settings(base: [
+                "DEVELOPMENT_TEAM": .string(developmentTeam), "CODE_SIGN_STYLE": "Automatic",
+            ])
         ),
         .target(
             name: "AppTests",
@@ -204,7 +209,7 @@ let project = Project(
             name: "ChatFeature",
             dependencies: [
                 .target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "MarkdownKit"),
-                .target(name: "OdyKit"), .package(product: "VoiceGlowKit")
+                .target(name: "OdyKit"), .package(product: "VoiceGlowKit"),
             ]
         ),
         .target(
@@ -215,12 +220,14 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/ChatFeatureTests"],
             dependencies: [
-                .target(name: "ChatFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
+                .target(name: "ChatFeature"), .target(name: "NetworkingKit"), .target(name: "Models"),
             ]
         ),
         moduleTarget(
             name: "SettingsFeature",
-            dependencies: [.target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "OdyKit")]
+            dependencies: [
+                .target(name: "NetworkingKit"), .target(name: "Models"), .target(name: "OdyKit"),
+            ]
         ),
         .target(
             name: "SettingsFeatureTests",
@@ -230,14 +237,14 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/SettingsFeatureTests"],
             dependencies: [
-                .target(name: "SettingsFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
+                .target(name: "SettingsFeature"), .target(name: "NetworkingKit"), .target(name: "Models"),
             ]
         ),
         moduleTarget(
             name: "PhilharmonicFeature",
             dependencies: [
                 .target(name: "Models"), .target(name: "NetworkingKit"), .target(name: "ChatFeature"),
-                .target(name: "MarkdownKit"), .target(name: "OdyKit")
+                .target(name: "MarkdownKit"), .target(name: "OdyKit"),
             ]
         ),
         .target(
@@ -248,13 +255,15 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/PhilharmonicFeatureTests"],
             dependencies: [
-                .target(name: "PhilharmonicFeature"), .target(name: "ChatFeature"), .target(name: "NetworkingKit"),
+                .target(name: "PhilharmonicFeature"), .target(name: "ChatFeature"),
+                .target(name: "NetworkingKit"),
                 .target(name: "Models"),
             ]
         ),
         moduleTarget(name: "OdyKit"),
         moduleTarget(name: "WidgetKitShared"),
-        moduleTarget(name: "WidgetUI", dependencies: [.target(name: "WidgetKitShared"), .target(name: "OdyKit")]),
+        moduleTarget(
+            name: "WidgetUI", dependencies: [.target(name: "WidgetKitShared"), .target(name: "OdyKit")]),
         .target(
             name: "WidgetKitSharedTests",
             destinations: appDestinations,
@@ -277,7 +286,7 @@ let project = Project(
             name: "HealthFeature",
             dependencies: [
                 .target(name: "Models"), .target(name: "NetworkingKit"), .target(name: "MarkdownKit"),
-                .target(name: "OdyKit"), .target(name: "WidgetKitShared")
+                .target(name: "OdyKit"), .target(name: "WidgetKitShared"),
             ]
         ),
         .target(
@@ -288,8 +297,8 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/HealthFeatureTests"],
             dependencies: [
-                .target(name: "HealthFeature"), .target(name: "NetworkingKit"), .target(name: "Models")
+                .target(name: "HealthFeature"), .target(name: "NetworkingKit"), .target(name: "Models"),
+            ]
+        ),
             ]
         )
-    ]
-)

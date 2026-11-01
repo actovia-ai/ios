@@ -10,11 +10,14 @@ import UIKit
 /// meter, 0:12 in, and the glow, on a made-up voice) and `transcribing`; `typed` (a line of text, the pill) and
 /// `multiline` (text that wrapped: the field over the buttons' row).
 enum ComposerGalleryState: String {
-    case empty, pictures, preparing, full, reasoning, research, mcp, mic, recording, transcribing, typed, multiline
+        case empty, pictures, preparing, full, reasoning, research, mcp, mic, recording, transcribing,
+            typed, multiline
 
     static var launch: ComposerGalleryState? {
         let arguments = ProcessInfo.processInfo.arguments
-        guard let index = arguments.firstIndex(of: "-MessageGalleryComposer"), index + 1 < arguments.count else {
+            guard let index = arguments.firstIndex(of: "-MessageGalleryComposer"),
+                index + 1 < arguments.count
+            else {
             return nil
         }
         return ComposerGalleryState(rawValue: arguments[index + 1])
@@ -37,7 +40,9 @@ struct ComposerGalleryBar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !attachments.isEmpty {
-                ComposerPictureStrip(pictures: attachments.pictures, preparing: state == .preparing ? 2 : 0) {
+                    ComposerPictureStrip(
+                        pictures: attachments.pictures, preparing: state == .preparing ? 2 : 0
+                    ) {
                     attachments.remove($0)
                 }
             }
@@ -63,20 +68,26 @@ struct ComposerGalleryBar: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .composerRole(.field)
-                Button {} label: {
+                    Button {
+                    } label: {
                     TurnButtonLabel(
                         state: turnState,
-                        glyph: TurnButtonLabel.glyph(turnState, scheme: colorScheme, accentGlyph: accentGlyph))
+                            glyph: TurnButtonLabel.glyph(turnState, scheme: colorScheme, accentGlyph: accentGlyph)
+                        )
                 }
                 .buttonStyle(.glassProminent)
                 .buttonBorderShape(.circle)
-                .tint(TurnButtonLabel.fill(turnState, scheme: colorScheme, toneFill: toneAccent, toneInk: toneInk))
+                    .tint(
+                        TurnButtonLabel.fill(
+                            turnState, scheme: colorScheme, toneFill: toneAccent, toneInk: toneInk)
+                    )
                 .composerRole(.trailing)
             }
         }
         .padding(.leading, 16)
         .padding(.trailing, ComposerRowLayout.inset)
         .padding(.vertical, ComposerRowLayout.inset)
+            .background(Color(.systemBackground), in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .glassEffect(ComposerRowLayout.glass, in: .rect(cornerRadius: ComposerRowLayout.cornerRadius))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
@@ -115,7 +126,8 @@ struct ComposerGalleryBar: View {
         tools.adopt(reasoningLevels: ["off", "low", "medium", "high", "xhigh"])
         if let mcp = Self.mcpTools { tools.adopt(mcpTools: mcp) }
         let colors: [UIColor] = [
-            .systemOrange, .systemIndigo, .systemPink, .systemGreen, .systemYellow, .systemRed, .systemTeal,
+                .systemOrange, .systemIndigo, .systemPink, .systemGreen, .systemYellow, .systemRed,
+                .systemTeal,
             .systemBlue, .systemPurple, .systemBrown,
         ]
         switch state {
@@ -140,7 +152,8 @@ struct ComposerGalleryBar: View {
         colors.enumerated().map { index, color in
             let (width, height): (CGFloat, CGFloat) = index.isMultiple(of: 2) ? (300, 400) : (400, 300)
             return ComposerPicture(
-                mimeType: "image/png", dataURL: MessageGalleryFixtures.picture(color, width: width, height: height),
+                    mimeType: "image/png",
+                    dataURL: MessageGalleryFixtures.picture(color, width: width, height: height),
                 pixelWidth: Int(width), pixelHeight: Int(height))
         }
     }

@@ -7,7 +7,7 @@ public struct APIClient: Sendable {
     /// Where this app's own errors go; also told of every answered request, so waiting reports flush.
     public let reporter: LogReporter?
     /// Told whether the computer answers: online on any HTTP response, offline when no address did.
-    private let status: ConnectionStatus?
+    public let status: ConnectionStatus?
 
     /// The paired computer requests go to right now; nil while none.
     public var activeFingerprint: String? { serverConfig.route.fingerprint }
@@ -44,17 +44,21 @@ public struct APIClient: Sendable {
         try await send(path: path, method: "POST", body: body, timeout: timeout)
     }
 
-    public func post<Body: Encodable>(_ path: String, body: Body, timeout: TimeInterval? = nil) async throws {
+    public func post<Body: Encodable>(_ path: String, body: Body, timeout: TimeInterval? = nil)
+        async throws
+    {
         let _: EmptyResponse = try await send(
             path: path, method: "POST", body: body, decodeResponse: false, timeout: timeout)
     }
 
     public func put<Body: Encodable>(_ path: String, body: Body) async throws {
-        let _: EmptyResponse = try await send(path: path, method: "PUT", body: body, decodeResponse: false)
+        let _: EmptyResponse = try await send(
+            path: path, method: "PUT", body: body, decodeResponse: false)
     }
 
     public func patch<Body: Encodable>(_ path: String, body: Body) async throws {
-        let _: EmptyResponse = try await send(path: path, method: "PATCH", body: body, decodeResponse: false)
+        let _: EmptyResponse = try await send(
+            path: path, method: "PATCH", body: body, decodeResponse: false)
     }
 
     public func put<Body: Encodable, T: Decodable>(_ path: String, body: Body) async throws -> T {
@@ -67,7 +71,8 @@ public struct APIClient: Sendable {
 
     public func delete(_ path: String, query: [URLQueryItem] = []) async throws {
         let _: EmptyResponse = try await send(
-            path: path, query: query, method: "DELETE", body: Optional<String>.none, decodeResponse: false)
+            path: path, query: query, method: "DELETE", body: Optional<String>.none, decodeResponse: false
+        )
     }
 
     private func send<Body: Encodable, T: Decodable>(
@@ -126,11 +131,14 @@ public struct APIClient: Sendable {
         case let http as HTTPError where http.statusCode > 0:
             reporter.noteReachable()
             reporter.report(
-                http.statusCode >= 500 ? .error : .warn, scope: "api", message: "HTTP \(http.statusCode) \(path)",
+                http.statusCode >= 500 ? .error : .warn, scope: "api",
+                message: "HTTP \(http.statusCode) \(path)",
                 attributes: ["status": .int(http.statusCode), "path": .string(path)])
         case let url as URLError:
             if url.code == .cancelled { return }
-            var attributes: [String: LogReporter.Value] = ["path": .string(path), "urlError": .int(url.code.rawValue)]
+            var attributes: [String: LogReporter.Value] = [
+                "path": .string(path), "urlError": .int(url.code.rawValue),
+            ]
             if !attempts.isEmpty { attributes["attempts"] = .string(attempts.joined(separator: ", ")) }
             reporter.report(.warn, scope: "api", message: "No response \(path)", attributes: attributes)
         case let decoding as DecodingError:
@@ -191,16 +199,20 @@ public struct APIClient: Sendable {
     }
 
     /// `host:code@ms` — an address, the URLError it ended in, and how long it took to.
-    private static func attemptNote(url: URL, error: URLError, since started: ContinuousClock.Instant) -> String {
+    private static func attemptNote(url: URL, error: URLError, since started: ContinuousClock.Instant)
+        -> String
+    {
         let elapsed = ContinuousClock.now - started
-        let ms = elapsed.components.seconds * 1000 + elapsed.components.attoseconds / 1_000_000_000_000_000
+        let ms =
+            elapsed.components.seconds * 1000 + elapsed.components.attoseconds / 1_000_000_000_000_000
         // A TLS failure's own reason (`-98xx`, Security's SSL codes) rides along under the stream error key.
         let stream = (error.userInfo["_kCFStreamErrorCodeKey"] as? Int).map { "/\($0)" } ?? ""
         return "\(url.host ?? "?"):\(error.code.rawValue)\(stream)@\(ms)ms"
     }
 
     private func attempt<Body: Encodable, T: Decodable>(
-        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool, timeout: TimeInterval?
+        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool,
+        timeout: TimeInterval?
     ) async throws -> T {
         let bases = route.bases
         var request = URLRequest(url: url)
@@ -251,13 +263,15 @@ public struct APIClient: Sendable {
     /// token that released. One retry, on the same base that just answered (it is reachable,
     /// just locked); any failure along the way surfaces this original error, not a new one.
     private func unlockAndRetry<Body: Encodable, T: Decodable>(
-        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool, timeout: TimeInterval?,
+        url: URL, method: String, body: Body?, route: ServerRoute, decodeResponse: Bool,
+        timeout: TimeInterval?,
         original: HTTPError
     ) async throws -> T {
         guard let connection = serverConfig.connection, await connection.unlockComputer(route: route)
         else { throw original }
         return try await attempt(
-            url: url, method: method, body: body, route: route, decodeResponse: decodeResponse, timeout: timeout)
+            url: url, method: method, body: body, route: route, decodeResponse: decodeResponse,
+            timeout: timeout)
     }
 
     private func makeURL(base: String, path: String, query: [URLQueryItem]) throws -> URL {
@@ -267,8 +281,11 @@ public struct APIClient: Sendable {
             guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
                 throw invalidBaseURL()
             }
-            components.percentEncodedQuery = query
-                .map { "\(Self.encodeQueryComponent($0.name))=\(Self.encodeQueryComponent($0.value ?? ""))" }
+            components.percentEncodedQuery =
+                query
+                .map {
+                    "\(Self.encodeQueryComponent($0.name))=\(Self.encodeQueryComponent($0.value ?? ""))"
+                }
                 .joined(separator: "&")
             guard let withQuery = components.url else { throw invalidBaseURL() }
             url = withQuery
@@ -310,7 +327,9 @@ public struct APIClient: Sendable {
             text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? String(
                 localized: "ios:networking.error.httpStatus", defaultValue: "HTTP \(http.statusCode)",
-                comment: "Fallback error text for a server response without a message. %lld is the HTTP status code.")
+                comment:
+                    "Fallback error text for a server response without a message. %lld is the HTTP status code."
+            )
             : text
         throw HTTPError(statusCode: http.statusCode, code: "UNKNOWN_ERROR", message: message)
     }
@@ -330,7 +349,8 @@ public struct FetchedFile: Decodable, Sendable, Equatable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "A file is not JSON"))
+        throw DecodingError.dataCorrupted(
+            .init(codingPath: decoder.codingPath, debugDescription: "A file is not JSON"))
     }
 }
 
@@ -348,7 +368,9 @@ extension URLError {
     }
 
     /// The request may have reached the computer, but an idempotent one can be repeated.
-    var worthRetryingIdempotent: Bool { requestNeverSent || code == .timedOut || code == .networkConnectionLost }
+    var worthRetryingIdempotent: Bool {
+        requestNeverSent || code == .timedOut || code == .networkConnectionLost
+    }
 }
 
 /// A request that no address answered, with how each one failed: reported, then rethrown as the last URLError.

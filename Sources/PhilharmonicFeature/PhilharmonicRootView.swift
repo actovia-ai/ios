@@ -39,13 +39,15 @@ public struct PhilharmonicRootView: View {
             ContentUnavailableView {
                 Label("philharmonic:container.noGroupSelected.title", systemImage: "person.2")
             } description: {
-                Text("philharmonic:container.noGroupSelected.description")
+                Text("ios:philharmonic.chooseGroup")
             } actions: {
                 Button("philharmonic:container.noGroupSelected.createButton", action: onNewGroup)
                     .buttonStyle(.glassProminent)
             }
         case .group(let id, _):
-            GroupChatView(conversationId: id, api: api, makeStream: { Self.stream(id, api: api) }, onGone: onGroupGone)
+            GroupChatView(
+                conversationId: id, api: api, makeStream: { Self.stream(id, api: api) }, onGone: onGroupGone
+            )
                 .id(id)
         case .dashboard:
             DashboardView(api: api)

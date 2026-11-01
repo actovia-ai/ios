@@ -14,7 +14,8 @@ public struct MarkdownCitation: Equatable, Sendable {
     public let iconFallbackURL: URL?
 
     public init(
-        number: Int, title: String? = nil, host: String? = nil, iconURL: URL? = nil, iconFallbackURL: URL? = nil
+        number: Int, title: String? = nil, host: String? = nil, iconURL: URL? = nil,
+        iconFallbackURL: URL? = nil
     ) {
         self.number = number
         self.title = title
@@ -28,7 +29,8 @@ public struct MarkdownCitation: Equatable, Sendable {
     /// What the chip shows: the site, else the title, else the number (the desktop's `siteName || hostname || title`).
     var chipLabel: String {
         let candidates = [host.map(Self.displayHost), title]
-        let label = candidates.compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let label =
+            candidates.compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
             .first { !$0.isEmpty } ?? String(number)
         guard label.count > Self.maximumLabelLength else { return label }
         return String(label.prefix(Self.maximumLabelLength - 1)) + "\u{2026}"
@@ -36,6 +38,15 @@ public struct MarkdownCitation: Equatable, Sendable {
 
     private static func displayHost(_ host: String) -> String {
         host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
+    }
+
+    static func citeURL(_ numbers: [Int]) -> URL {
+        guard numbers.count > 1 else { return citeURL(numbers[0]) }
+        var components = URLComponents(url: citeURL(numbers[0]), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "sources", value: numbers.map(String.init).joined(separator: ","))
+        ]
+        return components.url!
     }
 
     static func citeURL(_ number: Int) -> URL {

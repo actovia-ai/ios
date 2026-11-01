@@ -10,7 +10,9 @@ public struct MarkdownCitationIcons: Sendable {
     /// Fetches an icon; `nil` when it cannot be had, and the chip draws the default glyph.
     public var load: @Sendable (URL) async -> UIImage?
 
-    public init(cached: @escaping @Sendable (URL) -> UIImage?, load: @escaping @Sendable (URL) async -> UIImage?) {
+    public init(
+        cached: @escaping @Sendable (URL) -> UIImage?, load: @escaping @Sendable (URL) async -> UIImage?
+    ) {
         self.cached = cached
         self.load = load
     }
@@ -48,8 +50,8 @@ struct MarkdownChipAttribute: TextAttribute {
 /// How a chip is drawn: small print on a faint fill, set into running text without taking over from it. The
 /// owner's rule: a citation says where a sentence comes from, it is not what the sentence says.
 enum MarkdownChipStyle {
-    static let fill = Color(uiColor: .quaternarySystemFill)
-    static let ink = Color(uiColor: .secondaryLabel)
+    static let fill = Color(uiColor: .secondarySystemFill)
+    static let ink = Color(uiColor: .label)
     static let weight = Font.Weight.medium
     /// The count after the name ("+2") is lighter than the name.
     static let countWeight = Font.Weight.regular
@@ -66,9 +68,9 @@ enum MarkdownChipStyle {
 /// stands on the line. All of it follows the label's size, which follows the text size setting.
 struct MarkdownChipMetrics: Equatable {
     /// The label at the default text size, in points.
-    static let labelSize: CGFloat = 9
+    static let labelSize: CGFloat = 11
     /// The largest a label gets, as a share of the text it stands in: the capsule stays inside the line.
-    static let largestShare: CGFloat = 0.6
+    static let largestShare: CGFloat = 0.75
     /// The capsule's middle over the baseline, as a share of the text's size. Latin text has its middle at about
     /// 0.31 (between the x-height's and the capitals'), Han text at about 0.38 (its square's): this is between.
     static let centreShare: CGFloat = 0.35
@@ -88,15 +90,20 @@ struct MarkdownChipMetrics: Equatable {
 
     /// `scaledLabelSize` is `labelSize` as the text size setting scales it.
     init(textSize: CGFloat, scaledLabelSize: CGFloat) {
-        let label = min(scaledLabelSize, textSize * Self.largestShare)
+        let centre = textSize * Self.centreShare
+        let textFont = UIFont.systemFont(ofSize: textSize)
+        let heightLimit = min(
+            textFont.lineHeight, 2 * (textFont.ascender - centre), 2 * (centre - textFont.descender))
+        let label = min(
+            scaledLabelSize, textSize * Self.largestShare, heightLimit * Self.labelSize / 20)
         let unit = label / Self.labelSize
         labelSize = label
-        iconSide = 11 * unit
-        capsuleHeight = 15 * unit
-        leading = 2 * unit
+        iconSide = 13 * unit
+        capsuleHeight = 20 * unit
+        leading = 5 * unit
         gap = 3 * unit
-        trailing = 5 * unit
-        centre = textSize * Self.centreShare
+        trailing = 7 * unit
+        self.centre = centre
         labelLift = centre - Self.middle(ofLabel: label)
         iconLift = centre - iconSide / 2
     }
@@ -118,7 +125,8 @@ struct MarkdownChipMetrics: Equatable {
     /// From where a character starts to where its ink does, in `font` (or in the font that has it).
     static func leadingBearing(of character: Character, in font: UIFont) -> CGFloat {
         let text = NSAttributedString(string: String(character), attributes: [.font: font])
-        let ink = CTLineGetBoundsWithOptions(CTLineCreateWithAttributedString(text), .useGlyphPathBounds)
+        let ink = CTLineGetBoundsWithOptions(
+            CTLineCreateWithAttributedString(text), .useGlyphPathBounds)
         return ink.isNull ? 0 : max(ink.minX, 0)
     }
 
@@ -147,7 +155,9 @@ enum MarkdownChipIcon: Equatable {
     static func resolve(
         url: URL?, fallback: URL?, loaded: [URL: UIImage], cached: (URL) -> UIImage?
     ) -> MarkdownChipIcon {
-        guard let url, let image = loaded[url] ?? cached(url) ?? fallback.flatMap(cached) else { return .standIn }
+        guard let url, let image = loaded[url] ?? cached(url) ?? fallback.flatMap(cached) else {
+            return .standIn
+        }
         return .site(image)
     }
 
@@ -170,14 +180,17 @@ struct MarkdownChipRenderer: TextRenderer {
                 guard let chip = run[MarkdownChipAttribute.self] else { continue }
                 overhangs[chip.id] = chip.overhang
                 let bounds = run.typographicBounds.rect
-                let span = spans[chip.id].map { min($0.lowerBound, bounds.minX)...max($0.upperBound, bounds.maxX) }
+                let span = spans[chip.id].map {
+                    min($0.lowerBound, bounds.minX)...max($0.upperBound, bounds.maxX)
+                }
                 spans[chip.id] = span ?? bounds.minX...bounds.maxX
             }
             let middle = line.typographicBounds.origin.y - metrics.centre
             for (id, span) in spans {
                 let capsule = CGRect(
                     x: span.lowerBound, y: middle - metrics.capsuleHeight / 2,
-                    width: span.upperBound - span.lowerBound + (overhangs[id] ?? 0), height: metrics.capsuleHeight)
+                    width: span.upperBound - span.lowerBound + (overhangs[id] ?? 0),
+                    height: metrics.capsuleHeight)
                 context.fill(Capsule().path(in: capsule), with: .color(MarkdownChipStyle.fill))
             }
             context.draw(line)
@@ -234,7 +247,9 @@ struct MarkdownStyledText: View {
 
     /// What stands right after a segment, when it is text.
     private func character(after index: Int) -> Character? {
-        guard styled.segments.indices.contains(index + 1), case .text(let next) = styled.segments[index + 1] else {
+        guard styled.segments.indices.contains(index + 1),
+            case .text(let next) = styled.segments[index + 1]
+        else {
             return nil
         }
         return next.characters.first
@@ -243,9 +258,13 @@ struct MarkdownStyledText: View {
     /// The chip as text: room, icon, room, name, count, room — every piece held to the next, so the chip goes
     /// to the next line whole. The room is inside the chip's runs, so the capsule is exactly as wide as they are
     /// and a chip that opens a line sits on the text's edge.
-    private func chipText(_ chip: MarkdownChip, id: Int, metrics: MarkdownChipMetrics, overhang: CGFloat) -> Text {
+    private func chipText(
+        _ chip: MarkdownChip, id: Int, metrics: MarkdownChipMetrics, overhang: CGFloat
+    ) -> Text {
         let font = MarkdownChipMetrics.font(ofSize: metrics.labelSize)
-        func label(_ string: String, weight: Font.Weight = MarkdownChipStyle.weight, kern: CGFloat = 0) -> AttributedString {
+        func label(_ string: String, weight: Font.Weight = MarkdownChipStyle.weight, kern: CGFloat = 0)
+            -> AttributedString
+        {
             var text = AttributedString(string)
             text.font = .system(size: metrics.labelSize, weight: weight)
             text.foregroundColor = MarkdownChipStyle.ink
@@ -291,7 +310,8 @@ extension MarkdownChipIcon {
     func image(side: CGFloat, scale: CGFloat) -> UIImage {
         let format = UIGraphicsImageRendererFormat()
         format.scale = scale
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { _ in
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image {
+            _ in
             draw(in: CGRect(x: 0, y: 0, width: side, height: side), scale: scale)
         }
     }

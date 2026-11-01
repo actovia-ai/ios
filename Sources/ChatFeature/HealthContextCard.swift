@@ -28,7 +28,9 @@ struct HealthContextCard: View {
                         text: Duration.seconds(sleep.asleepMin * 60).formatted(
                             .units(allowed: [.hours, .minutes], width: .narrow))))
             }
-            if let a = s.activity { out.append(Chip(systemImage: "figure.walk", text: a.steps.formatted())) }
+            if let a = s.activity {
+                out.append(Chip(systemImage: "figure.walk", text: a.steps.formatted()))
+            }
             if let hr = s.recovery?.restingHr, hr.isFinite {
                 let n = Int(hr)
                 out.append(
@@ -62,7 +64,8 @@ struct HealthContextCard: View {
         switch wire {
         case "sleep": String(localized: "ios:health.category.sleep", defaultValue: "Sleep")
         case "activity": String(localized: "ios:health.category.activity", defaultValue: "Activity")
-        case "recovery": String(localized: "ios:health.category.recovery", defaultValue: "Heart & recovery")
+        case "recovery":
+            String(localized: "ios:health.category.recovery", defaultValue: "Heart & recovery")
         case "body": String(localized: "ios:health.category.body", defaultValue: "Body & mood")
         default: wire
         }
@@ -88,7 +91,28 @@ struct HealthContextCard: View {
             .accessibilityValue(accessibilityValue(chips))
             .accessibilityHint(Text(expanded ? Self.collapseHint : Self.expandHint))
             if expanded {
-                Text(verbatim: json).font(.caption2.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
+                let sections = HealthContextDetails.sections(json: json)
+                if sections.isEmpty {
+                    Text("ios:chat.health.noDetails").font(.footnote).foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(sections.enumerated()), id: \.offset) { _, section in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(verbatim: section.title).font(.subheadline.weight(.semibold))
+                                ForEach(Array(section.rows.enumerated()), id: \.offset) { _, row in
+                                    LabeledContent {
+                                        Text(verbatim: row.value).foregroundStyle(.primary).multilineTextAlignment(.trailing)
+                                    } label: {
+                                        Text(verbatim: row.label)
+                                    }
+                                    .font(.footnote)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .textSelection(.enabled)
+                }
             }
         }
     }

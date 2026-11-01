@@ -12,7 +12,9 @@ struct AgentCardView: View {
         let visible = AgentCardWording.visibleSteps(card)
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Text(verbatim: AgentCardWording.cliName(card.runtime) + (card.model.map { " (\($0))" } ?? ""))
+                Text(
+                    verbatim: AgentCardWording.cliName(card.runtime) + (card.model.map { " (\($0))" } ?? "")
+                )
                     .fontWeight(.medium)
                     .layoutPriority(1)
                 Text(verbatim: card.projectName + (card.branch.map { " · \($0)" } ?? ""))
@@ -51,16 +53,21 @@ struct AgentCardView: View {
                 }
                 .font(.caption)
             }
-            let text = (card.blocks + [card.pending]).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            let text = (card.blocks + [card.pending]).filter {
+                !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
                 .joined(separator: "\n\n")
             if !text.isEmpty {
                 MarkdownView(text: text, isStreaming: card.state == .working)
             }
-            ForEach(card.prompts.filter { $0.requestId.map { !model.settledPrompts.contains($0) } ?? false },
-                id: \.requestId) { prompt in
+            ForEach(
+                card.prompts.filter { $0.requestId.map { !model.settledPrompts.contains($0) } ?? false },
+                id: \.requestId
+            ) { prompt in
                 switch prompt {
                 case .permission(_, let tool, let summary, let detail):
-                    PermissionPromptView(card: card, prompt: prompt, tool: tool, summary: summary, detail: detail, model: model)
+                    PermissionPromptView(
+                        card: card, prompt: prompt, tool: tool, summary: summary, detail: detail, model: model)
                 case .question(_, let questions):
                     QuestionPromptView(card: card, prompt: prompt, questions: questions, model: model)
                 case .unknown:
@@ -84,15 +91,18 @@ struct AgentCardView: View {
             }
         }
         .padding(12)
+        .hoverEffect(.highlight)
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(.separator))
     }
 
     /// The catalog picks the plural form; the branch only gives the English its singular.
     private static func moreSteps(_ count: Int) -> String {
         if count == 1 {
-            return String(localized: "philharmonic:agents.card.moreSteps", defaultValue: "\(count) earlier step")
+            return String(
+                localized: "philharmonic:agents.card.moreSteps", defaultValue: "\(count) earlier step")
         }
-        return String(localized: "philharmonic:agents.card.moreSteps", defaultValue: "\(count) earlier steps")
+        return String(
+            localized: "philharmonic:agents.card.moreSteps", defaultValue: "\(count) earlier steps")
     }
 
     @ViewBuilder private var stateText: some View {
@@ -132,7 +142,11 @@ private struct PermissionPromptView: View {
         let name = AgentCardWording.cliName(card.runtime)
         let toolName = AgentCardWording.cliToolLabel(tool)
         VStack(alignment: .leading, spacing: 8) {
-            Text(String(localized: "philharmonic:agents.card.wantsTo", defaultValue: "\(name) wants to use \(toolName)"))
+            Text(
+                String(
+                    localized: "philharmonic:agents.card.wantsTo",
+                    defaultValue: "\(name) wants to use \(toolName)")
+            )
                 .font(.subheadline)
             if !summary.isEmpty {
                 Text(verbatim: summary)
@@ -215,7 +229,9 @@ private struct QuestionPromptView: View {
                         await model.respond(card: card, prompt: prompt, answer: answer)
                         sending = false
                         // A secret lives here only, and not a moment past its send.
-                        for question in questions where question.isSecret == true { other[question.answerKey] = nil }
+                        for question in questions where question.isSecret == true {
+                            other[question.answerKey] = nil
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -264,7 +280,8 @@ private struct QuestionPromptView: View {
     }
 
     @ViewBuilder private func freeText(for question: AgentQuestion) -> some View {
-        let binding = Binding(get: { other[question.answerKey] ?? "" }, set: { other[question.answerKey] = $0 })
+        let binding = Binding(
+            get: { other[question.answerKey] ?? "" }, set: { other[question.answerKey] = $0 })
         if question.isSecret == true {
             SecureField("philharmonic:agents.card.secretPlaceholder", text: binding)
                 .textFieldStyle(.roundedBorder)

@@ -72,8 +72,12 @@ struct MarkdownTextStyle: Equatable {
         let metrics = metrics
         let standing = Font.body.resolve(in: fonts).ctFont
         return (
-            max(CTFontGetAscent(standing) + max(metrics.iconLift, 0), metrics.centre + metrics.capsuleHeight / 2),
-            max(CTFontGetDescent(standing) + max(-metrics.iconLift, 0), metrics.capsuleHeight / 2 - metrics.centre)
+            max(
+                CTFontGetAscent(standing) + max(metrics.iconLift, 0),
+                metrics.centre + metrics.capsuleHeight / 2),
+            max(
+                CTFontGetDescent(standing) + max(-metrics.iconLift, 0),
+                metrics.capsuleHeight / 2 - metrics.centre)
         )
     }
 
@@ -83,7 +87,8 @@ struct MarkdownTextStyle: Equatable {
 
     var paragraph: NSParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = (lineSpacing ?? spec.pointSize * MarkdownLayoutRules.lineGap(for: spec)) * lineSpacingScale
+        paragraph.lineSpacing =
+            (lineSpacing ?? spec.pointSize * MarkdownLayoutRules.lineGap(for: spec)) * lineSpacingScale
         paragraph.alignment = alignment
         paragraph.lineBreakMode = .byWordWrapping
         paragraph.lineBreakStrategy = MarkdownAttributedText.lineBreakStrategy
@@ -136,9 +141,14 @@ enum MarkdownAttributedText {
             switch segment {
             case .text(let text):
                 for run in text.runs {
-                    var string = String(text[run.range].characters).replacingOccurrences(of: "\n", with: lineBreak)
-                    if (run[MarkdownIntentAttribute.self] ?? []).contains(.code) { string = MarkdownInlineCode.set(string) }
-                    result.append(NSAttributedString(string: string, attributes: attributes(of: run, style: style, paragraph: paragraph)))
+                    var string = String(text[run.range].characters).replacingOccurrences(
+                        of: "\n", with: lineBreak)
+                    if (run[MarkdownIntentAttribute.self] ?? []).contains(.code) {
+                        string = MarkdownInlineCode.set(string)
+                    }
+                    result.append(
+                        NSAttributedString(
+                            string: string, attributes: attributes(of: run, style: style, paragraph: paragraph)))
                 }
             case .chip(let chip):
                 let next = character(after: index, in: styled)
@@ -152,13 +162,16 @@ enum MarkdownAttributedText {
                 let attachment = MarkdownChipAttachment(
                     chip: chip,
                     capsule: CGRect(
-                        x: 0, y: metrics.centre - metrics.capsuleHeight / 2, width: width, height: metrics.capsuleHeight))
+                        x: 0, y: metrics.centre - metrics.capsuleHeight / 2, width: width,
+                        height: metrics.capsuleHeight))
                 attachment.image = MarkdownChipImage.image(
                     of: chip, icon: icon(chip), style: style, overhang: overhang)
-                attachment.bounds = CGRect(x: 0, y: -line.descent, width: width, height: line.ascent + line.descent)
+                attachment.bounds = CGRect(
+                    x: 0, y: -line.descent, width: width, height: line.ascent + line.descent)
                 attachment.accessibilityLabel = chip.title
                 var attributes: [NSAttributedString.Key: Any] = [
-                    .font: style.font, .foregroundColor: style.color, .paragraphStyle: paragraph, .link: chip.link,
+                    .font: style.font, .foregroundColor: style.color, .paragraphStyle: paragraph,
+                    .link: chip.link,
                 ]
                 let placed = NSMutableAttributedString(attachment: attachment)
                 placed.addAttributes(attributes, range: NSRange(location: 0, length: placed.length))
@@ -178,8 +191,11 @@ enum MarkdownAttributedText {
     /// Text that is not markdown — what the user wrote — as typed.
     static func plain(_ text: String, style: MarkdownTextStyle) -> NSAttributedString {
         NSAttributedString(
-            string: text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\n", with: lineBreak),
-            attributes: [.font: style.font, .foregroundColor: style.color, .paragraphStyle: style.paragraph])
+            string: text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(
+                of: "\n", with: lineBreak),
+            attributes: [
+                .font: style.font, .foregroundColor: style.color, .paragraphStyle: style.paragraph,
+            ])
     }
 
     private static func attributes(
@@ -216,8 +232,12 @@ enum MarkdownAttributedText {
     }
 
     /// What stands right after a segment, when it is text.
-    private static func character(after index: Int, in styled: MarkdownInlineStyler.Output) -> Character? {
-        guard styled.segments.indices.contains(index + 1), case .text(let next) = styled.segments[index + 1] else {
+    private static func character(after index: Int, in styled: MarkdownInlineStyler.Output)
+        -> Character?
+    {
+        guard styled.segments.indices.contains(index + 1),
+            case .text(let next) = styled.segments[index + 1]
+        else {
             return nil
         }
         return next.characters.first
@@ -260,7 +280,9 @@ enum MarkdownAttributedText {
             }
             guard let first = words.first else { return }
             if afterChip { owesSpace = false }
-            if owesSpace, let last = copied.last, !last.isWhitespace, !first.isWhitespace { copied += " " }
+            if owesSpace, let last = copied.last, !last.isWhitespace, !first.isWhitespace {
+                copied += " "
+            }
             owesSpace = false
             afterChip = false
             copied += words
@@ -278,16 +300,23 @@ enum MarkdownChipImage {
         return cache
     }()
 
-    private static func name(of chip: MarkdownChip, metrics: MarkdownChipMetrics) -> NSAttributedString {
-        let ink = UIColor.secondaryLabel
+    private static func name(of chip: MarkdownChip, metrics: MarkdownChipMetrics)
+        -> NSAttributedString
+    {
+        let ink = UIColor.label
         let name = NSMutableAttributedString(
             string: chip.label,
-            attributes: [.font: MarkdownChipMetrics.font(ofSize: metrics.labelSize), .foregroundColor: ink])
+            attributes: [
+                .font: MarkdownChipMetrics.font(ofSize: metrics.labelSize), .foregroundColor: ink,
+            ])
         if let count = chip.countText {
             name.append(
                 NSAttributedString(
                     string: "\u{00A0}" + count,
-                    attributes: [.font: UIFont.systemFont(ofSize: metrics.labelSize, weight: .regular), .foregroundColor: ink]))
+                    attributes: [
+                        .font: UIFont.systemFont(ofSize: metrics.labelSize, weight: .regular),
+                        .foregroundColor: ink,
+                    ]))
         }
         return name
     }
@@ -318,7 +347,8 @@ enum MarkdownChipImage {
         // The picture is the chip's whole box on its line; the capsule stands in it where the metrics put it.
         let line = style.chipLine
         let side = iconSide(style)
-        let size = CGSize(width: width(of: chip, style: style) - overhang, height: line.ascent + line.descent)
+        let size = CGSize(
+            width: width(of: chip, style: style) - overhang, height: line.ascent + line.descent)
         let middle = line.ascent - metrics.centre
         let capsule = CGRect(
             x: 0, y: middle - metrics.capsuleHeight / 2, width: size.width, height: metrics.capsuleHeight)
@@ -329,7 +359,7 @@ enum MarkdownChipImage {
         var image = UIImage()
         traits.performAsCurrent {
             image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
-                UIColor.quaternarySystemFill.setFill()
+                UIColor.secondarySystemFill.setFill()
                 UIBezierPath(roundedRect: capsule, cornerRadius: capsule.height / 2).fill()
                 icon.draw(
                     in: CGRect(x: metrics.leading, y: middle - side / 2, width: side, height: side),
@@ -346,12 +376,14 @@ enum MarkdownChipImage {
     }
 
     private static func key(
-        of chip: MarkdownChip, icon: MarkdownChipIcon, style: MarkdownTextStyle, metrics: MarkdownChipMetrics,
+        of chip: MarkdownChip, icon: MarkdownChipIcon, style: MarkdownTextStyle,
+        metrics: MarkdownChipMetrics,
         overhang: CGFloat
     ) -> NSString {
         let face: String
         switch icon {
-        case .site(let image): face = "site:\(chip.iconURL?.absoluteString ?? ""):\(image.size.width)x\(image.size.height)"
+        case .site(let image):
+            face = "site:\(chip.iconURL?.absoluteString ?? ""):\(image.size.width)x\(image.size.height)"
         case .standIn: face = "standIn"
         }
         return [

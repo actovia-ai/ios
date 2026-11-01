@@ -31,7 +31,12 @@ public enum RecentTimestamp {
         }
         // Also where a clock-skewed `createdAt` in the future lands: neither "today" nor a small,
         // positive "days ago", so it falls through to a plain date rather than a wrong weekday.
-        return date.formatted(dateStyle(date: .numeric, calendar: calendar, locale: locale))
+        var style = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
+            .month(.abbreviated).day()
+        if calendar.component(.year, from: date) != calendar.component(.year, from: now) {
+            style = style.year()
+        }
+        return date.formatted(style)
     }
 
     /// `Date.FormatStyle`'s own `timeZone` defaults to the system zone regardless of what

@@ -16,7 +16,9 @@ struct ActiveChat: Equatable {
     /// Made here and never shown before: there is no history to read, so the screen does not ask the server for one.
     var isNew = false
 
-    static func new() -> ActiveChat { ActiveChat(id: UUID().uuidString.lowercased(), title: nil, isNew: true) }
+    static func new() -> ActiveChat {
+        ActiveChat(id: UUID().uuidString.lowercased(), title: nil, isNew: true)
+    }
 }
 
 /// The app's root: a drawer whose sidebar lists chats and whose card shows the active chat.
@@ -43,6 +45,8 @@ struct AppShell: View {
     @State private var settings: SettingsRoute? = ShellLaunch.settingsOpen ? .root : nil
     /// Bumped when Settings closes so the sidebar reloads Recents from the (possibly new) server.
     @State private var recentsReloadToken = 0
+    @State private var searchRequest = 0
+    @Environment(\.openWindow) private var openWindow
     /// A question from Health waiting for its new chat to open and send it.
     @State private var pendingAsk: (chatId: String, text: String)?
     /// A widget's prompt for its new chat's composer, never sent by itself.
@@ -56,7 +60,8 @@ struct AppShell: View {
     @State private var composerTools = ComposerTools()
     /// The Philharmonic workspace's groups, made the first time the shell appears.
     @State private var groupList: GroupListViewModel?
-    @State private var philharmonicSelection: PhilharmonicSelection = ShellLaunch.philharmonicSelection
+    @State private var philharmonicSelection: PhilharmonicSelection = ShellLaunch
+        .philharmonicSelection
     @State private var showsNewGroup = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -92,7 +97,11 @@ struct AppShell: View {
                         .accessibilityHidden(!isSidebarOpen)
                 }
             } else {
-                SideDrawer(isOpen: $isSidebarOpen) { sidebar } content: { content }
+                SideDrawer(isOpen: $isSidebarOpen) {
+                    sidebar
+                } content: {
+                    content
+                }
             }
         }
         // Measured behind the layout, from its first width on: `onGeometryChange` on the switching `Group` was never
@@ -106,8 +115,10 @@ struct AppShell: View {
                 }
                 // Upright with a side inset: the camera beside the screen, a folded Duo. An ordinary phone upright
                 // has none (a landscape phone does, but is docked by then).
-                .onChange(of: proxy.size.width < proxy.size.height
-                    && proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing > 0, initial: true) { _, page in
+                .onChange(
+                    of: proxy.size.width < proxy.size.height
+                        && proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing > 0, initial: true
+                ) { _, page in
                     usesSidebarPage = page
                 }
             }
@@ -123,6 +134,21 @@ struct AppShell: View {
             SettingsView(apiClient: apiClient, serverConfig: serverConfig, opensMemory: route == .memory)
                 .horizontalBars()
         }
+        .background {
+            HStack {
+                Button("ios:chat.search.label") {
+                    workspace = .chat
+                    isDockedSidebarShown = true
+                    setSidebar(open: true)
+                    searchRequest += 1
+                }.keyboardShortcut("f", modifiers: .command)
+                Button("common:nav.settings") { settings = .root }
+                    .keyboardShortcut(",", modifiers: .command)
+                Button("ios:app.newWindow") { openWindow(id: "main") }
+                    .keyboardShortcut("n", modifiers: [.command, .shift])
+            }
+            .hidden().accessibilityHidden(true)
+        }
         // The workspace actually changing, once (apple-design §13): `workspace` only changes when
         // a row not already selected is tapped, so re-tapping the active row fires nothing. And
         // today .chat and .health are selectable (AppWorkspace.isAvailable).
@@ -134,12 +160,16 @@ struct AppShell: View {
         .task { await toneModel?.refresh(apiClient: apiClient) }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
+                recentsReloadToken += 1
                 Task { await toneModel?.refresh(apiClient: apiClient) }
                 refreshComposerTools()
             }
         }
         // A chat opening reads the current model's levels and the MCP tools (the desktop may have changed either).
-        .onChange(of: activeChat.id, initial: true) { refreshComposerTools() }
+        .onChange(of: activeChat.id, initial: true) {
+            refreshComposerTools()
+            recentsReloadToken += 1
+        }
         // Back from another workspace the chat screen is made again, and what was sent meanwhile is history now.
         .onChange(of: workspace) { if workspace != .chat { activeChat.isNew = false } }
         // Initial too: a link that arrived behind the unlock or pairing gate is opened once the shell appears.
@@ -158,7 +188,7 @@ struct AppShell: View {
     private var sidebar: some View {
         ChatSidebarView(
             apiClient: apiClient,
-            activeChatId: activeChat.id,
+            activeChatId: workspace == .chat ? activeChat.id : "",
             isOpen: isDocked ? isDockedSidebarShown : isSidebarOpen,
             reloadToken: recentsReloadToken,
             onSelectChat: { id, title in select(id: id, title: title) },
@@ -174,12 +204,22 @@ struct AppShell: View {
                 // change, so it is never recreated by this).
                 if id == activeChat.id { activeChat.title = title }
             },
-            onRecentsChange: { widgetWriter.recentsChanged($0) },
+            onRecentsChange: { chats in
+                widgetWriter.recentsChanged(chats)
+                // The server has persisted this formerly new conversation: Recents owns its selection now.
+                if activeChat.isNew, chats.contains(where: { $0.id == activeChat.id }) {
+                    activeChat.isNew = false
+                }
+            },
             showsRecents: workspace != .philharmonic,
-            offlineStore: offlineStore
+            offlineStore: offlineStore,
+            searchRequest: searchRequest,
+            onNewWindow: { openWindow(id: "main") }
         ) {
             ForEach(AppWorkspace.listed) { option in
-                WorkspaceRow(option: option, isSelected: option == workspace) {
+                WorkspaceRow(
+                    option: option, isSelected: option == workspace && (option != .chat || activeChat.isNew)
+                ) {
                     workspace = option
                     setSidebar(open: false)
                 }
@@ -197,7 +237,9 @@ struct AppShell: View {
         }
     }
 
-    private var philharmonicAPI: PhilharmonicAPI { PhilharmonicAPI(client: apiClient, serverConfig: serverConfig) }
+    private var philharmonicAPI: PhilharmonicAPI {
+        PhilharmonicAPI(client: apiClient, serverConfig: serverConfig)
+    }
 
     private var content: some View {
         NavigationStack {
@@ -221,7 +263,9 @@ struct AppShell: View {
                             Button {
                                 showsNewGroup = true
                             } label: {
-                                Label("philharmonic:chat.conversationList.newGroupMenuItem", systemImage: "square.and.pencil")
+                                Label(
+                                    "philharmonic:chat.conversationList.newGroupMenuItem",
+                                    systemImage: "square.and.pencil")
                             }
                             .keyboardShortcut("n", modifiers: .command)
                             .accessibilityIdentifier("topNewGroup")
@@ -249,7 +293,8 @@ struct AppShell: View {
         switch workspace {
         case .chat:
             ChatDetailView(
-                chatId: activeChat.id, title: activeChat.title, isNew: activeChat.isNew, apiClient: apiClient,
+                chatId: activeChat.id, title: activeChat.title, isNew: activeChat.isNew,
+                apiClient: apiClient,
                 streamManager: streamManager, serverConfig: serverConfig,
                 initialMessage: pendingAsk?.chatId == activeChat.id ? pendingAsk?.text : nil,
                 onInitialMessageSent: { pendingAsk = nil },
@@ -269,7 +314,8 @@ struct AppShell: View {
                 })
         case .health:
             HealthRootView(
-                apiClient: apiClient, onGlanceChange: { widgetWriter.healthChanged($0) }, initialAsk: healthAsk,
+                apiClient: apiClient, onGlanceChange: { widgetWriter.healthChanged($0) },
+                initialAsk: healthAsk,
                 onInitialAskUsed: { healthAsk = nil }
             ) { text in
                 let chat = ActiveChat.new()
@@ -279,7 +325,8 @@ struct AppShell: View {
             }
         case .philharmonic:
             PhilharmonicRootView(
-                api: philharmonicAPI, selection: philharmonicSelection, onNewGroup: { showsNewGroup = true },
+                api: philharmonicAPI, selection: philharmonicSelection,
+                onNewGroup: { showsNewGroup = true },
                 onGroupGone: {
                     philharmonicSelection = .none
                     Task { await groupList?.load() }
@@ -360,7 +407,9 @@ struct AppShell: View {
     /// Shows the sidebar page or the content. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
     private func setSidebar(open: Bool) {
         guard !isDocked else { return }
-        withAnimation(usesSidebarPage ? .easeOut(duration: 0.2) : drawerAnimation(reduceMotion: reduceMotion)) {
+        withAnimation(
+            usesSidebarPage ? .easeOut(duration: 0.2) : drawerAnimation(reduceMotion: reduceMotion)
+        ) {
             isSidebarOpen = open
         }
     }
@@ -368,7 +417,9 @@ struct AppShell: View {
     /// The toolbar's sidebar button: the sidebar page on a narrow screen, the docked column on a wide screen.
     private func toggleSidebar() {
         if isDocked {
-            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy) { isDockedSidebarShown.toggle() }
+            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy) {
+                isDockedSidebarShown.toggle()
+            }
         } else {
             setSidebar(open: !isSidebarOpen)
         }

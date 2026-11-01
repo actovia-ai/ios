@@ -20,9 +20,11 @@ public struct MarkdownView: View {
     @Environment(\.renderDiagnostics) private var diagnostics
     @Environment(\.markdownDrawsAsArriving) private var drawsAsArriving
     @Environment(\.markdownEntityTap) private var entityTap
+    @Environment(\.markdownCitationGroupTap) private var citationGroupTap
 
     public init(
-        text: String, citations: [MarkdownCitation] = [], isStreaming: Bool, onCitationTap: ((Int) -> Void)? = nil
+        text: String, citations: [MarkdownCitation] = [], isStreaming: Bool,
+        onCitationTap: ((Int) -> Void)? = nil
     ) {
         self.text = text
         self.citations = citations
@@ -33,13 +35,15 @@ public struct MarkdownView: View {
     public var body: some View {
         // Closures cannot be compared, so the router's handlers are refreshed here; its action stays the same.
         router.onCitationTap = onCitationTap
+        router.onCitationGroupTap = citationGroupTap
         router.openURL = { [openURL] in openURL($0) }
         router.onEntityTap = entityTap.map { action in { action.perform($0) } }
         model.diagnostics = diagnostics
         let blocks = model.blocks(for: text, isStreaming: isStreaming)
         return MarkdownBlockStack(
             blocks: blocks,
-            citations: Dictionary(citations.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first }),
+            citations: Dictionary(
+                citations.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first }),
             context: MarkdownRenderContext(isArriving: drawsAsArriving),
             arriving: MarkdownRenderContext.arrivingBlock(of: blocks, isStreaming: isStreaming)
         )
@@ -49,6 +53,7 @@ public struct MarkdownView: View {
 }
 
 extension EnvironmentValues {
+    @Entry public var markdownCitationGroupTap: (([Int]) -> Void)? = nil
     /// Every block is drawn as one still being written, by `Text`: what a settled block's text view is held
     /// against, to see that the text stands where it stood. For a gallery; a chat never sets it.
     @Entry public var markdownDrawsAsArriving = false
@@ -88,7 +93,8 @@ struct MarkdownBlockStack: View {
         // list, whose items stand beside their markers, nor where every block is drawn as still being written.
         let segments =
             context.inList || context.isArriving
-            ? blocks.map(MarkdownTextRuns.Segment.block) : MarkdownTextRuns.segments(blocks, arriving: arriving)
+            ? blocks.map(MarkdownTextRuns.Segment.block)
+            : MarkdownTextRuns.segments(blocks, arriving: arriving)
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(segments.enumerated()), id: \.element.id) { index, segment in
                 Group {
@@ -102,7 +108,8 @@ struct MarkdownBlockStack: View {
                 }
                 .padding(
                     .top,
-                    em * MarkdownLayoutRules.gap(
+                    em
+                        * MarkdownLayoutRules.gap(
                         after: index > 0 ? segments[index - 1].lastKind : nil, before: segment.firstKind,
                         inList: context.inList)
                 )

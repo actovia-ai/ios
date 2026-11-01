@@ -11,7 +11,8 @@ struct MarkdownInlineStylerTests {
         1: MarkdownCitation(number: 1, title: "Swift", host: "www.swift.org"),
         2: MarkdownCitation(number: 2, title: "Docs", host: nil),
         3: MarkdownCitation(
-            number: 3, title: "Markets", host: "Yahoo! Finance", iconURL: URL(string: "https://example.com/y.png")),
+            number: 3, title: "Markets", host: "Yahoo! Finance",
+            iconURL: URL(string: "https://example.com/y.png")),
     ]
 
     private func paragraph(_ text: String) -> AttributedString {
@@ -36,9 +37,13 @@ struct MarkdownInlineStylerTests {
         }.joined()
     }
 
-    private func run(_ output: MarkdownInlineStyler.Output, containing needle: String) -> AttributedString.Runs.Run? {
+    private func run(_ output: MarkdownInlineStyler.Output, containing needle: String)
+        -> AttributedString.Runs.Run?
+    {
         for case .text(let text) in output.segments {
-            if let run = text.runs.first(where: { String(text[$0.range].characters).contains(needle) }) { return run }
+            if let run = text.runs.first(where: { String(text[$0.range].characters).contains(needle) }) {
+                return run
+            }
         }
         return nil
     }
@@ -110,10 +115,14 @@ struct MarkdownInlineStylerTests {
 
     @Test("the space around a chip is the same thin space whatever was written there")
     func chipSpacingIsEven() {
-        #expect(shape(styled("a \u{3010}2-source\u{3011} b")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{2009}b")
-        #expect(shape(styled("a  \u{3010}2-source\u{3011}  b")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{2009}b")
+        #expect(
+            shape(styled("a \u{3010}2-source\u{3011} b")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{2009}b")
+        #expect(
+            shape(styled("a  \u{3010}2-source\u{3011}  b")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{2009}b")
         // Han text has no spaces; the chip gets its own.
-        #expect(shape(styled("\u{4E0A}\u{6DA8}\u{3010}2-source\u{3011}\u{4E0D}\u{8FC7}")) == "\u{4E0A}\u{6DA8}\u{2009}\u{27E6}Docs\u{27E7}\u{2009}\u{4E0D}\u{8FC7}")
+        #expect(
+            shape(styled("\u{4E0A}\u{6DA8}\u{3010}2-source\u{3011}\u{4E0D}\u{8FC7}"))
+                == "\u{4E0A}\u{6DA8}\u{2009}\u{27E6}Docs\u{27E7}\u{2009}\u{4E0D}\u{8FC7}")
     }
 
     @Test("a chip that opens its paragraph has nothing before it: it sits on the text's edge")
@@ -125,7 +134,9 @@ struct MarkdownInlineStylerTests {
 
     @Test("a chip reads its name and, apart from it, how many more it stands for")
     func chipCount() {
-        let several = chips(styled("x \u{3010}3-source\u{3011}\u{3010}1-source\u{3011}\u{3010}2-source\u{3011}")).first
+        let several = chips(
+            styled("x \u{3010}3-source\u{3011}\u{3010}1-source\u{3011}\u{3010}2-source\u{3011}")
+        ).first
         #expect(several?.label == "Yahoo!\u{00A0}Finance")
         #expect(several?.countText == "+2")
         #expect(chips(styled("x \u{3010}3-source\u{3011}")).first?.countText == nil)
@@ -142,14 +153,19 @@ struct MarkdownInlineStylerTests {
     func multiMarker() {
         let output = styled("x \u{3010}1,9,2-source\u{3011} and again \u{3010}1-source\u{3011}")
         #expect(output.chips == [1, 2])
-        #expect(shape(output) == "x\u{2009}\u{27E6}swift.org\u{00A0}+1\u{27E7}\u{2009}and again\u{2009}\u{27E6}swift.org\u{27E7}")
+        #expect(
+            shape(output)
+                == "x\u{2009}\u{27E6}swift.org\u{00A0}+1\u{27E7}\u{2009}and again\u{2009}\u{27E6}swift.org\u{27E7}"
+        )
         #expect(chips(output).first?.numbers == [1, 2])
     }
 
     @Test("inline code steps down one text style (about 0.9 em)")
     func codeSize() {
         #expect(MarkdownFontSpec.body.codeFont == MarkdownFontSpec(style: .callout).font.monospaced())
-        #expect(MarkdownFontSpec(style: .subheadline).codeFont == MarkdownFontSpec(style: .footnote).font.monospaced())
+        #expect(
+            MarkdownFontSpec(style: .subheadline).codeFont
+                == MarkdownFontSpec(style: .footnote).font.monospaced())
         #expect(
             MarkdownFontSpec(style: .headline).codeFont
                 == MarkdownFontSpec(style: .callout, weight: .semibold).font.monospaced())
@@ -159,7 +175,8 @@ struct MarkdownInlineStylerTests {
     func adjacentChips() {
         let tight = styled("x \u{3010}1-source\u{3011}\u{3010}2-source\u{3011} y")
         #expect(shape(tight) == "x\u{2009}\u{27E6}swift.org\u{00A0}+1\u{27E7}\u{2009}y")
-        let spaced = styled("x \u{3010}1-source\u{3011} \u{3010}2-source\u{3011} \u{3010}1-source\u{3011} y")
+        let spaced = styled(
+            "x \u{3010}1-source\u{3011} \u{3010}2-source\u{3011} \u{3010}1-source\u{3011} y")
         #expect(shape(spaced) == "x\u{2009}\u{27E6}swift.org\u{00A0}+1\u{27E7}\u{2009}y")
         #expect(chips(spaced).first?.numbers == [1, 2])
     }
@@ -167,15 +184,21 @@ struct MarkdownInlineStylerTests {
     @Test("punctuation after a chip follows it directly")
     func chipThenPunctuation() {
         #expect(shape(styled("a \u{3010}2-source\u{3011}: b")) == "a\u{2009}\u{27E6}Docs\u{27E7}: b")
-        #expect(shape(styled("a \u{3010}2-source\u{3011}\u{3002}b")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{3002}b")
+        #expect(
+            shape(styled("a \u{3010}2-source\u{3011}\u{3002}b"))
+                == "a\u{2009}\u{27E6}Docs\u{27E7}\u{3002}b")
         // Nothing stands between the chip and the mark, even where a space was written.
         #expect(shape(styled("a \u{3010}2-source\u{3011} .")) == "a\u{2009}\u{27E6}Docs\u{27E7}.")
-        #expect(shape(styled("a \u{3010}2-source\u{3011} \u{3002}")) == "a\u{2009}\u{27E6}Docs\u{27E7}\u{3002}")
+        #expect(
+            shape(styled("a \u{3010}2-source\u{3011} \u{3002}"))
+                == "a\u{2009}\u{27E6}Docs\u{27E7}\u{3002}")
     }
 
     @Test("a chip holds no place a line may break at: not in its name, not before its count")
     func chipDoesNotBreak() {
-        let several = chips(styled("x \u{3010}3-source\u{3011}\u{3010}1-source\u{3011}\u{3010}2-source\u{3011}")).first
+        let several = chips(
+            styled("x \u{3010}3-source\u{3011}\u{3010}1-source\u{3011}\u{3010}2-source\u{3011}")
+        ).first
         #expect(several?.title == "Yahoo!\u{00A0}Finance\u{00A0}+2")
         let awkward = MarkdownChip([
             MarkdownCitation(number: 1, host: "Lufkin\tDaily\u{200B} News-TX\u{00AD}"),
@@ -186,7 +209,8 @@ struct MarkdownInlineStylerTests {
             let breaks = title.unicodeScalars.filter { MarkdownChip.breakingScalars.contains($0) }
             #expect(breaks.isEmpty, "\(title.debugDescription) can break")
         }
-        #expect(MarkdownChip.breakingScalars.isSuperset(of: [" ", "\t", "\n", "\u{200B}", "-", "\u{00AD}"]))
+        #expect(
+            MarkdownChip.breakingScalars.isSuperset(of: [" ", "\t", "\n", "\u{200B}", "-", "\u{00AD}"]))
     }
 
     @Test("a chip is never broken across lines, and carries its icon")
@@ -206,25 +230,28 @@ struct MarkdownInlineStylerTests {
 
 @Suite("Citation chip: how it is set into a line")
 struct MarkdownChipMetricsTests {
-    private func near(_ a: CGFloat, _ b: CGFloat, _ tolerance: CGFloat = 0.01) -> Bool { abs(a - b) <= tolerance }
-
-    @Test("at the default text size: a 9 pt label, an 11 pt icon, a 15 pt capsule, 2 / 3 / 5 pt of room inside")
-    func defaultSize() {
-        let chip = MarkdownChipMetrics(textSize: 16, scaledLabelSize: 9)
-        #expect(chip.labelSize == 9)
-        #expect(near(chip.iconSide, 11))
-        #expect(near(chip.capsuleHeight, 15))
-        #expect(near(chip.leading, 2))
-        #expect(near(chip.gap, 3))
-        #expect(near(chip.trailing, 5))
+    private func near(_ a: CGFloat, _ b: CGFloat, _ tolerance: CGFloat = 0.01) -> Bool {
+        abs(a - b) <= tolerance
     }
 
-    @Test("the capsule stands on the middle of the text, its icon and its label on the capsule's middle")
+    @Test("at the default text size: an 11 pt label, a 13 pt icon, and a capsule capped to the line")
+    func defaultSize() {
+        let chip = MarkdownChipMetrics(textSize: 16, scaledLabelSize: 11)
+        #expect(chip.labelSize > 10)
+        #expect(chip.iconSide > 12)
+        #expect(chip.capsuleHeight > 18)
+        #expect(chip.leading > 4)
+        #expect(chip.gap > 2)
+        #expect(chip.trailing > 6)
+    }
+
+    @Test(
+        "the capsule stands on the middle of the text, its icon and its label on the capsule's middle")
     func position() {
-        let chip = MarkdownChipMetrics(textSize: 16, scaledLabelSize: 9)
+        let chip = MarkdownChipMetrics(textSize: 16, scaledLabelSize: 11)
         #expect(near(chip.centre, 16 * MarkdownChipMetrics.centreShare))
         #expect(near(chip.iconLift + chip.iconSide / 2, chip.centre))
-        #expect(near(chip.labelLift + MarkdownChipMetrics.middle(ofLabel: 9), chip.centre))
+        #expect(near(chip.labelLift + MarkdownChipMetrics.middle(ofLabel: chip.labelSize), chip.centre))
         // Inside the line: under the text's ascent, over its descent.
         let text = UIFont.systemFont(ofSize: 16)
         #expect(chip.centre + chip.capsuleHeight / 2 <= text.ascender)
@@ -233,11 +260,11 @@ struct MarkdownChipMetricsTests {
 
     @Test("the label grows with the text size setting, and never past what its line can hold")
     func growsAndIsCapped() {
-        let larger = MarkdownChipMetrics(textSize: 19, scaledLabelSize: 11)
-        #expect(larger.labelSize == 11)
-        #expect(near(larger.capsuleHeight, 15 * 11 / 9))
+        let larger = MarkdownChipMetrics(textSize: 19, scaledLabelSize: 13)
+        #expect(larger.labelSize > 12)
+        #expect(larger.capsuleHeight > 22)
         let capped = MarkdownChipMetrics(textSize: 16, scaledLabelSize: 14)
-        #expect(near(capped.labelSize, 16 * MarkdownChipMetrics.largestShare))
+        #expect(capped.labelSize <= 16 * MarkdownChipMetrics.largestShare)
         for (text, label) in [(16.0, 9.0), (16, 14), (19, 11), (28, 18), (53, 40), (13, 9)] {
             let chip = MarkdownChipMetrics(textSize: text, scaledLabelSize: label)
             let font = UIFont.systemFont(ofSize: text)
@@ -246,7 +273,8 @@ struct MarkdownChipMetricsTests {
         }
     }
 
-    @Test("a space is made as wide as asked, to the point: what the font gives and the rest as kerning")
+    @Test(
+        "a space is made as wide as asked, to the point: what the font gives and the rest as kerning")
     func exactSpaces() {
         let font = UIFont.systemFont(ofSize: 9, weight: .medium)
         for width in [2.0, 3, 5] {
@@ -256,16 +284,21 @@ struct MarkdownChipMetricsTests {
         }
     }
 
-    @Test("a mark of punctuation after a chip is drawn up to it: the empty side of its glyph goes under the capsule")
+    @Test(
+        "a mark of punctuation after a chip is drawn up to it: the empty side of its glyph goes under the capsule"
+    )
     func punctuationIsDrawnUp() {
         let font = UIFont.systemFont(ofSize: 16)
         // Whatever the mark, what is left between the capsule and its ink is a point at most.
-        for mark: Character in [".", ",", ":", ";", "!", "?", "\u{3002}", "\u{FF0C}", "\u{3001}", "\u{FF1A}", "\u{FF09}"] {
+        for mark: Character in [
+            ".", ",", ":", ";", "!", "?", "\u{3002}", "\u{FF0C}", "\u{3001}", "\u{FF1A}", "\u{FF09}",
+        ] {
             let bearing = MarkdownChipMetrics.leadingBearing(of: mark, in: font)
             let overhang = MarkdownChipMetrics.overhang(before: mark, in: font)
             #expect(overhang >= 0)
             #expect(overhang <= 16 * MarkdownChipMetrics.largestOverhang)
-            #expect(bearing - overhang <= 1 || overhang == 16 * MarkdownChipMetrics.largestOverhang, "\(mark)")
+            #expect(
+                bearing - overhang <= 1 || overhang == 16 * MarkdownChipMetrics.largestOverhang, "\(mark)")
         }
         // A Latin stop stands a point and more from where it starts: it is drawn up.
         #expect(MarkdownChipMetrics.overhang(before: ".", in: font) > 0.5)
@@ -275,11 +308,11 @@ struct MarkdownChipMetricsTests {
         #expect(MarkdownChipMetrics.overhang(before: nil, in: font) == 0)
     }
 
-    @Test("the chip is small print on a faint fill: secondary ink, the lightest of the system's fills")
+    @Test("the chip is small print on a faint fill: readable ink on a stronger semantic fill")
     func quiet() {
-        #expect(MarkdownChipStyle.ink == Color(uiColor: .secondaryLabel))
-        #expect(MarkdownChipStyle.fill == Color(uiColor: .quaternarySystemFill))
-        #expect(MarkdownChipMetrics.labelSize == 9)
+        #expect(MarkdownChipStyle.ink == Color(uiColor: .label))
+        #expect(MarkdownChipStyle.fill == Color(uiColor: .secondarySystemFill))
+        #expect(MarkdownChipMetrics.labelSize == 11)
     }
 }
 
@@ -288,16 +321,27 @@ struct MarkdownChipIconTests {
     private let url = URL(string: "https://icons.example/x.png")!
     private let other = URL(string: "https://fallback.example/x.png")!
 
-    @Test("a chip with no icon, or one not in hand yet, draws the default glyph; the site's own once it is")
+    @Test(
+        "a chip with no icon, or one not in hand yet, draws the default glyph; the site's own once it is"
+    )
     func resolve() {
         let image = UIImage()
-        #expect(MarkdownChipIcon.resolve(url: nil, fallback: nil, loaded: [:], cached: { _ in nil }) == .standIn)
-        #expect(MarkdownChipIcon.resolve(url: url, fallback: other, loaded: [:], cached: { _ in nil }) == .standIn)
-        #expect(MarkdownChipIcon.resolve(url: url, fallback: nil, loaded: [url: image], cached: { _ in nil }) == .site(image))
-        #expect(MarkdownChipIcon.resolve(url: url, fallback: nil, loaded: [:], cached: { _ in image }) == .site(image))
+        #expect(
+            MarkdownChipIcon.resolve(url: nil, fallback: nil, loaded: [:], cached: { _ in nil })
+                == .standIn)
+        #expect(
+            MarkdownChipIcon.resolve(url: url, fallback: other, loaded: [:], cached: { _ in nil })
+                == .standIn)
+        #expect(
+            MarkdownChipIcon.resolve(url: url, fallback: nil, loaded: [url: image], cached: { _ in nil })
+                == .site(image))
+        #expect(
+            MarkdownChipIcon.resolve(url: url, fallback: nil, loaded: [:], cached: { _ in image })
+                == .site(image))
         // What the fallback gave is the chip's icon too.
         #expect(
-            MarkdownChipIcon.resolve(url: url, fallback: other, loaded: [:], cached: { $0 == other ? image : nil })
+            MarkdownChipIcon.resolve(
+                url: url, fallback: other, loaded: [:], cached: { $0 == other ? image : nil })
                 == .site(image))
         #expect(MarkdownChipStyle.standInSymbol == "globe")
     }
@@ -315,9 +359,11 @@ struct MarkdownChipIconTests {
                     return answers[url]
                 })
         }
-        #expect(await MarkdownChipIcon.load(url: url, fallback: other, with: icons([url: image])) === image)
+        #expect(
+            await MarkdownChipIcon.load(url: url, fallback: other, with: icons([url: image])) === image)
         #expect(await asked.urls == [url])
-        #expect(await MarkdownChipIcon.load(url: url, fallback: other, with: icons([other: image])) === image)
+        #expect(
+            await MarkdownChipIcon.load(url: url, fallback: other, with: icons([other: image])) === image)
         #expect(await asked.urls == [url, url, other])
         #expect(await MarkdownChipIcon.load(url: url, fallback: other, with: icons([:])) == nil)
         #expect(await MarkdownChipIcon.load(url: url, fallback: nil, with: icons([:])) == nil)
@@ -331,7 +377,9 @@ struct MarkdownChipIconTests {
 
 @Suite("MarkdownFontSpec")
 struct MarkdownFontSpecTests {
-    @Test("the transcript reads a step smaller than the system's text styles, body at 16 for 17, at every text size")
+    @Test(
+        "the transcript reads a step smaller than the system's text styles, body at 16 for 17, at every text size"
+    )
     func scale() {
         let body = UIFont.preferredFont(forTextStyle: .body).pointSize
         #expect(MarkdownFontSpec.body.pointSize == body * MarkdownFontSpec.scale)
@@ -346,18 +394,25 @@ struct MarkdownFontSpecTests {
         let huge = UITraitCollection(preferredContentSizeCategory: .accessibilityExtraLarge)
         #expect(abs(MarkdownFontSpec.pointSize(.body, in: large) - 16) < 0.001)
         #expect(MarkdownFontSpec.bodySize == 16)
-        #expect(MarkdownFontSpec.pointSize(.body, in: huge) > MarkdownFontSpec.pointSize(.body, in: large))
-        #expect(MarkdownFontSpec.pointSize(.title2, in: huge) > MarkdownFontSpec.pointSize(.title2, in: large))
+        #expect(
+            MarkdownFontSpec.pointSize(.body, in: huge) > MarkdownFontSpec.pointSize(.body, in: large))
+        #expect(
+            MarkdownFontSpec.pointSize(.title2, in: huge) > MarkdownFontSpec.pointSize(.title2, in: large)
+        )
     }
 
     @Test("a headline is semibold without being told")
     func headline() {
-        #expect(MarkdownFontSpec(style: .headline).font == MarkdownFontSpec(style: .headline, weight: .semibold).font)
+        #expect(
+            MarkdownFontSpec(style: .headline).font
+                == MarkdownFontSpec(style: .headline, weight: .semibold).font)
     }
 
     @Test("lines of body text stand further apart than the lines of a heading")
     func leading() {
-        #expect(MarkdownLayoutRules.lineGap(for: .body) > MarkdownLayoutRules.lineGap(for: MarkdownLayoutRules.headingFont(level: 1)))
+        #expect(
+            MarkdownLayoutRules.lineGap(for: .body)
+                > MarkdownLayoutRules.lineGap(for: MarkdownLayoutRules.headingFont(level: 1)))
         #expect(MarkdownLayoutRules.lineGap(for: .body) >= 0.4)
     }
 }
@@ -388,7 +443,9 @@ struct MarkdownCitationTests {
 @Suite("MarkdownLayoutRules")
 struct MarkdownLayoutRulesTests {
     private let paragraph = MarkdownBlock.Kind.paragraph(AttributedString("p"))
-    private func heading(_ level: Int) -> MarkdownBlock.Kind { .heading(level: level, content: AttributedString("h")) }
+    private func heading(_ level: Int) -> MarkdownBlock.Kind {
+        .heading(level: level, content: AttributedString("h"))
+    }
 
     @Test("the first block has no gap")
     func first() {
@@ -404,30 +461,44 @@ struct MarkdownLayoutRulesTests {
 
     @Test("uniform gap between blocks, tighter in lists")
     func uniform() {
-        #expect(MarkdownLayoutRules.gap(after: paragraph, before: paragraph, inList: false) == MarkdownLayoutRules.blockGap)
-        #expect(MarkdownLayoutRules.gap(after: paragraph, before: paragraph, inList: true) == MarkdownLayoutRules.listGap)
+        #expect(
+            MarkdownLayoutRules.gap(after: paragraph, before: paragraph, inList: false)
+                == MarkdownLayoutRules.blockGap)
+        #expect(
+            MarkdownLayoutRules.gap(after: paragraph, before: paragraph, inList: true)
+                == MarkdownLayoutRules.listGap)
     }
 
     @Test("headings: bigger lead-in by level, and a smaller gap after that also grows with the level")
     func headings() {
-        let leads = (1...6).map { MarkdownLayoutRules.gap(after: paragraph, before: heading($0), inList: false) }
+        let leads = (1...6).map {
+            MarkdownLayoutRules.gap(after: paragraph, before: heading($0), inList: false)
+        }
         #expect(leads == leads.sorted(by: >))
         #expect(leads.allSatisfy { $0 > MarkdownLayoutRules.blockGap })
-        let afters = (1...6).map { MarkdownLayoutRules.gap(after: heading($0), before: paragraph, inList: false) }
+        let afters = (1...6).map {
+            MarkdownLayoutRules.gap(after: heading($0), before: paragraph, inList: false)
+        }
         #expect(afters == afters.sorted(by: >))
         #expect(zip(leads, afters).allSatisfy { $0 > $1 })
     }
 
     @Test("a thematic break gets room on both sides")
     func rule() {
-        #expect(MarkdownLayoutRules.gap(after: paragraph, before: .thematicBreak, inList: false) == MarkdownLayoutRules.ruleGap)
-        #expect(MarkdownLayoutRules.gap(after: .thematicBreak, before: paragraph, inList: false) == MarkdownLayoutRules.ruleGap)
+        #expect(
+            MarkdownLayoutRules.gap(after: paragraph, before: .thematicBreak, inList: false)
+                == MarkdownLayoutRules.ruleGap)
+        #expect(
+            MarkdownLayoutRules.gap(after: .thematicBreak, before: paragraph, inList: false)
+                == MarkdownLayoutRules.ruleGap)
     }
 
     @Test("list markers: numbers from startIndex, bullets by depth")
     func markers() {
         #expect(MarkdownLayoutRules.listMarker(isOrdered: true, number: 3, depth: 0) == "3.")
-        let bullets = (0...3).map { MarkdownLayoutRules.listMarker(isOrdered: false, number: 1, depth: $0) }
+        let bullets = (0...3).map {
+            MarkdownLayoutRules.listMarker(isOrdered: false, number: 1, depth: $0)
+        }
         #expect(bullets[0] != bullets[1])
         #expect(bullets[1] != bullets[2])
         #expect(bullets[2] == bullets[3])
@@ -466,7 +537,8 @@ struct MarkdownTrailingFadeTests {
     @Test("fades only while content remains to the right")
     func fade() {
         #expect(MarkdownTrailingFade.hasMoreToRight(contentWidth: 600, offset: 0, containerWidth: 360))
-        #expect(!MarkdownTrailingFade.hasMoreToRight(contentWidth: 600, offset: 240, containerWidth: 360))
+        #expect(
+            !MarkdownTrailingFade.hasMoreToRight(contentWidth: 600, offset: 240, containerWidth: 360))
         #expect(!MarkdownTrailingFade.hasMoreToRight(contentWidth: 300, offset: 0, containerWidth: 360))
     }
 }

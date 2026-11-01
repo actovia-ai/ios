@@ -1,3 +1,4 @@
+import Combine
 import Models
 import NetworkingKit
 import SwiftUI
@@ -92,8 +93,10 @@ extension EnvironmentValues {
 }
 
 /// The docked sidebar's surface: a little darker than the page in light, a little lighter in dark.
-private let dockedSidebarSurface = Color(uiColor: UIColor { traits in
-    traits.userInterfaceStyle == .dark ? UIColor(white: 0.085, alpha: 1) : UIColor(white: 0.955, alpha: 1)
+private let dockedSidebarSurface = Color(
+    uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(white: 0.085, alpha: 1) : UIColor(white: 0.955, alpha: 1)
 })
 
 /// One selectable sidebar row — a Recents chat or a search result.
@@ -119,6 +122,8 @@ private struct SidebarRow: ViewModifier {
     let select: () -> Void
     /// A finger down on the row, for the background tint below; `SidebarRowTouchSurface` reports it.
     @State private var isPressed = false
+    @State private var isHovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
@@ -138,13 +143,18 @@ private struct SidebarRow: ViewModifier {
             .listRowBackground(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(
-                        isPressed ? Color.primary.opacity(sidebarPressedFill)
-                            : isSelected ? Color.primary.opacity(sidebarSelectedFill) : Color.clear
+                        isPressed
+                            ? Color.primary.opacity(sidebarPressedFill)
+                            : isSelected
+                                ? Color(uiColor: .tertiarySystemFill)
+                                : isHovered ? Color.primary.opacity(0.04) : Color.clear
                     )
                     .padding(.horizontal, 8)
                     .padding(.vertical, 1)
             )
-            .animation(.easeOut(duration: 0.1), value: isPressed)
+            .onHover { isHovered = $0 }
+            .hoverEffect(.highlight)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.1), value: isPressed)
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
             .accessibilityAction { select() }
     }
@@ -176,6 +186,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     @State private var search: ChatSearchViewModel
     @State private var isSearching = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.scenePhase) private var scenePhase
     /// Bumped exactly once when a chat's delete succeeds and its row leaves the list — a plain
     /// counter so `sensoryFeedback` fires with the row's removal, not when the context menu opens
     /// and not for a failed delete (which raises `list.showsErrorAlert` instead).
@@ -196,6 +207,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
     private let activeChatId: String
     private let isOpen: Bool
     private let reloadToken: Int
+    private let searchRequest: Int
+    private let onNewWindow: (() -> Void)?
     private let onSelectChat: (String, String?) -> Void
     private let onNewChat: () -> Void
     private let onOpenSettings: () -> Void
@@ -224,14 +237,20 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         onRecentsChange: @escaping ([ChatSummary]) -> Void = { _ in },
         showsRecents: Bool = true,
         offlineStore: OfflineChatStore? = nil,
+        searchRequest: Int = 0,
+        onNewWindow: (() -> Void)? = nil,
         @ViewBuilder workspaces: () -> Workspaces,
         @ViewBuilder lists: () -> Lists
     ) {
-        _list = State(initialValue: ChatListViewModel(apiClient: apiClient, offlineStore: offlineStore))
+        _list = State(
+            initialValue: ChatListViewModel(
+                apiClient: apiClient, offlineStore: offlineStore, status: apiClient.status ?? .shared))
         _search = State(initialValue: ChatSearchViewModel(apiClient: apiClient))
         self.activeChatId = activeChatId
         self.isOpen = isOpen
         self.reloadToken = reloadToken
+        self.searchRequest = searchRequest
+        self.onNewWindow = onNewWindow
         self.onSelectChat = onSelectChat
         self.onNewChat = onNewChat
         self.onOpenSettings = onOpenSettings
@@ -282,8 +301,10 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 }
             }
             .listStyle(.plain)
-            .scrollContentBackground(isDocked ? .hidden : .automatic)
-            .background { if isDocked { dockedSurface.ignoresSafeArea() } }
+            .scrollContentBackground(.hidden)
+            .background {
+                (isDocked ? dockedSurface : Color(.secondarySystemBackground)).ignoresSafeArea()
+            }
             // The insets alone do not shrink a row below the list's own minimum, which is what held
             // the rows at 52 pt. 44 pt is the touch-target floor, never less.
             .environment(\.defaultMinListRowHeight, 44)
@@ -324,6 +345,20 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 if let chats { onRecentsChange(chats) }
             }
             .refreshable { await list.load() }
+            .task(id: isOpen && showsRecents && scenePhase == .active) {
+                guard isOpen, showsRecents, scenePhase == .active else { return }
+                while !Task.isCancelled {
+                    await list.refresh()
+                    do { try await Task.sleep(for: .seconds(15)) } catch { return }
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(for: ChatHistoryChanges.notification).receive(
+                    on: RunLoop.main)
+            ) { _ in
+                guard isOpen, showsRecents else { return }
+                Task { await list.refresh() }
+            }
             // The computer is back: read the list again, so the greyed rows and the banner clear.
             .onChange(of: list.canEdit) { _, canEdit in
                 if canEdit { Task { await list.refresh() } }
@@ -400,6 +435,7 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         .fullScreenCover(isPresented: searchPresented(compact: true)) {
             searchSheet
         }
+        .onChange(of: searchRequest) { isSearching = true }
         .sheet(isPresented: searchPresented(compact: false)) {
             searchSheet
                 .presentationSizing(.page)
@@ -412,11 +448,13 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         let available = list.isAvailableOffline(chat.id)
         return HStack(spacing: 8) {
             Text(chat.title.collapsedWhitespace)
+                .font(.callout.weight(chat.id == activeChatId ? .medium : .regular))
                 .lineLimit(1)
             Spacer(minLength: 8)
             if let timestamp = RecentTimestamp.format(chat.createdAt) {
                 Text(timestamp)
-                    .font(.caption)
+                    .font(.caption2)
+                    .monospacedDigit()
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     // Keeps its own width; the title above truncates first.
@@ -433,16 +471,33 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         .modifier(
             SidebarRow(isSelected: chat.id == activeChatId, menu: { menu(for: chat) }) {
                 if available { select(chat.id, chat.title) } else { showsUnavailable = true }
-            })
+            }
+        )
         .accessibilityActions {
             // Offline only Copy Chat ID is left: the others would change something on the computer.
             if list.canEdit {
-                Button { Task { await list.toggleFavorite(chat) } } label: { favoriteActionName(for: chat) }
-                Button { beginRename(chat) } label: { Text("chat:sidebar.history.rename") }
+                Button {
+                    Task { await list.toggleFavorite(chat) }
+                } label: {
+                    favoriteActionName(for: chat)
             }
-            Button { copyID(of: chat) } label: { Text("ios:chat.sidebar.copyConversationId") }
+                Button {
+                    beginRename(chat)
+                } label: {
+                    Text("chat:sidebar.history.rename")
+                }
+            }
+            Button {
+                copyID(of: chat)
+            } label: {
+                Text("ios:chat.sidebar.copyConversationId")
+            }
             if list.canEdit {
-                Button { deletingChat = chat } label: { Text("common:action.delete") }
+                Button {
+                    deletingChat = chat
+                } label: {
+                    Text("common:action.delete")
+                }
             }
         }
         // A leading swipe stars the chat (the desktop's star on hover); the row moves to Favorites at once.
@@ -476,7 +531,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 image: UIImage(systemName: "pencil"), attributes: editAttributes
             ) { _ in beginRename(chat) },
             UIAction(
-                title: String(localized: "ios:chat.sidebar.copyConversationId", defaultValue: "Copy Chat ID"),
+                title: String(
+                    localized: "ios:chat.sidebar.copyConversationId", defaultValue: "Copy Chat ID"),
                 image: UIImage(systemName: "doc.on.doc")
             ) { _ in copyID(of: chat) },
             UIAction(
@@ -572,7 +628,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                 }
                 // Title and snippet are one element to VoiceOver, as the button's label used to be.
                 .accessibilityElement(children: .combine)
-                .modifier(SidebarRow(isSelected: false) { select(result.id, result.title.collapsedWhitespace) })
+                .modifier(
+                    SidebarRow(isSelected: false) { select(result.id, result.title.collapsedWhitespace) })
             }
         }
     }
@@ -712,13 +769,21 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                 }
-                .buttonStyle(.glassProminent)
+                .font(.subheadline.weight(.medium))
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
                 .accessibilityIdentifier("sidebarNewChat")
+                .contextMenu {
+                    if let onNewWindow {
+                        Button("ios:app.newWindow", systemImage: "rectangle.badge.plus", action: onNewWindow)
+                    }
+                }
             }
         }
         .padding(.leading, 8)
         .padding(.trailing, 16)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
+        .background(isDocked ? dockedSurface : Color(.secondarySystemBackground))
         // A bar, like a toolbar: it stops growing where a toolbar would. The sidebar is a fixed
         // fraction of the screen, and "Nouvelle conversation" beside Settings only fits on one line
         // up to about this size; past it the title would truncate. The list itself still scales.
@@ -758,7 +823,8 @@ public struct ChatSidebarView<Workspaces: View, Lists: View>: View {
         VStack(spacing: 0) {
             SidebarSearchBar(
                 text: Binding(get: { search.query }, set: { search.updateQuery($0) }),
-                onCancel: leaveSearch)
+                onCancel: leaveSearch
+            )
                 .padding(.top, 8)
             List {
                 if search.hasQuery {
@@ -813,7 +879,8 @@ private struct SidebarFooterButtonStyle: ButtonStyle {
             .foregroundStyle(.primary)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.primary.opacity(configuration.isPressed ? sidebarPressedFill : 0)))
+                    .fill(Color.primary.opacity(configuration.isPressed ? sidebarPressedFill : 0))
+            )
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
@@ -825,6 +892,8 @@ enum ChatDeleteConfirmation {
         return String(
             localized: "ios:chat.sidebar.deleteMessage",
             defaultValue: "“\(title)” and its messages will be deleted. This can’t be undone.",
-            comment: "Message of the confirmation before deleting a chat from the sidebar's long-press menu. %@ is the chat's title.")
+            comment:
+                "Message of the confirmation before deleting a chat from the sidebar's long-press menu. %@ is the chat's title."
+        )
     }
 }

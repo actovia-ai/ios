@@ -1,5 +1,5 @@
-import NetworkingKit
 import Models
+import NetworkingKit
 import SwiftUI
 import UIKit
 
@@ -53,6 +53,12 @@ struct UnlockGate<Content: View>: View {
                     .background(Color(.systemBackground).ignoresSafeArea())
             }
         }
+        .background {
+            WindowSceneAnchor { scene in
+                cover.scene = scene
+                syncCover()
+            }
+        }
         .task { await unlockIfNeeded() }
         .onChange(of: presentation.needsCoverWindow, initial: true) { syncCover() }
         .onChange(of: isUnlocking) { syncCover() }
@@ -91,7 +97,9 @@ struct UnlockGate<Content: View>: View {
         .screenTitle(
             String(
                 localized: "ios:app.lock.title", defaultValue: "Actovia is locked",
-                comment: "Shown full-screen while the pairing credential is locked behind Face ID. Actovia is the app's name."))
+                comment:
+                    "Shown full-screen while the pairing credential is locked behind Face ID. Actovia is the app's name."
+            ))
     }
 
     /// Shows, refreshes or takes down the cover window to match the gate. Only over mounted content: before the first
@@ -118,7 +126,8 @@ struct UnlockGate<Content: View>: View {
         do {
             try await connection.unlock(
                 reason: String(
-                    localized: "ios:app.lock.biometricReason", defaultValue: "Unlock the connection to your computer",
+                    localized: "ios:app.lock.biometricReason",
+                    defaultValue: "Unlock the connection to your computer",
                     comment: "The reason shown in the Face ID / passcode prompt."))
             // Unpaired meanwhile (revoked, then cleared): nothing left to guard.
             presentation.settle(stillLocked: connection.isPaired && !connection.isUnlocked)
@@ -131,6 +140,7 @@ struct UnlockGate<Content: View>: View {
 /// The lock screen as a window over the whole scene, presentations included (see `UnlockGate`).
 @MainActor
 final class LockCoverWindow {
+    weak var scene: UIWindowScene?
     private var window: UIWindow?
     private var host: UIHostingController<AnyView>?
     /// The window that was key before the cover took it, given back when the cover goes.
@@ -141,9 +151,9 @@ final class LockCoverWindow {
             host.rootView = content
             return
         }
-        guard let scene = Self.scene else { return }
+        guard let scene else { return }
         // A field still editing under the cover would keep its keyboard above the content.
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        scene.windows.forEach { $0.endEditing(true) }
         previousKey = scene.keyWindow
         let host = UIHostingController(rootView: content)
         host.view.backgroundColor = .systemBackground
@@ -167,9 +177,26 @@ final class LockCoverWindow {
 
     var isShowing: Bool { window != nil }
 
-    private static var scene: UIWindowScene? {
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+}
+
+/// Resolves this gate's scene, rather than choosing another foreground window.
+private struct WindowSceneAnchor: UIViewRepresentable {
+    let attach: (UIWindowScene?) -> Void
+
+    func makeUIView(context: Context) -> Anchor {
+        let view = Anchor()
+        view.attach = attach
+        return view
+    }
+
+    func updateUIView(_ view: Anchor, context: Context) { view.attach = attach }
+
+    final class Anchor: UIView {
+        var attach: ((UIWindowScene?) -> Void)?
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            attach?(window?.windowScene)
+        }
     }
 }
 

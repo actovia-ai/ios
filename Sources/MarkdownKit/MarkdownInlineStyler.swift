@@ -28,8 +28,11 @@ struct MarkdownFontSpec: Hashable {
     var pointSize: CGFloat { Self.pointSize(style, in: .current, scaled: scaled) }
 
     /// A style's size at a text size setting: the system's, scaled unless asked not to be.
-    static func pointSize(_ style: Font.TextStyle, in traits: UITraitCollection, scaled: Bool = true) -> CGFloat {
-        UIFont.preferredFont(forTextStyle: uiStyle(style), compatibleWith: traits).pointSize * (scaled ? scale : 1)
+    static func pointSize(_ style: Font.TextStyle, in traits: UITraitCollection, scaled: Bool = true)
+        -> CGFloat
+    {
+        UIFont.preferredFont(forTextStyle: uiStyle(style), compatibleWith: traits).pointSize
+            * (scaled ? scale : 1)
     }
 
     var font: Font { Self.font(style, weight: weight, scaled: scaled) }
@@ -39,7 +42,9 @@ struct MarkdownFontSpec: Hashable {
         return Self.font(Self.smaller(style), weight: codeWeight, scaled: scaled).monospaced()
     }
 
-    private static func font(_ style: Font.TextStyle, weight: Font.Weight?, scaled: Bool = true) -> Font {
+    private static func font(_ style: Font.TextStyle, weight: Font.Weight?, scaled: Bool = true)
+        -> Font
+    {
         let size = pointSize(style, in: .current, scaled: scaled)
         // A headline is semibold by itself, as the system's is.
         return Font.system(size: size, weight: weight ?? (style == .headline ? .semibold : .regular))
@@ -106,11 +111,12 @@ struct MarkdownChip: Equatable {
     var countText: String? { numbers.count > 1 ? "+\(numbers.count - 1)" : nil }
     /// What the chip reads: its label and its count, which holds on to the label.
     var title: String { countText.map { "\(label)\u{00A0}\($0)" } ?? label }
-    var link: URL { MarkdownCitation.citeURL(numbers[0]) }
+    var link: URL { MarkdownCitation.citeURL(numbers) }
 
     /// Where a line may break: white space, a zero-width space, a hyphen, a soft hyphen.
     static let breakingScalars: Set<Unicode.Scalar> = [
-        " ", "\t", "\n", "\r", "\u{2009}", "\u{200A}", "\u{200B}", "\u{2028}", "\u{2029}", "\u{3000}", "-", "\u{2010}",
+        " ", "\t", "\n", "\r", "\u{2009}", "\u{200A}", "\u{200B}", "\u{2028}", "\u{2029}", "\u{3000}",
+        "-", "\u{2010}",
         "\u{00AD}",
     ]
 
@@ -185,7 +191,9 @@ enum MarkdownInlineStyler {
 
     /// `font(for:spec:)` as a text view takes it: the very font `Text` draws with, not one made to look like it
     /// — a face a hair wider moves every word after it.
-    static func uiFont(for intent: InlinePresentationIntent, spec: MarkdownFontSpec, in fonts: Font.Context) -> UIFont {
+    static func uiFont(
+        for intent: InlinePresentationIntent, spec: MarkdownFontSpec, in fonts: Font.Context
+    ) -> UIFont {
         font(for: intent, spec: spec).resolve(in: fonts).ctFont as UIFont
     }
 
@@ -268,7 +276,9 @@ enum MarkdownInlineStyler {
                 }
                 if piece.characters.first?.isPunctuation != true { text.append(gap(spaced: spaced)) }
                 held = AttributedString()
-            } else if dropped, text.characters.last?.isWhitespace ?? segments.isEmpty, piece.characters.first == " " {
+            } else if dropped, text.characters.last?.isWhitespace ?? segments.isEmpty,
+                piece.characters.first == " "
+            {
                 piece.characters.removeFirst()
             }
             dropped = false

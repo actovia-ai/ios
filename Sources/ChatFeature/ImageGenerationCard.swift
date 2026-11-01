@@ -20,7 +20,10 @@ struct ImageGenerationCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if model.frames.count > 1 {
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                    spacing: 8
+                ) {
                     frames
                 }
             } else {
@@ -32,26 +35,32 @@ struct ImageGenerationCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fullScreenCover(item: $viewer) { page in
-            ImageViewer(pages: Self.viewerPages(model, tapped: page) { (loader?.cache ?? .shared).image(for: $0) }, start: page.id)
+            ImageViewer(
+                pages: Self.viewerPages(model, tapped: page) { (loader?.cache ?? .shared).image(for: $0) },
+                start: page.id)
         }
     }
 
     private var frames: some View {
         ForEach(model.frames) { frame in
-            GeneratedImageFrame(model: model, frame: frame) { viewer = ImageViewerPage(id: frame.id, image: $0) }
+            GeneratedImageFrame(model: model, frame: frame) {
+                viewer = ImageViewerPage(id: frame.id, image: $0)
+            }
         }
     }
 
     /// Only images already in memory: the viewer never loads anything of its own. The tapped frame's own image stands
     /// in when memory pressure has evicted it from the cache, so the viewer never opens empty.
     nonisolated static func viewerPages(
-        _ model: ImageGenerationCardModel, tapped: ImageViewerPage, cached: (GeneratedImageSource) -> UIImage?
+        _ model: ImageGenerationCardModel, tapped: ImageViewerPage,
+        cached: (GeneratedImageSource) -> UIImage?
     ) -> [ImageViewerPage.Content] {
         model.frames.compactMap { frame in
             let own = frame.id == tapped.id ? tapped.image : nil
             guard let source = frame.source, let image = cached(source) ?? own else { return nil }
             return ImageViewerPage.Content(
-                id: frame.id, image: image, caption: frame.revisedPrompt ?? (model.prompt.isEmpty ? nil : model.prompt))
+                id: frame.id, image: image,
+                caption: frame.revisedPrompt ?? (model.prompt.isEmpty ? nil : model.prompt))
         }
     }
 }
@@ -132,7 +141,10 @@ struct GeneratedImageFrame: View {
 
     /// The image resolving out of a blur, as on the desktop; only a fade with Reduce Motion.
     private var imageTransition: AnyTransition {
-        reduceMotion ? AnyTransition.opacity : AnyTransition(BlurReplaceTransition(configuration: .downUp)).combined(with: .scale(scale: 1.015))
+        reduceMotion
+            ? AnyTransition.opacity
+            : AnyTransition(BlurReplaceTransition(configuration: .downUp)).combined(
+                with: .scale(scale: 1.015))
     }
 
     private func canvas(_ status: ImageFrameStatus) -> some View {
@@ -145,6 +157,7 @@ struct GeneratedImageFrame: View {
                     Image(uiImage: shown)
                         .resizable()
                         .scaledToFill()
+                        .onDrag { NSItemProvider(object: shown) }
                         .transition(imageTransition)
                 }
             }
@@ -175,7 +188,9 @@ struct GeneratedImageFrame: View {
         .accessibilityElement(children: status == .complete ? .ignore : .contain)
         .accessibilityLabel(accessibilityLabel(status))
         .accessibilityAddTraits(status == .complete ? [.isImage, .isButton] : .isImage)
-        .accessibilityHint(status == .complete ? Text("ios:chat.card.image.openHint") : Text(verbatim: ""))
+            .accessibilityHint(
+                status == .complete ? Text("ios:chat.card.image.openHint") : Text(verbatim: "")
+            )
         .accessibilityAction { if status == .complete { open(shown) } }
     }
 
@@ -246,7 +261,9 @@ struct GeneratedImageFrame: View {
             return alt.map { Text(verbatim: $0) } ?? Text("chat:imageGeneration.generatedImageAlt")
         }
         let text = ImageGenerationText.status(status)
-        return Text(verbatim: model.prompt.isEmpty ? text : ImageGenerationText.labelWithPrompt(status: text, prompt: model.prompt))
+        return Text(
+            verbatim: model.prompt.isEmpty
+                ? text : ImageGenerationText.labelWithPrompt(status: text, prompt: model.prompt))
     }
 
     private func fetch() async {
@@ -272,24 +289,38 @@ enum ImageGenerationText {
     static func status(_ status: ImageFrameStatus) -> String {
         switch status {
         case .generating:
-            String(localized: "chat:imageGeneration.status.generating", defaultValue: "Generating image", comment: "Image card status.")
+            String(
+                localized: "chat:imageGeneration.status.generating", defaultValue: "Generating image",
+                comment: "Image card status.")
         case .refining:
-            String(localized: "chat:imageGeneration.status.refining", defaultValue: "Refining details", comment: "Image card status.")
+            String(
+                localized: "chat:imageGeneration.status.refining", defaultValue: "Refining details",
+                comment: "Image card status.")
         case .complete:
-            String(localized: "chat:imageGeneration.status.complete", defaultValue: "Image ready", comment: "Image card status.")
+            String(
+                localized: "chat:imageGeneration.status.complete", defaultValue: "Image ready",
+                comment: "Image card status.")
         case .error:
-            String(localized: "chat:imageGeneration.status.error", defaultValue: "Generation failed", comment: "Image card status.")
+            String(
+                localized: "chat:imageGeneration.status.error", defaultValue: "Generation failed",
+                comment: "Image card status.")
         case .unavailable, .loadFailed:
-            String(localized: "chat:imageGeneration.status.unavailable", defaultValue: "Image unavailable", comment: "Image card status.")
+            String(
+                localized: "chat:imageGeneration.status.unavailable", defaultValue: "Image unavailable",
+                comment: "Image card status.")
         }
     }
 
     static var generatedImageAlt: String {
-        String(localized: "chat:imageGeneration.generatedImageAlt", defaultValue: "Generated image", comment: "A generated image with no prompt.")
+        String(
+            localized: "chat:imageGeneration.generatedImageAlt", defaultValue: "Generated image",
+            comment: "A generated image with no prompt.")
     }
 
     static func quotedPrompt(_ prompt: String) -> String {
-        String(localized: "chat:imageGeneration.quotedPrompt", defaultValue: "“\(prompt)”", comment: "An image's prompt, quoted.")
+        String(
+            localized: "chat:imageGeneration.quotedPrompt", defaultValue: "“\(prompt)”",
+            comment: "An image's prompt, quoted.")
     }
 
     static func labelWithPrompt(status: String, prompt: String) -> String {
@@ -308,8 +339,12 @@ struct ImageFormingField: View {
     @State private var isVisible = true
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion || !isVisible)) { context in
-            let time = reduceMotion ? 0 : Float(context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 3600))
+        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion || !isVisible)) {
+            context in
+            let time =
+                reduceMotion
+                ? 0
+                : Float(context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 3600))
             field(time: time)
         }
         .onScrollVisibilityChange(threshold: 0.01) { isVisible = $0 }
@@ -325,7 +360,9 @@ struct ImageFormingField: View {
                     content.colorEffect(library.imageForming(.float2(proxy.size), .float(time)))
                 }
         } else {
-            LinearGradient(colors: [.accentColor.opacity(0.22), .accentColor.opacity(0.06)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(
+                colors: [.accentColor.opacity(0.22), .accentColor.opacity(0.06)], startPoint: .top,
+                endPoint: .bottom)
         }
     }
 }
@@ -410,7 +447,8 @@ struct ImageViewer: View {
                     String(
                         localized: "ios:chat.markdown.image", defaultValue: "Image",
                         comment: "VoiceOver label for an image in an answer that has no description."),
-                    enclosingTitle))
+                    enclosingTitle)
+            )
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) { dismiss() }
@@ -435,7 +473,9 @@ struct ImageViewer: View {
             openURL(link)
         } label: {
             Label {
-                Text(verbatim: title.flatMap { $0.isEmpty ? nil : $0 } ?? link.host() ?? link.absoluteString)
+                Text(
+                    verbatim: title.flatMap { $0.isEmpty ? nil : $0 } ?? link.host() ?? link.absoluteString
+                )
                     .lineLimit(2)
             } icon: {
                 Image(systemName: "arrow.up.right.square")
@@ -493,7 +533,9 @@ struct ZoomableImage: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityAddTraits(.isImage)
-            .accessibilityLabel(label.map { Text(verbatim: $0) } ?? Text("chat:imageGeneration.generatedImageAlt"))
+            .accessibilityLabel(
+                label.map { Text(verbatim: $0) } ?? Text("chat:imageGeneration.generatedImageAlt")
+            )
             .accessibilityZoomAction { action in
                 scale = action.direction == .zoomIn ? min(scale + 1, 5) : max(scale - 1, 1)
                 if scale == 1 { offset = .zero }
@@ -538,7 +580,10 @@ enum PageIndexText {
     /// "2 of 9", in the language's own order (ja and ko put the total first).
     static func position(_ index: Int, of total: Int) -> String {
         String(
-            localized: "chat:placeDetail.pagination", defaultValue: "\(index.formatted()) of \(total.formatted())",
-            comment: "Which page of several is shown (a stop of the day, an image in the viewer): its number, then how many.")
+            localized: "chat:placeDetail.pagination",
+            defaultValue: "\(index.formatted()) of \(total.formatted())",
+            comment:
+                "Which page of several is shown (a stop of the day, an image in the viewer): its number, then how many."
+        )
     }
 }

@@ -1,5 +1,6 @@
 import Models
 import NetworkingKit
+import OdyKit
 import SwiftUI
 
 /// The Dashboard (the desktop's Schedule tab): the tasks waiting to run, each of which can be cancelled.
@@ -16,6 +17,12 @@ struct DashboardView: View {
     var body: some View {
         List {
             Section {
+            } header: {
+                PageHeader(title: Text("philharmonic:chat.conversationList.configNav.dashboard")) {
+                    EmptyView()
+                }
+            }
+            Section {
                 let tasks = schedule == .upcoming ? model.upcoming : model.recurring
                 if tasks.isEmpty, model.hasLoaded {
                     if schedule == .upcoming {
@@ -26,13 +33,6 @@ struct DashboardView: View {
                 }
                 ForEach(tasks) { task in
                     taskRow(task)
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                Task { await model.cancel(task) }
-                            } label: {
-                                Label("philharmonic:schedule.taskCard.cancelAria", systemImage: "xmark.circle")
-                            }
-                        }
                 }
             } header: {
                 Picker(selection: $schedule) {
@@ -46,6 +46,7 @@ struct DashboardView: View {
                 .padding(.bottom, 4)
             }
         }
+        .readingColumn()
         .overlay {
             if model.isLoading, !model.hasLoaded { ProgressView() }
         }
@@ -53,7 +54,8 @@ struct DashboardView: View {
         .task { await model.load() }
         .alert(
             Text("philharmonic:schedule.toast.cancelTaskFailed"),
-            isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })
+            isPresented: Binding(
+                get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })
         ) {
             Button("ios:app.alert.ok") { model.errorMessage = nil }
         } message: {
@@ -72,7 +74,10 @@ struct DashboardView: View {
                 }
                 if let last = GroupTime.date(task.lastRunAt) {
                     let time = last.formatted(.dateTime.month().day().hour().minute())
-                    Text(String(localized: "philharmonic:schedule.recurringList.lastRun", defaultValue: "last \(time)"))
+                    Text(
+                        String(
+                            localized: "philharmonic:schedule.recurringList.lastRun", defaultValue: "last \(time)"
+                        ))
                 }
             }
             .font(.footnote)
