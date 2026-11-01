@@ -1,35 +1,27 @@
-name: Release
+name: Release metadata
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  release:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+      - name: Validate the shared app and widget version
+        run: scripts/set-version.sh --check
 
-      - name: Run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          npx --yes
-          -p semantic-release@25
-          -p @semantic-release/changelog@7
-          -p @semantic-release/exec@7
-          -p @semantic-release/git@11
-          semantic-release
+      - name: Test version preparation
+        run: python3 -m unittest discover -s Tests/VersionScriptTests -v

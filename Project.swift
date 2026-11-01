@@ -50,7 +50,7 @@ let project = Project(
     ),
     targets: [
         .target(
-            name: "App",
+            name: "Actovia",
             destinations: appDestinations,
             product: .app,
             productName: "Actovia",
@@ -58,6 +58,8 @@ let project = Project(
             deploymentTargets: deploymentTargets,
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleName": "Actovia",
+                    "CFBundleDisplayName": "Actovia",
                     // Tuist's default plist hardcodes "1.0" / "1"; the version lives in Configs/Version.xcconfig
                     // and the widget extension's CFBundleVersion must equal the app's.
                     "CFBundleShortVersionString": "$(MARKETING_VERSION)",
@@ -164,13 +166,13 @@ let project = Project(
             ])
         ),
         .target(
-            name: "AppTests",
+            name: "ActoviaTests",
             destinations: appDestinations,
             product: .unitTests,
-            bundleId: "\(bundleIdRoot).AppTests",
+            bundleId: "\(bundleIdRoot).ActoviaTests",
             deploymentTargets: deploymentTargets,
             buildableFolders: ["Tests/AppTests"],
-            dependencies: [.target(name: "App")]
+            dependencies: [.target(name: "Actovia")]
         ),
         moduleTarget(name: "Models"),
         .target(

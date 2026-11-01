@@ -31,8 +31,8 @@ The companion uses your computer's models, tools and chat history; keep Actovia 
 ```sh
 tuist install                # a fresh clone: fetches the Swift packages (swift-markdown) first
 tuist generate --no-open
-open ActoviaIos.xcworkspace   # run the App scheme, or from the command line:
-xcodebuild build -workspace ActoviaIos.xcworkspace -scheme App -destination "generic/platform=iOS Simulator"
+open ActoviaIos.xcworkspace   # run the Actovia scheme, or from the command line:
+xcodebuild build -workspace ActoviaIos.xcworkspace -scheme Actovia -destination "generic/platform=iOS Simulator"
 ```
 
 Regenerate after adding or removing files. `DEVELOPMENT_TEAM` in `Project.swift` is the author's; change it for your device.
@@ -43,7 +43,7 @@ Regenerate after adding or removing files. `DEVELOPMENT_TEAM` in `Project.swift`
 xcodebuild test -workspace ActoviaIos.xcworkspace -scheme Models -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
-The schemes are `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature` and `App`. There is no
+The schemes are `Models`, `NetworkingKit`, `ChatFeature`, `SettingsFeature` and `Actovia`. There is no
 `ModelsTests` scheme: each module's scheme runs its test target. `-only-testing:` takes the Swift type name
 (`-only-testing:ChatFeatureTests/ChatListViewModelTests`), not the `@Suite` display string; a wrong name
 matches nothing and still prints `** TEST SUCCEEDED **`, so look for a `Test run with N tests` line.
@@ -77,7 +77,7 @@ matches nothing and still prints `** TEST SUCCEEDED **`, so look for a `Test run
   `OdyKit`, never `NetworkingKit` or the keychain: it reads the snapshot the App writes. Launch the App with
   `-WidgetGallery` (DEBUG) to see every widget on fixtures; [device checklist](docs/widgets-device-checklist.md).
 - `PhilharmonicFeature`: placeholder for a later phase.
-- `App`: composition root, the drawer shell (`SideDrawer`, `AppShell`, and `DrawerPhysics` — the
+- `Actovia` (`Sources/App`): composition root, the drawer shell (`SideDrawer`, `AppShell`, and `DrawerPhysics` — the
   drawer's gesture, spring and rubber-band math, tested on its own) and the workspace list.
 
 ## iPad
@@ -249,15 +249,24 @@ speakers have not reviewed them.
 The version lives once, in `Configs/Version.xcconfig`, and both the app and the
 widget extension read it (the App Store wants them to match):
 
-- `MARKETING_VERSION` — what people see, semver (`1.2.0`).
-- `CURRENT_PROJECT_VERSION` — the build number: the commit count at the release,
-  so it only grows, which is all TestFlight asks.
+- `MARKETING_VERSION` — the App Store release chosen manually. The live first
+  release is `1.0.0`; the next release is `1.1.0`. Use a minor version for a
+  feature release and a patch version for a fix release, rather than bumping
+  the version for each development commit.
+- `CURRENT_PROJECT_VERSION` — a separate, increasing build counter. New
+  TestFlight / App Store uploads advance it even within the same release.
 
-A conventional commit pushed to `main` makes semantic-release run
-`scripts/set-version.sh <version>`, which writes `MARKETING_VERSION` and
-`CURRENT_PROJECT_VERSION` (the commit count at the release); the file is
-written only by that script — don't edit it by hand. The desktop app is
-versioned on its own (semantic-release on `master`); the two need not match.
+Prepare a new distribution with `scripts/set-version.sh 1.1.0`: it sets the
+marketing version and increments the existing build counter. An explicit higher
+build number is accepted as a second argument. Commit the resulting xcconfig
+before archiving with the **Actovia** scheme. Run `scripts/set-version.sh --check`
+to validate without changing it.
+
+Pushes and pull requests only validate the metadata and version script; CI no
+longer bumps versions, creates releases or tags, or changes files. Older `v1.x`
+GitHub tags came from development automation and are not App Store release
+history. The desktop app keeps its independent semantic-release workflow on
+`master`; its version does not determine the iOS version.
 
 ## Current interaction details
 
