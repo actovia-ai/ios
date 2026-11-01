@@ -1,5 +1,7 @@
 # Actovia iOS
 
+![https://apps.apple.com/app/actovia/id6824829679](https://github.com/user-attachments/assets/924100c5-7461-4abe-8f0d-f13d74afeabb)
+
 A native iPhone and iPad client for the desktop Actovia app (the `actovia` checkout at `../actovia`): a ChatGPT-style slide-out drawer lists your
 Recents and searches them, and the chat beside it sends messages, streams the replies and edits the
 AI-provider settings, all through the desktop's local HTTP server. It stores nothing but the server address.
@@ -11,7 +13,7 @@ localization work in its
 [design spec](docs/superpowers/specs/2026-09-19-chatgpt-style-shell-and-i18n-design.md) and
 [implementation plan](docs/superpowers/plans/2026-09-19-chatgpt-style-shell-and-i18n.md).
 
-[Download on the App Store](https://apps.apple.com/app/actovia/id6824829679) · [User guide](https://actovia.yancey.app/docs/iphone) · [Desktop app](https://github.com/actovia-ai/actovia)
+[User guide](https://actovia.yancey.app/docs/iphone) · [Desktop app](https://github.com/actovia-ai/actovia)
 
 The companion uses your computer's models, tools and chat history; keep Actovia running and the computer reachable. Chat, Philharmonic and Health are available workspaces. Health reads Apple Health only after permission and sends selected summaries to your computer and its configured model provider. Remote APNs notifications are not implemented; Group updates stream while the app is active.
 
