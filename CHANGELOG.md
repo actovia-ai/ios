@@ -1,3 +1,11 @@
+## [1.6.2](https://github.com/actovia-ai/ios/compare/v1.6.1...v1.6.2) (2026-11-01)
+
+
+### Bug Fixes
+
+* align sidebar hierarchy and controls with native navigation ([99553c6](https://github.com/actovia-ai/ios/commit/99553c653816cde7b8bcc0556dca345c5a7b857f))
+* refine iPad workspaces, health details and chat navigation ([35ebe1d](https://github.com/actovia-ai/ios/commit/35ebe1dc196f5344a4bb05b2acb3230b1a732873))
+
 ## [1.6.1](https://github.com/actovia-ai/ios/compare/v1.6.0...v1.6.1) (2026-10-30)
 
 
