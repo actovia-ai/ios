@@ -93,6 +93,22 @@ private enum Body {
         #"{"id":"p1","conversationId":"c1","summary":"Ship it","status":"active","createdAt":"t","updatedAt":"t","steps":[]}"#
     static let group = #"{"id":"c1","title":"Atlas","createdAt":"t","updatedAt":"t","lastMessageAt":"t"}"#
 
+    /// The PM's saved question `q1`, as its row reads with `status`.
+    static func question(_ status: String) -> String {
+        #"{"id":"mq","conversationId":"c1","role":"pm","agentId":null,"content":"Which branch?","parts":[{"kind":"question","questionId":"q1","options":["main","dev"],"status":"\#(status)"}],"taskId":null,"roundId":null,"createdAt":"2026-10-23T10:01:00.000Z"}"#
+    }
+
+    /// A group whose last row is the PM's question, as `status` stands.
+    static func asked(_ status: String) -> GroupMockURLProtocol.Route {
+        { method, path, _ in
+            if path.hasSuffix("/plan") { return (200, plan) }
+            if path.hasSuffix("/messages") { return (200, "[\(row("m1")),\(question(status))]") }
+            if path.hasSuffix("/conversations") { return (200, "[\(group)]") }
+            if method == "POST", path.hasSuffix("/respond") { return (200, #"{"success":true}"#) }
+            return (404, "{}")
+        }
+    }
+
     /// A group with one saved row and a plan.
     static let oneRow: GroupMockURLProtocol.Route = { _, path, _ in
         if path.hasSuffix("/plan") { return (200, plan) }
@@ -296,14 +312,70 @@ struct GroupChatViewModelTests {
         await started(vm)
         wire.send(
             .event(.pmStarted(conversationId: "c1")),
-            .event(.askUser(conversationId: "c1", question: "Which?", options: ["A", "B"])))
+            .event(.askUser(conversationId: "c1", question: "Which?", options: ["A", "B"], questionId: nil, messageId: nil)))
         await eventually { vm.askUser != nil }
         #expect(vm.askUser == GroupQuestion(question: "Which?", options: ["A", "B"]))
+        // An unsaved question (an older computer's) lives only in the stream.
         #expect(vm.pmRunning)
         #expect(vm.busy.label(for: BusyAgents.pm) == .orchestrating)
         wire.send(.event(.pmEnded(conversationId: "c1", reason: "done")))
         await eventually { !vm.pmRunning }
         #expect(vm.askUser == nil)
+        vm.stop()
+    }
+
+    @Test("a saved question is answered from the composer with its id, and stays in the transcript, settled")
+    func savedQuestionAnswered() async throws {
+        let vm = makeVM(Body.asked("pending"))
+        await started(vm)
+        #expect(vm.askUser == GroupQuestion(question: "Which branch?", options: ["main", "dev"], questionId: "q1"))
+        #expect(vm.bubbles.last?.question?.status == .pending)
+        // Its round ending (the computer restarted, say) does not take a saved question away.
+        wire.send(.event(.pmEnded(conversationId: "c1", reason: "aborted")))
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(vm.askUser?.questionId == "q1")
+
+        await vm.answer("dev")
+        let seen = try #require(GroupMockURLProtocol.seen.withLock { $0.last })
+        #expect(seen.path == "/api/v1/philharmonic/conversations/c1/respond")
+        let body = try JSONDecoder().decode([String: JSONValue].self, from: seen.body)
+        #expect(body == ["response": .string("dev"), "questionId": .string("q1")])
+        #expect(vm.askUser == nil)
+        #expect(vm.bubbles.last?.question?.status == .answered)
+        #expect(vm.bubbles.last?.text == "Which branch?")
+        vm.stop()
+    }
+
+    @Test("a saved question settled elsewhere leaves the composer")
+    func savedQuestionSettledElsewhere() async {
+        let vm = makeVM(Body.asked("pending"))
+        await started(vm)
+        #expect(vm.askUser != nil)
+        wire.send(
+            .event(.questionSettled(conversationId: "c1", messageId: "mq", questionId: "q1", status: .cancelled)))
+        await eventually { vm.askUser == nil }
+        #expect(vm.bubbles.last?.question?.status == .cancelled)
+        vm.stop()
+    }
+
+    @Test("a question no longer waiting reads the group again and says so")
+    func savedQuestionGone() async {
+        let settled = Flag()
+        let vm = makeVM { method, path, body in
+            if method == "POST", path.hasSuffix("/respond") {
+                settled.isOn = true
+                return (
+                    409,
+                    #"{"type":"error","error":{"code":"QUESTION_NOT_WAITING","message":"This question is no longer waiting for an answer."}}"#
+                )
+            }
+            return Body.asked(settled.isOn ? "expired" : "pending")(method, path, body)
+        }
+        await started(vm)
+        await vm.answer("dev")
+        #expect(vm.askUser == nil)
+        #expect(vm.bubbles.last?.question?.status == .expired)
+        if case .error = vm.notice {} else { Issue.record("expected an error notice") }
         vm.stop()
     }
 
@@ -331,7 +403,7 @@ struct GroupChatViewModelTests {
         await started(vm)
         wire.send(
             .event(.pmStarted(conversationId: "c1")),
-            .event(.askUser(conversationId: "c1", question: "Which?", options: ["A"])))
+            .event(.askUser(conversationId: "c1", question: "Which?", options: ["A"], questionId: nil, messageId: nil)))
         await eventually { vm.askUser != nil }
         // The round ended while the app was away: no pm_ended reaches the phone.
         wire.drop()
@@ -348,7 +420,7 @@ struct GroupChatViewModelTests {
     func messageStartClearsQuestion() async {
         let vm = makeVM(Body.oneRow)
         await started(vm)
-        wire.send(.event(.askUser(conversationId: "c1", question: "Which?", options: ["A"])))
+        wire.send(.event(.askUser(conversationId: "c1", question: "Which?", options: ["A"], questionId: nil, messageId: nil)))
         await eventually { vm.askUser != nil }
         wire.send(.event(.messageStart(conversationId: "c1", messageId: "m2", role: .user, agentId: nil)))
         await eventually { vm.askUser == nil }

@@ -85,9 +85,15 @@ public struct PhilharmonicAPI: Sendable {
     }
 
     /// Answers the PM's question (`ask_user`).
-    public func answerAskUser(conversationId: String, response: String) async throws {
-        struct Body: Encodable { let response: String }
-        try await client.post("\(Self.conversation(conversationId))/respond", body: Body(response: response))
+    /// `questionId` names the question answered (absent: whichever the PM is waiting on, as an older computer reads it).
+    /// A question no longer waiting is a 409 (`QUESTION_NOT_WAITING`).
+    public func answerAskUser(conversationId: String, response: String, questionId: String? = nil) async throws {
+        struct Body: Encodable {
+            let response: String
+            let questionId: String?
+        }
+        try await client.post(
+            "\(Self.conversation(conversationId))/respond", body: Body(response: response, questionId: questionId))
     }
 
     /// The group's active plan; nil when there is none.

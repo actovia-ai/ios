@@ -71,4 +71,20 @@ struct GroupMessageMergeTests {
         #expect(merged.first?.isLive == true)
         #expect(merged.first?.toolRows.count == 2)
     }
+
+    @Test("a saved question carries its status; one settled live wins over the row read earlier")
+    func savedQuestion() {
+        let asked = Fx.row(
+            "mq", role: .pm, content: "Which branch?",
+            parts: [.question(questionId: "q1", options: ["main"], status: .pending)])
+        let answer = Fx.row("ma", role: .user, content: "main", parts: [.answer(questionId: "q1")])
+        let read = GroupMessageMerge.merge(history: [asked, answer], live: [], liveCards: [:])
+        #expect(read.first?.question == BubbleQuestion(questionId: "q1", options: ["main"], status: .pending))
+        #expect(read.last?.question == nil)
+        let settled = GroupMessageMerge.merge(
+            history: [asked], live: [], liveCards: [:], questionStatus: ["q1": .answered])
+        #expect(settled.first?.question?.status == .answered)
+        #expect(GroupChatViewModel.waitingQuestion(in: read)?.questionId == "q1")
+        #expect(GroupChatViewModel.waitingQuestion(in: settled) == nil)
+    }
 }

@@ -17,7 +17,11 @@ public enum PhilharmonicSseEvent: Decodable, Sendable, Equatable {
     case agentCard(conversationId: String, messageId: String, card: AgentCard)
     case memberJoined(conversationId: String, agentId: String)
     case roundStart(conversationId: String, label: String)
-    case askUser(conversationId: String, question: String, options: [String])
+    /// `questionId` names the question for `/respond`; `messageId` is its saved row (absent when it could not be
+    /// saved, or from an older computer).
+    case askUser(conversationId: String, question: String, options: [String], questionId: String?, messageId: String?)
+    /// A saved question was answered, cancelled or expired.
+    case questionSettled(conversationId: String, messageId: String, questionId: String, status: GroupQuestionStatus)
     case conversationError(conversationId: String, error: String)
     case pmStarted(conversationId: String)
     /// `reason`: `done`, `error` or `aborted`.
@@ -32,7 +36,7 @@ public enum PhilharmonicSseEvent: Decodable, Sendable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case type, conversationId, messageId, role, agentId, delta, toolName, phase, result, card, label, question
-        case options, error, reason, taskId, attempt, delayMs, plan, stepId, patch, step, status
+        case options, error, reason, taskId, attempt, delayMs, plan, stepId, patch, step, status, questionId
     }
 
     public init(from decoder: Decoder) throws {
@@ -64,7 +68,13 @@ public enum PhilharmonicSseEvent: Decodable, Sendable, Equatable {
         case "ask_user":
             self = .askUser(
                 conversationId: try id(), question: try string(.question),
-                options: c.lenient([String].self, forKey: .options) ?? [])
+                options: c.lenient([String].self, forKey: .options) ?? [],
+                questionId: c.lenient(String.self, forKey: .questionId),
+                messageId: c.lenient(String.self, forKey: .messageId))
+        case "question_settled":
+            self = .questionSettled(
+                conversationId: try id(), messageId: try string(.messageId), questionId: try string(.questionId),
+                status: try c.decode(GroupQuestionStatus.self, forKey: .status))
         case "conversation_error":
             self = .conversationError(conversationId: try id(), error: try string(.error))
         case "pm_started":

@@ -67,6 +67,13 @@ public struct GroupDecision: Sendable, Equatable {
     }
 }
 
+/// The PM's saved question on its bubble (`GroupMessagePart.question`), with its current status.
+public struct BubbleQuestion: Sendable, Equatable {
+    public let questionId: String
+    public let options: [String]
+    public let status: GroupQuestionStatus
+}
+
 /// One bubble of a group's transcript, saved or live.
 public struct GroupBubble: Sendable, Equatable, Identifiable {
     public let id: String
@@ -84,13 +91,17 @@ public struct GroupBubble: Sendable, Equatable, Identifiable {
     /// Nil for a live bubble: it is "now".
     public let createdAt: String?
     public let isLive: Bool
+    /// The PM's question to the owner, when this bubble is one.
+    public var question: BubbleQuestion? = nil
 }
 
 /// The desktop's `merge-group-messages.ts`: saved rows are the truth; a live bubble shows only while its message is
 /// not saved (a coding agent's step saves its row under the live id as it begins, so it never shows twice).
 public enum GroupMessageMerge {
+    /// `questionStatus`: statuses settled live (`question_settled`) since the rows were read; they win.
     public static func merge(
-        history: [GroupMessage], live: [LiveBubble], liveCards: [String: AgentCard]
+        history: [GroupMessage], live: [LiveBubble], liveCards: [String: AgentCard],
+        questionStatus: [String: GroupQuestionStatus] = [:]
     ) -> [GroupBubble] {
         let saved = Set(history.map(\.id))
         var merged: [GroupBubble] = history.map { row in
@@ -98,6 +109,7 @@ public enum GroupMessageMerge {
             var artifacts: [ArtifactPart] = []
             var decision: GroupDecision?
             var card: AgentCard?
+            var question: BubbleQuestion?
             for part in row.parts {
                 switch part {
                 case .attachment(let name, let url, let contentType):
@@ -108,16 +120,23 @@ public enum GroupMessageMerge {
                     if decision == nil { decision = GroupDecision(delegations: delegations, waits: waits) }
                 case .agentCard(let c):
                     if card == nil { card = c }
-                case .unknown:
+                case .question(let questionId, let options, let status):
+                    if question == nil {
+                        question = BubbleQuestion(
+                            questionId: questionId, options: options, status: questionStatus[questionId] ?? status)
+                    }
+                case .answer, .unknown:
                     break
                 }
             }
-            return GroupBubble(
+            var bubble = GroupBubble(
                 id: row.id, role: row.role, agentId: row.agentId, text: row.content, attachments: attachments,
                 artifacts: artifacts, decision: decision,
                 // The live map carries a card's updates after its row was saved, so it wins over the row.
                 agentCard: liveCards[row.id] ?? card, agentCardSuperseded: false, toolRows: [], roundId: row.roundId,
                 createdAt: row.createdAt, isLive: false)
+            bubble.question = question
+            return bubble
         }
         for bubble in live where !saved.contains(bubble.messageId) {
             merged.append(

@@ -62,10 +62,15 @@ public enum GroupMessagePart: Decodable, Sendable, Equatable {
     /// The PM round's counts, for the collapsed "Decision process" line.
     case decision(delegations: Int, waits: Int)
     case agentCard(AgentCard)
+    /// The PM's question to the owner, saved in the group (a `pm` row): answerable while `pending`.
+    case question(questionId: String, options: [String], status: GroupQuestionStatus)
+    /// On the owner's row: the question it answers.
+    case answer(questionId: String)
     case unknown(kind: String)
 
     private enum CodingKeys: String, CodingKey {
         case kind, name, url, contentType, artifactId, title, code, delegations, waits
+        case questionId, options, status
     }
 
     public init(from decoder: Decoder) throws {
@@ -94,9 +99,30 @@ public enum GroupMessagePart: Decodable, Sendable, Equatable {
                 self = .agentCard(card)
                 return
             }
+        case "question":
+            if let questionId = c.lenient(String.self, forKey: .questionId) {
+                self = .question(
+                    questionId: questionId, options: c.lenient([String].self, forKey: .options) ?? [],
+                    status: c.lenient(GroupQuestionStatus.self, forKey: .status) ?? .unknown)
+                return
+            }
+        case "answer":
+            if let questionId = c.lenient(String.self, forKey: .questionId) {
+                self = .answer(questionId: questionId)
+                return
+            }
         default:
             break
         }
         self = .unknown(kind: kind)
     }
+}
+
+/// How the PM's saved question stands: `pending` until the owner answers it, `cancelled` when its round was stopped,
+/// `expired` after 30 minutes unanswered. A `pending` question whose round is gone (the computer's app restarted) can
+/// still be answered — the answer starts a new PM round.
+public enum GroupQuestionStatus: String, Sendable, Equatable, WireEnum {
+    case pending, answered, cancelled, expired, unknown
+    static let unknownCase = GroupQuestionStatus.unknown
+    public init(from decoder: Decoder) throws { try self.init(wire: decoder) }
 }

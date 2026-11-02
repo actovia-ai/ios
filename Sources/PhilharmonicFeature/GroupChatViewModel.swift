@@ -13,14 +13,17 @@ public enum GroupNotice: Sendable, Equatable {
     case error(String)
 }
 
-/// The PM's question (`ask_user`), waiting for the owner.
+/// The PM's question waiting for the owner: the newest saved one still pending in the transcript, or one the
+/// computer could not save (an `ask_user` without a `messageId`). `questionId` goes back with the answer.
 public struct GroupQuestion: Sendable, Equatable {
     public let question: String
     public let options: [String]
+    public let questionId: String?
 
-    public init(question: String, options: [String]) {
+    public init(question: String, options: [String], questionId: String? = nil) {
         self.question = question
         self.options = options
+        self.questionId = questionId
     }
 }
 
@@ -47,6 +50,10 @@ public final class GroupChatViewModel {
     @ObservationIgnored private var live: [LiveBubble] = []
     @ObservationIgnored private var liveCards: [String: AgentCard] = [:]
     @ObservationIgnored private var rounds: [String: [PmRoundEvent]] = [:]
+    /// Statuses of saved questions settled since the rows were read (`question_settled`, or answered from here).
+    @ObservationIgnored private var questionStatus: [String: GroupQuestionStatus] = [:]
+    /// A question the computer could not save: it has no row to be read from.
+    @ObservationIgnored private var unsavedQuestion: GroupQuestion?
     @ObservationIgnored private var listening: Task<Void, Never>?
 
     public init(conversationId: String, api: PhilharmonicAPI, stream: GroupStream) {
@@ -131,11 +138,20 @@ public final class GroupChatViewModel {
         do { _ = try await api.interrupt(conversationId: conversationId) } catch { await reportChecking(error) }
     }
 
-    /// Answers the PM's question.
+    /// Answers the PM's question. A saved one is answerable after the computer restarted too: the answer starts a new
+    /// PM round there. One no longer waiting (answered elsewhere, stopped, expired) reads the group again to show how
+    /// it ended.
     public func answer(_ text: String) async {
+        let questionId = askUser?.questionId
         do {
-            try await api.answerAskUser(conversationId: conversationId, response: text)
-            askUser = nil
+            try await api.answerAskUser(conversationId: conversationId, response: text, questionId: questionId)
+            if let questionId { questionStatus[questionId] = .answered }
+            unsavedQuestion = nil
+            rebuild()
+        } catch let error as HTTPError where error.statusCode == 409 {
+            unsavedQuestion = nil
+            await readWhole()
+            notice = .error(error.localizedDescription)
         } catch {
             report(error)
         }
@@ -170,7 +186,7 @@ public final class GroupChatViewModel {
             live = []
             liveCards = [:]
             pmRunning = false
-            askUser = nil
+            unsavedQuestion = nil
             busy = BusyAgents()
             await readWhole()
         case .event(let event):
@@ -190,8 +206,9 @@ public final class GroupChatViewModel {
         busy.apply(event)
         switch event {
         case .messageStart(_, let messageId, let role, let agentId):
-            // A new message means the question was answered (perhaps on the computer), as the desktop reads it.
-            askUser = nil
+            // A new message means an unsaved question was answered (perhaps on the computer). A saved one says so
+            // itself (`question_settled`).
+            unsavedQuestion = nil
             if !live.contains(where: { $0.messageId == messageId }) {
                 live.append(LiveBubble(messageId: messageId, role: role, agentId: agentId))
             }
@@ -222,13 +239,17 @@ public final class GroupChatViewModel {
         case .planCreated, .planStepUpdated, .planStepAppended, .planStatusChanged:
             plan = PlanPatching.apply(event, to: plan)
             return
-        case .askUser(_, let question, let options):
-            askUser = GroupQuestion(question: question, options: options)
+        case .askUser(_, let question, let options, let questionId, let messageId):
+            // A saved question is its row, read after its message_end; only an unsaved one lives here.
+            guard messageId == nil else { return }
+            unsavedQuestion = GroupQuestion(question: question, options: options, questionId: questionId)
+        case .questionSettled(_, _, let questionId, let status):
+            questionStatus[questionId] = status
         case .pmStarted:
             pmRunning = true
         case .pmEnded:
             pmRunning = false
-            askUser = nil
+            unsavedQuestion = nil
         case .conversationError(_, let error):
             notice = .error(error)
         default:
@@ -284,7 +305,19 @@ public final class GroupChatViewModel {
     private func rebuild() {
         let saved = Set(history.map(\.id))
         live.removeAll { saved.contains($0.messageId) }
-        bubbles = GroupMessageMerge.merge(history: history, live: live, liveCards: liveCards)
+        bubbles = GroupMessageMerge.merge(
+            history: history, live: live, liveCards: liveCards, questionStatus: questionStatus)
+        askUser = unsavedQuestion ?? Self.waitingQuestion(in: bubbles)
+    }
+
+    /// The newest saved question still pending: the one the composer answers.
+    nonisolated static func waitingQuestion(in bubbles: [GroupBubble]) -> GroupQuestion? {
+        for bubble in bubbles.reversed() {
+            if let question = bubble.question, question.status == .pending {
+                return GroupQuestion(question: bubble.text, options: question.options, questionId: question.questionId)
+            }
+        }
+        return nil
     }
 
     private func gone() {
@@ -315,7 +348,7 @@ extension PhilharmonicSseEvent {
         switch self {
         case .messageStart(let id, _, _, _), .messageDelta(let id, _, _), .messageEnd(let id, _),
             .toolCard(let id, _, _, _, _), .agentCard(let id, _, _), .memberJoined(let id, _), .roundStart(let id, _),
-            .askUser(let id, _, _), .conversationError(let id, _), .pmStarted(let id), .pmEnded(let id, _),
+            .askUser(let id, _, _, _, _), .questionSettled(let id, _, _, _), .conversationError(let id, _), .pmStarted(let id), .pmEnded(let id, _),
             .delegationRetry(let id, _, _, _, _, _), .planCreated(let id, _), .planStepUpdated(let id, _, _),
             .planStepAppended(let id, _), .planStatusChanged(let id, _):
             id

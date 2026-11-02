@@ -58,6 +58,7 @@ struct GroupBubbleView: View {
                             topLeadingRadius: 4, bottomLeadingRadius: 18, bottomTrailingRadius: 18,
                             topTrailingRadius: 18, style: .continuous))
                 }
+                if let question = bubble.question { QuestionStatusLine(status: question.status) }
                 ForEach(bubble.artifacts, id: \.artifactId) { part in
                     ArtifactCard(
                         artifact: ArtifactResult(
@@ -175,5 +176,33 @@ enum GroupTime {
         let words = (name ?? "").split(whereSeparator: \.isWhitespace).prefix(2)
         let letters = words.compactMap(\.first).map { String($0).uppercased() }.joined()
         return letters.isEmpty ? "·" : letters
+    }
+}
+
+/// Under the PM's saved question: waiting for the answer (given in the composer), or how it ended — the desktop's
+/// question card says the same.
+struct QuestionStatusLine: View {
+    let status: GroupQuestionStatus
+
+    var body: some View {
+        HStack(spacing: 5) {
+            switch status {
+            case .pending:
+                Image(systemName: "questionmark.circle")
+                Text("ios:philharmonic.question.waiting")
+            case .answered:
+                Image(systemName: "checkmark")
+                Text("ios:philharmonic.question.answered")
+            case .cancelled:
+                Text("ios:philharmonic.question.cancelled")
+            case .expired:
+                Text("ios:philharmonic.question.expired")
+            case .unknown:
+                EmptyView()
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 4)
     }
 }

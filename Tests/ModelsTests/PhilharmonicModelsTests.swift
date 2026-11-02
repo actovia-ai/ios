@@ -39,7 +39,12 @@ struct PhilharmonicModelsTests {
         }
         #expect(events[5] == .memberJoined(conversationId: "c1", agentId: "a2"))
         #expect(events[6] == .roundStart(conversationId: "c1", label: "[Scheduled] nightly"))
-        #expect(events[7] == .askUser(conversationId: "c1", question: "Which colour?", options: ["Red", "Blue"]))
+        // An older computer's question: no id, no saved row.
+        #expect(
+            events[7]
+                == .askUser(
+                    conversationId: "c1", question: "Which colour?", options: ["Red", "Blue"], questionId: nil,
+                    messageId: nil))
         #expect(events[8] == .conversationError(conversationId: "c1", error: "No key"))
         #expect(events[9] == .pmStarted(conversationId: "c1"))
         #expect(events[10] == .pmEnded(conversationId: "c1", reason: "done"))
@@ -66,6 +71,40 @@ struct PhilharmonicModelsTests {
         #expect(events[15] == .planStatusChanged(conversationId: "c1", status: .completed))
         #expect(events[16] == .unknown(type: "task_status"))
         #expect(events[17] == .unknown(type: "future_event"))
+    }
+
+    @Test("a saved question: its ask, its settling, and the question and answer parts")
+    func savedQuestion() throws {
+        #expect(
+            try decode(
+                PhilharmonicSseEvent.self,
+                #"{"type":"ask_user","conversationId":"c1","questionId":"q1","messageId":"m9","question":"Which branch?","options":["main"]}"#
+            )
+                == .askUser(
+                    conversationId: "c1", question: "Which branch?", options: ["main"], questionId: "q1",
+                    messageId: "m9"))
+        #expect(
+            try decode(
+                PhilharmonicSseEvent.self,
+                #"{"type":"question_settled","conversationId":"c1","messageId":"m9","questionId":"q1","status":"expired"}"#
+            ) == .questionSettled(conversationId: "c1", messageId: "m9", questionId: "q1", status: .expired))
+        let asked = try decode(
+            GroupMessage.self,
+            #"{"id":"m9","conversationId":"c1","role":"pm","agentId":null,"content":"Which branch?","parts":[{"kind":"question","questionId":"q1","options":["main","dev"],"status":"pending"}],"taskId":null,"roundId":null,"createdAt":"t"}"#
+        )
+        #expect(asked.parts == [.question(questionId: "q1", options: ["main", "dev"], status: .pending)])
+        let answered = try decode(
+            GroupMessage.self,
+            #"{"id":"m10","conversationId":"c1","role":"user","agentId":null,"content":"dev","parts":[{"kind":"answer","questionId":"q1"},{"kind":"question","status":"pending"}],"taskId":null,"roundId":null,"createdAt":"t"}"#
+        )
+        // A question part without its id is unreadable, and only that part.
+        #expect(answered.parts == [.answer(questionId: "q1"), .unknown(kind: "question")])
+        // A status a later computer adds reads as unknown, not as a failure.
+        let later = try decode(
+            GroupMessage.self,
+            #"{"id":"m11","conversationId":"c1","role":"pm","agentId":null,"content":"?","parts":[{"kind":"question","questionId":"q2","status":"withdrawn"}],"taskId":null,"roundId":null,"createdAt":"t"}"#
+        )
+        #expect(later.parts == [.question(questionId: "q2", options: [], status: .unknown)])
     }
 
     @Test("a part this build does not know keeps the parts around it")
