@@ -222,6 +222,13 @@
         "skipped": "skipped",
         "failed": "failed"
       }
+    },
+    "archive": {
+      "emptyTitle": "No completed deliverables yet",
+      "emptyDescription": "Final files and folders appear here after the PM verifies and archives them."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Archive"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "Couldn't stop it",
       "folderFailed": "Couldn't open the folder",
       "inTerminal": "Continued in Terminal — Actovia picks it up again on its next step."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Execution plans",
+    "charts": {
+      "activity": "Plan activity",
+      "activityHint": "Plans last updated in the past 7 days"
     }
   }
 }

@@ -422,6 +422,14 @@
       "mapItinerary": {
         "label": "Itinerario mappa",
         "description": "Visualizza luoghi, percorsi e viaggi di più giorni in un'unica scheda mappa interattiva"
+      },
+      "browserUse": {
+        "label": "Automazione del browser",
+        "description": "Naviga e interagisci con le pagine in una sessione separata di agent-browser."
+      },
+      "manageSchedule": {
+        "label": "Gestisci pianificazioni",
+        "description": "Crea, modifica ed elimina attività pianificate tramite Chat."
       }
     },
     "googleMaps": {

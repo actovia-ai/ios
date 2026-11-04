@@ -222,6 +222,13 @@
         "skipped": "übersprungen",
         "failed": "fehlgeschlagen"
       }
+    },
+    "archive": {
+      "emptyTitle": "Noch keine fertigen Ergebnisse",
+      "emptyDescription": "Abschließende Dateien und Ordner erscheinen hier, sobald der PM sie geprüft und archiviert hat."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Archiv"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "Konnte es nicht stoppen",
       "folderFailed": "Ordner konnte nicht geöffnet werden",
       "inTerminal": "Im Terminal fortgesetzt — Actovia übernimmt beim nächsten Schritt wieder."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Ausführungspläne",
+    "charts": {
+      "activity": "Planaktivität",
+      "activityHint": "In den letzten 7 Tagen aktualisierte Pläne"
     }
   }
 }

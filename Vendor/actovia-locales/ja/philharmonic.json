@@ -221,6 +221,13 @@
         "skipped": "スキップ",
         "failed": "失敗"
       }
+    },
+    "archive": {
+      "emptyTitle": "完成した成果物はまだありません",
+      "emptyDescription": "PM が確認して保存した最終ファイルやフォルダがここに表示されます。"
+    },
+    "resourcesPanel": {
+      "finalOutput": "アーカイブ"
     }
   },
   "employees": {
@@ -440,6 +447,13 @@
       "stopFailed": "停止できませんでした",
       "folderFailed": "フォルダを開けませんでした",
       "inTerminal": "ターミナルで続行中 — 次のステップで Actovia が引き継ぎます。"
+    }
+  },
+  "monitor": {
+    "pageTitle": "実行計画",
+    "charts": {
+      "activity": "プランの活動",
+      "activityHint": "過去7日間に更新されたプラン"
     }
   }
 }

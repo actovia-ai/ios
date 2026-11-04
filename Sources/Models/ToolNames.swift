@@ -3,7 +3,7 @@
 /// desktop's `BUILTIN_TOOL_NAMES` keeps it too).
 public enum ToolNames {
     public static let builtIn: [String] = [
-        "computer_use", "deep_research", "create_artifact", "image_generation", "find_files", "edit_file", "lcm_grep",
+        "browser_use", "computer_use", "start_background", "manage_schedule", "deep_research", "create_artifact", "image_generation", "find_files", "edit_file", "lcm_grep",
         "grep", "lcm_describe", "search_knowledge_base", "map_itinerary", "web_search", "lcm_expand", "weather",
         "list_directory", "terminal", "read_file", "web_fetch", "write_file", "update_memory", "recall",
         "list_mcp_tools", "call_mcp_tool",

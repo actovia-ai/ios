@@ -13,6 +13,9 @@ struct MembersSheet: View {
     var body: some View {
         NavigationStack {
             List {
+                if let snapshot = model.context {
+                    Section { GroupContextView(snapshot: snapshot) } header: { Text("chat:panel.context.tab") }
+                }
                 Section {
                     row(
                         avatar: GroupAvatar(role: .pm, employee: nil),

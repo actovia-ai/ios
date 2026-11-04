@@ -87,13 +87,14 @@ public struct PhilharmonicAPI: Sendable {
     /// Answers the PM's question (`ask_user`).
     /// `questionId` names the question answered (absent: whichever the PM is waiting on, as an older computer reads it).
     /// A question no longer waiting is a 409 (`QUESTION_NOT_WAITING`).
-    public func answerAskUser(conversationId: String, response: String, questionId: String? = nil) async throws {
+    public func answerAskUser(conversationId: String, response: String, questionId: String? = nil, attachments: [OutgoingAttachment] = []) async throws {
         struct Body: Encodable {
             let response: String
             let questionId: String?
+            let attachments: [OutgoingAttachment]?
         }
         try await client.post(
-            "\(Self.conversation(conversationId))/respond", body: Body(response: response, questionId: questionId))
+            "\(Self.conversation(conversationId))/respond", body: Body(response: response, questionId: questionId, attachments: attachments.isEmpty ? nil : attachments))
     }
 
     /// The group's active plan; nil when there is none.
@@ -104,6 +105,18 @@ public struct PhilharmonicAPI: Sendable {
     /// A PM round's decision trail, in order.
     public func round(conversationId: String, roundId: String) async throws -> [PmRoundEvent] {
         try await client.get("\(Self.conversation(conversationId))/rounds/\(roundId)")
+    }
+
+    public func pmContext(conversationId: String) async throws -> GroupContextSnapshot? {
+        try await client.get("\(Self.conversation(conversationId))/context")
+    }
+
+    public func archiveFile(conversationId: String, path: String) async throws -> Data {
+        try await client.data("\(Self.conversation(conversationId))/archive/file", query: [URLQueryItem(name: "path", value: path)])
+    }
+
+    public func plans() async throws -> [GroupPlan] {
+        try await client.get("\(Self.base)/plans/monitor")
     }
 
     // MARK: Dashboard and workforce

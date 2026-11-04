@@ -222,6 +222,13 @@
         "skipped": "omitido",
         "failed": "fallido"
       }
+    },
+    "archive": {
+      "emptyTitle": "Aún no hay entregables terminados",
+      "emptyDescription": "Los archivos y carpetas finales aparecen aquí cuando el PM los verifica y archiva."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Archivo"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "No se pudo detener",
       "folderFailed": "No se pudo abrir la carpeta",
       "inTerminal": "Continuado en Terminal — Actovia lo retoma en su siguiente paso."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Planes de ejecución",
+    "charts": {
+      "activity": "Actividad de los planes",
+      "activityHint": "Planes actualizados en los últimos 7 días"
     }
   }
 }

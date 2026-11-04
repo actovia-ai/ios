@@ -422,6 +422,14 @@
       "mapItinerary": {
         "label": "Reiseroute",
         "description": "Orte, Routen und mehrtägige Reisen auf einer interaktiven Kartenkarte darstellen"
+      },
+      "browserUse": {
+        "label": "Browser-Automatisierung",
+        "description": "Webseiten in einer eigenen agent-browser-Sitzung öffnen und bedienen."
+      },
+      "manageSchedule": {
+        "label": "Zeitpläne verwalten",
+        "description": "Geplante Aufgaben im Chat erstellen, bearbeiten und löschen."
       }
     },
     "googleMaps": {

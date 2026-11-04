@@ -38,6 +38,13 @@ public struct LiveBubble: Sendable, Equatable {
     }
 }
 
+public struct GroupArchiveEntry: Sendable, Equatable, Identifiable {
+    public let title: String
+    public let path: String
+    public let directory: Bool
+    public var id: String { path }
+}
+
 public struct GroupAttachment: Sendable, Equatable {
     public let name: String
     public let url: String
@@ -93,6 +100,7 @@ public struct GroupBubble: Sendable, Equatable, Identifiable {
     public let isLive: Bool
     /// The PM's question to the owner, when this bubble is one.
     public var question: BubbleQuestion? = nil
+    public var archives: [GroupArchiveEntry] = []
 }
 
 /// The desktop's `merge-group-messages.ts`: saved rows are the truth; a live bubble shows only while its message is
@@ -106,6 +114,7 @@ public enum GroupMessageMerge {
         let saved = Set(history.map(\.id))
         var merged: [GroupBubble] = history.map { row in
             var attachments: [GroupAttachment] = []
+            var archives: [GroupArchiveEntry] = []
             var artifacts: [ArtifactPart] = []
             var decision: GroupDecision?
             var card: AgentCard?
@@ -114,6 +123,8 @@ public enum GroupMessageMerge {
                 switch part {
                 case .attachment(let name, let url, let contentType):
                     attachments.append(GroupAttachment(name: name, url: url, contentType: contentType))
+                case .archive(let title, let path, let directory):
+                    archives.append(GroupArchiveEntry(title: title, path: path, directory: directory))
                 case .artifact(let id, let title, let code):
                     artifacts.append(ArtifactPart(artifactId: id, title: title, code: code))
                 case .decision(let delegations, let waits):
@@ -136,6 +147,7 @@ public enum GroupMessageMerge {
                 agentCard: liveCards[row.id] ?? card, agentCardSuperseded: false, toolRows: [], roundId: row.roundId,
                 createdAt: row.createdAt, isLive: false)
             bubble.question = question
+            bubble.archives = archives
             return bubble
         }
         for bubble in live where !saved.contains(bubble.messageId) {

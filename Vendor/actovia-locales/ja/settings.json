@@ -422,6 +422,14 @@
       "mapItinerary": {
         "label": "旅程マップ",
         "description": "スポット、ルート、複数日の旅程を1枚のインタラクティブなマップカードに表示します"
+      },
+      "browserUse": {
+        "label": "ブラウザ操作",
+        "description": "独立した agent-browser セッションでウェブページを閲覧・操作します。"
+      },
+      "manageSchedule": {
+        "label": "スケジュール管理",
+        "description": "Chat で定期タスクを作成、編集、削除します。"
       }
     },
     "googleMaps": {

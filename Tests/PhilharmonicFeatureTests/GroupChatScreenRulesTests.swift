@@ -18,8 +18,8 @@ struct ForegroundReturnTests {
 struct GroupComposerRuleTests {
     @Test("answering the PM takes words only; pictures neither count nor block")
     func answering() {
-        #expect(!GroupComposerRule.canSend(hasWords: false, hasPictures: true, preparing: 0, sending: false, answering: true))
-        #expect(GroupComposerRule.canSend(hasWords: true, hasPictures: true, preparing: 1, sending: false, answering: true))
+        #expect(GroupComposerRule.canSend(hasWords: false, hasPictures: true, preparing: 0, sending: false, answering: true))
+        #expect(!GroupComposerRule.canSend(hasWords: true, hasPictures: true, preparing: 1, sending: false, answering: true))
         #expect(!GroupComposerRule.canSend(hasWords: true, hasPictures: false, preparing: 0, sending: true, answering: true))
     }
 

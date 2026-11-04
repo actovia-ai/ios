@@ -1,9 +1,10 @@
+import Charts
 import Models
 import NetworkingKit
 import OdyKit
 import SwiftUI
 
-/// The Dashboard (the desktop's Schedule tab): the tasks waiting to run, each of which can be cancelled.
+/// Plan monitoring and upcoming scheduled work.
 struct DashboardView: View {
     @State private var model: DashboardViewModel
     @State private var schedule = Schedule.upcoming
@@ -21,6 +22,26 @@ struct DashboardView: View {
                 PageHeader(title: Text("philharmonic:chat.conversationList.configNav.dashboard")) {
                     EmptyView()
                 }
+            }
+            if !model.plans.isEmpty {
+                Section {
+                    PlanActivityChart(plans: model.plans)
+                } header: { Text("philharmonic:monitor.charts.activity") }
+                Section {
+                    ForEach(model.plans) { plan in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(verbatim: plan.summary).font(.body.weight(.medium))
+                            ProgressView(value: Double(plan.steps.filter { $0.status == .done || $0.status == .skipped }.count), total: Double(max(1, plan.steps.count)))
+                            ForEach(plan.steps) { step in
+                                HStack {
+                                    if step.status == .done { Image(systemName: "checkmark.circle.fill") }
+                                    else { Image(systemName: "circle") }
+                                    Text(verbatim: step.title)
+                                }.font(.caption).foregroundStyle(.secondary)
+                            }
+                        }.padding(.vertical, 4)
+                    }
+                } header: { Text("philharmonic:monitor.pageTitle") }
             }
             Section {
                 let tasks = schedule == .upcoming ? model.upcoming : model.recurring
@@ -83,5 +104,29 @@ struct DashboardView: View {
             .font(.footnote)
             .foregroundStyle(.secondary)
         }
+    }
+}
+
+private struct PlanActivityChart: View {
+    let plans: [GroupPlan]
+    private var days: [Date] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        return (-6...0).compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
+    }
+    var body: some View {
+        Chart(days, id: \.self) { day in
+            let count = plans.filter { plan in
+                guard let date = GroupTime.date(plan.updatedAt) else { return false }
+                return Calendar.current.isDate(date, inSameDayAs: day)
+            }.count
+            BarMark(x: .value("Date", day, unit: .day), y: .value("Plans", count))
+                .foregroundStyle(Color.accentColor)
+                .accessibilityLabel(Text(day, format: .dateTime.month().day()))
+                .accessibilityValue(Text(verbatim: count.formatted()))
+        }
+        .chartXAxis { AxisMarks(values: .stride(by: .day)) { AxisValueLabel(format: .dateTime.weekday(.narrow)) } }
+        .frame(height: 160)
+        .accessibilityLabel(Text("philharmonic:monitor.charts.activityHint"))
     }
 }

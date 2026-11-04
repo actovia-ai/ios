@@ -11,6 +11,7 @@ public final class MembersViewModel {
     /// By CLI (`claude-code`, `codex`).
     public private(set) var quotas: [String: CliQuota] = [:]
     public private(set) var hasLoaded = false
+    public private(set) var context: GroupContextSnapshot?
 
     @ObservationIgnored private let api: PhilharmonicAPI
     /// Nil until the group's own list is read (`conversationId`): the sheet can open before the group has.
@@ -100,7 +101,9 @@ public final class MembersViewModel {
 
     /// A failed read keeps the last one: a stale line beats none, and the next minute tries again.
     private func readQuota() async {
-        guard let read = try? await api.quota() else { return }
+        async let quota = try? api.quota()
+        if let conversationId, let snapshot = try? await api.pmContext(conversationId: conversationId) { context = snapshot }
+        guard let read = await quota else { return }
         quotas = Dictionary(read.map { ($0.cli, $0) }, uniquingKeysWith: { first, _ in first })
     }
 }

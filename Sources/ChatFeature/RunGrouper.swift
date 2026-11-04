@@ -154,7 +154,7 @@ public enum RunGrouper {
                         settleMemoryUpdate(
                             MemoryUpdate(id: message.toolCallId ?? message.id, status: .failed, errorText: errorText))
                     }
-                    if ToolCardRegistry.drawsFailures(for: name) {
+                    if ToolCardRegistry.drawsFailures(for: name), !isUpstreamAutomation(name, message.toolCallId.flatMap { callArguments[$0] }) {
                         layout.card(
                             ToolCard(
                                 id: message.id, toolCallId: message.toolCallId, toolName: name, kind: .generic,
@@ -203,7 +203,7 @@ public enum RunGrouper {
             }
         }
 
-        for call in pending where ToolCardRegistry.drawsPending(for: call.name) {
+        for call in pending where ToolCardRegistry.drawsPending(for: call.name) && !isUpstreamAutomation(call.name, callArguments[call.id]) {
             layout.card(
                 ToolCard(
                     id: "pending:\(call.id)", toolCallId: call.id, toolName: call.name, kind: .generic,
@@ -323,13 +323,20 @@ public enum RunGrouper {
             status: .pending, errorText: nil, results: [])
     }
 
+    private static func isUpstreamAutomation(_ name: String, _ arguments: JSONValue?) -> Bool {
+        guard name == "computer_use", case .object(let object)? = arguments else { return false }
+        return object["command"] != nil
+    }
+
     private static func cardKind(_ name: String, _ payload: JSONValue?) -> ToolCard.Kind? {
         let type: String? = if case .object(let object)? = payload { object["type"]?.stringValue } else { nil }
         switch name {
         case "terminal": return .terminal
         case "weather": return .weather
         case "deep_research": return .deepResearch
-        case "computer_use": return .computerUse
+        case "computer_use":
+            if case .object(let object)? = payload, object["engine"] != nil { return nil }
+            return .computerUse
         // An unreadable result still shows (the generic card) and is reported, like every other card's.
         case "map_itinerary": return type == "mapItinerary" ? .mapItinerary : .generic
         // Its result is the memory strip at the run's foot; only one that cannot be read gets the generic card.

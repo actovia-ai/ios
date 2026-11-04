@@ -57,6 +57,7 @@ private struct GroupChatScreen: View {
     /// Nil until the group's row is read: Members tapped before then reads it itself (ISSUE-249 M3).
     @State private var memberIds: [String]?
     @State private var members: MembersViewModel?
+    @State private var archiveOpen = false
     @State private var foreground = ForegroundReturn()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.toneInk) private var toneInk
@@ -64,14 +65,11 @@ private struct GroupChatScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 16) {
-                if let plan = model.plan, !plan.steps.isEmpty {
-                    PlanCardView(plan: plan, roster: roster)
-                }
                 ForEach(model.bubbles) { bubble in
                     GroupBubbleView(bubble: bubble, roster: roster, model: model)
                         .tint(toneInk)
                 }
-                if model.pmRunning, !model.bubbles.contains(where: \.isLive) {
+                if model.pmRunning || model.sending, !model.bubbles.contains(where: \.isLive) {
                     TypingIndicator()
                 }
             }
@@ -94,7 +92,16 @@ private struct GroupChatScreen: View {
             }
         }
         .safeAreaInset(edge: .top) {
-            if let notice = model.notice { banner(notice) }
+            VStack(spacing: 4) {
+                if let plan = model.plan, !plan.steps.isEmpty {
+                    PlanCardView(plan: plan, roster: roster)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .readingColumn()
+                }
+                if let notice = model.notice { banner(notice) }
+            }
+            .background(.regularMaterial)
         }
         .safeAreaInset(edge: .bottom) {
             GroupComposer(model: model)
@@ -119,6 +126,12 @@ private struct GroupChatScreen: View {
         .onDisappear { model.stop() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button { archiveOpen = true } label: {
+                    Label("philharmonic:chat.resourcesPanel.finalOutput", systemImage: "archivebox")
+                }
+                .accessibilityIdentifier("groupArchive")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     members = MembersViewModel(api: api, memberIds: memberIds, conversationId: model.conversationId)
                 } label: {
@@ -126,6 +139,9 @@ private struct GroupChatScreen: View {
                 }
                 .accessibilityIdentifier("groupMembers")
             }
+        }
+        .sheet(isPresented: $archiveOpen) {
+            GroupArchiveView(entries: model.bubbles.flatMap(\.archives), conversationId: model.conversationId, api: api)
         }
         .sheet(item: $members) { members in
             MembersSheet(model: members, teams: roster.teams, busy: model.busy)

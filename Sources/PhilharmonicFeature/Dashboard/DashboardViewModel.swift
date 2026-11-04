@@ -7,6 +7,7 @@ import Observation
 /// shows at once and comes back if the computer refused it.
 @MainActor @Observable
 public final class DashboardViewModel {
+    public private(set) var plans: [GroupPlan] = []
     public private(set) var upcoming: [ScheduledTask] = []
     public private(set) var recurring: [ScheduledTask] = []
     public private(set) var isLoading = false
@@ -25,9 +26,11 @@ public final class DashboardViewModel {
             isLoading = false
             hasLoaded = true
         }
+        async let plans = api.plans()
         async let upcoming = api.upcomingTasks()
         async let recurring = api.recurringTasks()
         do {
+            self.plans = try await plans
             self.upcoming = try await upcoming
             self.recurring = try await recurring
         } catch {

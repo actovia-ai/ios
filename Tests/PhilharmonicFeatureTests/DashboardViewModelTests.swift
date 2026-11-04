@@ -50,6 +50,7 @@ struct DashboardViewModelTests {
                 }
                 if path.hasSuffix("/tasks/upcoming") { return (200, "[\(Body.task("k1", runAt: "2026-10-24T09:00:00.000Z"))]") }
                 if path.hasSuffix("/tasks/recurring") { return (200, "[\(Body.task("k2", cron: "0 3 * * *"))]") }
+                if path.hasSuffix("/plans/monitor") { return (200, #"[{"id":"p1","conversationId":"c1","summary":"Review","status":"active","createdAt":"t","updatedAt":"t","steps":[]}]"#) }
                 if path.hasSuffix("/agents") { return (200, "[]") }
                 return (404, "{}")
             }
@@ -69,6 +70,7 @@ struct DashboardViewModelTests {
         await vm.load()
         #expect(vm.upcoming.map(\.id) == ["k1"])
         #expect(vm.recurring.map(\.id) == ["k2"])
+        #expect(vm.plans.map(\.id) == ["p1"])
         #expect(vm.errorMessage == nil)
         #expect(!DashboardMockURLProtocol.seen.withLock { $0.contains { $0.path.hasSuffix("/costs") } })
     }

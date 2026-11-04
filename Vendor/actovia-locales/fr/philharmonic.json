@@ -222,6 +222,13 @@
         "skipped": "ignorée",
         "failed": "en échec"
       }
+    },
+    "archive": {
+      "emptyTitle": "Aucun livrable terminé",
+      "emptyDescription": "Les fichiers et dossiers finaux apparaissent ici après vérification et archivage par le PM."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Archives"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "Impossible de l’arrêter",
       "folderFailed": "Impossible d’ouvrir le dossier",
       "inTerminal": "Poursuivi dans le Terminal — Actovia reprend à sa prochaine étape."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Plans d’exécution",
+    "charts": {
+      "activity": "Activité des plans",
+      "activityHint": "Plans mis à jour au cours des 7 derniers jours"
     }
   }
 }

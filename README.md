@@ -294,3 +294,5 @@ scrolled down to. Reproduced in the Simulator and left as it is.
 The app talks plain HTTP to the desktop server. That server has no authentication and listens on all
 network interfaces, so anyone on the same network can call it, including reading the provider API keys
 stored in the desktop's settings. Use a network you trust. A token header is the follow-up named in spec section 8.
+
+Philharmonic keeps its plan pinned above the transcript. Agent answers use the full reading width; Thinking folds tool activity, while permission prompts stay visible. Owner messages can be sent while the PM works, and answers can include pictures. Archive contains verified final files and folders, downloadable for sharing; Members also shows the PM context breakdown.

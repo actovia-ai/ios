@@ -232,7 +232,20 @@
     "picture": "사진 {{index}}",
     "generatedPicture": "생성된 사진 {{index}}",
     "calls_other": "{{count}}회",
-    "untitledQuestion": "(텍스트 없음)"
+    "untitledQuestion": "(텍스트 없음)",
+    "context": {
+      "estimated": "추정",
+      "tab": "컨텍스트",
+      "part": {
+        "system": "시스템 프롬프트",
+        "skills": "스킬",
+        "mcp": "MCP",
+        "tools": "도구",
+        "memory": "메모리",
+        "summaries": "요약",
+        "messages": "메시지"
+      }
+    }
   },
   "sidebar": {
     "newChat": "새 채팅",

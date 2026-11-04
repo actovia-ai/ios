@@ -243,7 +243,20 @@
     "generatedPicture": "Immagine generata {{index}}",
     "calls_one": "{{count}} chiamata",
     "calls_other": "{{count}} chiamate",
-    "untitledQuestion": "(senza testo)"
+    "untitledQuestion": "(senza testo)",
+    "context": {
+      "estimated": "Stimato",
+      "tab": "Contesto",
+      "part": {
+        "system": "Prompt di sistema",
+        "skills": "Skill",
+        "mcp": "MCP",
+        "tools": "Strumenti",
+        "memory": "Memoria",
+        "summaries": "Riepiloghi",
+        "messages": "Messaggi"
+      }
+    }
   },
   "sidebar": {
     "newChat": "Nuova chat",

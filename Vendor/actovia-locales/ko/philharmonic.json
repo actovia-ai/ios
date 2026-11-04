@@ -221,6 +221,13 @@
         "skipped": "건너뜀",
         "failed": "실패"
       }
+    },
+    "archive": {
+      "emptyTitle": "아직 완료된 결과물이 없습니다",
+      "emptyDescription": "PM이 확인하고 보관한 최종 파일과 폴더가 여기에 표시됩니다."
+    },
+    "resourcesPanel": {
+      "finalOutput": "보관함"
     }
   },
   "employees": {
@@ -440,6 +447,13 @@
       "stopFailed": "중지할 수 없습니다",
       "folderFailed": "폴더를 열 수 없습니다",
       "inTerminal": "터미널에서 계속 중 — 다음 단계에서 Actovia가 다시 이어받습니다."
+    }
+  },
+  "monitor": {
+    "pageTitle": "실행 계획",
+    "charts": {
+      "activity": "계획 활동",
+      "activityHint": "최근 7일 동안 업데이트된 계획"
     }
   }
 }

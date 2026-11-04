@@ -36,6 +36,7 @@ public final class GroupChatViewModel {
     public private(set) var plan: GroupPlan?
     public private(set) var askUser: GroupQuestion?
     public private(set) var pmRunning = false
+    public private(set) var sending = false
     public private(set) var busy = BusyAgents()
     public private(set) var notice: GroupNotice?
     public private(set) var isLoading = true
@@ -111,6 +112,8 @@ public final class GroupChatViewModel {
     /// Sends a message; false when it did not go (the composer keeps its text).
     @discardableResult
     public func send(text: String, pictures: [ComposerPicture]) async -> Bool {
+        sending = true
+        defer { sending = false }
         let attachments = pictures.enumerated().map { index, picture in
             OutgoingAttachment(
                 name: "photo-\(index + 1).\(Self.fileExtension(of: picture))", url: picture.dataURL,
@@ -141,13 +144,18 @@ public final class GroupChatViewModel {
     /// Answers the PM's question. A saved one is answerable after the computer restarted too: the answer starts a new
     /// PM round there. One no longer waiting (answered elsewhere, stopped, expired) reads the group again to show how
     /// it ended.
-    public func answer(_ text: String) async {
+    @discardableResult
+    public func answer(_ text: String, pictures: [ComposerPicture] = []) async -> Bool {
+        let attachments = pictures.enumerated().map { index, picture in
+            OutgoingAttachment(name: "photo-\(index + 1).\(Self.fileExtension(of: picture))", url: picture.dataURL, contentType: picture.mimeType)
+        }
         let questionId = askUser?.questionId
         do {
-            try await api.answerAskUser(conversationId: conversationId, response: text, questionId: questionId)
+            try await api.answerAskUser(conversationId: conversationId, response: text, questionId: questionId, attachments: attachments)
             if let questionId { questionStatus[questionId] = .answered }
             unsavedQuestion = nil
             rebuild()
+            return true
         } catch let error as HTTPError where error.statusCode == 409 {
             unsavedQuestion = nil
             await readWhole()
@@ -155,6 +163,7 @@ public final class GroupChatViewModel {
         } catch {
             report(error)
         }
+        return false
     }
 
     /// Answers a coding agent's prompt. Answered elsewhere already is not an error: the prompt just settles.

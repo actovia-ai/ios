@@ -8,6 +8,8 @@ enum ToolPresentation {
     /// A built-in's user-facing name; an MCP or unknown tool reads as the desktop's `toolLabel` writes it.
     static func displayName(_ name: String) -> String {
         switch name {
+        case "browser_use":
+            String(localized: "settings:tools.registry.browserUse.label", defaultValue: "Browser automation", comment: "Tool name in a reply's steps.")
         case "computer_use":
             String(localized: "ios:chat.message.tool.computerUse", defaultValue: "Computer Use", comment: "Tool name in a reply's steps.")
         case "deep_research":

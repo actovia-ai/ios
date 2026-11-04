@@ -221,6 +221,13 @@
         "skipped": "跳过",
         "failed": "失败"
       }
+    },
+    "archive": {
+      "emptyTitle": "暂无已完成的交付物",
+      "emptyDescription": "PM 验证并归档后，最终文件和文件夹会显示在这里。"
+    },
+    "resourcesPanel": {
+      "finalOutput": "归档"
     }
   },
   "employees": {
@@ -440,6 +447,13 @@
       "stopFailed": "无法停止",
       "folderFailed": "无法打开文件夹",
       "inTerminal": "已在终端中继续——Actovia 会在下一步重新接手。"
+    }
+  },
+  "monitor": {
+    "pageTitle": "执行计划",
+    "charts": {
+      "activity": "计划活动",
+      "activityHint": "过去 7 天更新的计划"
     }
   }
 }

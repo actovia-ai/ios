@@ -232,7 +232,20 @@
     "picture": "画像 {{index}}",
     "generatedPicture": "生成画像 {{index}}",
     "calls_other": "{{count}} 回",
-    "untitledQuestion": "（テキストなし）"
+    "untitledQuestion": "（テキストなし）",
+    "context": {
+      "estimated": "推定",
+      "tab": "コンテキスト",
+      "part": {
+        "system": "システムプロンプト",
+        "skills": "スキル",
+        "mcp": "MCP",
+        "tools": "ツール",
+        "memory": "メモリ",
+        "summaries": "要約",
+        "messages": "メッセージ"
+      }
+    }
   },
   "sidebar": {
     "newChat": "新しいチャット",

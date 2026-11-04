@@ -265,7 +265,20 @@
     "calls_few": "{{count}} вызова",
     "calls_many": "{{count}} вызовов",
     "calls_other": "{{count}} вызова",
-    "untitledQuestion": "(без текста)"
+    "untitledQuestion": "(без текста)",
+    "context": {
+      "estimated": "Оценка",
+      "tab": "Контекст",
+      "part": {
+        "system": "Системный промпт",
+        "skills": "Навыки",
+        "mcp": "MCP",
+        "tools": "Инструменты",
+        "memory": "Память",
+        "summaries": "Сводки",
+        "messages": "Сообщения"
+      }
+    }
   },
   "sidebar": {
     "newChat": "Новый чат",

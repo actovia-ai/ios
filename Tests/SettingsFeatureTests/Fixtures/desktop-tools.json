@@ -1,6 +1,7 @@
 {
   "source": "actovia desktop: packages/shared/src/constants/tool-names.ts (TOOL_NAMES, LEGACY_TOOL_NAMES), constants/tools.ts (TOOL_REGISTRY, TOOL_GROUPS), src/renderer/components/settings/settings-form/tool-config.tsx (TOOL_CONFIG)",
   "toolNames": [
+    "browser_use",
     "call_mcp_tool",
     "computer_use",
     "create_artifact",
@@ -14,10 +15,12 @@
     "lcm_grep",
     "list_directory",
     "list_mcp_tools",
+    "manage_schedule",
     "map_itinerary",
     "read_file",
     "recall",
     "search_knowledge_base",
+    "start_background",
     "terminal",
     "update_memory",
     "weather",
@@ -48,6 +51,12 @@
       "name": "web_fetch",
       "labelKey": "settings:tools.registry.webFetch.label",
       "descriptionKey": "settings:tools.registry.webFetch.description",
+      "group": "Web"
+    },
+    {
+      "name": "browser_use",
+      "labelKey": "settings:tools.registry.browserUse.label",
+      "descriptionKey": "settings:tools.registry.browserUse.description",
       "group": "Web"
     },
     {
@@ -114,6 +123,12 @@
       "name": "recall",
       "labelKey": "settings:tools.registry.recall.label",
       "descriptionKey": "settings:tools.registry.recall.description",
+      "group": "AI & Data"
+    },
+    {
+      "name": "manage_schedule",
+      "labelKey": "settings:tools.registry.manageSchedule.label",
+      "descriptionKey": "settings:tools.registry.manageSchedule.description",
       "group": "AI & Data"
     },
     {

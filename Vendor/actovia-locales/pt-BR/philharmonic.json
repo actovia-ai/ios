@@ -222,6 +222,13 @@
         "skipped": "ignorada",
         "failed": "com falha"
       }
+    },
+    "archive": {
+      "emptyTitle": "Ainda não há entregas concluídas",
+      "emptyDescription": "Os arquivos e pastas finais aparecem aqui após a verificação e o arquivamento pelo PM."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Arquivo"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "Não foi possível parar",
       "folderFailed": "Não foi possível abrir a pasta",
       "inTerminal": "Continuado no Terminal — o Actovia retoma na próxima etapa."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Planos de execução",
+    "charts": {
+      "activity": "Atividade dos planos",
+      "activityHint": "Planos atualizados nos últimos 7 dias"
     }
   }
 }

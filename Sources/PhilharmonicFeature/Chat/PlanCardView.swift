@@ -13,7 +13,7 @@ struct PlanCardView: View {
     init(plan: GroupPlan, roster: GroupRoster) {
         self.plan = plan
         self.roster = roster
-        _isOpen = State(initialValue: !(plan.status == .completed || plan.status == .aborted || plan.steps.count > 4))
+        _isOpen = State(initialValue: false)
     }
 
     var body: some View {

@@ -58,6 +58,7 @@ public struct GroupMessage: Decodable, Sendable, Equatable, Identifiable {
 /// A piece of a group message beside its text, by `kind`. One this build cannot read is `unknown` and the rest stay.
 public enum GroupMessagePart: Decodable, Sendable, Equatable {
     case attachment(name: String, url: String, contentType: String)
+    case archive(title: String, path: String, directory: Bool)
     case artifact(artifactId: String, title: String, code: String)
     /// The PM round's counts, for the collapsed "Decision process" line.
     case decision(delegations: Int, waits: Int)
@@ -70,7 +71,7 @@ public enum GroupMessagePart: Decodable, Sendable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case kind, name, url, contentType, artifactId, title, code, delegations, waits
-        case questionId, options, status
+        case questionId, options, status, path, directory
     }
 
     public init(from decoder: Decoder) throws {
@@ -82,6 +83,11 @@ public enum GroupMessagePart: Decodable, Sendable, Equatable {
                 let contentType = c.lenient(String.self, forKey: .contentType)
             {
                 self = .attachment(name: name, url: url, contentType: contentType)
+                return
+            }
+        case "archive":
+            if let path = c.lenient(String.self, forKey: .path) {
+                self = .archive(title: c.lenient(String.self, forKey: .title) ?? path, path: path, directory: c.lenient(Bool.self, forKey: .directory) ?? false)
                 return
             }
         case "artifact":

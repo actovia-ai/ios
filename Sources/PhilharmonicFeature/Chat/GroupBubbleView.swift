@@ -43,32 +43,44 @@ struct GroupBubbleView: View {
     }
 
     /// The PM or an employee: avatar, a header line, then the words (or the coding agent's card).
+    @State private var activityOpen = false
+
     private var voice: some View {
-        HStack(alignment: .top, spacing: 10) {
-            GroupAvatar(role: bubble.role, employee: roster.employee(bubble.agentId))
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                GroupAvatar(role: bubble.role, employee: roster.employee(bubble.agentId))
                 header
-                if bubble.role == .employee, let card = bubble.agentCard {
-                    AgentCardView(card: card, model: model)
-                } else if !bubble.text.isEmpty {
-                    MarkdownView(text: bubble.text, isStreaming: bubble.isLive)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(.fill.quaternary, in: UnevenRoundedRectangle(
-                            topLeadingRadius: 4, bottomLeadingRadius: 18, bottomTrailingRadius: 18,
-                            topTrailingRadius: 18, style: .continuous))
-                }
-                if let question = bubble.question { QuestionStatusLine(status: question.status) }
-                ForEach(bubble.artifacts, id: \.artifactId) { part in
-                    ArtifactCard(
-                        artifact: ArtifactResult(
-                            artifactId: part.artifactId, chatId: nil, title: part.title, code: part.code))
-                }
-                if bubble.role == .pm { decision }
-                if !bubble.toolRows.isEmpty { ToolRowsView(rows: bubble.toolRows) }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            if bubble.isLive {
+                DisclosureGroup(isExpanded: $activityOpen) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if !bubble.text.isEmpty { MarkdownView(text: bubble.text, isStreaming: true) }
+                        if !bubble.toolRows.isEmpty { ToolRowsView(rows: bubble.toolRows) }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        TypingIndicator()
+                        Text("philharmonic:chat.decision.thinking").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            } else {
+                if !bubble.text.isEmpty { MarkdownView(text: bubble.text, isStreaming: false) }
+                if let question = bubble.question { QuestionStatusLine(status: question.status) }
+                if bubble.role == .pm { decision }
+            }
+            if let card = bubble.agentCard {
+                if card.state == .blocked {
+                    AgentCardView(card: card, model: model)
+                } else {
+                    DisclosureGroup {
+                        AgentCardView(card: card, model: model)
+                    } label: {
+                        Text("philharmonic:chat.decision.thinking").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var header: some View {
@@ -121,8 +133,8 @@ struct GroupAvatar: View {
     var body: some View {
         Group {
             if role == .pm {
-                Text("philharmonic:chat.roles.pm")
-                    .font(.caption2.weight(.semibold))
+                Image(systemName: "music.note.list")
+                    .font(.body.weight(.medium))
                     .foregroundStyle(accentGlyph)
                     .frame(width: side, height: side)
                     .background(toneAccent, in: .circle)

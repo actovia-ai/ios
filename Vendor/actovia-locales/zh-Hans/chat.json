@@ -232,7 +232,20 @@
     "picture": "图片 {{index}}",
     "generatedPicture": "生成的图片 {{index}}",
     "calls_other": "{{count}} 次调用",
-    "untitledQuestion": "（无文本）"
+    "untitledQuestion": "（无文本）",
+    "context": {
+      "estimated": "估算",
+      "tab": "上下文",
+      "part": {
+        "system": "系统提示词",
+        "skills": "技能",
+        "mcp": "MCP",
+        "tools": "工具",
+        "memory": "记忆",
+        "summaries": "摘要",
+        "messages": "消息"
+      }
+    }
   },
   "sidebar": {
     "newChat": "新聊天",

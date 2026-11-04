@@ -232,7 +232,20 @@
     "picture": "圖片 {{index}}",
     "generatedPicture": "生成圖片 {{index}}",
     "calls_other": "{{count}} 次",
-    "untitledQuestion": "（無文字）"
+    "untitledQuestion": "（無文字）",
+    "context": {
+      "estimated": "估算",
+      "tab": "上下文",
+      "part": {
+        "system": "系統提示詞",
+        "skills": "技能",
+        "mcp": "MCP",
+        "tools": "工具",
+        "memory": "記憶",
+        "summaries": "摘要",
+        "messages": "訊息"
+      }
+    }
   },
   "sidebar": {
     "newChat": "開新聊天",

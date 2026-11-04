@@ -40,6 +40,7 @@ enum BuiltinTools {
 
     /// `TOOL_REGISTRY`, in its order.
     static let switchable: [Tool] = [
+
         Tool(
             name: "weather", group: .web,
             title: LocalizedStringResource("settings:tools.registry.weather.label"),
@@ -52,6 +53,10 @@ enum BuiltinTools {
             name: "web_fetch", group: .web,
             title: LocalizedStringResource("settings:tools.registry.webFetch.label"),
             summary: LocalizedStringResource("settings:tools.registry.webFetch.description")),
+        Tool(
+            name: "browser_use", group: .web,
+            title: LocalizedStringResource("settings:tools.registry.browserUse.label"),
+            summary: LocalizedStringResource("settings:tools.registry.browserUse.description")),
         Tool(
             name: "terminal", group: .fileSystem,
             title: LocalizedStringResource("settings:tools.registry.terminal.label"),
@@ -96,6 +101,10 @@ enum BuiltinTools {
             name: "recall", group: .aiData,
             title: LocalizedStringResource("settings:tools.registry.recall.label"),
             summary: LocalizedStringResource("settings:tools.registry.recall.description")),
+        Tool(
+            name: "manage_schedule", group: .aiData,
+            title: LocalizedStringResource("settings:tools.registry.manageSchedule.label"),
+            summary: LocalizedStringResource("settings:tools.registry.manageSchedule.description")),
         Tool(
             name: "map_itinerary", group: .maps,
             title: LocalizedStringResource("settings:tools.registry.mapItinerary.label"),

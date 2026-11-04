@@ -222,6 +222,13 @@
         "skipped": "saltato",
         "failed": "non riuscito"
       }
+    },
+    "archive": {
+      "emptyTitle": "Nessun risultato completato",
+      "emptyDescription": "I file e le cartelle finali appaiono qui dopo la verifica e l’archiviazione da parte del PM."
+    },
+    "resourcesPanel": {
+      "finalOutput": "Archivio"
     }
   },
   "employees": {
@@ -445,6 +452,13 @@
       "stopFailed": "Impossibile interromperlo",
       "folderFailed": "Impossibile aprire la cartella",
       "inTerminal": "Continuato nel Terminale — Actovia riprende al passaggio successivo."
+    }
+  },
+  "monitor": {
+    "pageTitle": "Piani di esecuzione",
+    "charts": {
+      "activity": "Attività dei piani",
+      "activityHint": "Piani aggiornati negli ultimi 7 giorni"
     }
   }
 }

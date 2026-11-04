@@ -38,7 +38,6 @@ struct GroupComposer: View {
                 .padding(.leading, ComposerRowLayout.inset - 16)
                 // An answer to the PM is words only: a picture added then never went with it and was sent later
                 // with the next message instead (ISSUE-249 M5).
-                .disabled(model.askUser != nil)
                 .composerRole(.leading)
                 ComposerTextView(
                     text: $text, isFocused: $isFocused, placeholder: placeholder, tint: toneInk,
@@ -62,7 +61,7 @@ struct GroupComposer: View {
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
         .background {
-            if state == .stop {
+            if model.pmRunning {
                 Button("chat:composer.stop") { Task { await model.interrupt() } }
                     .keyboardShortcut(.escape, modifiers: [])
                     .hidden().accessibilityHidden(true)
@@ -99,7 +98,7 @@ struct GroupComposer: View {
                 localized: "philharmonic:chat.composer.placeholder", defaultValue: "Message your team…")
     }
 
-    private var state: TurnButtonState { model.pmRunning && model.askUser == nil ? .stop : .send }
+    private var state: TurnButtonState { model.pmRunning && model.askUser == nil && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && attachments.isEmpty ? .stop : .send }
 
     private var canSend: Bool {
         GroupComposerRule.canSend(
@@ -130,17 +129,12 @@ struct GroupComposer: View {
     private func send(keepsFocus: Bool = false) {
         let words = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if !keepsFocus { isFocused = false }
-        if model.askUser != nil {
-            guard !words.isEmpty else { return }
-            text = ""
-            Task { await model.answer(words) }
-            return
-        }
         let pictures = attachments.pictures
         sending = true
         Task {
             // Cleared only once the message is in: a failed send keeps what was typed.
-            if await model.send(text: words, pictures: pictures) {
+            let accepted = if model.askUser != nil { await model.answer(words, pictures: pictures) } else { await model.send(text: words, pictures: pictures) }
+            if accepted {
                 text = ""
                 attachments.removeAll()
             }
@@ -218,7 +212,6 @@ enum GroupComposerRule {
         hasWords: Bool, hasPictures: Bool, preparing: Int, sending: Bool, answering: Bool
     ) -> Bool {
         if sending { return false }
-        if answering { return hasWords }
         return preparing == 0 && (hasWords || hasPictures)
     }
 }

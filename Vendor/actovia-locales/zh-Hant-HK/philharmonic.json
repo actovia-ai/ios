@@ -221,6 +221,13 @@
         "skipped": "略過",
         "failed": "失敗"
       }
+    },
+    "archive": {
+      "emptyTitle": "暫無已完成的交付成果",
+      "emptyDescription": "PM 驗證並封存後，最終檔案及資料夾會顯示在這裏。"
+    },
+    "resourcesPanel": {
+      "finalOutput": "封存"
     }
   },
   "employees": {
@@ -440,6 +447,13 @@
       "stopFailed": "無法停止",
       "folderFailed": "無法開啟資料夾",
       "inTerminal": "已在終端機繼續 — Actovia 會在下一步重新接手。"
+    }
+  },
+  "monitor": {
+    "pageTitle": "執行計劃",
+    "charts": {
+      "activity": "計劃活動",
+      "activityHint": "過去 7 天更新的計劃"
     }
   }
 }
