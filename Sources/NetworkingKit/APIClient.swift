@@ -217,6 +217,13 @@ public struct APIClient: Sendable {
         let bases = route.bases
         var request = URLRequest(url: url)
         request.httpMethod = method
+        // Older desktop builds keep the uncompressed Content-Length when
+        // compressing static files. URLSession rejects that response before
+        // WebKit can load the sandbox. Hashed assets are cached on the device;
+        // request identity for files while JSON/chat traffic stays compressed.
+        if T.self == FetchedFile.self {
+            request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
+        }
         if let authorization = route.authorization {
             request.setValue(authorization, forHTTPHeaderField: "Authorization")
         }

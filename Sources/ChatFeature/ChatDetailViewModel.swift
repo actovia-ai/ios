@@ -2,6 +2,7 @@ import Foundation
 import Models
 import NetworkingKit
 import Observation
+import os
 
 @MainActor
 @Observable
@@ -22,8 +23,19 @@ public final class ChatDetailViewModel {
     public private(set) var olderPageCount = 0
     public private(set) var segments: [Segment] = []
     @ObservationIgnored private var segmentCache = RunGrouper.Cache()
+    @ObservationIgnored private var submitInterval: OSSignpostIntervalState?
+    private static let submitSignposter = OSSignposter(subsystem: "app.yancey.actovia.ios", category: "Chat Submit")
 
-    private func regroup() { segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache) }
+    private func regroup() {
+        guard let interval = submitInterval else {
+            segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
+            return
+        }
+        let grouping = Self.submitSignposter.beginInterval("Transcript regroup")
+        segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
+        Self.submitSignposter.endInterval("Transcript regroup", grouping)
+        Self.submitSignposter.emitEvent("Local transcript updated")
+    }
     public private(set) var status: ChatStatus = .idle
     public var composerText: String = ""
     /// The pictures the next message carries, in pick order: sent with the text, and cleared with it.
@@ -482,6 +494,8 @@ public final class ChatDetailViewModel {
 
     public func sendMessage() async {
         guard canSend else { return }
+        let interval = Self.submitSignposter.beginInterval("Submit to first server update")
+        submitInterval = interval
         let typed = composerText.trimmingCharacters(in: .whitespacesAndNewlines)
         let text = quote.map { QuotedText.compose(quote: $0, text: typed) } ?? typed
         let pictures = attachments.pictures
@@ -713,8 +727,14 @@ public final class ChatDetailViewModel {
         status = .submitted  // disable the composer now, before the first stream update arrives
 
         let options = composerTools?.turnOptions ?? TurnOptions()
+        if let interval = submitInterval {
+            Self.submitSignposter.emitEvent("Local preparation complete")
+        }
         let updates = await streamManager.send(
             chatId: chatId, messages: messages, serverConfig: serverConfig, options: options)
+        if let interval = submitInterval {
+            Self.submitSignposter.emitEvent("Request prepared")
+        }
         await consume(updates)
     }
 
@@ -757,12 +777,22 @@ public final class ChatDetailViewModel {
         stopCount += 1
     }
 
+    private func finishSubmitMeasurement() {
+        guard let interval = submitInterval else { return }
+        Self.submitSignposter.endInterval("Submit ended", interval)
+        submitInterval = nil
+    }
+
     private func consume(_ updates: AsyncStream<ChatStreamUpdate>) async {
         for await update in updates {
             switch update {
             case .messages(let messages):
                 self.messages = messages
                 computerUseFrames.ingest(segments)
+                if let interval = submitInterval {
+                    Self.submitSignposter.endInterval("First server update", interval)
+                    submitInterval = nil
+                }
             case .status(let status):
                 self.status = status
             case .title(let title):
@@ -777,6 +807,7 @@ public final class ChatDetailViewModel {
                 let run = messages.last { $0.role == "user" }
                 memoryFoot.memoryChanged(inRun: run.map { $0.runId ?? $0.id })
             case .finished(let messages):
+                finishSubmitMeasurement()
                 self.messages = messages
                 status = .idle
                 if !turnWasStopped {
@@ -786,6 +817,7 @@ public final class ChatDetailViewModel {
             case .unreachable:
                 connection.markOffline()
             case .failed(let message):
+                finishSubmitMeasurement()
                 if let run = messages.last(where: { $0.role == "user" }) {
                     liveRunError = LiveRunError(runId: run.runId ?? run.id, message: message)
                 }

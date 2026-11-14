@@ -8,6 +8,7 @@ public struct ArtifactCard: View {
     let artifact: ArtifactResult
     @State private var state = ArtifactInlineState()
     @State private var showsFullScreen = false
+    @State private var webViewSession = ArtifactWebViewSession()
 
     public init(artifact: ArtifactResult) {
         self.artifact = artifact
@@ -51,13 +52,14 @@ public struct ArtifactCard: View {
                 }
             }
             .cardHeader()
-            ArtifactInlineView(artifact: artifact, state: $state)
+            ArtifactInlineView(
+                artifact: artifact, state: $state, session: webViewSession, isFullscreen: showsFullScreen)
                 .padding(.horizontal, CardStyle.inset)
                 .padding(.bottom, CardStyle.inset)
         }
         .modifier(CardSurface())
         .fullScreenCover(isPresented: $showsFullScreen) {
-            ArtifactPreviewScreen(artifact: artifact)
+            ArtifactPreviewScreen(artifact: artifact, state: $state, session: webViewSession)
         }
     }
 }
@@ -106,8 +108,7 @@ struct ArtifactInlineState: Equatable {
         return false
     }
 
-    /// Full screen loads the artifact again, so it is offered unless the card already knows it would not show:
-    /// after a fallback, only for an artifact that rendered here before (and failed on a tap).
+    /// Full screen reuses the live artifact document; after a fallback it remains available only if it rendered here.
     var offersFullScreen: Bool { !isFallback || hasRendered }
 
     mutating func apply(_ event: ArtifactPreviewEvent) {
@@ -210,6 +211,8 @@ final class ArtifactLiveBudget {
 private struct ArtifactInlineView: View {
     let artifact: ArtifactResult
     @Binding var state: ArtifactInlineState
+    let session: ArtifactWebViewSession
+    let isFullscreen: Bool
     @Environment(\.artifactSandbox) private var source
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -224,6 +227,8 @@ private struct ArtifactInlineView: View {
         Group {
             if state.isFallback {
                 fallback
+            } else if isFullscreen {
+                Color.clear.frame(height: state.height)
             } else {
                 artifactView
             }
@@ -235,9 +240,19 @@ private struct ArtifactInlineView: View {
             apply(proximity.slotChange)
         }
         .onAppear { apply(ArtifactProximity.slotChangeOnAppear(last: lastProximity)) }
-        .onDisappear { budget.drop(slot) }
+        .onDisappear {
+            budget.drop(slot)
+            if !isFullscreen { session.release() }
+        }
         .onChange(of: isLive) { _, live in
-            if live { state.reload() }
+            if live {
+                if !session.hasWebView { state.reload() }
+            } else if !isFullscreen {
+                session.release()
+            }
+        }
+        .onChange(of: isFullscreen) { _, fullscreen in
+            if !fullscreen && !isLive { session.release() }
         }
         .task(id: isLive) { await watch() }
     }
@@ -246,7 +261,7 @@ private struct ArtifactInlineView: View {
         ZStack {
             if isLive, let source, let code, !code.isEmpty {
                 ArtifactWebView(
-                    source: source, code: code, artifactId: ArtifactCardRules.title(artifact),
+                    session: session, source: source, code: code, artifactId: ArtifactCardRules.title(artifact),
                     colorScheme: colorScheme, layout: .card
                 ) { event in
                     state.apply(event)
@@ -329,10 +344,11 @@ private struct ArtifactInlineView: View {
 /// that sends the reader to the computer.
 struct ArtifactPreviewScreen: View {
     let artifact: ArtifactResult
+    @Binding var state: ArtifactInlineState
+    let session: ArtifactWebViewSession
     @Environment(\.artifactSandbox) private var source
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
-    @State private var phase: ArtifactPreviewPhase = .loading
     @State private var code: String?
 
     var body: some View {
@@ -341,14 +357,15 @@ struct ArtifactPreviewScreen: View {
                 Color(.systemBackground).ignoresSafeArea()
                 if let source, let code, !code.isEmpty {
                     ArtifactWebView(
-                        source: source, code: code, artifactId: ArtifactCardRules.title(artifact), colorScheme: colorScheme
+                        session: session, source: source, code: code, artifactId: ArtifactCardRules.title(artifact),
+                        colorScheme: colorScheme
                     ) { event in
                         handle(event)
                     }
                     .ignoresSafeArea(edges: .bottom)
-                    .opacity(phase == .rendered ? 1 : 0)
+                    .opacity(state.phase == .rendered ? 1 : 0)
                 }
-                switch phase {
+                switch state.phase {
                 case .loading:
                     ProgressView {
                         Text("ios:chat.artifact.preview.loading")
@@ -361,7 +378,7 @@ struct ArtifactPreviewScreen: View {
                         .transition(.opacity)
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: phase)
+            .animation(.easeOut(duration: 0.2), value: state.phase)
             .navigationTitle(Text(verbatim: ArtifactCardRules.title(artifact)))
             .navigationBarTitleDisplayMode(.inline)
             .screenTitle(ArtifactCardRules.title(artifact))
@@ -375,7 +392,7 @@ struct ArtifactPreviewScreen: View {
     }
 
     private func handle(_ event: ArtifactPreviewEvent) {
-        phase = ArtifactPreviewRules.next(phase, on: event)
+        state.apply(event)
     }
 
     private func start() async {

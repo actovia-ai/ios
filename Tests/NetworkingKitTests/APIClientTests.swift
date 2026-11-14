@@ -39,6 +39,23 @@ struct APIClientTests {
         #expect(chats[0].id == "c1")
     }
 
+    @Test("sandbox files request identity encoding for older desktop compression compatibility")
+    func sandboxFileEncoding() async throws {
+        let recorder = stub(status: 200, body: "<html>sandbox</html>")
+        let file = try await makeClient().file("/api/v1/artifacts/sandbox/src/renderer/sub-apps/artifacts/index.html")
+        #expect(String(decoding: file.data, as: UTF8.self) == "<html>sandbox</html>")
+        #expect(recorder.requests.count == 1)
+        #expect(recorder.requests.first?.acceptEncoding == "identity")
+    }
+
+    @Test("JSON requests keep automatic compression negotiation")
+    func jsonEncoding() async throws {
+        let recorder = stub(status: 200, body: "[]")
+        let _: [ChatSummary] = try await makeClient().get("/api/v1/history")
+        #expect(recorder.requests.count == 1)
+        #expect(recorder.requests.first?.acceptEncoding != "identity")
+    }
+
     @Test("POST encodes the body and decodes the response")
     func postDecodesSuccess() async throws {
         MockURLProtocol.handler = { request in
@@ -356,6 +373,7 @@ struct APIClientTests {
 private final class RequestRecorder: Sendable {
     struct RecordedRequest: Sendable {
         let method: String?
+        let acceptEncoding: String?
         let path: String?
         let url: URL?
         let body: Data
@@ -365,7 +383,7 @@ private final class RequestRecorder: Sendable {
 
     func record(_ request: URLRequest) throws {
         let body = try request.httpBodyStreamData()
-        let entry = RecordedRequest(method: request.httpMethod, path: request.url?.path, url: request.url, body: body)
+        let entry = RecordedRequest(method: request.httpMethod, acceptEncoding: request.value(forHTTPHeaderField: "Accept-Encoding"), path: request.url?.path, url: request.url, body: body)
         storage.withLock { $0.append(entry) }
     }
 

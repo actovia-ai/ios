@@ -317,6 +317,7 @@ enum ArtifactLayout: Equatable {
 /// tells its parent and passes `ready` / `rendered` / `error` / `size` on. Nothing leaves but sandbox requests: a
 /// navigation elsewhere is cancelled, a new window refused, and a content rule list blocks every other load.
 struct ArtifactWebView: UIViewRepresentable {
+    let session: ArtifactWebViewSession
     let source: ArtifactSandboxSource
     let code: String
     let artifactId: String
@@ -324,14 +325,28 @@ struct ArtifactWebView: UIViewRepresentable {
     var layout: ArtifactLayout = .page
     let onEvent: (ArtifactPreviewEvent) -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator(onEvent: onEvent) }
+    func makeCoordinator() -> Coordinator {
+        if let coordinator = session.coordinator {
+            coordinator.onEvent = onEvent
+            return coordinator
+        }
+        let coordinator = Coordinator(onEvent: onEvent)
+        session.coordinator = coordinator
+        return coordinator
+    }
 
     func makeUIView(context: Context) -> WKWebView {
         let coordinator = context.coordinator
         coordinator.code = code
         coordinator.artifactId = artifactId
-        coordinator.theme = Self.theme(colorScheme)
-        coordinator.layout = layout
+        coordinator.setTheme(Self.theme(colorScheme))
+        coordinator.setLayout(layout)
+        if let webView = session.webView {
+            webView.removeFromSuperview()
+            coordinator.webView = webView
+            Self.configure(webView, for: layout)
+            return webView
+        }
 
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
@@ -351,8 +366,38 @@ struct ArtifactWebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = coordinator
         webView.uiDelegate = coordinator
+        Self.configure(webView, for: layout)
+        #if DEBUG
+        webView.isInspectable = true
+        #endif
+        coordinator.webView = webView
+        session.webView = webView
+        coordinator.load()
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        let coordinator = context.coordinator
+        coordinator.onEvent = onEvent
+        coordinator.code = code
+        coordinator.artifactId = artifactId
+        coordinator.setTheme(Self.theme(colorScheme))
+        coordinator.setLayout(layout)
+        Self.configure(webView, for: layout)
+    }
+
+    static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
+        // The session owns this view while SwiftUI moves it between inline and full-screen hosts.
+    }
+
+    private static func configure(_ webView: WKWebView, for layout: ArtifactLayout) {
         switch layout {
         case .page:
+            webView.scrollView.isScrollEnabled = true
+            webView.scrollView.bounces = true
+            webView.isOpaque = true
+            webView.backgroundColor = .systemBackground
+            webView.scrollView.backgroundColor = .systemBackground
             // Opaque, with no colour of its own: what shows past the page's end (the room over the home indicator, an
             // overscroll) is then the page's own background, which follows its theme.
             webView.scrollView.contentInsetAdjustmentBehavior = .automatic
@@ -366,23 +411,6 @@ struct ArtifactWebView: UIViewRepresentable {
             webView.backgroundColor = .clear
             webView.scrollView.backgroundColor = .clear
         }
-        #if DEBUG
-        webView.isInspectable = true
-        #endif
-        coordinator.webView = webView
-        coordinator.load()
-        return webView
-    }
-
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        context.coordinator.onEvent = onEvent
-        context.coordinator.setTheme(Self.theme(colorScheme))
-    }
-
-    static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
-        webView.stopLoading()
-        webView.configuration.userContentController.removeAllScriptMessageHandlers()
-        coordinator.loading?.cancel()
     }
 
     private static func theme(_ scheme: ColorScheme) -> String {
@@ -460,6 +488,16 @@ struct ArtifactWebView: UIViewRepresentable {
             }
         }
 
+        func setLayout(_ layout: ArtifactLayout) {
+            guard layout != self.layout else { return }
+            self.layout = layout
+            guard isReady else { return }
+            let name = layout == .page ? "page" : "card"
+            webView?.callAsyncJavaScript(
+                "window.postMessage({ type: 'layout', layout }, '*');", arguments: ["layout": name], in: nil,
+                in: Self.world, completionHandler: nil)
+        }
+
         func setTheme(_ theme: String) {
             guard theme != self.theme else { return }
             self.theme = theme
@@ -470,13 +508,13 @@ struct ArtifactWebView: UIViewRepresentable {
         private func post(render: Bool) {
             var script = "window.postMessage({ type: 'theme', theme }, '*');"
             if render {
-                // A page of its own, not a card in a chat: the sandbox drops the outermost card's frame. A computer
-                // without page layout ignores the message. In the chat the sandbox's default, the card, stays.
-                if layout == .page { script += " window.postMessage({ type: 'layout', layout: 'page' }, '*');" }
+                // The sandbox keeps the same rendered document and changes only its outer frame for either layout.
+                script += " window.postMessage({ type: 'layout', layout }, '*');"
                 script += " window.postMessage({ type: 'render', code, artifactId }, '*');"
             }
             webView?.callAsyncJavaScript(
-                script, arguments: ["theme": theme, "code": code, "artifactId": artifactId], in: nil,
+                script, arguments: ["theme": theme, "code": code, "artifactId": artifactId,
+                    "layout": layout == .page ? "page" : "card"], in: nil,
                 in: Self.world, completionHandler: nil)
         }
 
@@ -515,5 +553,22 @@ struct ArtifactWebView: UIViewRepresentable {
         ) -> WKWebView? {
             nil
         }
+    }
+}
+
+
+@MainActor
+final class ArtifactWebViewSession {
+    fileprivate var webView: WKWebView?
+    fileprivate var coordinator: ArtifactWebView.Coordinator?
+    var hasWebView: Bool { webView != nil }
+
+    func release() {
+        webView?.stopLoading()
+        webView?.configuration.userContentController.removeAllScriptMessageHandlers()
+        coordinator?.loading?.cancel()
+        coordinator?.webView = nil
+        coordinator = nil
+        webView = nil
     }
 }

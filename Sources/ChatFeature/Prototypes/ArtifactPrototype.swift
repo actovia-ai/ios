@@ -11,6 +11,8 @@ import SwiftUI
 /// sample full screen at launch.
 struct ProtoArtifactSection: View {
     @State private var opened: ArtifactResult?
+    @State private var previewState = ArtifactInlineState()
+    @State private var previewSession = ArtifactWebViewSession()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
@@ -27,7 +29,7 @@ struct ProtoArtifactSection: View {
         }
         .environment(\.artifactSandbox, ProtoArtifactFixtures.source)
         .fullScreenCover(item: $opened) { artifact in
-            ArtifactPreviewScreen(artifact: artifact)
+            ArtifactPreviewScreen(artifact: artifact, state: $previewState, session: previewSession)
                 .environment(\.artifactSandbox, ProtoArtifactFixtures.source)
         }
         .task {
