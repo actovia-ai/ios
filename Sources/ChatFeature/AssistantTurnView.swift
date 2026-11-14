@@ -35,6 +35,7 @@ struct TranscriptRows: View {
     let showsTypingIndicator: Bool
     let liveError: LiveRunError?
     var actions: TranscriptActions = .none
+    var interactiveAnswers: [String: InteractiveAnswered]?
 
     static let typingIndicatorID = "typing"
     static let orphanErrorID = "orphan-error"
@@ -51,7 +52,7 @@ struct TranscriptRows: View {
 
     var body: some View {
         let liveErrorTurnId = TranscriptRules.liveErrorTurnId(segments: segments, live: liveError)
-        let answers = InteractiveRendering.answers(in: segments)
+        let answers = interactiveAnswers ?? InteractiveRendering.answers(in: segments)
         ForEach(segments) { segment in
             Group {
                 switch segment {

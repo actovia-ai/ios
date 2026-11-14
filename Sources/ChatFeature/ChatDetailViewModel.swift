@@ -22,19 +22,26 @@ public final class ChatDetailViewModel {
     /// Bumped when a page of older runs went in above the transcript: the view keeps the reader's place.
     public private(set) var olderPageCount = 0
     public private(set) var segments: [Segment] = []
+    private(set) var interactiveAnswers: [String: InteractiveAnswered] = [:]
     @ObservationIgnored private var segmentCache = RunGrouper.Cache()
     @ObservationIgnored private var submitInterval: OSSignpostIntervalState?
     private static let submitSignposter = OSSignposter(subsystem: "app.yancey.actovia.ios", category: "Chat Submit")
 
     private func regroup() {
         guard let interval = submitInterval else {
-            segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
+            updateTranscript()
             return
         }
         let grouping = Self.submitSignposter.beginInterval("Transcript regroup")
-        segments = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
+        updateTranscript()
         Self.submitSignposter.endInterval("Transcript regroup", grouping)
         Self.submitSignposter.emitEvent("Local transcript updated")
+    }
+
+    private func updateTranscript() {
+        let next = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
+        segments = next
+        interactiveAnswers = InteractiveRendering.answers(in: next)
     }
     public private(set) var status: ChatStatus = .idle
     public var composerText: String = ""

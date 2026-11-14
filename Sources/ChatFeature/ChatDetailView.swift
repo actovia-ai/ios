@@ -38,6 +38,10 @@ public struct ChatDetailView: View {
     @State private var isAtEnd = true
     /// The reader has touched the transcript since it opened: `settleAtEnd` leaves where they scrolled to alone.
     @State private var hasTouchedTranscript = false
+    /// Older pages load during a finger scroll or its deceleration. A status-bar jump is an animation: loading pages
+    /// while UIKit is jumping to the top repeatedly rebuilds a long transcript and can blank the screen.
+    @State private var transcriptScrollPhase: ScrollPhase = .idle
+    @State private var isNearTranscriptTop = false
     /// The older pages whose arrival the transcript has already answered: a page put in above is not a new message,
     /// and must not scroll the reader to the end.
     @State private var handledOlderPages = 0
@@ -97,12 +101,11 @@ public struct ChatDetailView: View {
                 LazyVStack(alignment: .leading, spacing: 24) {
                     if viewModel.hasOlder {
                         OlderHistoryRow(isLoading: viewModel.isLoadingOlder)
-                            .onAppear { loadOlder(proxy) }
                     }
                     TranscriptRows(
                         segments: viewModel.segments, streamingTurnId: viewModel.streamingTurnId,
                         showsTypingIndicator: viewModel.showsPendingRow, liveError: viewModel.liveRunError,
-                        actions: transcriptActions)
+                        actions: transcriptActions, interactiveAnswers: viewModel.interactiveAnswers)
                 }
                 .padding(.horizontal)
                 .readingColumn()
@@ -131,8 +134,16 @@ public struct ChatDetailView: View {
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
             .scrollDismissesKeyboard(.interactively)
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                geometry.contentOffset.y <= -geometry.contentInsets.top + 44
+            } action: { _, nearTop in
+                isNearTranscriptTop = nearTop
+                if nearTop && loadsOlderHistory(in: transcriptScrollPhase) { loadOlder(proxy) }
+            }
             .onScrollPhaseChange { _, phase in
+                transcriptScrollPhase = phase
                 if phase == .interacting { hasTouchedTranscript = true }
+                if isNearTranscriptTop && loadsOlderHistory(in: phase) { loadOlder(proxy) }
             }
             // What scrolls under the composer fades out, as under the title bar. Set, not left to the default: the
             // default left the bottom edge bare, and a reply showed sharp below the bar and doubled in its glass.
@@ -590,6 +601,10 @@ public struct ChatDetailView: View {
         TranscriptRules.scrollKey(
             segments: viewModel.segments, showsTypingIndicator: viewModel.showsPendingRow,
             liveError: viewModel.liveRunError)
+    }
+
+    private func loadsOlderHistory(in phase: ScrollPhase) -> Bool {
+        phase == .interacting || phase == .decelerating
     }
 
     /// Loads the page before the first run shown and keeps the reader where they were: on the run that was first, or —
