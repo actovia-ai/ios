@@ -53,11 +53,11 @@ public struct TurnButtonLabel: View {
         }
     }
 
-    public static func glyph(_ state: TurnButtonState, scheme: ColorScheme, accentGlyph: Color) -> Color {
+    public static func glyph(_ state: TurnButtonState, accentGlyph: Color) -> Color {
         switch state {
         case .stop: Color(.systemBackground)
         case .recording: .white
-        case .send, .mic, .transcribing: scheme == .dark ? accentGlyph : .white
+        case .send, .mic, .transcribing: accentGlyph
         }
     }
 }

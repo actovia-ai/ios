@@ -9,11 +9,11 @@ import os
 public final class ChatDetailViewModel {
     public let chatId: String
     public private(set) var messages: [ChatMessage] = [] {
-        didSet { regroup() }
+        didSet { if !isApplyingPreparedTranscript { regroup() } }
     }
     /// The sources of the runs not loaded yet (the chat opens on its newest page): citations in loaded runs resolve.
     private var olderSources: [CitationSource] = [] {
-        didSet { if olderSources != oldValue { regroup() } }
+        didSet { if olderSources != oldValue && !isApplyingPreparedTranscript { regroup() } }
     }
     /// Whether runs older than the first one shown exist, and where the next older page starts.
     public private(set) var hasOlder = false
@@ -24,11 +24,20 @@ public final class ChatDetailViewModel {
     public private(set) var segments: [Segment] = []
     private(set) var interactiveAnswers: [String: InteractiveAnswered] = [:]
     @ObservationIgnored private var segmentCache = RunGrouper.Cache()
+    @ObservationIgnored private var isApplyingPreparedTranscript = false
+    private static let historySignposter = OSSignposter(
+        subsystem: "app.yancey.actovia.ios", category: "Chat History")
+
+    private struct PreparedTranscript: Sendable {
+        let cache: RunGrouper.Cache
+        let segments: [Segment]
+        let answers: [String: InteractiveAnswered]
+    }
     @ObservationIgnored private var submitInterval: OSSignpostIntervalState?
     private static let submitSignposter = OSSignposter(subsystem: "app.yancey.actovia.ios", category: "Chat Submit")
 
     private func regroup() {
-        guard let interval = submitInterval else {
+        guard submitInterval != nil else {
             updateTranscript()
             return
         }
@@ -42,6 +51,34 @@ public final class ChatDetailViewModel {
         let next = RunGrouper.group(messages, base: olderSources, cache: &segmentCache)
         segments = next
         interactiveAnswers = InteractiveRendering.answers(in: next)
+    }
+
+    /// Groups a history snapshot away from the main actor. Cache hits avoid rebuilding turns, but grouping still walks
+    /// every loaded message; doing that during a sidebar transition or a top-page load can block scrolling.
+    private func prepareTranscript(messages: [ChatMessage], base: [CitationSource]) async -> PreparedTranscript {
+        let previousCache = segmentCache
+        let interval = Self.historySignposter.beginInterval("Group history transcript")
+        let prepared = await Task.detached(priority: .userInitiated) {
+            var cache = previousCache
+            let segments = RunGrouper.group(messages, base: base, cache: &cache)
+            return PreparedTranscript(
+                cache: cache, segments: segments, answers: InteractiveRendering.answers(in: segments))
+        }.value
+        Self.historySignposter.endInterval("Group history transcript", interval)
+        return prepared
+    }
+
+    /// Installs a fully prepared page without triggering a second synchronous regroup from the property observers.
+    private func installTranscript(
+        messages: [ChatMessage], base: [CitationSource], prepared: PreparedTranscript
+    ) {
+        isApplyingPreparedTranscript = true
+        olderSources = base
+        self.messages = messages
+        segmentCache = prepared.cache
+        segments = prepared.segments
+        interactiveAnswers = prepared.answers
+        isApplyingPreparedTranscript = false
     }
     public private(set) var status: ChatStatus = .idle
     public var composerText: String = ""
@@ -324,7 +361,7 @@ public final class ChatDetailViewModel {
             cache(page, at: savedAt)
             lastSyncedAt = savedAt
             showsCached = false
-            show(page: page, built: built)
+            await show(page: page, built: built)
             clearRunError()
             // Only the first load says what this chat was; a later pull-to-refresh sees the turns
             // that have happened since and must not turn a new chat into an old one.
@@ -350,7 +387,7 @@ public final class ChatDetailViewModel {
                 let rows = cached.page.messages
                 let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
                 guard !Task.isCancelled else { return }
-                show(page: cached.page, built: built)
+                await show(page: cached.page, built: built)
                 lastSyncedAt = cached.savedAt
                 showsCached = true
                 openedWithMessages = !messages.isEmpty
@@ -365,14 +402,20 @@ public final class ChatDetailViewModel {
     /// Shows this computer's stored copy of the newest page, if the chat is still empty on screen. True when it did.
     private func showStoredPageFirst() async -> Bool {
         guard !hasLoadedHistory, messages.isEmpty, let store = offlineStore,
-            apiClient.activeFingerprint == store.fingerprint, let cached = store.loadPage(chatId: chatId)
+            apiClient.activeFingerprint == store.fingerprint
         else { return false }
-        let rows = cached.page.messages
-        let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
-        // The fetch may have answered while the rows were made: its page wins.
+        // Disk I/O and JSON decoding used to run synchronously on the main actor every time a cached chat opened.
+        // Read and convert the page together off the main actor; the network page still wins if it arrived meanwhile.
+        let chatId = chatId
+        let cached: (CachedChatPage, [ChatMessage])? = await Task.detached(priority: .userInitiated) {
+            guard let cached = store.loadPage(chatId: chatId) else { return nil }
+            let built = ChatHistoryRows.uiMessages(from: cached.page.messages)
+            return (cached, built)
+        }.value
+        guard let (cachedPage, built) = cached else { return false }
         guard !Task.isCancelled, !hasLoadedHistory, messages.isEmpty, !isTurnInFlight else { return false }
-        show(page: cached.page, built: built)
-        lastSyncedAt = cached.savedAt
+        await show(page: cachedPage.page, built: built)
+        lastSyncedAt = cachedPage.savedAt
         showsCached = true
         openedWithMessages = !messages.isEmpty
         hasLoadedHistory = true
@@ -411,12 +454,14 @@ public final class ChatDetailViewModel {
         await offlineWrites?.value
     }
 
-    private func show(page: ChatHistoryPage, built: [ChatMessage]) {
+    private func show(page: ChatHistoryPage, built: [ChatMessage]) async {
         let rows = page.messages
-        olderSources = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
+        let base = page.olderSources(loadedRuns: Set(rows.map { $0.runId ?? $0.id }))
+        let prepared = await prepareTranscript(messages: built, base: base)
+        guard !Task.isCancelled else { return }
         hasOlder = page.hasOlder
         olderCursor = page.olderCursor
-        messages = built
+        installTranscript(messages: built, base: base, prepared: prepared)
         if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
         fillTruncated(rows)
     }
@@ -447,11 +492,14 @@ public final class ChatDetailViewModel {
             // new page stay in front of it, and the older state (`hasOlder`, cursor, sources) is theirs, not the page's.
             let fresh = Set(built.map(\.id))
             let kept = messages.filter { !fresh.contains($0.id) }
-            messages = kept + built
+            let combined = kept + built
+            let prepared = await prepareTranscript(messages: combined, base: olderSources)
+            guard !Task.isCancelled, !isTurnInFlight else { return }
+            installTranscript(messages: combined, base: olderSources, prepared: prepared)
             if rows.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
             fillTruncated(rows)
         } else {
-            show(page: page, built: built)
+            await show(page: page, built: built)
         }
         clearRunError()
         if !hasLoadedHistory { openedWithMessages = !messages.isEmpty }
@@ -468,13 +516,19 @@ public final class ChatDetailViewModel {
             let page: ChatHistoryPage = try await apiClient.get(
                 "/api/v1/chat/\(chatId)/page", query: [URLQueryItem(name: "before", value: cursor)])
             guard olderCursor == cursor else { return }  // a reload started over meanwhile
+            let converted = await Task.detached(priority: .userInitiated) {
+                ChatHistoryRows.uiMessages(from: page.messages)
+            }.value
+            guard !Task.isCancelled, olderCursor == cursor else { return }
             let shown = Set(messages.map(\.id))
-            let older = ChatHistoryRows.uiMessages(from: page.messages).filter { !shown.contains($0.id) }
-            let loaded = Set((older + messages).map { $0.runId ?? $0.id })
-            olderSources = page.olderSources(loadedRuns: loaded)
+            let older = converted.filter { !shown.contains($0.id) }
+            let combined = older + messages
+            let base = page.olderSources(loadedRuns: Set(combined.map { $0.runId ?? $0.id }))
+            let prepared = await prepareTranscript(messages: combined, base: base)
+            guard !Task.isCancelled, olderCursor == cursor else { return }
             hasOlder = page.hasOlder
             olderCursor = page.olderCursor
-            messages = older + messages
+            installTranscript(messages: combined, base: base, prepared: prepared)
             if page.messages.contains(where: \.carriesAttemptColumns) { supportsAttempts = true }
             olderPageCount += 1
             fillTruncated(page.messages)
@@ -734,12 +788,12 @@ public final class ChatDetailViewModel {
         status = .submitted  // disable the composer now, before the first stream update arrives
 
         let options = composerTools?.turnOptions ?? TurnOptions()
-        if let interval = submitInterval {
+        if submitInterval != nil {
             Self.submitSignposter.emitEvent("Local preparation complete")
         }
         let updates = await streamManager.send(
             chatId: chatId, messages: messages, serverConfig: serverConfig, options: options)
-        if let interval = submitInterval {
+        if submitInterval != nil {
             Self.submitSignposter.emitEvent("Request prepared")
         }
         await consume(updates)

@@ -206,11 +206,11 @@ public struct MessageGalleryView: View {
             Button {} label: {
                 Label("chat:composer.send", systemImage: "arrow.up")
                     .labelStyle(.iconOnly)
-                    .foregroundStyle(colorScheme == .dark ? accentGlyph : .white)
+                    .foregroundStyle(accentGlyph)
             }
             .buttonStyle(.glassProminent)
             .buttonBorderShape(.circle)
-            // As the chat's: the ink with a white arrow in light, the fill and its glyph in dark.
+            // As the chat's: the tone ink in light, the fill and its contrast-aware glyph in dark.
             .tint(colorScheme == .dark ? toneAccent : toneInk)
         }
     }

@@ -36,8 +36,7 @@ public struct ChatDetailView: View {
     @State private var recordingDiscardedAt: Date?
     /// The end of the transcript is in view (`TranscriptEnd`): a streaming reply is followed only then.
     @State private var isAtEnd = true
-    /// The reader has touched the transcript since it opened: `settleAtEnd` leaves where they scrolled to alone.
-    @State private var hasTouchedTranscript = false
+    /// Whether the transcript end is visible; controls automatic anchoring when content height changes.
     /// Older pages load during a finger scroll or its deceleration. A status-bar jump is an animation: loading pages
     /// while UIKit is jumping to the top repeatedly rebuilds a long transcript and can blank the screen.
     @State private var transcriptScrollPhase: ScrollPhase = .idle
@@ -134,6 +133,9 @@ public struct ChatDetailView: View {
             // Pull down to retry a history load that failed (the composer stays disabled until it succeeds).
             .scrollBounceBehavior(.always)
             .scrollDismissesKeyboard(.interactively)
+            .defaultScrollAnchor(.bottom, for: .initialOffset)
+            .defaultScrollAnchor(isAtEnd ? .bottom : nil, for: .sizeChanges)
+            .defaultScrollAnchor(.top, for: .alignment)
             .onScrollGeometryChange(for: Bool.self) { geometry in
                 geometry.contentOffset.y <= -geometry.contentInsets.top + 44
             } action: { _, nearTop in
@@ -142,7 +144,6 @@ public struct ChatDetailView: View {
             }
             .onScrollPhaseChange { _, phase in
                 transcriptScrollPhase = phase
-                if phase == .interacting { hasTouchedTranscript = true }
                 if isNearTranscriptTop && loadsOlderHistory(in: phase) { loadOlder(proxy) }
             }
             // What scrolls under the composer fades out, as under the title bar. Set, not left to the default: the
@@ -167,7 +168,8 @@ public struct ChatDetailView: View {
                 }
                 scrollToBottom(
                     proxy, animated: TranscriptRules.animatesScroll(fromSegmentCount: old, to: new))
-                if TranscriptRules.settlesAtEnd(fromSegmentCount: old, to: new) { settleAtEnd(proxy) }
+                // A removed turn gets one correction. Late card-size changes use the size-change anchor while at end.
+                if new > 0 && new < old { scrollToBottom(proxy, animated: false) }
             }
             // Follow a reply as it streams in: the segment count is constant while the last turn grows. Not once
             // the reader has scrolled up — the button over the composer brings them back.
@@ -513,7 +515,7 @@ public struct ChatDetailView: View {
             // blot, and a stop that differs from send says a reply is running. A recording's stop is red.
             TurnButtonLabel(
                 state: state,
-                glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
+                glyph: TurnButtonLabel.glyph(state, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
@@ -617,21 +619,6 @@ public struct ChatDetailView: View {
                 scrollToBottom(proxy, animated: false)
             } else if let first {
                 proxy.scrollTo(first, anchor: .top)
-            }
-        }
-    }
-
-    /// A chat that opens lands at its end only once its rows have their real heights: the lazy rows above the end
-    /// are first placed at an estimate, and a chart's or an artifact's web view takes its height a second or two
-    /// later — on a wide screen (an unfolded Duo) that left the transcript short of its end, the button over the
-    /// composer. Followed for two seconds, or until the reader touches the transcript.
-    private func settleAtEnd(_ proxy: ScrollViewProxy) {
-        hasTouchedTranscript = false
-        Task {
-            for delay in [0.15, 0.35, 0.5, 1.0] {
-                try? await Task.sleep(for: .seconds(delay))
-                guard !hasTouchedTranscript else { return }
-                scrollToBottom(proxy, animated: false)
             }
         }
     }

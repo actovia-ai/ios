@@ -72,7 +72,7 @@ struct ComposerGalleryBar: View {
                     } label: {
                     TurnButtonLabel(
                         state: turnState,
-                            glyph: TurnButtonLabel.glyph(turnState, scheme: colorScheme, accentGlyph: accentGlyph)
+                            glyph: TurnButtonLabel.glyph(turnState, accentGlyph: accentGlyph)
                         )
                 }
                 .buttonStyle(.glassProminent)

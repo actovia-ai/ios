@@ -117,7 +117,7 @@ struct GroupComposer: View {
         } label: {
             TurnButtonLabel(
                 state: state,
-                glyph: TurnButtonLabel.glyph(state, scheme: colorScheme, accentGlyph: accentGlyph))
+                glyph: TurnButtonLabel.glyph(state, accentGlyph: accentGlyph))
         }
         .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
