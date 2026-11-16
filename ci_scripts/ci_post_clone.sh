@@ -1,16 +1,24 @@
 #!/bin/sh
-set -e
+set -eu
 
-# 1. Enter the root directory of the repository
-cd "$CI_PRIMARY_REPOSITORY_PATH"
+# Xcode Cloud checks the generated workspace after this post-clone step.
+# Keep the editor bundle and Tuist projects generated from the checked-out source.
+export HOMEBREW_NO_AUTO_UPDATE=1
 
-# 2. Use the official script to install the latest stable version of Tuist (or a specific version, e.g., export TUIST_VERSION=4.34.0)
-curl -Ls https://tuist.io | bash
+if ! command -v bun >/dev/null 2>&1; then
+    brew install oven-sh/bun/bun
+fi
+if ! command -v tuist >/dev/null 2>&1; then
+    brew install --cask tuist
+fi
+if ! command -v node >/dev/null 2>&1 || ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 24 ? 0 : 1)'; then
+    brew install node@24
+    export PATH="$(brew --prefix node@24)/bin:$PATH"
+fi
 
-# 3. Ensure the installation directory is in PATH and manually grant execute permissions to prevent Permission denied
-export PATH="$HOME/.local/bin:$PATH"
-chmod +x "$HOME/.local/bin/tuist" || true
+hikki_repository_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "${CI_PRIMARY_REPOSITORY_PATH:-$hikki_repository_dir}"
 
-# 4. Install external dependencies and generate the project
+bun install --frozen-lockfile
 tuist install
-tuist generate --no-open
+make generate
