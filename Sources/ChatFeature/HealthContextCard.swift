@@ -60,7 +60,7 @@ struct HealthContextCard: View {
 
     /// A week block names its category by its wire name; show Health's own title for it. The keys are Health's
     /// (`ios:health.category.*`), read here by name since Chat does not depend on that module.
-    static func categoryTitle(_ wire: String) -> String {
+    nonisolated static func categoryTitle(_ wire: String) -> String {
         switch wire {
         case "sleep": String(localized: "ios:health.category.sleep", defaultValue: "Sleep")
         case "activity": String(localized: "ios:health.category.activity", defaultValue: "Activity")

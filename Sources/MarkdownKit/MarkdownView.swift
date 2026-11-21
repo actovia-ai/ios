@@ -35,7 +35,7 @@ public struct MarkdownView: View {
     public var body: some View {
         // Closures cannot be compared, so the router's handlers are refreshed here; its action stays the same.
         router.onCitationTap = onCitationTap
-        router.onCitationGroupTap = citationGroupTap
+        router.onCitationGroupTap = citationGroupTap.map { action in { action.perform($0) } }
         router.openURL = { [openURL] in openURL($0) }
         router.onEntityTap = entityTap.map { action in { action.perform($0) } }
         model.diagnostics = diagnostics
@@ -53,13 +53,19 @@ public struct MarkdownView: View {
 }
 
 extension EnvironmentValues {
-    @Entry public var markdownCitationGroupTap: (([Int]) -> Void)? = nil
+    @Entry public var markdownCitationGroupTap: MarkdownCitationGroupAction? = nil
     /// Every block is drawn as one still being written, by `Text`: what a settled block's text view is held
     /// against, to see that the text stands where it stood. For a gallery; a chat never sets it.
     @Entry public var markdownDrawsAsArriving = false
     /// What the room between two lines of settled text is multiplied by: a user's message in its bubble sets its
     /// lines closer than an answer's.
     @Entry public var markdownLineSpacingScale: CGFloat = 1
+}
+
+/// A value wrapper keeps the environment from treating a raw closure as a changing dependency on every update.
+public struct MarkdownCitationGroupAction: Sendable {
+    public let perform: @MainActor @Sendable ([Int]) -> Void
+    public init(_ perform: @escaping @MainActor @Sendable ([Int]) -> Void) { self.perform = perform }
 }
 
 struct MarkdownRenderContext: Equatable {

@@ -79,11 +79,36 @@ public struct GroupEmojiAvatar: View {
     }
 
     public var body: some View {
-        HueDisc(hue: .pick(id), side: side) {
-            Text(verbatim: icon.flatMap { $0.isEmpty ? nil : $0 } ?? "💬")
-                .font(.system(size: side * 0.47))
-                .minimumScaleFactor(0.5)
+        Group {
+            if let icon, !icon.isEmpty, !icon.hasPrefix("ody:") {
+                Text(verbatim: icon).font(.system(size: side * 0.7))
+            } else {
+                let names = ["lilac", "mint", "peach", "sky", "rose", "honey", "periwinkle", "sage"]
+                let colors: [UInt32] = [0xA78BFA, 0x54BBA4, 0xEF925F, 0x609AEE, 0xE883AD, 0xE5B34C, 0x8F9DEB, 0x7BB673]
+                let index = icon.flatMap { names.firstIndex(of: String($0.dropFirst(4))) } ?? PhilharmonicHue.pick(id).rawValue
+                let color = colors[index]
+                Canvas { context, size in
+                    let scale = size.width / 64
+                    context.scaleBy(x: scale, y: scale)
+                    var body = Path()
+                    body.move(to: CGPoint(x: 6, y: 52))
+                    body.addCurve(to: CGPoint(x: 32, y: 5), control1: CGPoint(x: 6, y: 24), control2: CGPoint(x: 15, y: 5))
+                    body.addCurve(to: CGPoint(x: 58, y: 52), control1: CGPoint(x: 49, y: 5), control2: CGPoint(x: 58, y: 24))
+                    body.addQuadCurve(to: CGPoint(x: 52, y: 58), control: CGPoint(x: 58, y: 58))
+                    body.addLine(to: CGPoint(x: 12, y: 58))
+                    body.addQuadCurve(to: CGPoint(x: 6, y: 52), control: CGPoint(x: 6, y: 58))
+                    context.fill(body, with: .color(Color(red: Double((color >> 16) & 255) / 255, green: Double((color >> 8) & 255) / 255, blue: Double(color & 255) / 255)))
+                    for x in [33.0, 45.0] {
+                        context.fill(Path(roundedRect: CGRect(x: x, y: 25, width: 6, height: 13), cornerRadius: 3), with: .color(Color(red: 0.106, green: 0.106, blue: 0.122)))
+                    }
+                    var smile = Path()
+                    smile.move(to: CGPoint(x: 38, y: 45))
+                    smile.addQuadCurve(to: CGPoint(x: 46, y: 45), control: CGPoint(x: 42, y: 49))
+                    context.stroke(smile, with: .color(Color(red: 0.106, green: 0.106, blue: 0.122)), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                }
+            }
         }
+        .frame(width: side, height: side)
         .accessibilityHidden(true)
     }
 }

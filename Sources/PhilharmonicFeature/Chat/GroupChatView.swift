@@ -59,36 +59,58 @@ private struct GroupChatScreen: View {
     @State private var members: MembersViewModel?
     @State private var archiveOpen = false
     @State private var foreground = ForegroundReturn()
+    @State private var nearTop = false
+    @State private var scrollPhase: ScrollPhase = .idle
+    @State private var pmIcon: String?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.toneInk) private var toneInk
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 16) {
-                ForEach(model.bubbles) { bubble in
-                    GroupBubbleView(bubble: bubble, roster: roster, model: model)
-                        .tint(toneInk)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    if model.olderCursor != nil {
+                        ProgressView().opacity(model.isLoadingOlder ? 1 : 0)
+                            .accessibilityLabel(Text("chat:history.loadingOlder"))
+                    }
+                    ForEach(model.bubbles) { bubble in
+                        GroupBubbleView(bubble: bubble, roster: roster, model: model, pmIcon: pmIcon)
+                            .equatable()
+                            .tint(toneInk)
+                            .id(bubble.id)
+                    }
+                    if model.pmRunning || model.sending, !model.bubbles.contains(where: \.isLive) {
+                        TypingIndicator()
+                    }
                 }
-                if model.pmRunning || model.sending, !model.bubbles.contains(where: \.isLive) {
-                    TypingIndicator()
-                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .readingColumn()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .readingColumn()
-        }
-        .defaultScrollAnchor(.bottom)
-        .scrollDismissesKeyboard(.interactively)
-        .overlay {
-            if model.isLoading, model.bubbles.isEmpty {
-                TranscriptSkeleton()
-            } else if model.bubbles.isEmpty, model.plan == nil {
-                ContentUnavailableView {
-                    Label("philharmonic:chat.groupChat.emptyState.title", systemImage: "person.3")
-                } description: {
-                    Text("philharmonic:chat.groupChat.emptyState.description")
+            .defaultScrollAnchor(.bottom, for: .initialOffset)
+            .defaultScrollAnchor(.top, for: .alignment)
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                geometry.contentOffset.y <= -geometry.contentInsets.top + 44
+            } action: { _, top in
+                nearTop = top
+                if top { loadOlder(proxy) }
+            }
+            .onScrollPhaseChange { _, phase in
+                scrollPhase = phase
+                if nearTop { loadOlder(proxy) }
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .overlay {
+                if model.isLoading, model.bubbles.isEmpty {
+                    TranscriptSkeleton()
+                } else if model.bubbles.isEmpty, model.plan == nil {
+                    ContentUnavailableView {
+                        Label("philharmonic:chat.groupChat.emptyState.title", systemImage: "person.3")
+                    } description: {
+                        Text("philharmonic:chat.groupChat.emptyState.description")
+                    }
+                    .allowsHitTesting(false)
                 }
-                .allowsHitTesting(false)
             }
         }
         .safeAreaInset(edge: .top) {
@@ -118,7 +140,11 @@ private struct GroupChatScreen: View {
             async let teams = try? api.teams()
             async let conversations = try? api.conversations()
             let (people, groups, all) = await (employees, teams, conversations)
-            if let all { memberIds = all.first { $0.id == model.conversationId }?.memberAgentIds ?? [] }
+            if let all {
+                let group = all.first { $0.id == model.conversationId }
+                memberIds = group?.memberAgentIds ?? []
+                pmIcon = group?.icon
+            }
             roster = GroupRoster(
                 employees: Dictionary((people ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }),
                 teams: Dictionary((groups ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a }))
@@ -152,6 +178,17 @@ private struct GroupChatScreen: View {
         }
         .onChange(of: model.notice) { _, notice in
             if notice == .gone { onGone() }
+        }
+    }
+
+    private func loadOlder(_ proxy: ScrollViewProxy) {
+        guard [.tracking, .interacting, .decelerating].contains(scrollPhase),
+            model.olderCursor != nil, !model.isLoadingOlder else { return }
+        let anchor = model.bubbles.first?.id
+        Task {
+            await model.loadOlder()
+            guard !Task.isCancelled, let anchor else { return }
+            withTransaction(Transaction(animation: nil)) { proxy.scrollTo(anchor, anchor: .top) }
         }
     }
 

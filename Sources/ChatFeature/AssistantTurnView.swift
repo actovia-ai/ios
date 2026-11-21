@@ -206,7 +206,7 @@ struct AssistantTurnView: View, Equatable {
         .environment(\.markdownCitationIcons, .searchMedia(searchMediaLoader))
         .environment(
             \.markdownCitationGroupTap,
-            { ranks in citationSheet = SourcesSheetModel(turn: turn, markers: ranks) }
+            MarkdownCitationGroupAction { ranks in citationSheet = SourcesSheetModel(turn: turn, markers: ranks) }
         )
         .sheet(item: $citationSheet) { SourcesSheet(model: $0) }
         .contextMenu {

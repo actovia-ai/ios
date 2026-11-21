@@ -32,6 +32,8 @@ struct AppShell: View {
 
     @State private var activeChat = ShellLaunch.chat
     @State private var isSidebarOpen = ShellLaunch.drawerOpen
+    /// Keep the destination from laying out under the close spring; cover the previous screen immediately.
+    @State private var sidebarSelection: SidebarSelection?
     /// The screen is wide enough for the sidebar to stay beside the content (an unfolded iPhone Duo, landscape), as
     /// Claude's app does there; the toolbar button then hides and shows it instead of sliding a drawer.
     @State private var isDocked = false
@@ -172,6 +174,11 @@ struct AppShell: View {
         }
         // Back from another workspace the chat screen is made again, and what was sent meanwhile is history now.
         .onChange(of: workspace) { if workspace != .chat { activeChat.isNew = false } }
+        .onChange(of: isSidebarOpen) { _, open in
+            // Reopening interrupts the pending navigation, including a gesture-driven reopen.
+            if open { sidebarSelection = nil }
+        }
+        .onDisappear { sidebarSelection = nil }
         // Initial too: a link that arrived behind the unlock or pairing gate is opened once the shell appears.
         .onChange(of: pendingLink.link, initial: true) {
             guard let link = pendingLink.take() else { return }
@@ -191,9 +198,11 @@ struct AppShell: View {
             activeChatId: workspace == .chat ? activeChat.id : "",
             isOpen: isDocked ? isDockedSidebarShown : isSidebarOpen,
             reloadToken: recentsReloadToken,
-            onSelectChat: { id, title in select(id: id, title: title) },
-            onNewChat: { startNewChat() },
-            onOpenSettings: { settings = .root },
+            onSelectChat: { id, title in
+                selectAfterClosingSidebar { select(id: id, title: title) }
+            },
+            onNewChat: { selectAfterClosingSidebar { startNewChat() } },
+            onOpenSettings: { selectAfterClosingSidebar { settings = .root } },
             onDeleteChat: { id in
                 // The deleted chat was the one on screen: leave it for a fresh one, drawer stays open.
                 if id == activeChat.id { activeChat = .new() }
@@ -220,15 +229,13 @@ struct AppShell: View {
                 WorkspaceRow(
                     option: option, isSelected: option == workspace && (option != .chat || activeChat.isNew)
                 ) {
-                    workspace = option
-                    setSidebar(open: false)
+                    selectAfterClosingSidebar { workspace = option }
                 }
             }
         } lists: {
             if let groupList {
                 GroupListSection(model: groupList, selection: philharmonicSelection) { picked in
-                    philharmonicSelection = picked
-                    setSidebar(open: false)
+                    selectAfterClosingSidebar { philharmonicSelection = picked }
                 }
             }
         }
@@ -244,6 +251,14 @@ struct AppShell: View {
     private var content: some View {
         NavigationStack {
             detail
+                .opacity(sidebarSelection == nil ? 1 : 0)
+                .allowsHitTesting(sidebarSelection == nil)
+                .accessibilityHidden(sidebarSelection != nil)
+                .overlay {
+                    if sidebarSelection != nil {
+                        TranscriptSkeleton(immediate: true).allowsHitTesting(false)
+                    }
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -305,6 +320,7 @@ struct AppShell: View {
                 offlineStore: offlineStore
             )
             // A different chat is a different view model.
+            .equatable()
             .id(activeChat.id)
             .environment(composerTools)
             .environment(
@@ -332,6 +348,7 @@ struct AppShell: View {
                     Task { await groupList?.load() }
                 }
             )
+            .equatable()
             .sheet(isPresented: $showsNewGroup) {
                 if let groupList {
                     NewGroupSheet(model: groupList) { group in
@@ -376,6 +393,7 @@ struct AppShell: View {
 
     /// Where a widget's link leads. Settings closes first: whatever the link opens is under it.
     private func open(_ link: DeepLink) {
+        sidebarSelection = nil
         settings = nil
         switch link {
         case .newChat(let prompt, let opens):
@@ -402,6 +420,31 @@ struct AppShell: View {
 
     private func refreshComposerTools() {
         Task { await composerTools.refresh(from: ComposerToolsSource(apiClient: apiClient)) }
+    }
+
+    /// Navigation is a second transaction, after every animation in the drawer's close has been removed.
+    /// Waiting for a guessed duration misses cached history, streaming chats and whole workspace construction.
+    private func selectAfterClosingSidebar(_ action: @escaping () -> Void) {
+        guard !isDocked, isSidebarOpen || sidebarSelection != nil else {
+            action()
+            return
+        }
+        // The sidebar becomes inert on close. Also reject a second activation delivered in that same update.
+        guard sidebarSelection == nil else { return }
+        let selection = SidebarSelection(action: action)
+        sidebarSelection = selection
+        withAnimation(
+            usesSidebarPage ? .easeOut(duration: 0.2) : drawerAnimation(reduceMotion: reduceMotion),
+            completionCriteria: .removed
+        ) {
+            isSidebarOpen = false
+        } completion: {
+            guard sidebarSelection?.id == selection.id else { return }
+            sidebarSelection = nil
+            guard !isSidebarOpen else { return }
+            // Clear the drawer spring without suppressing the destination's own fade or native sheet presentation.
+            withTransaction(Transaction(animation: nil)) { selection.action() }
+        }
     }
 
     /// Shows the sidebar page or the content. A docked sidebar is left as it is: picking a chat there keeps the list beside it.
@@ -459,4 +502,10 @@ extension View {
             self
         }
     }
+}
+
+/// Identity prevents a cancelled close's completion from applying a later selection.
+private struct SidebarSelection {
+    let id = UUID()
+    let action: () -> Void
 }

@@ -52,7 +52,6 @@ struct PlanCardView: View {
                 }
             }
         }
-        .background(.fill.tertiary, in: .rect(cornerRadius: 16, style: .continuous))
     }
 
     private var done: Int { plan.steps.filter { $0.status == .done }.count }
@@ -109,7 +108,6 @@ struct PlanCardView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(step.status == .running ? AnyShapeStyle(.background.opacity(0.6)) : AnyShapeStyle(.clear))
         .accessibilityElement(children: .combine)
     }
 

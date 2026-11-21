@@ -67,6 +67,21 @@ public struct PhilharmonicAPI: Sendable {
             query: after.map { [URLQueryItem(name: "after", value: $0)] } ?? [])
     }
 
+    public struct MessagePage: Decodable, Sendable {
+        public let messages: [GroupMessage]
+        public let olderCursor: String?
+    }
+
+    public func messagePage(conversationId: String, before: String? = nil) async throws -> MessagePage {
+        do {
+            return try await client.get(
+                "\(Self.conversation(conversationId))/messages/page",
+                query: before.map { [URLQueryItem(name: "before", value: $0)] } ?? [])
+        } catch let error as HTTPError where error.statusCode == 404 && before == nil {
+            return MessagePage(messages: try await messages(conversationId: conversationId), olderCursor: nil)
+        }
+    }
+
     public func send(
         conversationId: String, content: String, attachments: [OutgoingAttachment] = []
     ) async throws -> GroupMessage {

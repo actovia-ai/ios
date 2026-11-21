@@ -332,20 +332,14 @@ public final class ChatDetailViewModel {
             openedWithMessages = false
             hasLoadedHistory = true
         } else {
-            await loadHistory(holdUntil: .now + Self.firstPaintDelay)
+            await loadHistory()
         }
     }
-
-    /// How long the first page waits after the chat opens before it is put on screen: a chat picked in the drawer
-    /// opens while the drawer is still sliding shut, and laying out a page of Markdown on the main thread in the
-    /// middle of that slide dropped frames. The skeleton holds the place meanwhile; a reply that arrives later than
-    /// this is not delayed at all.
-    static let firstPaintDelay: Duration = .milliseconds(350)
 
     /// The newest page of the chat (desktop spec 2026-10-01 §C3): a long chat was megabytes in one read, seconds over
     /// a slow link. Older runs load as the reader scrolls up (`loadOlder`). A pull-to-refresh starts over from the
     /// newest page. The memory foot keeps every run's usage: it is read for the whole chat, loaded or not.
-    public func loadHistory(holdUntil: ContinuousClock.Instant? = nil) async {
+    public func loadHistory() async {
         guard !isTurnInFlight else { return }  // a reload would replace the reply that is being streamed
         // With nothing on screen the stored copy goes up at once; the fetch can take many seconds to fail when the
         // computer is away, and the fetched page replaces the copy when it arrives.
@@ -355,7 +349,6 @@ public final class ChatDetailViewModel {
             let rows = page.messages
             // The rows are made off the main thread; only putting them on screen happens on it.
             let built = await Task.detached(priority: .userInitiated) { ChatHistoryRows.uiMessages(from: rows) }.value
-            if let holdUntil { try? await Task.sleep(until: holdUntil, clock: .continuous) }
             guard !Task.isCancelled else { return }
             let savedAt = Date()
             cache(page, at: savedAt)

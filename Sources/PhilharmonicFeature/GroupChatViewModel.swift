@@ -40,6 +40,8 @@ public final class GroupChatViewModel {
     public private(set) var busy = BusyAgents()
     public private(set) var notice: GroupNotice?
     public private(set) var isLoading = true
+    public private(set) var olderCursor: String?
+    public private(set) var isLoadingOlder = false
     /// Prompts answered from here, or found answered elsewhere: drawn settled, never asked again.
     public private(set) var settledPrompts: Set<String> = []
     /// Counts the members who joined while open: the screen reads the group's members again on each.
@@ -63,8 +65,8 @@ public final class GroupChatViewModel {
         self.stream = stream
     }
 
-    /// Reads the group and starts listening. The group is read whole again each time the stream connects (missed
-    /// events are not replayed). The first read does not wait for the stream: URLSession hands over a stream's
+    /// Reads the newest page and starts listening. Each reconnect refreshes the newest page (missed events
+    /// are not replayed), retaining older pages already loaded. The first read does not wait for the stream: URLSession hands over a stream's
     /// response only with its first byte, which a quiet group may not send for 15 s.
     ///
     /// The listening task is in place before anything is awaited and makes the stream itself, so a `stop()` at any
@@ -81,7 +83,7 @@ public final class GroupChatViewModel {
                 await self.handle(update)
             }
         }
-        await readWhole()
+        await readLatest()
     }
 
     public func stop() {
@@ -103,7 +105,7 @@ public final class GroupChatViewModel {
             await stream.reconnectNow()
             live = []
             liveCards = [:]
-            await readWhole()
+            await readLatest()
         }
     }
 
@@ -158,7 +160,7 @@ public final class GroupChatViewModel {
             return true
         } catch let error as HTTPError where error.statusCode == 409 {
             unsavedQuestion = nil
-            await readWhole()
+            await readLatest()
             notice = .error(error.localizedDescription)
         } catch {
             report(error)
@@ -197,7 +199,7 @@ public final class GroupChatViewModel {
             pmRunning = false
             unsavedQuestion = nil
             busy = BusyAgents()
-            await readWhole()
+            await readLatest()
         case .event(let event):
             await apply(event)
         case .disconnected:
@@ -274,11 +276,12 @@ public final class GroupChatViewModel {
 
     // MARK: Reading
 
-    private func readWhole() async {
+    private func readLatest() async {
         do {
-            async let rows = api.messages(conversationId: conversationId)
+            async let page = api.messagePage(conversationId: conversationId)
             async let current = api.plan(conversationId: conversationId)
-            let fresh = try await rows
+            let newest = try await page
+            let fresh = newest.messages
             plan = try await current
             // A deleted group reads as an empty one: only the list of groups tells them apart.
             if fresh.isEmpty, !(try await api.conversations().contains(where: { $0.id == conversationId })) {
@@ -287,7 +290,8 @@ public final class GroupChatViewModel {
             }
             // Rows an earlier read held that this one missed (saved while it was on its way) stay.
             let freshIds = Set(fresh.map(\.id))
-            history = fresh + history.filter { !freshIds.contains($0.id) }
+            history = history.filter { !freshIds.contains($0.id) } + fresh
+            if history.count == fresh.count { olderCursor = newest.olderCursor }
             notice = nil
         } catch let error as HTTPError where error.statusCode == 404 {
             gone()
@@ -299,15 +303,30 @@ public final class GroupChatViewModel {
         rebuild()
     }
 
-    /// After a `message_end`: only what was saved after the last row held; anything wrong reads the group whole.
+    public func loadOlder() async {
+        guard let cursor = olderCursor, !isLoadingOlder else { return }
+        isLoadingOlder = true
+        defer { isLoadingOlder = false }
+        do {
+            let page = try await api.messagePage(conversationId: conversationId, before: cursor)
+            guard !Task.isCancelled else { return }
+            // A reconnect can refresh the tail while this request is in flight. Preserve those newer copies.
+            let heldIds = Set(history.map(\.id))
+            history = page.messages.filter { !heldIds.contains($0.id) } + history
+            olderCursor = page.olderCursor
+            rebuild()
+        } catch { report(error) }
+    }
+
+    /// After a `message_end`: only what was saved after the last row held; a failed read refreshes the newest page.
     private func readAfter() async {
-        guard let last = history.last?.id else { return await readWhole() }
+        guard let last = history.last?.id else { return await readLatest() }
         do {
             let rows = try await api.messages(conversationId: conversationId, after: last)
             history = GroupHistory.append(history, rows)
             rebuild()
         } catch {
-            await readWhole()
+            await readLatest()
         }
     }
 

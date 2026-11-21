@@ -94,10 +94,11 @@ public enum ColorTone: String, CaseIterable, Sendable, Identifiable {
             on: Self.pageLuminances(scheme), minimum: Self.inkContrast(increased: increasedContrast), in: Self.gamut)
     }
 
-    /// What is drawn on the fill, such as the send button's arrow: white, as iOS draws it, unless white would not
-    /// stand out from the fill, then black. Neutral's is the desktop's own (`--primary-foreground`). sRGB.
+    /// Colored actions use white glyphs in dark mode. Light mode chooses by contrast; neutral
+    /// keeps the desktop's black-and-white inversion (`--primary-foreground`). sRGB.
     public func glyph(_ scheme: Scheme) -> RGB {
         guard reference != nil else { return Neutral.primaryForeground(scheme).components(in: .sRGB) }
+        if scheme == .dark { return .white }
         return Self.glyphIsWhite(on: fill(scheme).components(in: .sRGB)) ? .white : .black
     }
 

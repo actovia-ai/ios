@@ -3,12 +3,14 @@ import NetworkingKit
 import SwiftUI
 
 /// The Philharmonic workspace's card: the group, Dashboard or Workforce picked in the drawer.
-public struct PhilharmonicRootView: View {
+public struct PhilharmonicRootView: View, Equatable {
+    public nonisolated static func == (lhs: Self, rhs: Self) -> Bool { lhs.selection == rhs.selection }
     let api: PhilharmonicAPI
     let selection: PhilharmonicSelection
     let onNewGroup: () -> Void
     /// The group on show was deleted elsewhere.
     let onGroupGone: () -> Void
+    @State private var avatars: EmployeeAvatars
 
     public init(
         api: PhilharmonicAPI, selection: PhilharmonicSelection, onNewGroup: @escaping () -> Void,
@@ -18,6 +20,7 @@ public struct PhilharmonicRootView: View {
         self.selection = selection
         self.onNewGroup = onNewGroup
         self.onGroupGone = onGroupGone
+        _avatars = State(initialValue: EmployeeAvatars(api: api))
     }
 
     static func stream(_ conversationId: String, api: PhilharmonicAPI) -> GroupStream {
@@ -29,7 +32,7 @@ public struct PhilharmonicRootView: View {
     public var body: some View {
         content
             // Employees' faces, wherever this workspace draws them: the transcript, the plan, members, Workforce.
-            .environment(\.employeeAvatars, EmployeeAvatars(api: api))
+            .environment(\.employeeAvatars, avatars)
     }
 
     @ViewBuilder

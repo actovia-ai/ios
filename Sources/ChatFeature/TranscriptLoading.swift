@@ -7,7 +7,7 @@ public struct TranscriptSkeleton: View {
     @State private var shown = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    public init() {}
+    public init(immediate: Bool = false) { _shown = State(initialValue: immediate) }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 32) {
@@ -40,7 +40,9 @@ public struct TranscriptSkeleton: View {
                 localized: "chat:history.loading", defaultValue: "Loading the conversation",
                 comment: "VoiceOver label of the placeholder shown while a conversation loads."))
         .task {
+            guard !shown else { return }
             try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             shown = true
         }
     }

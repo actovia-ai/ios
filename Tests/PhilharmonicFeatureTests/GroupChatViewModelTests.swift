@@ -135,6 +135,31 @@ struct GroupChatViewModelTests {
         return GroupChatViewModel(conversationId: "c1", api: api, stream: stream)
     }
 
+    @Test("loads newest history first, prepends older rows once, and keeps the newest copy on overlap")
+    func paginatedHistory() async {
+        let vm = makeVM { _, path, query in
+            if path.hasSuffix("/plan") { return (200, "null") }
+            if path.hasSuffix("/messages/page") {
+                if query == "before=m2" {
+                    return (200, "{\"messages\":[\(Body.row("m1")),\(Body.row("m2", content: "stale"))],\"olderCursor\":null}")
+                }
+                return (200, "{\"messages\":[\(Body.row("m2", content: "current")),\(Body.row("m3"))],\"olderCursor\":\"m2\"}")
+            }
+            return (404, "{}")
+        }
+        await vm.start()
+        await eventually { vm.bubbles.count == 2 }
+        #expect(vm.bubbles.map(\.id) == ["m2", "m3"])
+        #expect(vm.olderCursor == "m2")
+        await vm.loadOlder()
+        #expect(vm.bubbles.map(\.id) == ["m1", "m2", "m3"])
+        #expect(vm.bubbles.first(where: { $0.id == "m2" })?.text == "current")
+        #expect(vm.olderCursor == nil)
+        await vm.loadOlder()
+        #expect(requests("/messages/page", query: "before=m2") == 1)
+        vm.stop()
+    }
+
     private func requests(_ suffix: String, query: String? = nil) -> Int {
         GroupMockURLProtocol.seen.withLock { list in
             list.filter { $0.method == "GET" && $0.path.hasSuffix(suffix) && $0.query == query }.count
@@ -244,6 +269,7 @@ struct GroupChatViewModelTests {
     func deletedGroupStopsAndReports() async {
         let vm = makeVM { _, path, _ in
             if path.hasSuffix("/plan") { return (200, "null") }
+            if path.hasSuffix("/messages/page") { return (200, #"{"messages":[],"olderCursor":null}"#) }
             // The server answers an unknown group's messages with an empty list, and leaves it out of the list.
             return (200, "[]")
         }
@@ -260,6 +286,7 @@ struct GroupChatViewModelTests {
     func emptyGroupIsNotGone() async {
         let vm = makeVM { _, path, _ in
             if path.hasSuffix("/plan") { return (200, "null") }
+            if path.hasSuffix("/messages/page") { return (200, #"{"messages":[],"olderCursor":null}"#) }
             if path.hasSuffix("/conversations") { return (200, "[\(Body.group)]") }
             return (200, "[]")
         }

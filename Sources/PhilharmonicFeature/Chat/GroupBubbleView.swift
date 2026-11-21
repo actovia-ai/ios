@@ -13,10 +13,14 @@ struct GroupRoster: Equatable {
 }
 
 /// One bubble of a group's transcript, as the desktop's `GroupMessageBubble` draws it.
-struct GroupBubbleView: View {
+struct GroupBubbleView: View, Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.bubble == rhs.bubble && lhs.roster == rhs.roster && lhs.model === rhs.model && lhs.pmIcon == rhs.pmIcon
+    }
     let bubble: GroupBubble
     let roster: GroupRoster
     let model: GroupChatViewModel
+    var pmIcon: String? = nil
 
     var body: some View {
         switch bubble.role {
@@ -48,7 +52,11 @@ struct GroupBubbleView: View {
     private var voice: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                GroupAvatar(role: bubble.role, employee: roster.employee(bubble.agentId))
+                if bubble.role == .pm {
+                    GroupEmojiAvatar(id: model.conversationId, icon: pmIcon, side: 32)
+                } else {
+                    GroupAvatar(role: bubble.role, employee: roster.employee(bubble.agentId))
+                }
                 header
             }
             if bubble.isLive {

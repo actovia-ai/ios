@@ -249,14 +249,14 @@ speakers have not reviewed them.
 The version lives once, in `Configs/Version.xcconfig`, and both the app and the
 widget extension read it (the App Store wants them to match):
 
-- `MARKETING_VERSION` — the App Store release chosen manually. The live first
-  release is `1.0.0`; the next release is `1.1.0`. Use a minor version for a
+- `MARKETING_VERSION` — the App Store release chosen manually. Version `1.1.0` is available
+  on the App Store; ongoing development targets `1.2.0`. Use a minor version for a
   feature release and a patch version for a fix release, rather than bumping
   the version for each development commit.
 - `CURRENT_PROJECT_VERSION` — a separate, increasing build counter. New
   TestFlight / App Store uploads advance it even within the same release.
 
-Prepare a new distribution with `scripts/set-version.sh 1.1.0`: it sets the
+Prepare a new distribution with `scripts/set-version.sh 1.2.0`: it sets the
 marketing version and increments the existing build counter. An explicit higher
 build number is accepted as a second argument. Commit the resulting xcconfig
 before archiving with the **Actovia** scheme. Run `scripts/set-version.sh --check`
@@ -269,6 +269,8 @@ history. The desktop app keeps its independent semantic-release workflow on
 `master`; its version does not determine the iOS version.
 
 ## Current interaction details
+
+- On a phone, sidebar selections close the drawer before creating the destination, using SwiftUI's `.removed` animation completion rather than a fixed delay. Reopening cancels the pending selection; docked navigation stays immediate. Chat history uses the loading skeleton on slow loads and a 200 ms opacity entrance (instant with Reduce Motion).
 
 - The phone sidebar uses a white/black system surface, primary workspace icons and clear section headings. New chat is the leading footer action; the circular Settings control remains accessible by name. Docked sidebars retain their separate pane surface.
 - A docked sidebar refreshes while visible and active, on foreground, and after local stream/title updates. Opening another workspace clears the old chat selection highlight.

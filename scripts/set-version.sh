@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepare an App Store / TestFlight build: scripts/set-version.sh 1.1.0 [build]
+# Prepare an App Store / TestFlight build: scripts/set-version.sh 1.2.0 [build]
 #
 # Writes the version into Configs/Version.xcconfig — MARKETING_VERSION as given,
 # CURRENT_PROJECT_VERSION as the next build counter (or an explicit higher one).

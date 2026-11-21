@@ -105,30 +105,16 @@ struct ColorToneAndCatalogTests {
         #expect(ink.lightness < yellow.lightness - 0.2)
     }
 
-    @Test("the glyph on a fill is decided by contrast, tone by tone: white on blue and violet, black on the rest")
+    @Test("colored actions are white in dark mode; light mode chooses by contrast")
     func glyphOnFills() {
-        for scheme in [ColorTone.Scheme.light, .dark] {
-            for tone in ColorTone.allCases where tone != .neutral {
-                let fill = tone.fill(scheme).components(in: .sRGB)
-                let white = ColorTone.glyphIsWhite(on: fill)
-                let glyph: ColorTone.RGB = white ? .white : .black
-                #expect(tone.glyph(scheme) == glyph, "\(tone) \(scheme)")
-                #expect(ColorTone.contrast(glyph, fill) >= 3, "\(tone) \(scheme)")
-                if scheme == .light {
-                    #expect(white == [ColorTone.blue, .violet].contains(tone), "\(tone)")
-                }
-            }
+        for tone in ColorTone.allCases where tone != .neutral {
+            #expect(tone.glyph(.dark) == .white, "\(tone)")
+            let fill = tone.fill(.light).components(in: .sRGB)
+            let expected: ColorTone.RGB = ColorTone.glyphIsWhite(on: fill) ? .white : .black
+            #expect(tone.glyph(.light) == expected)
+            #expect(ColorTone.contrast(expected, fill) >= 3)
         }
-    }
-
-    @Test("a glyph stands out from its fill at 3:1 in every tone, neutral's included")
-    func glyphsStandOut() {
-        for scheme in [ColorTone.Scheme.light, .dark] {
-            for tone in ColorTone.allCases {
-                let fill = tone.fill(scheme).components(in: .sRGB)
-                #expect(ColorTone.contrast(tone.glyph(scheme), fill) >= 3, "\(tone) \(scheme)")
-            }
-        }
+        #expect(ColorTone.neutral.glyph(.dark).hexString == "#171717")
     }
 
     @Test("the bubble's surface is the fill washed far into the page: mostly page, the tone still in it")

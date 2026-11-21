@@ -11,7 +11,14 @@ public enum ComposerOpening: Sendable {
     case camera, voice
 }
 
-public struct ChatDetailView: View {
+public struct ChatDetailView: View, Equatable {
+    private let chatId: String
+
+    public nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.chatId == rhs.chatId && lhs.title == rhs.title && lhs.isNew == rhs.isNew
+            && lhs.initialMessage == rhs.initialMessage && lhs.initialDraft == rhs.initialDraft
+            && lhs.initialOpening == rhs.initialOpening
+    }
     /// This screen's view model, stores and loaders, built on first use and kept for the view's lifetime.
     /// `State(initialValue:)` is not lazy: building them in `init` built (and threw away) a full set on every re-render
     /// of the parent. Only the empty box is made per `init`.
@@ -78,6 +85,7 @@ public struct ChatDetailView: View {
         initialOpening: ComposerOpening? = nil, onInitialOpeningUsed: (() -> Void)? = nil,
         offlineStore: OfflineChatStore? = nil
     ) {
+        self.chatId = chatId
         self.title = title
         self.isNew = isNew
         self.initialDraft = initialDraft
